@@ -54,6 +54,7 @@ import sdljava.SDLException;
 import sdljava.SDLMain;
 import sdljava.SDLVersion;
 import sdljava.event.SDLEvent;
+import sdljava.event.SDLKey;
 import sdljava.event.SDLKeyboardEvent;
 import sdljava.event.SDLQuitEvent;
 import sdljava.joystick.HatState;
@@ -239,6 +240,12 @@ public class NullpoMinoSDL {
 
 	/** true if disable automatic input update */
 	public static boolean disableAutoInputUpdate;
+
+	/** Current fullscreen state */
+	public static boolean fullscreen;
+
+	/** Previous F11 key state for edge detection */
+	private static boolean prevF11Pressed;
 
 	/** MaximumFPS */
 	public static int maxFPS;
@@ -436,8 +443,9 @@ public class NullpoMinoSDL {
 
 		SDLVideo.wmSetCaption("NullpoMino (Now Loading...)", null);
 
+		fullscreen = propConfig.getProperty("option.fullscreen", false);
 		long flags = SDLVideo.SDL_ANYFORMAT | SDLVideo.SDL_DOUBLEBUF | SDLVideo.SDL_HWSURFACE;
-		if(propConfig.getProperty("option.fullscreen", false) == true) flags |= SDLVideo.SDL_FULLSCREEN;
+		if(fullscreen) flags |= SDLVideo.SDL_FULLSCREEN;
 		SDLVideo.setVideoMode(640, 480, 0, flags);
 
 		SDLTTF.init();
@@ -485,6 +493,23 @@ public class NullpoMinoSDL {
 
 			joyPressedState = new boolean[joystickMax][max];
 		}
+	}
+
+	/**
+	 * Toggle fullscreen mode and re-acquire the video surface.
+	 * @return the new video surface
+	 * @throws SDLException if an SDL error occurs
+	 */
+	public static SDLSurface toggleFullscreen() throws SDLException {
+		fullscreen = !fullscreen;
+		long flags = SDLVideo.SDL_ANYFORMAT | SDLVideo.SDL_DOUBLEBUF | SDLVideo.SDL_HWSURFACE;
+		if(fullscreen) flags |= SDLVideo.SDL_FULLSCREEN;
+		SDLVideo.setVideoMode(640, 480, 0, flags);
+		SDLSurface newSurface = SDLVideo.getVideoSurface();
+		NormalFontSDL.dest = newSurface;
+		propConfig.setProperty("option.fullscreen", fullscreen);
+		log.debug("Fullscreen toggled: " + fullscreen);
+		return newSurface;
 	}
 
 	/**
@@ -552,6 +577,14 @@ public class NullpoMinoSDL {
 			//  event Processing
 			processEvent();
 			if(quit == true) break;
+
+			// F11 fullscreen toggle (checked before key mapping to consume the event)
+			boolean f11Pressed = keyPressedState[SDLKey.SDLK_F11];
+			if(f11Pressed && !prevF11Pressed) {
+				surface = toggleFullscreen();
+				keyPressedState[SDLKey.SDLK_F11] = false;
+			}
+			prevF11Pressed = f11Pressed;
 
 			// Joystick Updates
 			if(joystickMax > 0) joyUpdate();
