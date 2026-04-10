@@ -385,6 +385,11 @@ public class StateConfigGameTuningSDL extends BaseStateSDL {
 				ResourceHolderSDL.soundManager.play("cursor");
 			}
 
+			// Page Up / Page Down
+			int pageEvent = PageNavigationSDL.checkPageEvent();
+			if(pageEvent == -1 && cursor != 0) { cursor = 0; ResourceHolderSDL.soundManager.play("cursor"); }
+			else if(pageEvent == 1 && cursor != 9) { cursor = 9; ResourceHolderSDL.soundManager.play("cursor"); }
+
 			// Configuration changes
 			int change = 0;
 			if(GameKeySDL.gamekey[0].isMenuRepeatKey(GameKeySDL.BUTTON_LEFT)) change = -1;

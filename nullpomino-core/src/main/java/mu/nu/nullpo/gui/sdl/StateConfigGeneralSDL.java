@@ -70,6 +70,9 @@ public class StateConfigGeneralSDL extends BaseStateSDL {
 	/** Piece preview type options */
 	protected static final String[] NEXTTYPE_OPTIONS = {"TOP", "SIDE(SMALL)", "SIDE(BIG)"};
 
+	/** Page boundary cursor positions */
+	protected static final int[] PAGE_BOUNDARIES = {0, 17, 23};
+
 	/** Cursor position */
 	protected int cursor;
 
@@ -310,6 +313,26 @@ public class StateConfigGeneralSDL extends BaseStateSDL {
 			cursor++;
 			if(cursor > 24) cursor = 0;
 			ResourceHolderSDL.soundManager.play("cursor");
+		}
+
+		// Page Up / Page Down to jump between page boundaries
+		int pageEvent = PageNavigationSDL.checkPageEvent();
+		if(pageEvent == 1) {
+			for(int i = 0; i < PAGE_BOUNDARIES.length; i++) {
+				if(PAGE_BOUNDARIES[i] > cursor) {
+					cursor = PAGE_BOUNDARIES[i];
+					ResourceHolderSDL.soundManager.play("cursor");
+					break;
+				}
+			}
+		} else if(pageEvent == -1) {
+			for(int i = PAGE_BOUNDARIES.length - 1; i >= 0; i--) {
+				if(PAGE_BOUNDARIES[i] < cursor) {
+					cursor = PAGE_BOUNDARIES[i];
+					ResourceHolderSDL.soundManager.play("cursor");
+					break;
+				}
+			}
 		}
 
 		// Configuration changes

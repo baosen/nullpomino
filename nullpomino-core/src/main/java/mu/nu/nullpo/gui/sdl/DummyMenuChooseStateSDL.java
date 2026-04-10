@@ -82,6 +82,10 @@ public abstract class DummyMenuChooseStateSDL extends BaseStateSDL {
 				ResourceHolderSDL.soundManager.play("cursor");
 			}
 
+			// Page Up / Page Down
+			int pageEvent = PageNavigationSDL.checkPageEvent();
+			if(pageEvent != 0) onPageEvent(pageEvent);
+
 			int change = 0;
 			if(GameKeySDL.gamekey[0].isMenuRepeatKey(GameKeySDL.BUTTON_LEFT)) change = -1;
 			if(GameKeySDL.gamekey[0].isMenuRepeatKey(GameKeySDL.BUTTON_RIGHT)) change = 1;
@@ -171,5 +175,21 @@ public abstract class DummyMenuChooseStateSDL extends BaseStateSDL {
 	 */
 	protected boolean onPushButtonD() throws SDLException {
 		return false;
+	}
+
+	/**
+	 * Called on a page up (-1) or page down (1) event.
+	 * Default behavior: jump to start (page up) or end (page down) of the menu.
+	 * Override to customize (e.g. scroll by one page in scroll-bar menus).
+	 * @param direction -1 for page up, 1 for page down
+	 */
+	protected void onPageEvent(int direction) {
+		if(direction == -1 && cursor != 0) {
+			cursor = 0;
+			ResourceHolderSDL.soundManager.play("cursor");
+		} else if(direction == 1 && cursor != maxCursor) {
+			cursor = maxCursor;
+			ResourceHolderSDL.soundManager.play("cursor");
+		}
 	}
 }

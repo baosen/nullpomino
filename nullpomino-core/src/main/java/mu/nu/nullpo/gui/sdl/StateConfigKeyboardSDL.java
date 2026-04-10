@@ -205,6 +205,11 @@ public class StateConfigKeyboardSDL extends BaseStateSDL {
 					if(keynum > NUM_KEYS) keynum = 0;
 				}
 
+				// Page Up / Page Down
+				int pageEvent = PageNavigationSDL.checkPageEvent();
+				if(pageEvent == -1 && keynum != 0) { keynum = 0; frame = 0; ResourceHolderSDL.soundManager.play("cursor"); }
+				else if(pageEvent == 1 && keynum != NUM_KEYS) { keynum = NUM_KEYS; frame = 0; ResourceHolderSDL.soundManager.play("cursor"); }
+
 				// Enter
 				if(NullpoMinoSDL.keyPressedState[SDLKey.SDLK_RETURN]) {
 					ResourceHolderSDL.soundManager.play("decide");

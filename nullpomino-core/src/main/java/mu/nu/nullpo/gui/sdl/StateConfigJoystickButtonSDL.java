@@ -155,6 +155,10 @@ public class StateConfigJoystickButtonSDL extends BaseStateSDL {
 				if(keynum > 15) keynum = 4;
 				frame = 0;
 			}
+			// Page Up / Page Down
+			int pageEvent = PageNavigationSDL.checkPageEvent();
+			if(pageEvent == -1 && keynum != 4) { keynum = 4; frame = 0; ResourceHolderSDL.soundManager.play("cursor"); }
+			else if(pageEvent == 1 && keynum != 15) { keynum = 15; frame = 0; ResourceHolderSDL.soundManager.play("cursor"); }
 			// Delete
 			else if(NullpoMinoSDL.keyPressedState[SDLKey.SDLK_DELETE]) {
 				ResourceHolderSDL.soundManager.play("change");

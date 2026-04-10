@@ -47,6 +47,14 @@ public abstract class DummyMenuScrollStateSDL extends DummyMenuChooseStateSDL {
 		pUpMaxY = 0;
 	}
 
+	@Override
+	protected void onPageEvent(int direction) {
+		if(list != null && list.length > 0) {
+			if(direction == -1) pageUp();
+			else if(direction == 1) pageDown();
+		}
+	}
+
 	/*
 	 * Draw the screen
 	 */
