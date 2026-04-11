@@ -1,5 +1,3 @@
-cd nullpomino-parent/
+#!/bin/sh
 mvn package
-cd ../nullpomino-run/target/install/
-chmod +x ./play_swing
-./play_swing
+java -cp "target/nullpomino-7.6.0-SNAPSHOT.jar:target/lib/*" mu.nu.nullpo.gui.swing.NullpoMinoSwing
