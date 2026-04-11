@@ -91,11 +91,7 @@ public class StateNetGameSDL extends BaseStateSDL implements NetLobbyListener {
 
 		// gameManager initialization
 		gameManager = new GameManager(new RendererSDL());
-		try {
-			gameManager.receiver.setGraphics(SDLVideo.getVideoSurface());
-		} catch (SDLException e) {
-			log.warn("SDLException throwed", e);
-		}
+		gameManager.receiver.setGraphics(NullpoMinoSDL.gameSurface);
 
 		// Lobby initialization
 		netLobby = new NetLobbyFrame();
@@ -107,6 +103,13 @@ public class StateNetGameSDL extends BaseStateSDL implements NetLobbyListener {
 		// Lobby start
 		netLobby.init();
 		netLobby.setVisible(true);
+	}
+
+	@Override
+	public void onGameSurfaceChanged(SDLSurface gameSurface) {
+		if((gameManager != null) && (gameManager.receiver != null)) {
+			gameManager.receiver.setGraphics(gameSurface);
+		}
 	}
 
 	/*

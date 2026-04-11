@@ -18,19 +18,19 @@ public class MouseInputSDL extends MouseInputDummy {
 
 	public void update() throws SDLException {
 		MouseState ms = SDLEvent.getMouseState();
-		mouseX = ms.getX();
-		mouseY = ms.getY();
-		if (ms.getButtonState().buttonLeft()) {
+		mouseX = NullpoMinoSDL.windowToLogicalX(ms.getX());
+		mouseY = NullpoMinoSDL.windowToLogicalY(ms.getY());
+		if(ms.getButtonState().buttonLeft()) {
 			mousePressed[0]++;
 		} else {
 			mousePressed[0] = 0;
 		}
-		if (ms.getButtonState().buttonMiddle()) {
+		if(ms.getButtonState().buttonMiddle()) {
 			mousePressed[1]++;
 		} else {
 			mousePressed[1] = 0;
 		}
-		if (ms.getButtonState().buttonRight()) {
+		if(ms.getButtonState().buttonRight()) {
 			mousePressed[2]++;
 		} else {
 			mousePressed[2] = 0;

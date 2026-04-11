@@ -91,6 +91,13 @@ public class StateInGameSDL extends BaseStateSDL {
 		prevInGameFlag = false;
 	}
 
+	@Override
+	public void onGameSurfaceChanged(SDLSurface gameSurface) {
+		if((gameManager != null) && (gameManager.receiver != null)) {
+			gameManager.receiver.setGraphics(gameSurface);
+		}
+	}
+
 	/**
 	 * Start a new game (Rule will be user-selected one))
 	 */
@@ -106,11 +113,7 @@ public class StateInGameSDL extends BaseStateSDL {
 		gameManager = new GameManager(new RendererSDL());
 		pause = false;
 
-		try {
-			gameManager.receiver.setGraphics(SDLVideo.getVideoSurface());
-		} catch (SDLException e) {
-			log.warn("SDLException throwed", e);
-		}
+		gameManager.receiver.setGraphics(NullpoMinoSDL.gameSurface);
 
 		// Mode
 		modeName = NullpoMinoSDL.propGlobal.getProperty("name.mode", "");
@@ -198,11 +201,7 @@ public class StateInGameSDL extends BaseStateSDL {
 		gameManager.replayProp = prop;
 		pause = false;
 
-		try {
-			gameManager.receiver.setGraphics(SDLVideo.getVideoSurface());
-		} catch (SDLException e) {
-			log.warn("SDLException throwed", e);
-		}
+		gameManager.receiver.setGraphics(NullpoMinoSDL.gameSurface);
 
 		// Mode
 		modeName = prop.getProperty("name.mode", "");

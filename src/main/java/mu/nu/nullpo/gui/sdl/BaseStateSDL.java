@@ -59,4 +59,10 @@ public class BaseStateSDL {
 	 * @throws SDLException SDLErrors
 	 */
 	public void update() throws SDLException {}
+
+	/**
+	 * Called when the shared off-screen game surface is recreated.
+	 * @param gameSurface New shared game surface
+	 */
+	public void onGameSurfaceChanged(SDLSurface gameSurface) {}
 }

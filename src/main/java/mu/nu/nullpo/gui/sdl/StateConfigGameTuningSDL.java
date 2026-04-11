@@ -43,7 +43,6 @@ import org.apache.log4j.Logger;
 import sdljava.SDLException;
 import sdljava.video.SDLRect;
 import sdljava.video.SDLSurface;
-import sdljava.video.SDLVideo;
 
 /**
  * Game Tuning menu state
@@ -154,6 +153,13 @@ public class StateConfigGameTuningSDL extends BaseStateSDL {
 		loadConfig(NullpoMinoSDL.propGlobal);
 	}
 
+	@Override
+	public void onGameSurfaceChanged(SDLSurface gameSurface) {
+		if((gameManager != null) && (gameManager.receiver != null)) {
+			gameManager.receiver.setGraphics(gameSurface);
+		}
+	}
+
 	/*
 	 * Called when leaving the state
 	 */
@@ -169,11 +175,7 @@ public class StateConfigGameTuningSDL extends BaseStateSDL {
 		NullpoMinoSDL.disableAutoInputUpdate = true;
 
 		gameManager = new GameManager(new RendererSDL());
-		try {
-			gameManager.receiver.setGraphics(SDLVideo.getVideoSurface());
-		} catch (SDLException e) {
-			log.warn("SDLException throwed", e);
-		}
+		gameManager.receiver.setGraphics(NullpoMinoSDL.gameSurface);
 
 		gameManager.mode = new PreviewMode();
 		gameManager.init();

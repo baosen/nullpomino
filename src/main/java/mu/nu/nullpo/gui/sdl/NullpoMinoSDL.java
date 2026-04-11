@@ -34,6 +34,8 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.IOException;
+import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
 import java.text.DateFormat;
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
@@ -57,11 +59,14 @@ import sdljava.event.SDLEvent;
 import sdljava.event.SDLKey;
 import sdljava.event.SDLKeyboardEvent;
 import sdljava.event.SDLQuitEvent;
+import sdljava.event.SDLResizeEvent;
+import sdljava.video.SDLGrabMode;
+import sdljava.video.SDLPixelFormat;
+import sdljava.video.SDLRect;
 import sdljava.joystick.HatState;
 import sdljava.joystick.SDLJoystick;
 import sdljava.mixer.SDLMixer;
 import sdljava.ttf.SDLTTF;
-import sdljava.video.SDLRect;
 import sdljava.video.SDLSurface;
 import sdljava.video.SDLVideo;
 
@@ -243,6 +248,39 @@ public class NullpoMinoSDL {
 
 	/** Current fullscreen state */
 	public static boolean fullscreen;
+
+	public static final int LOGICAL_WIDTH = 640;
+	public static final int LOGICAL_HEIGHT = 480;
+
+	/** Common fullscreen fallback sizes used if the requested mode is not advertised. */
+	private static final int[][] FULLSCREEN_SIZE_CANDIDATES =
+	{
+		{320, 240}, {400, 300}, {480, 360}, {512, 384}, {640, 480}, {800, 480}, {800, 600}, {854, 480},
+		{960, 540}, {960, 600}, {1024, 576}, {1024, 600}, {1024, 768}, {1152, 648}, {1152, 720},
+		{1152, 864}, {1280, 720}, {1280, 768}, {1280, 800}, {1280, 960}, {1280, 1024}, {1360, 768},
+		{1366, 768}, {1400, 900}, {1440, 810}, {1440, 900}, {1440, 1080}, {1600, 900}, {1600, 1200},
+		{1680, 1050}, {1920, 1080}, {1920, 1200}, {2048, 1536}, {2560, 1440}, {2560, 1600}, {2560, 1920},
+		{2880, 1800}, {2880, 2160}
+	};
+
+	private static int windowedModeWidth = LOGICAL_WIDTH;
+	private static int windowedModeHeight = LOGICAL_HEIGHT;
+
+	/** Off-screen 640x480 surface for game rendering (scaled to window on flip) */
+	public static SDLSurface gameSurface;
+
+	private static int renderOffsetX;
+	private static int renderOffsetY;
+	private static int renderWidth = LOGICAL_WIDTH;
+	private static int renderHeight = LOGICAL_HEIGHT;
+
+	/** Precomputed source X indices for nearest-neighbor scaling (length = renderWidth) */
+	private static int[] scaleMapX;
+
+	/** Precomputed source Y indices for nearest-neighbor scaling (length = renderHeight) */
+	private static int[] scaleMapY;
+
+	private static int gameSurfaceBpp;
 
 	/** Previous F11 key state for edge detection */
 	private static boolean prevF11Pressed;
@@ -444,9 +482,7 @@ public class NullpoMinoSDL {
 		SDLVideo.wmSetCaption("NullpoMino (Now Loading...)", null);
 
 		fullscreen = propConfig.getProperty("option.fullscreen", false);
-		long flags = SDLVideo.SDL_ANYFORMAT | SDLVideo.SDL_DOUBLEBUF | SDLVideo.SDL_HWSURFACE;
-		if(fullscreen) flags |= SDLVideo.SDL_FULLSCREEN;
-		SDLVideo.setVideoMode(640, 480, 0, flags);
+		applyVideoMode(640, 480);
 
 		SDLTTF.init();
 		SDLVersion ttfver = SDLTTF.getTTFVersion();
@@ -496,21 +532,300 @@ public class NullpoMinoSDL {
 	}
 
 	/**
-	 * Toggle fullscreen mode and re-acquire the video surface.
-	 * @return the new video surface
+	 * Toggle fullscreen mode.
 	 * @throws SDLException if an SDL error occurs
 	 */
-	public static SDLSurface toggleFullscreen() throws SDLException {
+	public static void toggleFullscreen() throws SDLException {
+		if(!fullscreen) {
+			rememberWindowedModeSize(SDLVideo.getVideoSurface());
+		}
 		fullscreen = !fullscreen;
-		long flags = SDLVideo.SDL_ANYFORMAT | SDLVideo.SDL_DOUBLEBUF | SDLVideo.SDL_HWSURFACE;
-		if(fullscreen) flags |= SDLVideo.SDL_FULLSCREEN;
-		SDLVideo.setVideoMode(640, 480, 0, flags);
-		SDLSurface newSurface = SDLVideo.getVideoSurface();
-		NormalFontSDL.dest = newSurface;
+		applyVideoMode(windowedModeWidth, windowedModeHeight);
 		propConfig.setProperty("option.fullscreen", fullscreen);
 		saveConfig();
 		log.debug("Fullscreen toggled: " + fullscreen);
-		return newSurface;
+	}
+
+	/**
+	 * Apply SDL video mode flags and set the video mode.
+	 */
+	private static void applyVideoMode(int width, int height) throws SDLException {
+		long flags = SDLVideo.SDL_ANYFORMAT | SDLVideo.SDL_DOUBLEBUF | SDLVideo.SDL_HWSURFACE;
+		SDLSurface surface;
+		if(fullscreen) {
+			flags |= SDLVideo.SDL_FULLSCREEN;
+			surface = setFullscreenVideoMode(width, height, flags);
+		} else {
+			flags |= SDLVideo.SDL_RESIZABLE;
+			surface = SDLVideo.setVideoMode(width, height, 0, flags);
+			rememberWindowedModeSize(surface);
+			SDLVideo.wmGrabInput(SDLGrabMode.SDL_GRAB_OFF);
+		}
+		updateRenderViewport(surface);
+		recreateGameSurfaceIfNeeded(surface);
+	}
+
+	/**
+	 * Remember the last successful windowed-mode size so fullscreen can round-trip back to it.
+	 */
+	private static void rememberWindowedModeSize(SDLSurface surface) {
+		if(surface == null) return;
+		windowedModeWidth = Math.max(1, surface.getWidth());
+		windowedModeHeight = Math.max(1, surface.getHeight());
+	}
+
+	/**
+	 * Try the requested fullscreen mode first, then fall back to safer alternatives only if it fails.
+	 */
+	private static SDLSurface setFullscreenVideoMode(int requestedWidth, int requestedHeight, long flags) throws SDLException {
+		SDLException requestedFailure;
+		try {
+			return SDLVideo.setVideoMode(requestedWidth, requestedHeight, 0, flags);
+		} catch (SDLException e) {
+			requestedFailure = e;
+		}
+
+		int configuredWidth = propConfig.getProperty("option.screenwidth", LOGICAL_WIDTH);
+		int configuredHeight = propConfig.getProperty("option.screenheight", LOGICAL_HEIGHT);
+		if((configuredWidth != requestedWidth) || (configuredHeight != requestedHeight)) {
+			try {
+				SDLSurface surface = SDLVideo.setVideoMode(configuredWidth, configuredHeight, 0, flags);
+				log.warn("Fullscreen mode " + requestedWidth + "x" + requestedHeight +
+					" failed; using configured mode " + configuredWidth + "x" + configuredHeight);
+				return surface;
+			} catch (SDLException e) {
+				// Try the next fullscreen fallback.
+			}
+		}
+
+		int bitsPerPixel = getCurrentVideoBitsPerPixel();
+		int[] fallbackSize = findClosestSupportedFullscreenMode(requestedWidth, requestedHeight, bitsPerPixel, flags);
+		if((fallbackSize != null) &&
+			((fallbackSize[0] != requestedWidth) || (fallbackSize[1] != requestedHeight)) &&
+			((fallbackSize[0] != configuredWidth) || (fallbackSize[1] != configuredHeight))) {
+			try {
+				SDLSurface surface = SDLVideo.setVideoMode(fallbackSize[0], fallbackSize[1], 0, flags);
+				log.warn("Fullscreen mode " + requestedWidth + "x" + requestedHeight +
+					" failed; using fallback mode " + fallbackSize[0] + "x" + fallbackSize[1]);
+				return surface;
+			} catch (SDLException e) {
+				// No more fullscreen fallbacks remain after this.
+			}
+		}
+
+		throw requestedFailure;
+	}
+
+	/**
+	 * Return the current video surface bit depth, or 0 if no surface exists yet.
+	 */
+	private static int getCurrentVideoBitsPerPixel() {
+		try {
+			SDLSurface currentSurface = SDLVideo.getVideoSurface();
+			if(currentSurface != null) {
+				return currentSurface.getFormat().getBitsPerPixel();
+			}
+		} catch (SDLException e) {
+			// No video surface exists yet; allow SDL to choose the display format.
+		}
+		return 0;
+	}
+
+	/**
+	 * Check whether SDL advertises a fullscreen mode for the requested size.
+	 */
+	private static boolean isSupportedFullscreenMode(int width, int height, int bitsPerPixel, long flags) throws SDLException {
+		if((width <= 0) || (height <= 0)) return false;
+		return SDLVideo.videoModeOK(width, height, bitsPerPixel, getFullscreenModeCheckFlags(flags)) != 0;
+	}
+
+	/**
+	 * Ask SDL whether a fullscreen resolution exists without requiring hardware-surface hints.
+	 */
+	private static int getFullscreenModeCheckFlags(long flags) {
+		int checkFlags = (int) SDLVideo.SDL_FULLSCREEN;
+		if((flags & SDLVideo.SDL_ANYFORMAT) != 0) checkFlags |= (int) SDLVideo.SDL_ANYFORMAT;
+		return checkFlags;
+	}
+
+	/**
+	 * Pick the closest supported mode from the common screen-size table.
+	 */
+	private static int[] findClosestSupportedFullscreenMode(int requestedWidth, int requestedHeight, int bitsPerPixel, long flags) throws SDLException {
+		int closestWidth = -1;
+		int closestHeight = -1;
+		long closestDistance = Long.MAX_VALUE;
+
+		for(int i = 0; i < FULLSCREEN_SIZE_CANDIDATES.length; i++) {
+			int width = FULLSCREEN_SIZE_CANDIDATES[i][0];
+			int height = FULLSCREEN_SIZE_CANDIDATES[i][1];
+			if(!isSupportedFullscreenMode(width, height, bitsPerPixel, flags)) continue;
+
+			long widthDelta = width - requestedWidth;
+			long heightDelta = height - requestedHeight;
+			long distance = widthDelta * widthDelta + heightDelta * heightDelta;
+			if(distance < closestDistance) {
+				closestWidth = width;
+				closestHeight = height;
+				closestDistance = distance;
+			}
+		}
+
+		return (closestWidth >= 0) ? new int[] {closestWidth, closestHeight} : null;
+	}
+
+	/**
+	 * Nearest-neighbor scale blit from gameSurface onto dst using the current
+	 * render viewport and precomputed scaleMapX/scaleMapY lookup tables.
+	 */
+	private static void scaleBlitToSurface(SDLSurface dst) throws SDLException {
+		int bpp = gameSurfaceBpp;
+		int dstX = renderOffsetX;
+		int dstY = renderOffsetY;
+		int dstW = renderWidth;
+		int dstH = renderHeight;
+
+		if(!gameSurface.lockSurface()) return;
+		try {
+			if(!dst.lockSurface()) return;
+			try {
+				ByteBuffer srcBuf = gameSurface.getPixelData();
+				ByteBuffer dstBuf = dst.getPixelData();
+				srcBuf.order(ByteOrder.nativeOrder());
+				dstBuf.order(ByteOrder.nativeOrder());
+				int srcPitch = gameSurface.getPitch();
+				int dstPitch = dst.getPitch();
+
+				if(bpp == 4) {
+					for(int y = 0; y < dstH; y++) {
+						int srcRowOff = scaleMapY[y] * srcPitch;
+						int dstRowOff = (dstY + y) * dstPitch + dstX * 4;
+						for(int x = 0; x < dstW; x++) {
+							dstBuf.putInt(dstRowOff + x * 4, srcBuf.getInt(srcRowOff + scaleMapX[x] * 4));
+						}
+					}
+				} else if(bpp == 2) {
+					for(int y = 0; y < dstH; y++) {
+						int srcRowOff = scaleMapY[y] * srcPitch;
+						int dstRowOff = (dstY + y) * dstPitch + dstX * 2;
+						for(int x = 0; x < dstW; x++) {
+							dstBuf.putShort(dstRowOff + x * 2, srcBuf.getShort(srcRowOff + scaleMapX[x] * 2));
+						}
+					}
+				} else {
+					for(int y = 0; y < dstH; y++) {
+						int srcRowOff = scaleMapY[y] * srcPitch;
+						int dstRowOff = (dstY + y) * dstPitch + dstX * bpp;
+						for(int x = 0; x < dstW; x++) {
+							int si = srcRowOff + scaleMapX[x] * bpp;
+							int di = dstRowOff + x * bpp;
+							for(int b = 0; b < bpp; b++) {
+								dstBuf.put(di + b, srcBuf.get(si + b));
+							}
+						}
+					}
+				}
+			} finally {
+				dst.unlockSurface();
+			}
+		} finally {
+			gameSurface.unlockSurface();
+		}
+	}
+
+	/**
+	 * Recreate the off-screen game surface when the display format changes.
+	 */
+	private static void recreateGameSurfaceIfNeeded(SDLSurface surface) throws SDLException {
+		if((gameSurface != null) && hasSamePixelFormat(gameSurface, surface)) return;
+
+		SDLPixelFormat format = surface.getFormat();
+		SDLSurface newGameSurface = SDLVideo.createRGBSurface(
+			SDLVideo.SDL_SWSURFACE,
+			LOGICAL_WIDTH,
+			LOGICAL_HEIGHT,
+			format.getBitsPerPixel(),
+			format.getRMask(),
+			format.getGMask(),
+			format.getBMask(),
+			format.getAMask()
+		);
+
+		if(gameSurface != null) {
+			gameSurface.freeSurface();
+		}
+		gameSurface = newGameSurface;
+		gameSurfaceBpp = format.getBytesPerPixel();
+		NormalFontSDL.dest = gameSurface;
+		notifyGameSurfaceChanged();
+	}
+
+	/**
+	 * Notify all initialized states that the shared game surface was recreated.
+	 * All states must be notified — not just the current one — because inactive
+	 * states may hold a stale (freed) surface reference in their GameManager.
+	 */
+	private static void notifyGameSurfaceChanged() {
+		if(gameStates == null) return;
+		for(int i = 0; i < STATE_MAX; i++) {
+			if(gameStates[i] != null) {
+				gameStates[i].onGameSurfaceChanged(gameSurface);
+			}
+		}
+	}
+
+	/**
+	 * Update the letterboxed destination rectangle for the logical 640x480 framebuffer.
+	 */
+	private static void updateRenderViewport(SDLSurface surface) {
+		int winW = surface.getWidth();
+		int winH = surface.getHeight();
+
+		double scale = Math.min((double)winW / LOGICAL_WIDTH, (double)winH / LOGICAL_HEIGHT);
+		renderWidth = Math.max(1, (int)Math.round(LOGICAL_WIDTH * scale));
+		renderHeight = Math.max(1, (int)Math.round(LOGICAL_HEIGHT * scale));
+		renderOffsetX = (winW - renderWidth) / 2;
+		renderOffsetY = (winH - renderHeight) / 2;
+
+		if((renderWidth != LOGICAL_WIDTH) || (renderHeight != LOGICAL_HEIGHT)) {
+			// Precompute source coordinate lookup tables for nearest-neighbor scaling
+			if((scaleMapX == null) || (scaleMapX.length != renderWidth)) {
+				scaleMapX = new int[renderWidth];
+				for(int x = 0; x < renderWidth; x++) scaleMapX[x] = x * LOGICAL_WIDTH / renderWidth;
+			}
+			if((scaleMapY == null) || (scaleMapY.length != renderHeight)) {
+				scaleMapY = new int[renderHeight];
+				for(int y = 0; y < renderHeight; y++) scaleMapY[y] = y * LOGICAL_HEIGHT / renderHeight;
+			}
+		}
+	}
+
+	/**
+	 * Check if 2 surfaces share the same pixel format.
+	 */
+	private static boolean hasSamePixelFormat(SDLSurface a, SDLSurface b) {
+		SDLPixelFormat formatA = a.getFormat();
+		SDLPixelFormat formatB = b.getFormat();
+		return (formatA.getBitsPerPixel() == formatB.getBitsPerPixel()) &&
+			(formatA.getRMask() == formatB.getRMask()) &&
+			(formatA.getGMask() == formatB.getGMask()) &&
+			(formatA.getBMask() == formatB.getBMask()) &&
+			(formatA.getAMask() == formatB.getAMask());
+	}
+
+	/** Returns logical X, or -1 if outside the game viewport. */
+	static int windowToLogicalX(int windowX) {
+		return windowToLogicalCoordinate(windowX, renderOffsetX, renderWidth, LOGICAL_WIDTH);
+	}
+
+	/** Returns logical Y, or -1 if outside the game viewport. */
+	static int windowToLogicalY(int windowY) {
+		return windowToLogicalCoordinate(windowY, renderOffsetY, renderHeight, LOGICAL_HEIGHT);
+	}
+
+	private static int windowToLogicalCoordinate(int value, int offset, int size, int logicalSize) {
+		if((size <= 0) || (value < offset) || (value >= offset + size)) return -1;
+		return (value - offset) * logicalSize / size;
 	}
 
 	/**
@@ -541,7 +856,7 @@ public class NullpoMinoSDL {
 
 		// Reading, such as image
 		ResourceHolderSDL.load();
-		NormalFontSDL.dest = surface;
+		NormalFontSDL.dest = gameSurface;
 
 		// First run
 		if(propConfig.getProperty("option.firstSetupMode", true) == true) {
@@ -605,9 +920,9 @@ public class NullpoMinoSDL {
 
 			// Processing is executed for each state
 			gameStates[currentState].update();
-			// A state update can recreate the video mode, so refresh the active surface before rendering.
-			surface = SDLVideo.getVideoSurface();
-			gameStates[currentState].render(surface);
+			// Render game content to the off-screen 640x480 surface
+			gameSurface.fillRect(0);
+			gameStates[currentState].render(gameSurface);
 
 			// FPSDrawing
 			if(showfps) NormalFontSDL.printFont(0, 480 - 16, NullpoMinoSDL.df.format(NullpoMinoSDL.actualFPS), NormalFontSDL.COLOR_BLUE, 1.0f);
@@ -633,6 +948,15 @@ public class NullpoMinoSDL {
 					if(GameKeySDL.gamekey[0].isPushKey(GameKeySDL.BUTTON_QUIT) || GameKeySDL.gamekey[1].isPushKey(GameKeySDL.BUTTON_QUIT))
 						enterState(-1);
 				}
+			}
+
+			// Scale game surface to window with letterboxing
+			surface = SDLVideo.getVideoSurface();
+			if((renderWidth == LOGICAL_WIDTH) && (renderHeight == LOGICAL_HEIGHT)) {
+				gameSurface.blitSurface(surface);
+			} else {
+				if((renderOffsetX > 0) || (renderOffsetY > 0)) surface.fillRect(0);
+				scaleBlitToSurface(surface);
 			}
 
 			// Displayed on the screen
@@ -702,6 +1026,10 @@ public class NullpoMinoSDL {
 			stopObserverClient();
 			for(int i = 0; i < joystickMax; i++) {
 				joystick[i].joystickClose();
+			}
+			if(gameSurface != null) {
+				gameSurface.freeSurface();
+				gameSurface = null;
 			}
 			SDLMixer.close();
 			SDLMain.quit();
@@ -783,7 +1111,7 @@ public class NullpoMinoSDL {
 		}
 
 		// Save to File
-		SDLVideo.getVideoSurface().saveBMP(filename);
+		gameSurface.saveBMP(filename);
 	}
 
 	/**
@@ -837,6 +1165,9 @@ public class NullpoMinoSDL {
 			if(event instanceof SDLQuitEvent) {
 				// Exit button
 				enterState(-1);
+			} else if(event instanceof SDLResizeEvent) {
+				SDLResizeEvent resizeEvent = (SDLResizeEvent) event;
+				applyVideoMode(resizeEvent.getWidth(), resizeEvent.getHeight());
 			} else if(event instanceof SDLKeyboardEvent) {
 				// Key input
 				SDLKeyboardEvent keyevent = (SDLKeyboardEvent)event;
