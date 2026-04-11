@@ -151,10 +151,8 @@ public abstract class DummyMenuScrollStateSDL extends DummyMenuChooseStateSDL {
 			maxentry = list.length-1;
 
 		for(int i = minentry, y = 0; i <= maxentry; i++, y++) {
-			if(i < list.length) {
-				NormalFontSDL.printFontGrid(2, 3 + y, list[i].toUpperCase(), (cursor == i));
-				if(cursor == i) NormalFontSDL.printFontGrid(1, 3 + y, "b", NormalFontSDL.COLOR_RED);
-			}
+			NormalFontSDL.printFontGrid(2, 3 + y, list[i].toUpperCase(), (cursor == i));
+			if(cursor == i) NormalFontSDL.printFontGrid(1, 3 + y, "b", NormalFontSDL.COLOR_RED);
 		}
 
 		//Draw scroll bar

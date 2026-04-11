@@ -219,12 +219,9 @@ public class StateConfigGeneral extends BaseGameState {
 		nextshadow = prop.getProperty("option.nextshadow", false);
 		outlineghost = prop.getProperty("option.outlineghost", false);
 		showInput = prop.getProperty("option.showInput", false);
-		nexttype = 0;
-		if((prop.getProperty("option.sidenext", false) == true) && (prop.getProperty("option.bigsidenext", false) == false)) {
-			nexttype = 1;
-		} else if((prop.getProperty("option.sidenext", false) == true) && (prop.getProperty("option.bigsidenext", false) == true)) {
-			nexttype = 2;
-		}
+		boolean side = prop.getProperty("option.sidenext", false);
+		boolean big = prop.getProperty("option.bigsidenext", false);
+		nexttype = side ? (big ? 2 : 1) : 0;
 		alternateFPSTiming = prop.getProperty("option.alternateFPSTiming", false);
 		alternateFPSDynamicAdjust = prop.getProperty("option.alternateFPSDynamicAdjust", false);
 		alternateFPSPerfectMode = prop.getProperty("option.alternateFPSPerfectMode", false);
@@ -268,16 +265,8 @@ public class StateConfigGeneral extends BaseGameState {
 		prop.setProperty("option.nextshadow", nextshadow);
 		prop.setProperty("option.outlineghost", outlineghost);
 		prop.setProperty("option.showInput", showInput);
-		if(nexttype == 0) {
-			prop.setProperty("option.sidenext", false);
-			prop.setProperty("option.bigsidenext", false);
-		} else if(nexttype == 1) {
-			prop.setProperty("option.sidenext", true);
-			prop.setProperty("option.bigsidenext", false);
-		} else if(nexttype == 2) {
-			prop.setProperty("option.sidenext", true);
-			prop.setProperty("option.bigsidenext", true);
-		}
+		prop.setProperty("option.sidenext", nexttype >= 1);
+		prop.setProperty("option.bigsidenext", nexttype >= 2);
 		prop.setProperty("option.alternateFPSTiming", alternateFPSTiming);
 		prop.setProperty("option.alternateFPSDynamicAdjust", alternateFPSDynamicAdjust);
 		prop.setProperty("option.alternateFPSPerfectMode", alternateFPSPerfectMode);

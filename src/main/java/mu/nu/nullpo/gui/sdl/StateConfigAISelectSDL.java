@@ -139,10 +139,7 @@ public class StateConfigAISelectSDL extends BaseStateSDL {
 				aiArrayList.add(name);
 		}
 
-		String[] aiStringList = new String[aiArrayList.size()];
-		for(int i = 0; i < aiArrayList.size(); i++) aiStringList[i] = aiArrayList.get(i);
-
-		return aiStringList;
+		return aiArrayList.toArray(new String[0]);
 	}
 
 	/**

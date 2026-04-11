@@ -142,12 +142,6 @@ public class StateConfigGeneralSDL extends BaseStateSDL {
 	/** Piece preview type (0=Top 1=Side small 2=Side big) */
 	protected int nexttype;
 
-	/** Side piece preview */
-	protected boolean sidenext;
-
-	/** Bigger side piece preview */
-	protected boolean bigsidenext;
-
 	/** True to use perfect FPS */
 	protected boolean perfectFPSMode;
 
@@ -194,12 +188,9 @@ public class StateConfigGeneralSDL extends BaseStateSDL {
 		perfectFPSMode = prop.getProperty("option.perfectFPSMode", false);
 		perfectYield = prop.getProperty("option.perfectYield", false);
 		showInput = prop.getProperty("option.showInput", false);
-		nexttype = 0;
-		if((prop.getProperty("option.sidenext", false) == true) && (prop.getProperty("option.bigsidenext", false) == false)) {
-			nexttype = 1;
-		} else if((prop.getProperty("option.sidenext", false) == true) && (prop.getProperty("option.bigsidenext", false) == true)) {
-			nexttype = 2;
-		}
+		boolean side = prop.getProperty("option.sidenext", false);
+		boolean big = prop.getProperty("option.bigsidenext", false);
+		nexttype = side ? (big ? 2 : 1) : 0;
 	}
 
 	/**
@@ -231,16 +222,8 @@ public class StateConfigGeneralSDL extends BaseStateSDL {
 		prop.setProperty("option.perfectFPSMode", perfectFPSMode);
 		prop.setProperty("option.perfectYield", perfectYield);
 		prop.setProperty("option.showInput", showInput);
-		if(nexttype == 0) {
-			prop.setProperty("option.sidenext", false);
-			prop.setProperty("option.bigsidenext", false);
-		} else if(nexttype == 1) {
-			prop.setProperty("option.sidenext", true);
-			prop.setProperty("option.bigsidenext", false);
-		} else if(nexttype == 2) {
-			prop.setProperty("option.sidenext", true);
-			prop.setProperty("option.bigsidenext", true);
-		}
+		prop.setProperty("option.sidenext", nexttype >= 1);
+		prop.setProperty("option.bigsidenext", nexttype >= 2);
 	}
 
 	/*

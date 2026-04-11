@@ -35,6 +35,5 @@ public class MouseInputSDL extends MouseInputDummy {
 		} else {
 			mousePressed[2] = 0;
 		}
-		ms = null;
 	}
 }
