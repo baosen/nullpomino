@@ -330,7 +330,7 @@ public class PoochyBot extends DummyAI implements Runnable {
 				thinkRequest.newRequest();
 			}
 			if (nowType == Piece.PIECE_O && ((bestX < nowX && pieceNow.checkCollision(nowX-1, nowY, rt, fld))
-					|| (bestX < nowX && pieceNow.checkCollision(nowX-1, nowY, rt, fld))))
+					|| (bestX > nowX && pieceNow.checkCollision(nowX+1, nowY, rt, fld))))
 			{
 				thinkComplete = false;
 				if (DEBUG_ALL) log.debug("Needs rethink - O piece is stuck!");

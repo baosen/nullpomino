@@ -495,7 +495,6 @@ public class RanksAI extends DummyAI implements Runnable {
 
 		 bestY = pieceNow.getBottom(bestX, nowY, bestRt, engine.field);
 		 bestYSub=bestY;
-		 bestYSub=bestY;
 
 		 // If we cant fit the pieces anymore without creating holes, try hold
 		 //bestHold=false;
@@ -696,10 +695,10 @@ public class RanksAI extends DummyAI implements Runnable {
 				
 				 for (int i=0;i<ranks.getStackWidth();i++){
 					 if (heightsWork[i]>heightMax){
-						 heightMax=heights[i];
+						 heightMax=heightsWork[i];
 					 }
 					 if (heightsWork[i]<heightMin){
-						 heightMin=heights[i];
+						 heightMin=heightsWork[i];
 					 }
 				 }
 

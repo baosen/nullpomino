@@ -68,7 +68,7 @@ public class Nohoho extends DummyAI implements Runnable {
 	/** MaximumCompromise level */
 	protected static final int MAX_THINK_DEPTH = 2;
 	/** Set to true to print debug information */
-	protected static final boolean DEBUG_ALL = true;
+	protected static final boolean DEBUG_ALL = false;
 	/** Did the thinking thread finish successfully? */
 	protected boolean thinkComplete;
 	/** Did the thinking thread find a possible position? */
@@ -600,7 +600,7 @@ public class Nohoho extends DummyAI implements Runnable {
 				break;
 			else if (defcon <= 4)
 			{
-				if (chain == 0)
+				if (chain == 1)
 					pts += clear;
 				else if (chain == 2)
 					pts += clear << 3;
