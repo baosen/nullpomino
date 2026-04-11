@@ -148,9 +148,7 @@ public class StateConfigJoystickTestSDL extends BaseStateSDL {
 		}
 
 		if(previousJoyPressedState != null) {
-			for(int i = 0; i < NullpoMinoSDL.joyPressedState.length; i++) {
-				previousJoyPressedState[i] = NullpoMinoSDL.joyPressedState[joyNumber][i];
-			}
+			System.arraycopy(NullpoMinoSDL.joyPressedState[joyNumber], 0, previousJoyPressedState, 0, previousJoyPressedState.length);
 		}
 		frame++;
 	}

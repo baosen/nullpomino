@@ -28,18 +28,13 @@
 */
 package mu.nu.nullpo.gui.sdl;
 
-import mu.nu.nullpo.game.play.GameManager;
 import sdljava.SDLException;
 import sdljava.video.SDLSurface;
-import sdljava.video.SDLVideo;
 
 /**
  * State of the keyboard setting screen
  */
 public class StateConfigKeyboardNaviSDL extends DummyMenuChooseStateSDL {
-	/** This state's ID */
-	public static final int ID = 16;
-
 	/** Player number */
 	public int player = 0;
 
@@ -54,7 +49,7 @@ public class StateConfigKeyboardNaviSDL extends DummyMenuChooseStateSDL {
 	 * @return Key name
 	 */
 	protected String getKeyName(int key) {
-		if((key < 0) || (key > NullpoMinoSDL.SDL_KEYNAMES.length)) {
+		if((key < 0) || (key >= NullpoMinoSDL.SDL_KEYNAMES.length)) {
 			return "(" + key + ")";
 		}
 		return NullpoMinoSDL.SDL_KEYNAMES[key];
@@ -106,7 +101,6 @@ public class StateConfigKeyboardNaviSDL extends DummyMenuChooseStateSDL {
 	 */
 	@Override
 	public void enter() throws SDLException {
-		SDLVideo.wmSetCaption("NullpoMino version" + GameManager.getVersionString(), null);
 	}
 
 	/*

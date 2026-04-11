@@ -131,7 +131,7 @@ public class StateInGameSDL extends BaseStateSDL {
 			gameManager.engine[i].owMinDAS = NullpoMinoSDL.propGlobal.getProperty(i + ".tuning.owMinDAS", -1);
 			gameManager.engine[i].owMaxDAS = NullpoMinoSDL.propGlobal.getProperty(i + ".tuning.owMaxDAS", -1);
 			gameManager.engine[i].owDasDelay = NullpoMinoSDL.propGlobal.getProperty(i + ".tuning.owDasDelay", -1);
-			gameManager.engine[0].owReverseUpDown = NullpoMinoSDL.propGlobal.getProperty(0 + ".tuning.owReverseUpDown", false);
+			gameManager.engine[i].owReverseUpDown = NullpoMinoSDL.propGlobal.getProperty(i + ".tuning.owReverseUpDown", false);
 			gameManager.engine[i].owMoveDiagonal = NullpoMinoSDL.propGlobal.getProperty(i + ".tuning.owMoveDiagonal", -1);
 			gameManager.engine[i].owBlockOutlineType = NullpoMinoSDL.propGlobal.getProperty(i + ".tuning.owBlockOutlineType", -1);
 			gameManager.engine[i].owBlockShowOutlineOnly = NullpoMinoSDL.propGlobal.getProperty(i + ".tuning.owBlockShowOutlineOnly", -1);
@@ -361,8 +361,10 @@ public class StateInGameSDL extends BaseStateSDL {
 					ResourceHolderSDL.soundManager.play("pause");
 					pause = true;
 					cursor = 0;
-					if(!enableframestep) pauseFrame = 5;
-					if(!enableframestep) ResourceHolderSDL.bgmPause();
+					if(!enableframestep) {
+						pauseFrame = 5;
+						ResourceHolderSDL.bgmPause();
+					}
 				}
 			} else {
 				ResourceHolderSDL.soundManager.play("pause");

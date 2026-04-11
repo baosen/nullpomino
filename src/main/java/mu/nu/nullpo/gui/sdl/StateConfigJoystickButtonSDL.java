@@ -108,10 +108,6 @@ public class StateConfigJoystickButtonSDL extends BaseStateSDL {
 		else
 			NormalFontSDL.printFontGrid(1, 3, "JOYSTICK NUMBER:" + joyNumber, NormalFontSDL.COLOR_RED);
 
-		//NormalFontSDL.printFontGrid(2, 3, "UP             : " + String.valueOf(buttonmap[GameKeySDL.BUTTON_UP]), (keynum == 0));
-		//NormalFontSDL.printFontGrid(2, 4, "DOWN           : " + String.valueOf(buttonmap[GameKeySDL.BUTTON_DOWN]), (keynum == 1));
-		//NormalFontSDL.printFontGrid(2, 5, "LEFT           : " + String.valueOf(buttonmap[GameKeySDL.BUTTON_LEFT]), (keynum == 2));
-		//NormalFontSDL.printFontGrid(2, 6, "RIGHT          : " + String.valueOf(buttonmap[GameKeySDL.BUTTON_RIGHT]), (keynum == 3));
 		NormalFontSDL.printFontGrid(2, 5, "A (L/R-ROT)    : " + String.valueOf(buttonmap[GameKeySDL.BUTTON_A]), (keynum == 4));
 		NormalFontSDL.printFontGrid(2, 6, "B (R/L-ROT)    : " + String.valueOf(buttonmap[GameKeySDL.BUTTON_B]), (keynum == 5));
 		NormalFontSDL.printFontGrid(2, 7, "C (L/R-ROT)    : " + String.valueOf(buttonmap[GameKeySDL.BUTTON_C]), (keynum == 6));
@@ -160,7 +156,7 @@ public class StateConfigJoystickButtonSDL extends BaseStateSDL {
 			keynum = PageNavigationSDL.jumpToEnd(PageNavigationSDL.checkPageEvent(), keynum, 4, 15);
 			if(keynum != prevKeynum) frame = 0;
 			// Delete
-			else if(NullpoMinoSDL.keyPressedState[SDLKey.SDLK_DELETE]) {
+			if(NullpoMinoSDL.keyPressedState[SDLKey.SDLK_DELETE]) {
 				ResourceHolderSDL.soundManager.play("change");
 				buttonmap[keynum] = -1;
 				frame = 0;
@@ -196,9 +192,7 @@ public class StateConfigJoystickButtonSDL extends BaseStateSDL {
 		}
 
 		if(previousJoyPressedState != null) {
-			for(int i = 0; i < NullpoMinoSDL.joyPressedState.length; i++) {
-				previousJoyPressedState[i] = NullpoMinoSDL.joyPressedState[joyNumber][i];
-			}
+			System.arraycopy(NullpoMinoSDL.joyPressedState[joyNumber], 0, previousJoyPressedState, 0, previousJoyPressedState.length);
 		}
 		frame++;
 	}

@@ -306,7 +306,7 @@ public class KeyConfigFrame extends JFrame implements ActionListener {
 						keyCodes[i] = 0;
 						txtfldGameKeys[i].setText("");
 					} else if(c == txtfldGameKeysNav[i]) {
-						keyCodes[i] = 0;
+						keyCodesNav[i] = 0;
 						txtfldGameKeysNav[i].setText("");
 					}
 				}
