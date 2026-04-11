@@ -97,14 +97,12 @@ public abstract class DummyMenuChooseState extends BaseGameState {
 
 		}
 		if(GameKeySlick.gamekey[0].isPushKey(GameKeySlick.BUTTON_D)) {
-			if (onPushButtonD(container, game, delta));
-				return;
+			if (onPushButtonD(container, game, delta)) return;
 		}
 
 		// Cancel button
 		if(GameKeySlick.gamekey[0].isPushKey(GameKeySlick.BUTTON_B) || MouseInputSlick.mouseInput.isMouseRightClicked()) {
-			if (onCancel(container, game, delta));
-				return;
+			if (onCancel(container, game, delta)) return;
 		}
 	}
 

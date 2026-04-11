@@ -38,9 +38,6 @@ public abstract class DummyMenuChooseStateSDL extends BaseStateSDL {
 	/** Cursor position */
 	protected int cursor = 0;
 
-	/** ScreenshotShooting flag */
-	protected boolean ssflag = false;
-
 	/** Max cursor value */
 	protected int maxCursor;
 
@@ -54,10 +51,6 @@ public abstract class DummyMenuChooseStateSDL extends BaseStateSDL {
 		maxCursor = -1;
 		minChoiceY = 3;
 		mouseEnabled = true;
-	}
-
-	@Override
-	public void render(SDLSurface screen) throws SDLException {
 	}
 
 	@Override
@@ -101,14 +94,12 @@ public abstract class DummyMenuChooseStateSDL extends BaseStateSDL {
 
 		}
 		if(GameKeySDL.gamekey[0].isPushKey(GameKeySDL.BUTTON_D)) {
-			if (onPushButtonD());
-				return;
+			if (onPushButtonD()) return;
 		}
 
 		// Cancel button
 		if(GameKeySDL.gamekey[0].isPushKey(GameKeySDL.BUTTON_B) || MouseInputSDL.mouseInput.isMouseRightClicked()) {
-			if (onCancel());
-				return;
+			if (onCancel()) return;
 		}
 	}
 
@@ -184,12 +175,6 @@ public abstract class DummyMenuChooseStateSDL extends BaseStateSDL {
 	 * @param direction -1 for page up, 1 for page down
 	 */
 	protected void onPageEvent(int direction) {
-		if(direction == -1 && cursor != 0) {
-			cursor = 0;
-			ResourceHolderSDL.soundManager.play("cursor");
-		} else if(direction == 1 && cursor != maxCursor) {
-			cursor = maxCursor;
-			ResourceHolderSDL.soundManager.play("cursor");
-		}
+		cursor = PageNavigationSDL.jumpToEnd(direction, cursor, 0, maxCursor);
 	}
 }
