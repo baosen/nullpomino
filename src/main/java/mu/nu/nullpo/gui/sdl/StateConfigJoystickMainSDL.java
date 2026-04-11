@@ -138,9 +138,7 @@ public class StateConfigJoystickMainSDL extends BaseStateSDL {
 		}
 
 		// Page Up / Page Down
-		int pageEvent = PageNavigationSDL.checkPageEvent();
-		if(pageEvent == -1 && cursor != 0) { cursor = 0; ResourceHolderSDL.soundManager.play("cursor"); }
-		else if(pageEvent == 1 && cursor != 5) { cursor = 5; ResourceHolderSDL.soundManager.play("cursor"); }
+		cursor = PageNavigationSDL.jumpToEnd(PageNavigationSDL.checkPageEvent(), cursor, 0, 5);
 
 		// Configuration changes
 		int change = 0;

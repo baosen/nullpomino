@@ -176,6 +176,9 @@ public class StateConfigKeyboardSDL extends BaseStateSDL {
 	 */
 	@Override
 	public void update() throws SDLException {
+		// Always poll page nav so edge detection stays in sync during key-set mode
+		int pageEvent = PageNavigationSDL.checkPageEvent();
+
 		if(frame >= KEYACCEPTFRAME) {
 			if(keyConfigRestFrame > 0) {
 				// Key-set mode
@@ -206,9 +209,9 @@ public class StateConfigKeyboardSDL extends BaseStateSDL {
 				}
 
 				// Page Up / Page Down
-				int pageEvent = PageNavigationSDL.checkPageEvent();
-				if(pageEvent == -1 && keynum != 0) { keynum = 0; frame = 0; ResourceHolderSDL.soundManager.play("cursor"); }
-				else if(pageEvent == 1 && keynum != NUM_KEYS) { keynum = NUM_KEYS; frame = 0; ResourceHolderSDL.soundManager.play("cursor"); }
+				int prevKeynum = keynum;
+				keynum = PageNavigationSDL.jumpToEnd(pageEvent, keynum, 0, NUM_KEYS);
+				if(keynum != prevKeynum) frame = 0;
 
 				// Enter
 				if(NullpoMinoSDL.keyPressedState[SDLKey.SDLK_RETURN]) {

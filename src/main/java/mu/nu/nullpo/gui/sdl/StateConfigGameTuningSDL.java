@@ -331,6 +331,9 @@ public class StateConfigGameTuningSDL extends BaseStateSDL {
 	 */
 	@Override
 	public void update() throws SDLException {
+		// Always poll page nav so edge detection stays in sync during preview mode
+		int pageEvent = PageNavigationSDL.checkPageEvent();
+
 		if(isPreview) {
 			// Preview
 			try {
@@ -386,9 +389,7 @@ public class StateConfigGameTuningSDL extends BaseStateSDL {
 			}
 
 			// Page Up / Page Down
-			int pageEvent = PageNavigationSDL.checkPageEvent();
-			if(pageEvent == -1 && cursor != 0) { cursor = 0; ResourceHolderSDL.soundManager.play("cursor"); }
-			else if(pageEvent == 1 && cursor != 9) { cursor = 9; ResourceHolderSDL.soundManager.play("cursor"); }
+			cursor = PageNavigationSDL.jumpToEnd(pageEvent, cursor, 0, 9);
 
 			// Configuration changes
 			int change = 0;

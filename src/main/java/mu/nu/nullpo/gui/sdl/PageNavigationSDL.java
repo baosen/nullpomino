@@ -21,9 +21,29 @@ public class PageNavigationSDL {
 		boolean down = NullpoMinoSDL.keyPressedState[SDLKey.SDLK_PAGEDOWN];
 		int result = 0;
 		if(up && !prevPageUpPressed) result = -1;
-		if(down && !prevPageDownPressed) result = 1;
+		else if(down && !prevPageDownPressed) result = 1;
 		prevPageUpPressed = up;
 		prevPageDownPressed = down;
 		return result;
+	}
+
+	/**
+	 * Jump cursor to min or max based on a page event, playing the cursor sound on change.
+	 * @param pageEvent result from {@link #checkPageEvent()}
+	 * @param current current cursor position
+	 * @param min minimum cursor position (page-up target)
+	 * @param max maximum cursor position (page-down target)
+	 * @return new cursor position (unchanged if no page event)
+	 */
+	public static int jumpToEnd(int pageEvent, int current, int min, int max) {
+		if(pageEvent == -1 && current != min) {
+			ResourceHolderSDL.soundManager.play("cursor");
+			return min;
+		}
+		if(pageEvent == 1 && current != max) {
+			ResourceHolderSDL.soundManager.play("cursor");
+			return max;
+		}
+		return current;
 	}
 }
