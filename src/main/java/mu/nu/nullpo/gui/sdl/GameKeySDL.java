@@ -97,13 +97,6 @@ public class GameKeySDL extends GameKeyDummy {
 	}
 
 	/**
-	 * Default constructor
-	 */
-	public GameKeySDL() {
-		super();
-	}
-
-	/**
 	 * Constructor with player number param
 	 * @param pl Player number
 	 */

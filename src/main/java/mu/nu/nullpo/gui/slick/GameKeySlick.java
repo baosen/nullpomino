@@ -100,13 +100,6 @@ public class GameKeySlick extends GameKeyDummy {
 	}
 
 	/**
-	 * Default constructor
-	 */
-	public GameKeySlick() {
-		super();
-	}
-
-	/**
 	 * Constructor with player number param
 	 * @param pl Player number
 	 */
@@ -164,24 +157,6 @@ public class GameKeySlick extends GameKeyDummy {
 			}
 			else inputstate[i] = 0;
 		}
-	}
-
-	/**
-	 * Load navigation key settings
-	 * @param prop Property file to read from
-	 */
-	@Override
-	public void loadConfig(CustomProperties prop) {
-		super.loadConfig(prop);
-
-		/*
-		keymap[BUTTON_NAV_UP] = prop.getProperty("key.p" + player + ".navigationup", Input.KEY_UP);
-		keymap[BUTTON_NAV_DOWN] = prop.getProperty("key.p" + player + ".navigationdown", Input.KEY_DOWN);
-		keymap[BUTTON_NAV_LEFT] = prop.getProperty("key.p" + player + ".navigationleft", Input.KEY_LEFT);
-		keymap[BUTTON_NAV_RIGHT] = prop.getProperty("key.p" + player + ".navigationright", Input.KEY_RIGHT);
-		keymap[BUTTON_NAV_SELECT] = prop.getProperty("key.p" + player + ".navigationselect", Input.KEY_ENTER);
-		keymap[BUTTON_NAV_CANCEL] = prop.getProperty("key.p" + player + ".navigationcancel", Input.KEY_ESCAPE);
-		*/
 	}
 
 	/**

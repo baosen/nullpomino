@@ -28,7 +28,6 @@
 */
 package mu.nu.nullpo.gui.slick;
 
-import java.net.URL;
 import java.util.HashMap;
 
 import org.apache.log4j.Logger;
@@ -41,29 +40,14 @@ public class SoundManager {
 	/** Log */
 	static Logger log = Logger.getLogger(SoundManager.class);
 
-	/** You can registerWAVE file OfMaximumcount */
-	protected int maxClips;
-
 	/** WAVE file  data (Name-> dataBody) */
 	protected HashMap<String, Sound> clipMap;
-
-	/** Was registeredWAVE file count */
-	protected int counter = 0;
 
 	/**
 	 * Constructor
 	 */
 	public SoundManager() {
-		this(128);
-	}
-
-	/**
-	 * Constructor
-	 * @param maxClips You can registerWAVE file OfMaximumcount
-	 */
-	public SoundManager(int maxClips) {
-		this.maxClips = maxClips;
-		clipMap = new HashMap<String, Sound>(maxClips);
+		clipMap = new HashMap<String, Sound>();
 	}
 
 	/**
@@ -73,36 +57,8 @@ public class SoundManager {
 	 * @return true if successful, false if failed
 	 */
 	public boolean load(String name, String filename) {
-		if(counter >= maxClips) {
-			log.error("No more wav files can be loaded (" + maxClips + ")");
-			return false;
-		}
-
 		try {
 			Sound clip = new Sound(filename);
-			clipMap.put(name, clip);
-		} catch(Throwable e) {
-			log.error("Failed to load wav file", e);
-			return false;
-		}
-
-		return true;
-	}
-
-	/**
-	 * Load WAVE file
-	 * @param name Registered name
-	 * @param fileurl Filename (URL)
-	 * @return true if successful, false if failed
-	 */
-	public boolean load(String name, URL fileurl) {
-		if(counter >= maxClips) {
-			log.error("No more wav files can be loaded (" + maxClips + ")");
-			return false;
-		}
-
-		try {
-			Sound clip = new Sound(fileurl);
 			clipMap.put(name, clip);
 		} catch(Throwable e) {
 			log.error("Failed to load wav file", e);

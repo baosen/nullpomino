@@ -96,13 +96,6 @@ public class GameKeySwing extends GameKeyDummy {
 	}
 
 	/**
-	 * Default constructor
-	 */
-	public GameKeySwing() {
-		super();
-	}
-
-	/**
 	 * Constructor with player number param
 	 * @param pl Player number
 	 */
@@ -136,11 +129,7 @@ public class GameKeySwing extends GameKeyDummy {
 	 * @param pressed true when pressed, false otherwise
 	 */
 	public void setPressState(int key, boolean pressed) {
-		if(!pressed) {
-			pressstate[key] = false;
-		} else {
-			pressstate[key] = true;
-		}
+		pressstate[key] = pressed;
 	}
 
 	/**
