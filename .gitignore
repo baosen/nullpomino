@@ -33,6 +33,7 @@ target/
 # User data files
 config/
 log/
+replay/
 
 # Agent directories
 .claude
