@@ -817,7 +817,7 @@ public class GradeManiaMode extends AbstractMode {
 		owner.replayProp.setProperty("grademania.version", version);
 
 		// Update rankings
-		if((owner.replayMode == false) && (startlevel.value == 0) && (!always20g.value) && (big.value) && (engine.ai == null)) {
+		if((owner.replayMode == false) && (startlevel.value == 0) && (!always20g.value) && (!big.value) && (engine.ai == null)) {
 			updateRanking(grade, engine.statistics.level, lastGradeTime);
 			if(sectionAnyNewRecord) updateBestSectionTime();
 
