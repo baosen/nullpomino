@@ -27,7 +27,7 @@ public class BagBonusRandomizer extends Randomizer {
 	}
 
 	public void shuffle() {
-		bag[bonus] = r.nextInt(pieces.length);
+		bag[bonus] = pieces[r.nextInt(pieces.length)];
 		for (int i = baglen; i > 1; i--) {
 			int j = r.nextInt(i);
 			int temp = bag[i-1];

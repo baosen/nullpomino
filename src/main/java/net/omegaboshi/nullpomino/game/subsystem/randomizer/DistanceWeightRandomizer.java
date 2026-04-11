@@ -50,7 +50,7 @@ public abstract class DistanceWeightRandomizer extends Randomizer {
 			}
 		}
 		firstPiece = false;
-		return id;
+		return pieces[id];
 	}
 
 	protected abstract int getWeight(int i);
