@@ -29,7 +29,6 @@
 package mu.nu.nullpo.gui.sdl;
 
 import mu.nu.nullpo.game.play.GameManager;
-import mu.nu.nullpo.gui.net.UpdateChecker;
 import sdljava.SDLException;
 //import sdljava.event.MouseState;
 //import sdljava.event.SDLEvent;
@@ -48,9 +47,6 @@ public class StateTitleSDL extends DummyMenuChooseStateSDL {
         "Title_Start", "Title_Replay", "Title_NetPlay", "Title_Config", "Title_Exit"
 	};
 
-	/** true when new version is already checked */
-	protected boolean isNewVersionChecked = false;
-
 	public StateTitleSDL () {
 		maxCursor = 4;
 		minChoiceY = 4;
@@ -68,26 +64,6 @@ public class StateTitleSDL extends DummyMenuChooseStateSDL {
 		// Call GC
 		System.gc();
 
-		// New Version check
-		if(!isNewVersionChecked && NullpoMinoSDL.propGlobal.getProperty("updatechecker.enable", true)) {
-			isNewVersionChecked = true;
-
-			int startupCount = NullpoMinoSDL.propGlobal.getProperty("updatechecker.startupCount", 0);
-			int startupMax = NullpoMinoSDL.propGlobal.getProperty("updatechecker.startupMax", 20);
-
-			if(startupCount >= startupMax) {
-				String strURL = NullpoMinoSDL.propGlobal.getProperty("updatechecker.url", "");
-				UpdateChecker.startCheckForUpdates(strURL);
-				startupCount = 0;
-			} else {
-				startupCount++;
-			}
-
-			if(startupMax >= 1) {
-				NullpoMinoSDL.propGlobal.setProperty("updatechecker.startupCount", startupCount);
-				NullpoMinoSDL.saveConfig();
-			}
-		}
 	}
 
 	/*
@@ -105,12 +81,6 @@ public class StateTitleSDL extends DummyMenuChooseStateSDL {
 		renderChoices(2, 4, CHOICES);
 
 		NormalFontSDL.printTTFFont(16, 432, NullpoMinoSDL.getUIText(UI_TEXT[cursor]));
-
-		if(UpdateChecker.isNewVersionAvailable(GameManager.getVersionMajor(), GameManager.getVersionMinor())) {
-			String strTemp = String.format(NullpoMinoSDL.getUIText("Title_NewVersion"),
-					UpdateChecker.getLatestVersionFullString(), UpdateChecker.getStrReleaseDate());
-			NormalFontSDL.printTTFFont(16, 416, strTemp);
-		}
 	}
 
 	@Override

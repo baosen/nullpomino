@@ -29,7 +29,6 @@
 package mu.nu.nullpo.gui.slick;
 
 import mu.nu.nullpo.game.play.GameManager;
-import mu.nu.nullpo.gui.net.UpdateChecker;
 
 import org.apache.log4j.Logger;
 import org.newdawn.slick.AppGameContainer;
@@ -55,9 +54,6 @@ public class StateTitle extends DummyMenuChooseState {
 
 	/** Log */
 	static Logger log = Logger.getLogger(StateTitle.class);
-
-	/** true when new version is already checked */
-	protected boolean isNewVersionChecked = false;
 
 	public StateTitle () {
 		maxCursor = 4;
@@ -95,26 +91,6 @@ public class StateTitle extends DummyMenuChooseState {
 			((AppGameContainer) container).setUpdateOnlyWhenVisible(true);
 		}
 
-		// New Version check
-		if(!isNewVersionChecked && NullpoMinoSlick.propGlobal.getProperty("updatechecker.enable", true)) {
-			isNewVersionChecked = true;
-
-			int startupCount = NullpoMinoSlick.propGlobal.getProperty("updatechecker.startupCount", 0);
-			int startupMax = NullpoMinoSlick.propGlobal.getProperty("updatechecker.startupMax", 20);
-
-			if(startupCount >= startupMax) {
-				String strURL = NullpoMinoSlick.propGlobal.getProperty("updatechecker.url", "");
-				UpdateChecker.startCheckForUpdates(strURL);
-				startupCount = 0;
-			} else {
-				startupCount++;
-			}
-
-			if(startupMax >= 1) {
-				NullpoMinoSlick.propGlobal.setProperty("updatechecker.startupCount", startupCount);
-				NullpoMinoSlick.saveConfig();
-			}
-		}
 	}
 
 	/*
@@ -132,12 +108,6 @@ public class StateTitle extends DummyMenuChooseState {
 		renderChoices(2, 4, CHOICES);
 
 		NormalFontSlick.printTTFFont(16, 432, NullpoMinoSlick.getUIText(UI_TEXT[cursor]));
-
-		if(UpdateChecker.isNewVersionAvailable(GameManager.getVersionMajor(), GameManager.getVersionMinor())) {
-			String strTemp = String.format(NullpoMinoSlick.getUIText("Title_NewVersion"),
-					UpdateChecker.getLatestVersionFullString(), UpdateChecker.getStrReleaseDate());
-			NormalFontSlick.printTTFFont(16, 416, strTemp);
-		}
 	}
 
 	@Override

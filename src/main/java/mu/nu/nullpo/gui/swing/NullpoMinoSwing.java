@@ -81,8 +81,6 @@ import mu.nu.nullpo.game.subsystem.mode.NetDummyMode;
 import mu.nu.nullpo.game.subsystem.wallkick.Wallkick;
 import mu.nu.nullpo.gui.net.NetLobbyFrame;
 import mu.nu.nullpo.gui.net.NetLobbyListener;
-import mu.nu.nullpo.gui.net.UpdateChecker;
-import mu.nu.nullpo.gui.net.UpdateCheckerListener;
 import mu.nu.nullpo.util.CustomProperties;
 import mu.nu.nullpo.util.GeneralUtil;
 import mu.nu.nullpo.util.ModeManager;
@@ -94,7 +92,7 @@ import org.apache.log4j.PropertyConfigurator;
 /**
  * NullpoMino SwingVersion
  */
-public class NullpoMinoSwing extends JFrame implements ActionListener, NetLobbyListener, UpdateCheckerListener {
+public class NullpoMinoSwing extends JFrame implements ActionListener, NetLobbyListener {
 	/** Serial version ID */
 	private static final long serialVersionUID = 1L;
 
@@ -121,9 +119,6 @@ public class NullpoMinoSwing extends JFrame implements ActionListener, NetLobbyL
 
 	/** Tuning Settings screen frame */
 	public static GameTuningFrame gameTuningFrame;
-
-	/** Update check Setting screen frame */
-	public static UpdateCheckFrame updateCheckFrame;
 
 	/** Command that was passed to the programLinesArgumentcount */
 	public static String[] programArgs;
@@ -470,26 +465,6 @@ public class NullpoMinoSwing extends JFrame implements ActionListener, NetLobbyL
 
 		setVisible(true);
 
-		// NewVersion check
-		if(propGlobal.getProperty("updatechecker.enable", true)) {
-			int startupCount = propGlobal.getProperty("updatechecker.startupCount", 0);
-			int startupMax = propGlobal.getProperty("updatechecker.startupMax", 20);
-
-			if(startupCount >= startupMax) {
-				String strURL = propGlobal.getProperty("updatechecker.url", "");
-				UpdateChecker.addListener(this);
-				UpdateChecker.startCheckForUpdates(strURL);
-				startupCount = 0;
-			} else {
-				startupCount++;
-			}
-
-			if(startupMax >= 1) {
-				propGlobal.setProperty("updatechecker.startupCount", startupCount);
-				saveConfig();
-			}
-		}
-
 		// CommandLinesReplay from reproduction
 		if((programArgs != null) && (programArgs.length > 0)) {
 			startReplayGame(programArgs[0]);
@@ -660,13 +635,6 @@ public class NullpoMinoSwing extends JFrame implements ActionListener, NetLobbyL
 		miKeyConfig2P.addActionListener(this);
 		miKeyConfig2P.setActionCommand("Menu_KeyConfig2P");
 		menuConfig.add(miKeyConfig2P);
-
-		// Update check Setting
-		JMenuItem miUpdateCheck = new JMenuItem(getUIText("Menu_UpdateCheck"));
-		miUpdateCheck.setMnemonic('D');
-		miUpdateCheck.addActionListener(this);
-		miUpdateCheck.setActionCommand("Menu_UpdateCheck");
-		menuConfig.add(miUpdateCheck);
 
 		// Other Settings
 		JMenuItem miGeneralConfig = new JMenuItem(getUIText("Menu_GeneralConfig"));
@@ -910,14 +878,6 @@ public class NullpoMinoSwing extends JFrame implements ActionListener, NetLobbyL
 			gameTuningFrame.load(1);
 			gameTuningFrame.setVisible(true);
 		}
-		// Update check Setting
-		else if(e.getActionCommand() == "Menu_UpdateCheck") {
-			if(updateCheckFrame == null) {
-				updateCheckFrame = new UpdateCheckFrame(this);
-			}
-			updateCheckFrame.load();
-			updateCheckFrame.setVisible(true);
-		}
 		// Other Settings
 		else if(e.getActionCommand() == "Menu_GeneralConfig") {
 			if(generalConfigFrame == null) {
@@ -941,7 +901,6 @@ public class NullpoMinoSwing extends JFrame implements ActionListener, NetLobbyL
 		if(aiSelectFrame != null) aiSelectFrame.setVisible(false);
 		if(generalConfigFrame != null) generalConfigFrame.setVisible(false);
 		if(gameTuningFrame != null) gameTuningFrame.setVisible(false);
-		if(updateCheckFrame != null) updateCheckFrame.setVisible(false);
 	}
 
 	/**
@@ -1294,23 +1253,6 @@ public class NullpoMinoSwing extends JFrame implements ActionListener, NetLobbyL
 	public void netlobbyOnRoomLeave(NetLobbyFrame lobby, NetPlayerClient client) {
 		//enterNewMode(null);
 		if(gameFrame != null) gameFrame.strModeToEnter = null;
-	}
-
-	public void onUpdateCheckerStart() {
-	}
-
-	public void onUpdateCheckerEnd(int status) {
-		if(UpdateChecker.isNewVersionAvailable(GameManager.getVersionMajor(), GameManager.getVersionMinor())) {
-			SwingUtilities.invokeLater(new Runnable() {
-				public void run() {
-					if(lModeSelect != null) {
-						String strTemp = String.format(getUIText("Top_NewVersion"),
-								UpdateChecker.getLatestVersionFullString(), UpdateChecker.getStrReleaseDate());
-						lModeSelect.setText(strTemp);
-					}
-				}
-			});
-		}
 	}
 
 	/**
