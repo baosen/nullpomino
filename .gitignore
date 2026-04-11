@@ -29,3 +29,7 @@ target/
 .classpath
 .project
 .settings/
+
+# User data files
+config/
+log/
