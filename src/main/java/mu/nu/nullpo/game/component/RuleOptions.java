@@ -581,9 +581,9 @@ public class RuleOptions implements Serializable {
 	 * @return If compared to the same rulestrue
 	 */
 	public boolean compare(RuleOptions r, boolean ignoreGraphicsSetting) {
-		if((!ignoreGraphicsSetting) && (strRuleName != r.strRuleName)) return false;
-		if(strWallkick != r.strWallkick) return false;
-		if(strRandomizer != r.strRandomizer) return false;
+		if(!ignoreGraphicsSetting && !strEquals(strRuleName, r.strRuleName)) return false;
+		if(!strEquals(strWallkick, r.strWallkick)) return false;
+		if(!strEquals(strRandomizer, r.strRandomizer)) return false;
 
 		if(style != r.style) return false;
 
@@ -686,15 +686,19 @@ public class RuleOptions implements Serializable {
 		if(moveLeftAndRightAllow != r.moveLeftAndRightAllow) return false;
 		if(moveLeftAndRightUsePreviousInput != r.moveLeftAndRightUsePreviousInput) return false;
 
-		if((ignoreGraphicsSetting) && (lineFallAnim != r.lineFallAnim)) return false;
+		if((!ignoreGraphicsSetting) && (lineFallAnim != r.lineFallAnim)) return false;
 		if(lineCancelMove != r.lineCancelMove) return false;
 		if(lineCancelRotate != r.lineCancelRotate) return false;
 		if(lineCancelHold != r.lineCancelHold) return false;
 
-		if((ignoreGraphicsSetting) && (skin != r.skin)) return false;
+		if((!ignoreGraphicsSetting) && (skin != r.skin)) return false;
 		if(ghost != r.ghost) return false;
 
 		return true;
+	}
+
+	private static boolean strEquals(String a, String b) {
+		return (a == null) ? (b == null) : a.equals(b);
 	}
 
 	/**

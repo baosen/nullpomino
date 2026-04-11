@@ -273,7 +273,7 @@ public class NetPlayerClient extends NetBaseClient {
 	 */
 	public NetPlayerInfo getPlayerInfoByName(String name) {
 		for(NetPlayerInfo pInfo: playerInfoList) {
-			if((pInfo != null) && (pInfo.strName == name)) {
+			if((pInfo != null) && name.equals(pInfo.strName)) {
 				return pInfo;
 			}
 		}

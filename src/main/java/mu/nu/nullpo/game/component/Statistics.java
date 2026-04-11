@@ -268,6 +268,7 @@ public class Statistics implements Serializable {
 		ppm = s.ppm;
 		pps = s.pps;
 		gamerate = s.gamerate;
+		totalHoldUsed = s.totalHoldUsed;
 		maxChain = s.maxChain;
 		rollclear = s.rollclear;
 	}

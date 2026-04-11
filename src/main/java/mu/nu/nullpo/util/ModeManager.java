@@ -144,7 +144,7 @@ public class ModeManager {
 		if(name == null) return -1;
 
 		for(int i = 0; i < modelist.size(); i++) {
-			if(name.compareTo(modelist.get(i).getName()) == 0) {
+			if(name.equals(modelist.get(i).getName())) {
 				return i;
 			}
 		}
