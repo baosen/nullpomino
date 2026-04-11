@@ -1,5 +1,5 @@
 NullpoMino 〜ぬるぽミノ〜
-Version 7.5.0
+Version 7.6.0
 
 【これって何？】
 Javaで作った落ちものアクションパズルゲームもどきです。

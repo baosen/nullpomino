@@ -1,5 +1,5 @@
 ﻿NullpoMino
-Version 7.5.0
+Version 7.6.0
 
 1. What is this?
 A falling block puzzle game using Java.
