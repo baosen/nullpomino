@@ -123,9 +123,6 @@ public class Field implements Serializable {
 	/** List of last rows cleared in most recent horizontal line clear. */
 	public ArrayList<Block[]> lastLinesCleared;
 
-	/** Used for TGM garbage, can later be extended to all types */
-	//public ArrayList<Block[]> pendingGarbage;
-
 	/**
 	 * With parametersConstructor
 	 * @param w fieldThe width of the
@@ -213,7 +210,7 @@ public class Field implements Serializable {
 
 		colorClearExtraCount = f.colorClearExtraCount;
 		colorsCleared = f.colorsCleared;
-		gemsCleared = f.gemsCleared = 0;
+		gemsCleared = f.gemsCleared;
 		lineColorsCleared = f.lineColorsCleared;
 		lastLinesCleared = f.lastLinesCleared;
 		garbageCleared = f.garbageCleared;
@@ -439,7 +436,8 @@ public class Field implements Serializable {
 	 * @return Is located at the specified coordinatesBlock color (FailedBLOCK_COLOR_INVALID)
 	 */
 	public int getBlockColor(int x, int y, boolean gemSame) {
-		return Block.gemToNormalColor(getBlockColor(x, y));
+		int color = getBlockColor(x, y);
+		return gemSame ? Block.gemToNormalColor(color) : color;
 	}
 
 	/**
@@ -1365,7 +1363,7 @@ public class Field implements Serializable {
 					Block blk = getBlock(j, i - 1);
 					if(blk == null) blk = new Block();
 					setBlock(j, i, blk);
-					setLineFlag(i, getLineFlag(i + 1));
+					setLineFlag(i, getLineFlag(i - 1));
 				}
 			}
 
@@ -3277,7 +3275,7 @@ public class Field implements Serializable {
 	}
 
 	public void negaField() {
-		for (int y = getHighestBlockY(); y < height; y--)
+		for (int y = getHighestBlockY(); y < height; y++)
 			for (int x = 0; x < width; x++)
 			{
 				if (getBlockEmpty(x, y))
@@ -3289,7 +3287,7 @@ public class Field implements Serializable {
 
 	public void flipVertical() {
 		Block[] temp;
-		for (int yMin = getHighestBlockY(), yMax = height-1; yMin < yMax; yMin--, yMax++)
+		for (int yMin = getHighestBlockY(), yMax = height-1; yMin < yMax; yMin++, yMax--)
 		{
 			if (yMin < 0)
 			{
@@ -3309,7 +3307,7 @@ public class Field implements Serializable {
 	public void mirror() {
 		Block temp;
 
-		for (int y = getHighestBlockY(); y < height; y--)
+		for (int y = getHighestBlockY(); y < height; y++)
 			for (int xMin = 0, xMax = width-1; xMin < xMax; xMin++, xMax--)
 			{
 				temp = getBlock(xMin, y);
