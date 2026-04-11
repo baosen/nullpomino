@@ -36,8 +36,6 @@ import java.util.LinkedList;
 
 import mu.nu.nullpo.util.CustomProperties;
 import sdljava.SDLException;
-//import sdljava.event.MouseState;
-//import sdljava.event.SDLEvent;
 import sdljava.video.SDLSurface;
 
 /**

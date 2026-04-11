@@ -322,21 +322,21 @@ public class StateNetGame extends BasicGameState implements NetLobbyListener {
 			gameManager.init();
 
 			// Tuning
-			gameManager.engine[0].owRotateButtonDefaultRight = NullpoMinoSlick.propGlobal.getProperty(0 + ".tuning.owRotateButtonDefaultRight", -1);
-			gameManager.engine[0].owSkin = NullpoMinoSlick.propGlobal.getProperty(0 + ".tuning.owSkin", -1);
-			gameManager.engine[0].owMinDAS = NullpoMinoSlick.propGlobal.getProperty(0 + ".tuning.owMinDAS", -1);
-			gameManager.engine[0].owMaxDAS = NullpoMinoSlick.propGlobal.getProperty(0 + ".tuning.owMaxDAS", -1);
-			gameManager.engine[0].owDasDelay = NullpoMinoSlick.propGlobal.getProperty(0 + ".tuning.owDasDelay", -1);
-			gameManager.engine[0].owReverseUpDown = NullpoMinoSlick.propGlobal.getProperty(0 + ".tuning.owReverseUpDown", false);
-			gameManager.engine[0].owMoveDiagonal = NullpoMinoSlick.propGlobal.getProperty(0 + ".tuning.owMoveDiagonal", -1);
-			gameManager.engine[0].owBlockOutlineType = NullpoMinoSlick.propGlobal.getProperty(0 + ".tuning.owBlockOutlineType", -1);
-			gameManager.engine[0].owBlockShowOutlineOnly = NullpoMinoSlick.propGlobal.getProperty(0 + ".tuning.owBlockShowOutlineOnly", -1);
+			gameManager.engine[0].owRotateButtonDefaultRight = NullpoMinoSlick.propGlobal.getProperty("0.tuning.owRotateButtonDefaultRight", -1);
+			gameManager.engine[0].owSkin = NullpoMinoSlick.propGlobal.getProperty("0.tuning.owSkin", -1);
+			gameManager.engine[0].owMinDAS = NullpoMinoSlick.propGlobal.getProperty("0.tuning.owMinDAS", -1);
+			gameManager.engine[0].owMaxDAS = NullpoMinoSlick.propGlobal.getProperty("0.tuning.owMaxDAS", -1);
+			gameManager.engine[0].owDasDelay = NullpoMinoSlick.propGlobal.getProperty("0.tuning.owDasDelay", -1);
+			gameManager.engine[0].owReverseUpDown = NullpoMinoSlick.propGlobal.getProperty("0.tuning.owReverseUpDown", false);
+			gameManager.engine[0].owMoveDiagonal = NullpoMinoSlick.propGlobal.getProperty("0.tuning.owMoveDiagonal", -1);
+			gameManager.engine[0].owBlockOutlineType = NullpoMinoSlick.propGlobal.getProperty("0.tuning.owBlockOutlineType", -1);
+			gameManager.engine[0].owBlockShowOutlineOnly = NullpoMinoSlick.propGlobal.getProperty("0.tuning.owBlockShowOutlineOnly", -1);
 
 			// Rule
 			RuleOptions ruleopt = null;
-			String rulename = NullpoMinoSlick.propGlobal.getProperty(0 + ".rule", "");
+			String rulename = NullpoMinoSlick.propGlobal.getProperty("0.rule", "");
 			if(gameManager.mode.getGameStyle() > 0) {
-				rulename = NullpoMinoSlick.propGlobal.getProperty(0 + ".rule." + gameManager.mode.getGameStyle(), "");
+				rulename = NullpoMinoSlick.propGlobal.getProperty("0.rule." + gameManager.mode.getGameStyle(), "");
 			}
 			if((rulename != null) && (rulename.length() > 0)) {
 				log.info("Load rule options from " + rulename);
@@ -361,16 +361,16 @@ public class StateNetGame extends BasicGameState implements NetLobbyListener {
 			}
 
 			// AI
-			String aiName = NullpoMinoSlick.propGlobal.getProperty(0 + ".ai", "");
+			String aiName = NullpoMinoSlick.propGlobal.getProperty("0.ai", "");
 			if(aiName.length() > 0) {
 				DummyAI aiObj = GeneralUtil.loadAIPlayer(aiName);
 				gameManager.engine[0].ai = aiObj;
-				gameManager.engine[0].aiMoveDelay = NullpoMinoSlick.propGlobal.getProperty(0 + ".aiMoveDelay", 0);
-				gameManager.engine[0].aiThinkDelay = NullpoMinoSlick.propGlobal.getProperty(0 + ".aiThinkDelay", 0);
-				gameManager.engine[0].aiUseThread = NullpoMinoSlick.propGlobal.getProperty(0 + ".aiUseThread", true);
-				gameManager.engine[0].aiShowHint = NullpoMinoSlick.propGlobal.getProperty(0 + ".aiShowHint", false);
-				gameManager.engine[0].aiPrethink = NullpoMinoSlick.propGlobal.getProperty(0 + ".aiPrethink", false);
-				gameManager.engine[0].aiShowState = NullpoMinoSlick.propGlobal.getProperty(0 + ".aiShowState", false);
+				gameManager.engine[0].aiMoveDelay = NullpoMinoSlick.propGlobal.getProperty("0.aiMoveDelay", 0);
+				gameManager.engine[0].aiThinkDelay = NullpoMinoSlick.propGlobal.getProperty("0.aiThinkDelay", 0);
+				gameManager.engine[0].aiUseThread = NullpoMinoSlick.propGlobal.getProperty("0.aiUseThread", true);
+				gameManager.engine[0].aiShowHint = NullpoMinoSlick.propGlobal.getProperty("0.aiShowHint", false);
+				gameManager.engine[0].aiPrethink = NullpoMinoSlick.propGlobal.getProperty("0.aiPrethink", false);
+				gameManager.engine[0].aiShowState = NullpoMinoSlick.propGlobal.getProperty("0.aiShowState", false);
 			}
 			gameManager.showInput = NullpoMinoSlick.propConfig.getProperty("option.showInput", false);
 
@@ -425,12 +425,10 @@ public class StateNetGame extends BasicGameState implements NetLobbyListener {
 	}
 
 	public void netlobbyOnRoomJoin(NetLobbyFrame lobby, NetPlayerClient client, NetRoomInfo roomInfo) {
-		//enterNewMode(roomInfo.strMode);
 		strModeToEnter = roomInfo.strMode;
 	}
 
 	public void netlobbyOnRoomLeave(NetLobbyFrame lobby, NetPlayerClient client) {
-		//enterNewMode(null);
 		strModeToEnter = null;
 	}
 }

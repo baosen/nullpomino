@@ -356,11 +356,9 @@ public class Block implements Serializable {
 	 * @return The int representing the block's color
 	 */
 	public static int charToBlockColor(char c){
-		int blkColor = 0;
-
 		//With a radix of 36, the digits encompass '0'-'9','A'-'Z'.
 		//With a radix higher than 36, we can also have characters 'a'-'z' represent digits.
-		blkColor = Character.digit(c, 36);
+		int blkColor = Character.digit(c, 36);
 
 		//Given the current implementation of other functions, I assumed that
 		//if we needed additional BLOCK_COLOR values, it would follow from 'Z'->'['

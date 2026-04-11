@@ -49,9 +49,6 @@ public class StateConfigJoystickTest extends BasicGameState {
 	/** Player number */
 	public int player = 0;
 
-	/** ScreenshotShooting flag */
-	protected boolean ssflag = false;
-
 	/** UseJoystick Of number */
 	protected int joyNumber;
 

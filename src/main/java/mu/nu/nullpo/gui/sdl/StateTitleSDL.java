@@ -30,8 +30,6 @@ package mu.nu.nullpo.gui.sdl;
 
 import mu.nu.nullpo.game.play.GameManager;
 import sdljava.SDLException;
-//import sdljava.event.MouseState;
-//import sdljava.event.SDLEvent;
 import sdljava.video.SDLSurface;
 import sdljava.video.SDLVideo;
 

@@ -112,10 +112,6 @@ public class StateConfigJoystickButton extends BasicGameState {
 		else
 			NormalFontSlick.printFontGrid(1, 3, "JOYSTICK NUMBER:" + joyNumber, NormalFontSlick.COLOR_RED);
 
-		//NormalFont.printFontGrid(2, 3, "UP             : " + String.valueOf(buttonmap[GameKey.BUTTON_UP]), (keynum == 0));
-		//NormalFont.printFontGrid(2, 4, "DOWN           : " + String.valueOf(buttonmap[GameKey.BUTTON_DOWN]), (keynum == 1));
-		//NormalFont.printFontGrid(2, 5, "LEFT           : " + String.valueOf(buttonmap[GameKey.BUTTON_LEFT]), (keynum == 2));
-		//NormalFont.printFontGrid(2, 6, "RIGHT          : " + String.valueOf(buttonmap[GameKey.BUTTON_RIGHT]), (keynum == 3));
 		NormalFontSlick.printFontGrid(2, 5, "A (L/R-ROT)    : " + String.valueOf(buttonmap[GameKeySlick.BUTTON_A]), (keynum == 4));
 		NormalFontSlick.printFontGrid(2, 6, "B (R/L-ROT)    : " + String.valueOf(buttonmap[GameKeySlick.BUTTON_B]), (keynum == 5));
 		NormalFontSlick.printFontGrid(2, 7, "C (L/R-ROT)    : " + String.valueOf(buttonmap[GameKeySlick.BUTTON_C]), (keynum == 6));

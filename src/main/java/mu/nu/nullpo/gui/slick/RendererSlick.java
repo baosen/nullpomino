@@ -39,7 +39,6 @@ import mu.nu.nullpo.game.play.GameManager;
 import mu.nu.nullpo.gui.EffectObject;
 import mu.nu.nullpo.util.CustomProperties;
 
-//import org.apache.log4j.Logger;
 import org.newdawn.slick.Color;
 import org.newdawn.slick.Graphics;
 import org.newdawn.slick.Image;
@@ -48,9 +47,6 @@ import org.newdawn.slick.Image;
  * Game event Processing and rendering process (SlickVersion)
  */
 public class RendererSlick extends EventReceiver {
-	/** Log */
-	//static Logger log = Logger.getLogger(RendererSlick.class);
-
 	/** Surface to draw */
 	protected Graphics graphics;
 
@@ -677,8 +673,7 @@ public class RendererSlick extends EventReceiver {
 			piece.updateConnectData();
 			int blksize = (int)(16 * scale);
 
-			if(piece != null) {
-				for(int i = 0; i < piece.getMaxBlock(); i++) {
+			for(int i = 0; i < piece.getMaxBlock(); i++) {
 					if(!piece.big) {
 						int x2 = engine.ai.bestX + piece.dataX[engine.ai.bestRt][i];
 						int y2 = engine.ai.bestY + piece.dataY[engine.ai.bestRt][i];
@@ -765,7 +760,6 @@ public class RendererSlick extends EventReceiver {
 				}
 			}
 		}
-	}
 
 	/**
 	 * fieldOfBlockDraw a

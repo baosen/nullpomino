@@ -280,21 +280,21 @@ public class StateNetGameSDL extends BaseStateSDL implements NetLobbyListener {
 			gameManager.init();
 
 			// Tuning
-			gameManager.engine[0].owRotateButtonDefaultRight = NullpoMinoSDL.propGlobal.getProperty(0 + ".tuning.owRotateButtonDefaultRight", -1);
-			gameManager.engine[0].owSkin = NullpoMinoSDL.propGlobal.getProperty(0 + ".tuning.owSkin", -1);
-			gameManager.engine[0].owMinDAS = NullpoMinoSDL.propGlobal.getProperty(0 + ".tuning.owMinDAS", -1);
-			gameManager.engine[0].owMaxDAS = NullpoMinoSDL.propGlobal.getProperty(0 + ".tuning.owMaxDAS", -1);
-			gameManager.engine[0].owDasDelay = NullpoMinoSDL.propGlobal.getProperty(0 + ".tuning.owDasDelay", -1);
-			gameManager.engine[0].owReverseUpDown = NullpoMinoSDL.propGlobal.getProperty(0 + ".tuning.owReverseUpDown", false);
-			gameManager.engine[0].owMoveDiagonal = NullpoMinoSDL.propGlobal.getProperty(0 + ".tuning.owMoveDiagonal", -1);
-			gameManager.engine[0].owBlockOutlineType = NullpoMinoSDL.propGlobal.getProperty(0 + ".tuning.owBlockOutlineType", -1);
-			gameManager.engine[0].owBlockShowOutlineOnly = NullpoMinoSDL.propGlobal.getProperty(0 + ".tuning.owBlockShowOutlineOnly", -1);
+			gameManager.engine[0].owRotateButtonDefaultRight = NullpoMinoSDL.propGlobal.getProperty("0.tuning.owRotateButtonDefaultRight", -1);
+			gameManager.engine[0].owSkin = NullpoMinoSDL.propGlobal.getProperty("0.tuning.owSkin", -1);
+			gameManager.engine[0].owMinDAS = NullpoMinoSDL.propGlobal.getProperty("0.tuning.owMinDAS", -1);
+			gameManager.engine[0].owMaxDAS = NullpoMinoSDL.propGlobal.getProperty("0.tuning.owMaxDAS", -1);
+			gameManager.engine[0].owDasDelay = NullpoMinoSDL.propGlobal.getProperty("0.tuning.owDasDelay", -1);
+			gameManager.engine[0].owReverseUpDown = NullpoMinoSDL.propGlobal.getProperty("0.tuning.owReverseUpDown", false);
+			gameManager.engine[0].owMoveDiagonal = NullpoMinoSDL.propGlobal.getProperty("0.tuning.owMoveDiagonal", -1);
+			gameManager.engine[0].owBlockOutlineType = NullpoMinoSDL.propGlobal.getProperty("0.tuning.owBlockOutlineType", -1);
+			gameManager.engine[0].owBlockShowOutlineOnly = NullpoMinoSDL.propGlobal.getProperty("0.tuning.owBlockShowOutlineOnly", -1);
 
 			// Rule
 			RuleOptions ruleopt = null;
-			String rulename = NullpoMinoSDL.propGlobal.getProperty(0 + ".rule", "");
+			String rulename = NullpoMinoSDL.propGlobal.getProperty("0.rule", "");
 			if(gameManager.mode.getGameStyle() > 0) {
-				rulename = NullpoMinoSDL.propGlobal.getProperty(0 + ".rule." + gameManager.mode.getGameStyle(), "");
+				rulename = NullpoMinoSDL.propGlobal.getProperty("0.rule." + gameManager.mode.getGameStyle(), "");
 			}
 			if((rulename != null) && (rulename.length() > 0)) {
 				log.info("Load rule options from " + rulename);
@@ -319,16 +319,16 @@ public class StateNetGameSDL extends BaseStateSDL implements NetLobbyListener {
 			}
 
 			// AI
-			String aiName = NullpoMinoSDL.propGlobal.getProperty(0 + ".ai", "");
+			String aiName = NullpoMinoSDL.propGlobal.getProperty("0.ai", "");
 			if(aiName.length() > 0) {
 				DummyAI aiObj = GeneralUtil.loadAIPlayer(aiName);
 				gameManager.engine[0].ai = aiObj;
-				gameManager.engine[0].aiMoveDelay = NullpoMinoSDL.propGlobal.getProperty(0 + ".aiMoveDelay", 0);
-				gameManager.engine[0].aiThinkDelay = NullpoMinoSDL.propGlobal.getProperty(0 + ".aiThinkDelay", 0);
-				gameManager.engine[0].aiUseThread = NullpoMinoSDL.propGlobal.getProperty(0 + ".aiUseThread", true);
-				gameManager.engine[0].aiShowHint = NullpoMinoSDL.propGlobal.getProperty(0 + ".aiShowHint", false);
-				gameManager.engine[0].aiPrethink = NullpoMinoSDL.propGlobal.getProperty(0 + ".aiPrethink", false);
-				gameManager.engine[0].aiShowState = NullpoMinoSDL.propGlobal.getProperty(0 + ".aiShowState", false);
+				gameManager.engine[0].aiMoveDelay = NullpoMinoSDL.propGlobal.getProperty("0.aiMoveDelay", 0);
+				gameManager.engine[0].aiThinkDelay = NullpoMinoSDL.propGlobal.getProperty("0.aiThinkDelay", 0);
+				gameManager.engine[0].aiUseThread = NullpoMinoSDL.propGlobal.getProperty("0.aiUseThread", true);
+				gameManager.engine[0].aiShowHint = NullpoMinoSDL.propGlobal.getProperty("0.aiShowHint", false);
+				gameManager.engine[0].aiPrethink = NullpoMinoSDL.propGlobal.getProperty("0.aiPrethink", false);
+				gameManager.engine[0].aiShowState = NullpoMinoSDL.propGlobal.getProperty("0.aiShowState", false);
 			}
 			gameManager.showInput = NullpoMinoSDL.propConfig.getProperty("option.showInput", false);
 
@@ -382,12 +382,10 @@ public class StateNetGameSDL extends BaseStateSDL implements NetLobbyListener {
 	}
 
 	public void netlobbyOnRoomJoin(NetLobbyFrame lobby, NetPlayerClient client, NetRoomInfo roomInfo) {
-		//enterNewMode(roomInfo.strMode);
 		strModeToEnter = roomInfo.strMode;
 	}
 
 	public void netlobbyOnRoomLeave(NetLobbyFrame lobby, NetPlayerClient client) {
-		//enterNewMode(null);
 		strModeToEnter = null;
 	}
 }

@@ -45,15 +45,10 @@ import mu.nu.nullpo.game.play.GameManager;
 import mu.nu.nullpo.gui.EffectObject;
 import mu.nu.nullpo.util.CustomProperties;
 
-//import org.apache.log4j.Logger;
-
 /**
  * Game event Processing and rendering process (SwingVersion)
  */
 public class RendererSwing extends EventReceiver {
-	/** Log */
-	//static Logger log = Logger.getLogger(RendererSwing.class);
-
 	/** Surface to draw */
 	protected Graphics2D graphics;
 
@@ -753,8 +748,7 @@ public class RendererSwing extends EventReceiver {
 			piece.updateConnectData();
 			int blksize = (int)(16 * scale);
 
-			if(piece != null) {
-				for(int i = 0; i < piece.getMaxBlock(); i++) {
+			for(int i = 0; i < piece.getMaxBlock(); i++) {
 					if(!piece.big) {
 						int x2 = engine.ai.bestX + piece.dataX[piece.direction][i];
 						int y2 = engine.ai.bestY + piece.dataY[piece.direction][i];
@@ -836,7 +830,6 @@ public class RendererSwing extends EventReceiver {
 				}
 			}
 		}
-	}
 
 	/**
 	 * fieldOfBlockDraw a

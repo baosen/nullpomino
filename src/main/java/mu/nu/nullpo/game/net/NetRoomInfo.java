@@ -153,8 +153,6 @@ public class NetRoomInfo implements Serializable {
 	/** Targeting time */
 	public int targetTimer = 60;
 
-	//public boolean useTankMode = false;
-
 	/** HurryupSeconds before the startcount(-1InHurryupNo) */
 	public int hurryupSeconds = -1;
 
@@ -305,7 +303,6 @@ public class NetRoomInfo implements Serializable {
 		divideChangeRateByPlayers = n.divideChangeRateByPlayers;
 		isTarget = n.isTarget;
 		targetTimer = n.targetTimer;
-		//useTankMode = n.useTankMode;
 		strMode = n.strMode;
 		singleplayer = n.singleplayer;
 		rated = n.rated;
@@ -378,7 +375,6 @@ public class NetRoomInfo implements Serializable {
 		divideChangeRateByPlayers = Boolean.parseBoolean(rdata[40]);
 		if(rdata.length > 41) isTarget = Boolean.parseBoolean(rdata[41]);
 		if(rdata.length > 42) targetTimer = Integer.parseInt(rdata[42]);
-		//useTankMode = Boolean.parseBoolean(rdata[43]);
 	}
 
 	/**
@@ -441,7 +437,6 @@ public class NetRoomInfo implements Serializable {
 		rdata[40] = Boolean.toString(divideChangeRateByPlayers);
 		rdata[41] = Boolean.toString(isTarget);
 		rdata[42] = Integer.toString(targetTimer);
-		//rdata[43] = Boolean.toString(useTankMode);
 
 		return rdata;
 	}
