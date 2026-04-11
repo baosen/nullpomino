@@ -33,3 +33,7 @@ target/
 # User data files
 config/
 log/
+
+# Agent directories
+.claude
+.codex
