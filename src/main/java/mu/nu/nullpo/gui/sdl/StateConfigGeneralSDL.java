@@ -442,6 +442,10 @@ public class StateConfigGeneralSDL extends BaseStateSDL {
 		if(GameKeySDL.gamekey[0].isPushKey(GameKeySDL.BUTTON_A)) {
 			ResourceHolderSDL.soundManager.play("decide");
 
+			// Snapshot settings that need change detection before saving
+			boolean prevShowLineEffect = NullpoMinoSDL.propConfig.getProperty("option.showlineeffect", true);
+			boolean prevShowBg = NullpoMinoSDL.propConfig.getProperty("option.showbg", true);
+
 			saveConfig(NullpoMinoSDL.propConfig);
 			NullpoMinoSDL.saveConfig();
 
@@ -450,9 +454,14 @@ public class StateConfigGeneralSDL extends BaseStateSDL {
 			NullpoMinoSDL.perfectFPSMode = perfectFPSMode;
 			NullpoMinoSDL.perfectYield = perfectYield;
 
+			// Apply fullscreen change at runtime
+			if(fullscreen != NullpoMinoSDL.fullscreen) {
+				NullpoMinoSDL.toggleFullscreen();
+			}
+
 			ResourceHolderSDL.soundManager.changeVolume(sevolume);
-			if(showlineeffect) ResourceHolderSDL.loadLineClearEffectImages();
-			if(showbg) ResourceHolderSDL.loadBackgroundImages();
+			if(showlineeffect && !prevShowLineEffect) ResourceHolderSDL.loadLineClearEffectImages();
+			if(showbg && !prevShowBg) ResourceHolderSDL.loadBackgroundImages();
 
 			NullpoMinoSDL.enterState(NullpoMinoSDL.STATE_CONFIG_MAINMENU);
 		}

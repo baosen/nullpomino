@@ -508,6 +508,7 @@ public class NullpoMinoSDL {
 		SDLSurface newSurface = SDLVideo.getVideoSurface();
 		NormalFontSDL.dest = newSurface;
 		propConfig.setProperty("option.fullscreen", fullscreen);
+		saveConfig();
 		log.debug("Fullscreen toggled: " + fullscreen);
 		return newSurface;
 	}
@@ -581,7 +582,7 @@ public class NullpoMinoSDL {
 			// F11 fullscreen toggle (checked before key mapping to consume the event)
 			boolean f11Pressed = keyPressedState[SDLKey.SDLK_F11];
 			if(f11Pressed && !prevF11Pressed) {
-				surface = toggleFullscreen();
+				toggleFullscreen();
 				keyPressedState[SDLKey.SDLK_F11] = false;
 			}
 			prevF11Pressed = f11Pressed;
@@ -604,6 +605,8 @@ public class NullpoMinoSDL {
 
 			// Processing is executed for each state
 			gameStates[currentState].update();
+			// A state update can recreate the video mode, so refresh the active surface before rendering.
+			surface = SDLVideo.getVideoSurface();
 			gameStates[currentState].render(surface);
 
 			// FPSDrawing
