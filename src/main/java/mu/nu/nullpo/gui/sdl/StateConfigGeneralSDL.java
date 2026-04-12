@@ -149,12 +149,21 @@ public class StateConfigGeneralSDL extends BaseStateSDL {
 	/** Show player input */
 	protected boolean showInput;
 
+	/** Last fullscreen state applied to the SDL window */
+	protected boolean lastRuntimeFullscreen;
+
 	/**
 	 * Constructor
 	 */
 	public StateConfigGeneralSDL() {
 		cursor = 0;
 		loadConfig(NullpoMinoSDL.propConfig);
+	}
+
+	@Override
+	public void enter() {
+		loadConfig(NullpoMinoSDL.propConfig);
+		syncRuntimeFullscreen(true);
 	}
 
 	/**
@@ -189,6 +198,20 @@ public class StateConfigGeneralSDL extends BaseStateSDL {
 		boolean side = prop.getProperty("option.sidenext", false);
 		boolean big = prop.getProperty("option.bigsidenext", false);
 		nexttype = side ? (big ? 2 : 1) : 0;
+		lastRuntimeFullscreen = fullscreen;
+	}
+
+	/**
+	 * Keep the menu in sync with live fullscreen changes such as F11.
+	 * Pending menu edits are discarded when the runtime state changes.
+	 * @param force true to always resync from runtime state
+	 */
+	protected void syncRuntimeFullscreen(boolean force) {
+		boolean runtimeFullscreen = NullpoMinoSDL.fullscreen;
+		if(force || (runtimeFullscreen != lastRuntimeFullscreen)) {
+			fullscreen = runtimeFullscreen;
+			lastRuntimeFullscreen = runtimeFullscreen;
+		}
 	}
 
 	/**
@@ -284,6 +307,8 @@ public class StateConfigGeneralSDL extends BaseStateSDL {
 	 */
 	@Override
 	public void update() {
+		syncRuntimeFullscreen(false);
+
 		// Cursor movement
 		if(GameKeySDL.gamekey[0].isMenuRepeatKey(GameKeySDL.BUTTON_UP)) {
 			cursor--;
@@ -438,6 +463,7 @@ public class StateConfigGeneralSDL extends BaseStateSDL {
 			// Apply fullscreen change at runtime
 			if(fullscreen != NullpoMinoSDL.fullscreen) {
 				NullpoMinoSDL.toggleFullscreen();
+				lastRuntimeFullscreen = NullpoMinoSDL.fullscreen;
 			}
 
 			ResourceHolderSDL.soundManager.changeVolume(sevolume);
