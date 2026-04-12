@@ -30,6 +30,9 @@ package mu.nu.nullpo.gui.sdl;
 
 import java.util.ArrayList;
 
+import com.sun.jna.Pointer;
+import com.sun.jna.ptr.FloatByReference;
+
 import mu.nu.nullpo.game.component.Block;
 import mu.nu.nullpo.game.component.Field;
 import mu.nu.nullpo.game.component.Piece;
@@ -37,14 +40,12 @@ import mu.nu.nullpo.game.event.EventReceiver;
 import mu.nu.nullpo.game.play.GameEngine;
 import mu.nu.nullpo.game.play.GameManager;
 import mu.nu.nullpo.gui.EffectObject;
+import mu.nu.nullpo.gui.sdl.binding.SDL3;
+import mu.nu.nullpo.gui.sdl.binding.SDLConstants;
+import mu.nu.nullpo.gui.sdl.binding.SDLStructs;
 import mu.nu.nullpo.util.CustomProperties;
 
 import org.apache.log4j.Logger;
-
-import sdljava.SDLException;
-import sdljava.video.SDLRect;
-import sdljava.video.SDLSurface;
-import sdljava.video.SDLVideo;
 
 /**
  * Game event Processing and rendering process (SDLVersion)
@@ -52,9 +53,6 @@ import sdljava.video.SDLVideo;
 public class RendererSDL extends EventReceiver {
 	/** Log */
 	static Logger log = Logger.getLogger(RendererSDL.class);
-
-	/** Surface to draw */
-	protected SDLSurface graphics;
 
 	/** Production Object */
 	protected ArrayList<EffectObject> effectlist;
@@ -84,7 +82,6 @@ public class RendererSDL extends EventReceiver {
 	 * Constructor
 	 */
 	public RendererSDL() {
-		graphics = null;
 		effectlist = new ArrayList<EffectObject>(10*4);
 
 		showbg = NullpoMinoSDL.propConfig.getProperty("option.showbg", true);
@@ -101,20 +98,27 @@ public class RendererSDL extends EventReceiver {
 		bigsidenext = NullpoMinoSDL.propConfig.getProperty("option.bigsidenext", false);
 	}
 
+	/** Helper: get the global renderer pointer. */
+	private Pointer renderer() {
+		return NullpoMinoSDL.renderer;
+	}
+
 	/**
-	 * SDLGets the color value for
-	 * @param r Red
-	 * @param g Green
-	 * @param b Blue
-	 * @return SDLColor values ​​for
+	 * Pack an RGB triplet into a single int for use with fillColorRect.
 	 */
 	public long getColorValue(int r, int g, int b) {
-		try {
-			return SDLVideo.mapRGB(graphics.getFormat(), r, g, b);
-		} catch (SDLException e) {
-			log.debug("SDLException thrown", e);
-		}
-		return 0;
+		return ((long)r << 16) | ((long)g << 8) | (long)b;
+	}
+
+	/**
+	 * Helper to set the renderer draw color from a packed color value and draw a filled rect.
+	 */
+	private void fillColorRect(int x, int y, int w, int h, long color) {
+		int r = (int)((color >> 16) & 0xFF);
+		int g = (int)((color >> 8) & 0xFF);
+		int b = (int)(color & 0xFF);
+		SDL3.setDrawColor(renderer(), r, g, b, 255);
+		SDL3.INSTANCE.SDL_RenderFillRect(renderer(), new SDLStructs.SDL_FRect(x, y, w, h));
 	}
 
 	/**
@@ -155,21 +159,17 @@ public class RendererSDL extends EventReceiver {
 	 */
 	@Override
 	public void drawMenuFont(GameEngine engine, int playerID, int x, int y, String str, int color, float scale) {
-		try {
-			int x2 = (scale == 0.5f) ? x * 8 : x * 16;
-			int y2 = (scale == 0.5f) ? y * 8 : y * 16;
-			if(!engine.owner.menuOnly) {
-				x2 += getFieldDisplayPositionX(engine, playerID) + 4;
-				if(engine.displaysize == -1) {
-					y2 += getFieldDisplayPositionY(engine, playerID) + 4;
-				} else {
-					y2 += getFieldDisplayPositionY(engine, playerID) + 52;
-				}
+		int x2 = (scale == 0.5f) ? x * 8 : x * 16;
+		int y2 = (scale == 0.5f) ? y * 8 : y * 16;
+		if(!engine.owner.menuOnly) {
+			x2 += getFieldDisplayPositionX(engine, playerID) + 4;
+			if(engine.displaysize == -1) {
+				y2 += getFieldDisplayPositionY(engine, playerID) + 4;
+			} else {
+				y2 += getFieldDisplayPositionY(engine, playerID) + 52;
 			}
-			NormalFontSDL.printFont(x2, y2, str, color, scale);
-		} catch (SDLException e) {
-			log.debug("SDLException thrown", e);
 		}
+		NormalFontSDL.printFont(x2, y2, str, color, scale);
 	}
 
 	/*
@@ -177,21 +177,17 @@ public class RendererSDL extends EventReceiver {
 	 */
 	@Override
 	public void drawTTFMenuFont(GameEngine engine, int playerID, int x, int y, String str, int color) {
-		try {
-			int x2 = x * 16;
-			int y2 = y * 16;
-			if(!engine.owner.menuOnly) {
-				x2 += getFieldDisplayPositionX(engine, playerID) + 4;
-				if(engine.displaysize == -1) {
-					y2 += getFieldDisplayPositionY(engine, playerID) + 4;
-				} else {
-					y2 += getFieldDisplayPositionY(engine, playerID) + 52;
-				}
+		int x2 = x * 16;
+		int y2 = y * 16;
+		if(!engine.owner.menuOnly) {
+			x2 += getFieldDisplayPositionX(engine, playerID) + 4;
+			if(engine.displaysize == -1) {
+				y2 += getFieldDisplayPositionY(engine, playerID) + 4;
+			} else {
+				y2 += getFieldDisplayPositionY(engine, playerID) + 52;
 			}
-			NormalFontSDL.printTTFFont(x2, y2, str, color);
-		} catch (SDLException e) {
-			log.debug("SDLException thrown", e);
 		}
+		NormalFontSDL.printTTFFont(x2, y2, str, color);
 	}
 
 	/*
@@ -201,14 +197,10 @@ public class RendererSDL extends EventReceiver {
 	public void drawScoreFont(GameEngine engine, int playerID, int x, int y, String str, int color, float scale) {
 		if(engine.owner.menuOnly) return;
 
-		try {
-			int size = (scale == 0.5f) ? 8 : 16;
-			NormalFontSDL.printFont(getScoreDisplayPositionX(engine, playerID) + (x * size),
-									getScoreDisplayPositionY(engine, playerID) + (y * size),
-									str, color, scale);
-		} catch (SDLException e) {
-			log.debug("SDLException thrown", e);
-		}
+		int size = (scale == 0.5f) ? 8 : 16;
+		NormalFontSDL.printFont(getScoreDisplayPositionX(engine, playerID) + (x * size),
+								getScoreDisplayPositionY(engine, playerID) + (y * size),
+								str, color, scale);
 	}
 
 	/*
@@ -218,13 +210,9 @@ public class RendererSDL extends EventReceiver {
 	public void drawTTFScoreFont(GameEngine engine, int playerID, int x, int y, String str, int color) {
 		if(engine.owner.menuOnly) return;
 
-		try {
-			NormalFontSDL.printTTFFont(getScoreDisplayPositionX(engine, playerID) + (x * 16),
-									   getScoreDisplayPositionY(engine, playerID) + (y * 16),
-									   str, color);
-		} catch (SDLException e) {
-			log.debug("SDLException thrown", e);
-		}
+		NormalFontSDL.printTTFFont(getScoreDisplayPositionX(engine, playerID) + (x * 16),
+								   getScoreDisplayPositionY(engine, playerID) + (y * 16),
+								   str, color);
 	}
 
 	/*
@@ -232,11 +220,7 @@ public class RendererSDL extends EventReceiver {
 	 */
 	@Override
 	public void drawDirectFont(GameEngine engine, int playerID, int x, int y, String str, int color, float scale) {
-		try {
-			NormalFontSDL.printFont(x, y, str, color, scale);
-		} catch (SDLException e) {
-			log.debug("SDLException thrown", e);
-		}
+		NormalFontSDL.printFont(x, y, str, color, scale);
 	}
 
 	/*
@@ -244,11 +228,7 @@ public class RendererSDL extends EventReceiver {
 	 */
 	@Override
 	public void drawTTFDirectFont(GameEngine engine, int playerID, int x, int y, String str, int color) {
-		try {
-			NormalFontSDL.printTTFFont(x, y, str, color);
-		} catch (SDLException e) {
-			log.debug("SDLException thrown", e);
-		}
+		NormalFontSDL.printTTFFont(x, y, str, color);
 	}
 
 	/*
@@ -256,33 +236,22 @@ public class RendererSDL extends EventReceiver {
 	 */
 	@Override
 	public void drawSpeedMeter(GameEngine engine, int playerID, int x, int y, int s) {
-		if(graphics == null) return;
 		if(engine.owner.menuOnly) return;
 
 		int dx1 = getScoreDisplayPositionX(engine, playerID) + 6 + (x * 16);
 		int dy1 = getScoreDisplayPositionY(engine, playerID) + 6 + (y * 16);
 
-		SDLRect rectSrc = new SDLRect(0, 0, 42, 4);
-		SDLRect rectDst = new SDLRect(dx1, dy1, 42, 4);
-
-		try {
-			ResourceHolderSDL.imgSprite.blitSurface(rectSrc, graphics, rectDst);
-		} catch (SDLException e) {
-			log.debug("SDLException thrown", e);
-		}
+		SDLStructs.SDL_FRect rectSrc = new SDLStructs.SDL_FRect(0, 0, 42, 4);
+		SDLStructs.SDL_FRect rectDst = new SDLStructs.SDL_FRect(dx1, dy1, 42, 4);
+		SDL3.INSTANCE.SDL_RenderTexture(renderer(), ResourceHolderSDL.imgSprite, rectSrc, rectDst);
 
 		int tempSpeedMeter = s;
 		if((tempSpeedMeter < 0) || (tempSpeedMeter > 40)) tempSpeedMeter = 40;
 
 		if(tempSpeedMeter > 0) {
-			SDLRect rectSrc2 = new SDLRect(0, 4, tempSpeedMeter, 2);
-			SDLRect rectDst2 = new SDLRect(dx1 + 1, dy1 + 1, tempSpeedMeter, 2);
-
-			try {
-				ResourceHolderSDL.imgSprite.blitSurface(rectSrc2, graphics, rectDst2);
-			} catch (SDLException e) {
-				log.debug("SDLException thrown", e);
-			}
+			SDLStructs.SDL_FRect rectSrc2 = new SDLStructs.SDL_FRect(0, 4, tempSpeedMeter, 2);
+			SDLStructs.SDL_FRect rectDst2 = new SDLStructs.SDL_FRect(dx1 + 1, dy1 + 1, tempSpeedMeter, 2);
+			SDL3.INSTANCE.SDL_RenderTexture(renderer(), ResourceHolderSDL.imgSprite, rectSrc2, rectDst2);
 		}
 	}
 
@@ -304,8 +273,8 @@ public class RendererSDL extends EventReceiver {
 		if((btnID >= 0) && (btnID < keymap.length)) {
 			int keycode = keymap[btnID];
 
-			if((keycode >= 0) && (keycode < NullpoMinoSDL.SDL_KEY_MAX)) {
-				return NullpoMinoSDL.SDL_KEYNAMES[keycode];
+			if((keycode >= 0) && (keycode < SDLConstants.SDL_SCANCODE_COUNT)) {
+				return SDLConstants.SCANCODE_NAMES[keycode];
 			}
 		}
 
@@ -332,13 +301,11 @@ public class RendererSDL extends EventReceiver {
 	}
 
 	/*
-	 * Set the target surface drawing
+	 * Set the target surface drawing — now a no-op; the renderer is global.
 	 */
 	@Override
 	public void setGraphics(Object g) {
-		if(g instanceof SDLSurface) {
-			graphics = (SDLSurface)g;
-		}
+		// No-op: SDL3 renderer is accessed via NullpoMinoSDL.renderer
 	}
 
 	/*
@@ -356,11 +323,80 @@ public class RendererSDL extends EventReceiver {
 	 */
 	@Override
 	public void drawSingleBlock(GameEngine engine, int playerID, int x, int y, int color, int skin, boolean bone, float darkness, float alpha, float scale) {
-		try {
-			drawBlock(x, y, color, skin, bone, darkness, alpha, scale);
-		} catch (SDLException e) {
-			log.debug("SDLException thrown", e);
-		}
+		drawBlock(x, y, color, skin, bone, darkness, alpha, scale);
+	}
+
+	/**
+	 * Helper to render a texture to the global renderer.
+	 */
+	private void renderTexture(Pointer texture, SDLStructs.SDL_FRect src, SDLStructs.SDL_FRect dst) {
+		SDL3.INSTANCE.SDL_RenderTexture(renderer(), texture, src, dst);
+	}
+
+	/**
+	 * Helper to render a full texture (no source rect) to the global renderer.
+	 */
+	private void renderTextureFull(Pointer texture, SDLStructs.SDL_FRect dst) {
+		SDL3.INSTANCE.SDL_RenderTexture(renderer(), texture, null, dst);
+	}
+
+	/**
+	 * Helper to render a full texture to fill the entire renderer output.
+	 */
+	private void renderTextureFullscreen(Pointer texture) {
+		SDL3.INSTANCE.SDL_RenderTexture(renderer(), texture, null, null);
+	}
+
+	/**
+	 * Get the width of a texture.
+	 */
+	private int getTextureWidth(Pointer texture) {
+		if(texture == null) return -1;
+		FloatByReference w = new FloatByReference();
+		FloatByReference h = new FloatByReference();
+		SDL3.INSTANCE.SDL_GetTextureSize(texture, w, h);
+		return (int)w.getValue();
+	}
+
+	/**
+	 * Get the height of a texture.
+	 */
+	private int getTextureHeight(Pointer texture) {
+		if(texture == null) return -1;
+		FloatByReference w = new FloatByReference();
+		FloatByReference h = new FloatByReference();
+		SDL3.INSTANCE.SDL_GetTextureSize(texture, w, h);
+		return (int)h.getValue();
+	}
+
+	/**
+	 * Draw a dark overlay rectangle using the renderer's blend mode.
+	 * @param x X position
+	 * @param y Y position
+	 * @param w Width
+	 * @param h Height
+	 * @param alpha Alpha value (0-255)
+	 */
+	private void drawDarkOverlay(int x, int y, int w, int h, int alpha) {
+		SDL3.INSTANCE.SDL_SetRenderDrawBlendMode(renderer(), SDLConstants.SDL_BLENDMODE_BLEND);
+		SDL3.setDrawColor(renderer(), 0, 0, 0, alpha);
+		SDL3.INSTANCE.SDL_RenderFillRect(renderer(), new SDLStructs.SDL_FRect(x, y, w, h));
+		SDL3.INSTANCE.SDL_SetRenderDrawBlendMode(renderer(), SDLConstants.SDL_BLENDMODE_NONE);
+	}
+
+	/**
+	 * Draw a bright overlay rectangle using the renderer's blend mode.
+	 * @param x X position
+	 * @param y Y position
+	 * @param w Width
+	 * @param h Height
+	 * @param alpha Alpha value (0-255)
+	 */
+	private void drawBrightOverlay(int x, int y, int w, int h, int alpha) {
+		SDL3.INSTANCE.SDL_SetRenderDrawBlendMode(renderer(), SDLConstants.SDL_BLENDMODE_BLEND);
+		SDL3.setDrawColor(renderer(), 255, 255, 255, alpha);
+		SDL3.INSTANCE.SDL_RenderFillRect(renderer(), new SDLStructs.SDL_FRect(x, y, w, h));
+		SDL3.INSTANCE.SDL_SetRenderDrawBlendMode(renderer(), SDLConstants.SDL_BLENDMODE_NONE);
 	}
 
 	/**
@@ -374,11 +410,8 @@ public class RendererSDL extends EventReceiver {
 	 * @param alpha Alpha
 	 * @param scale Size (0.5f, 1.0f, 2.0f)
 	 * @param attr Attribute
-	 * @throws SDLException When something bad happens
 	 */
-	protected void drawBlock(int x, int y, int color, int skin, boolean bone, float darkness, float alpha, float scale, int attr) throws SDLException {
-		if(graphics == null) return;
-
+	protected void drawBlock(int x, int y, int color, int skin, boolean bone, float darkness, float alpha, float scale, int attr) {
 		if(color <= Block.BLOCK_COLOR_INVALID) return;
 		if(skin >= ResourceHolderSDL.imgNormalBlockList.size()) skin = 0;
 
@@ -386,7 +419,7 @@ public class RendererSDL extends EventReceiver {
 		boolean isSticky = ResourceHolderSDL.blockStickyFlagList.get(skin);
 
 		int size = (int)(16 * scale);
-		SDLSurface img = null;
+		Pointer img = null;
 		if(scale == 0.5f)
 			img = ResourceHolderSDL.imgSmallBlockList.get(skin);
 		else if(scale == 2.0f)
@@ -415,70 +448,58 @@ public class RendererSDL extends EventReceiver {
 			}
 		}
 
-		int imageWidth = img.getWidth();
+		int imageWidth = getTextureWidth(img);
 		if((sx >= imageWidth) && (imageWidth != -1)) sx = 0;
-		int imageHeight = img.getHeight();
+		int imageHeight = getTextureHeight(img);
 		if((sy >= imageHeight) && (imageHeight != -1)) sy = 0;
 
-		SDLRect rectSrc = new SDLRect(sx, sy, size, size);
-		SDLRect rectDst = new SDLRect(x, y, size, size);
-
-		NullpoMinoSDL.fixRect(rectSrc, rectDst);
+		SDLStructs.SDL_FRect rectSrc = new SDLStructs.SDL_FRect(sx, sy, size, size);
+		SDLStructs.SDL_FRect rectDst = new SDLStructs.SDL_FRect(x, y, size, size);
 
 		if(alpha < 1.0f) {
 			int alphalv = (int)(255 * alpha);
-			img.setAlpha(SDLVideo.SDL_SRCALPHA | SDLVideo.SDL_RLEACCEL, alphalv);
+			SDL3.setTextureAlpha(img, alphalv);
 		} else {
-			img.setAlpha(0, 255);
+			SDL3.setTextureAlpha(img, 255);
 		}
 
-		img.blitSurface(rectSrc, graphics, rectDst);
+		renderTexture(img, rectSrc, rectDst);
 
 		if(isSticky && !isSpecialBlocks) {
 			int d = 16 * size;
 			int h = (size/2);
 
-			SDLRect rectDst2 = null;
-			SDLRect rectSrc2 = null;
+			SDLStructs.SDL_FRect rectDst2 = null;
+			SDLStructs.SDL_FRect rectSrc2 = null;
 
 			if( ((attr & Block.BLOCK_ATTRIBUTE_CONNECT_UP) != 0) && ((attr & Block.BLOCK_ATTRIBUTE_CONNECT_LEFT) != 0) ) {
-				rectDst2 = new SDLRect(x, y, h, h);
-				rectSrc2 = new SDLRect(d, sy, h, h);
-				NullpoMinoSDL.fixRect(rectSrc2, rectDst2);
-				img.blitSurface(rectSrc2, graphics, rectDst2);
-				//graphics.drawImage(img, x, y, x + h, y + h, d, sy, d + h, sy + h, filter);
+				rectDst2 = new SDLStructs.SDL_FRect(x, y, h, h);
+				rectSrc2 = new SDLStructs.SDL_FRect(d, sy, h, h);
+				renderTexture(img, rectSrc2, rectDst2);
 			}
 			if( ((attr & Block.BLOCK_ATTRIBUTE_CONNECT_UP) != 0) && ((attr & Block.BLOCK_ATTRIBUTE_CONNECT_RIGHT) != 0) ) {
-				rectDst2 = new SDLRect(x + h, y, h, h);
-				rectSrc2 = new SDLRect(d + h, sy, h, h);
-				NullpoMinoSDL.fixRect(rectSrc2, rectDst2);
-				img.blitSurface(rectSrc2, graphics, rectDst2);
-				//graphics.drawImage(img, x + h, y, x + h + h, y + h, d + h, sy, d + h + h, sy + h, filter);
+				rectDst2 = new SDLStructs.SDL_FRect(x + h, y, h, h);
+				rectSrc2 = new SDLStructs.SDL_FRect(d + h, sy, h, h);
+				renderTexture(img, rectSrc2, rectDst2);
 			}
 			if( ((attr & Block.BLOCK_ATTRIBUTE_CONNECT_DOWN) != 0) && ((attr & Block.BLOCK_ATTRIBUTE_CONNECT_LEFT) != 0) ) {
-				rectDst2 = new SDLRect(x, y + h, h, h);
-				rectSrc2 = new SDLRect(d, sy + h, h, h);
-				NullpoMinoSDL.fixRect(rectSrc2, rectDst2);
-				img.blitSurface(rectSrc2, graphics, rectDst2);
-				//graphics.drawImage(img, x, y + h, x + h, y + h + h, d, sy + h, d + h, sy + h + h, filter);
+				rectDst2 = new SDLStructs.SDL_FRect(x, y + h, h, h);
+				rectSrc2 = new SDLStructs.SDL_FRect(d, sy + h, h, h);
+				renderTexture(img, rectSrc2, rectDst2);
 			}
 			if( ((attr & Block.BLOCK_ATTRIBUTE_CONNECT_DOWN) != 0) && ((attr & Block.BLOCK_ATTRIBUTE_CONNECT_RIGHT) != 0) ) {
-				rectDst2 = new SDLRect(x + h, y + h, h, h);
-				rectSrc2 = new SDLRect(d + h, sy + h, h, h);
-				NullpoMinoSDL.fixRect(rectSrc2, rectDst2);
-				img.blitSurface(rectSrc2, graphics, rectDst2);
-				//graphics.drawImage(img, x + h, y + h, x + h + h, y + h + h, d + h, sy + h, d + h + h, sy + h + h, filter);
+				rectDst2 = new SDLStructs.SDL_FRect(x + h, y + h, h, h);
+				rectSrc2 = new SDLStructs.SDL_FRect(d + h, sy + h, h, h);
+				renderTexture(img, rectSrc2, rectDst2);
 			}
 		}
 
 		if(darkness > 0) {
 			int alphalv = (int)(255 * darkness);
-			ResourceHolderSDL.imgBlankBlack.setAlpha(SDLVideo.SDL_SRCALPHA | SDLVideo.SDL_RLEACCEL, alphalv);
-			ResourceHolderSDL.imgBlankBlack.blitSurface(new SDLRect(0, 0, size, size), graphics, rectDst);
+			drawDarkOverlay(x, y, size, size, alphalv);
 		} else if(darkness < 0) {
 			int alphalv = (int)(255 * -darkness);
-			ResourceHolderSDL.imgBlankWhite.setAlpha(SDLVideo.SDL_SRCALPHA | SDLVideo.SDL_RLEACCEL, alphalv);
-			ResourceHolderSDL.imgBlankWhite.blitSurface(new SDLRect(0, 0, size, size), graphics, rectDst);
+			drawBrightOverlay(x, y, size, size, alphalv);
 		}
 	}
 
@@ -492,9 +513,8 @@ public class RendererSDL extends EventReceiver {
 	 * @param darkness Lightness or darkness
 	 * @param alpha Transparency
 	 * @param scale Enlargement factor
-	 * @throws SDLException If I failed to draw
 	 */
-	protected void drawBlock(int x, int y, int color, int skin, boolean bone, float darkness, float alpha, float scale) throws SDLException {
+	protected void drawBlock(int x, int y, int color, int skin, boolean bone, float darkness, float alpha, float scale) {
 		drawBlock(x, y, color, skin, bone, darkness, alpha, scale, 0);
 	}
 
@@ -503,9 +523,8 @@ public class RendererSDL extends EventReceiver {
 	 * @param x X-coordinate
 	 * @param y Y-coordinate
 	 * @param blk BlockInstance of a class
-	 * @throws SDLException If I failed to draw
 	 */
-	protected void drawBlock(int x, int y, Block blk) throws SDLException {
+	protected void drawBlock(int x, int y, Block blk) {
 		drawBlock(x, y, blk.getDrawColor(), blk.skin, blk.getAttribute(Block.BLOCK_ATTRIBUTE_BONE), blk.darkness, blk.alpha, 1.0f, blk.attribute);
 	}
 
@@ -515,9 +534,8 @@ public class RendererSDL extends EventReceiver {
 	 * @param y Y-coordinate
 	 * @param blk BlockInstance of a class
 	 * @param scale Enlargement factor
-	 * @throws SDLException If I failed to draw
 	 */
-	protected void drawBlock(int x, int y, Block blk, float scale) throws SDLException {
+	protected void drawBlock(int x, int y, Block blk, float scale) {
 		drawBlock(x, y, blk.getDrawColor(), blk.skin, blk.getAttribute(Block.BLOCK_ATTRIBUTE_BONE), blk.darkness, blk.alpha, scale, blk.attribute);
 	}
 
@@ -528,13 +546,12 @@ public class RendererSDL extends EventReceiver {
 	 * @param blk BlockInstance of a class
 	 * @param scale Enlargement factor
 	 * @param darkness Lightness or darkness
-	 * @throws SDLException If I failed to draw
 	 */
-	protected void drawBlock(int x, int y, Block blk, float scale, float darkness) throws SDLException {
+	protected void drawBlock(int x, int y, Block blk, float scale, float darkness) {
 		drawBlock(x, y, blk.getDrawColor(), blk.skin, blk.getAttribute(Block.BLOCK_ATTRIBUTE_BONE), darkness, blk.alpha, scale, blk.attribute);
 	}
 
-	protected void drawBlockForceVisible(int x, int y, Block blk, float scale) throws SDLException {
+	protected void drawBlockForceVisible(int x, int y, Block blk, float scale) {
 		drawBlock(x, y, blk.getDrawColor(), blk.skin, blk.getAttribute(Block.BLOCK_ATTRIBUTE_BONE), blk.darkness,
 				(0.5f*blk.alpha)+0.5f, scale, blk.attribute);
 	}
@@ -544,9 +561,8 @@ public class RendererSDL extends EventReceiver {
 	 * @param x X-coordinate
 	 * @param y Y-coordinate
 	 * @param piece Peace to draw
-	 * @throws SDLException If I failed to draw
 	 */
-	protected void drawPiece(int x, int y, Piece piece) throws SDLException {
+	protected void drawPiece(int x, int y, Piece piece) {
 		drawPiece(x, y, piece, 1.0f);
 	}
 
@@ -556,9 +572,8 @@ public class RendererSDL extends EventReceiver {
 	 * @param y Y-coordinate
 	 * @param piece Peace to draw
 	 * @param scale Enlargement factor
-	 * @throws SDLException If I failed to draw
 	 */
-	protected void drawPiece(int x, int y, Piece piece, float scale) throws SDLException {
+	protected void drawPiece(int x, int y, Piece piece, float scale) {
 		drawPiece(x, y, piece, scale, 0f);
 	}
 
@@ -569,9 +584,8 @@ public class RendererSDL extends EventReceiver {
 	 * @param piece Peace to draw
 	 * @param scale Enlargement factor
 	 * @param darkness Lightness or darkness
-	 * @throws SDLException If I failed to draw
 	 */
-	protected void drawPiece(int x, int y, Piece piece, float scale, float darkness) throws SDLException {
+	protected void drawPiece(int x, int y, Piece piece, float scale, float darkness) {
 		for(int i = 0; i < piece.getMaxBlock(); i++) {
 			int x2 = x + (int)(piece.dataX[piece.direction][i] * 16 * scale);
 			int y2 = y + (int)(piece.dataY[piece.direction][i] * 16 * scale);
@@ -589,9 +603,8 @@ public class RendererSDL extends EventReceiver {
 	 * @param y Y-coordinate
 	 * @param engine GameEngineInstance of
 	 * @param scale Display magnification
-	 * @throws SDLException If I failed to draw
 	 */
-	protected void drawCurrentPiece(int x, int y, GameEngine engine, float scale) throws SDLException {
+	protected void drawCurrentPiece(int x, int y, GameEngine engine, float scale) {
 		Piece piece = engine.nowPieceObject;
 		int blksize = (int)(16 * scale);
 
@@ -630,9 +643,8 @@ public class RendererSDL extends EventReceiver {
 	 * @param y Y-coordinate
 	 * @param engine GameEngineInstance of
 	 * @param scale Display magnification
-	 * @throws SDLException If I failed to draw
 	 */
-	protected void drawGhostPiece(int x, int y, GameEngine engine, float scale) throws SDLException {
+	protected void drawGhostPiece(int x, int y, GameEngine engine, float scale) {
 		Piece piece = engine.nowPieceObject;
 		int blksize = (int)(16 * scale);
 
@@ -651,37 +663,37 @@ public class RendererSDL extends EventReceiver {
 							int colorID = blkTemp.getDrawColor();
 							if(blkTemp.getAttribute(Block.BLOCK_ATTRIBUTE_BONE)) colorID = -1;
 							long color = getColorByID(colorID);
-							graphics.fillRect(new SDLRect(x3, y3, blksize, blksize), color);
+							fillColorRect(x3, y3, blksize, blksize, color);
 
 							if(!blkTemp.getAttribute(Block.BLOCK_ATTRIBUTE_CONNECT_UP)) {
-								ResourceHolderSDL.imgSprite.blitSurface(new SDLRect(1,16,blksize,1), graphics, new SDLRect(x3,y3,blksize,1));
-								ResourceHolderSDL.imgSprite.blitSurface(new SDLRect(1,16,blksize,1), graphics, new SDLRect(x3,y3+1,blksize,1));
+								renderTexture(ResourceHolderSDL.imgSprite, new SDLStructs.SDL_FRect(1,16,blksize,1), new SDLStructs.SDL_FRect(x3,y3,blksize,1));
+								renderTexture(ResourceHolderSDL.imgSprite, new SDLStructs.SDL_FRect(1,16,blksize,1), new SDLStructs.SDL_FRect(x3,y3+1,blksize,1));
 							}
 							if(!blkTemp.getAttribute(Block.BLOCK_ATTRIBUTE_CONNECT_DOWN)) {
-								ResourceHolderSDL.imgSprite.blitSurface(new SDLRect(1,16,blksize,1), graphics, new SDLRect(x3,y3 + blksize-1,blksize,1));
-								ResourceHolderSDL.imgSprite.blitSurface(new SDLRect(1,16,blksize,1), graphics, new SDLRect(x3,y3 + blksize-2,blksize,1));
+								renderTexture(ResourceHolderSDL.imgSprite, new SDLStructs.SDL_FRect(1,16,blksize,1), new SDLStructs.SDL_FRect(x3,y3 + blksize-1,blksize,1));
+								renderTexture(ResourceHolderSDL.imgSprite, new SDLStructs.SDL_FRect(1,16,blksize,1), new SDLStructs.SDL_FRect(x3,y3 + blksize-2,blksize,1));
 							}
 							if(!blkTemp.getAttribute(Block.BLOCK_ATTRIBUTE_CONNECT_LEFT)) {
-								ResourceHolderSDL.imgSprite.blitSurface(new SDLRect(0,16,1,blksize), graphics, new SDLRect(x3,y3,1,blksize));
-								ResourceHolderSDL.imgSprite.blitSurface(new SDLRect(0,16,1,blksize), graphics, new SDLRect(x3+1,y3,1,blksize));
+								renderTexture(ResourceHolderSDL.imgSprite, new SDLStructs.SDL_FRect(0,16,1,blksize), new SDLStructs.SDL_FRect(x3,y3,1,blksize));
+								renderTexture(ResourceHolderSDL.imgSprite, new SDLStructs.SDL_FRect(0,16,1,blksize), new SDLStructs.SDL_FRect(x3+1,y3,1,blksize));
 							}
 							if(!blkTemp.getAttribute(Block.BLOCK_ATTRIBUTE_CONNECT_RIGHT)) {
-								ResourceHolderSDL.imgSprite.blitSurface(new SDLRect(0,16,1,blksize), graphics, new SDLRect(x3 + blksize-1,y3,1,blksize));
-								ResourceHolderSDL.imgSprite.blitSurface(new SDLRect(0,16,1,blksize), graphics, new SDLRect(x3 + blksize-2,y3,1,blksize));
+								renderTexture(ResourceHolderSDL.imgSprite, new SDLStructs.SDL_FRect(0,16,1,blksize), new SDLStructs.SDL_FRect(x3 + blksize-1,y3,1,blksize));
+								renderTexture(ResourceHolderSDL.imgSprite, new SDLStructs.SDL_FRect(0,16,1,blksize), new SDLStructs.SDL_FRect(x3 + blksize-2,y3,1,blksize));
 							}
 
-							color = getColorValue(255, 255, 255);
+							long whiteColor = getColorValue(255, 255, 255);
 							if(blkTemp.getAttribute(Block.BLOCK_ATTRIBUTE_CONNECT_LEFT | Block.BLOCK_ATTRIBUTE_CONNECT_UP)) {
-								graphics.fillRect(new SDLRect(x3, y3, 2, 2), color);
+								fillColorRect(x3, y3, 2, 2, whiteColor);
 							}
 							if(blkTemp.getAttribute(Block.BLOCK_ATTRIBUTE_CONNECT_LEFT | Block.BLOCK_ATTRIBUTE_CONNECT_DOWN)) {
-								graphics.fillRect(new SDLRect(x3, y3 + (blksize-2), 2, 2), color);
+								fillColorRect(x3, y3 + (blksize-2), 2, 2, whiteColor);
 							}
 							if(blkTemp.getAttribute(Block.BLOCK_ATTRIBUTE_CONNECT_RIGHT | Block.BLOCK_ATTRIBUTE_CONNECT_UP)) {
-								graphics.fillRect(new SDLRect(x3 + (blksize-2), y3, 2, 2), color);
+								fillColorRect(x3 + (blksize-2), y3, 2, 2, whiteColor);
 							}
 							if(blkTemp.getAttribute(Block.BLOCK_ATTRIBUTE_CONNECT_RIGHT | Block.BLOCK_ATTRIBUTE_CONNECT_DOWN)) {
-								graphics.fillRect(new SDLRect(x3 + (blksize-2), y3 + (blksize-2), 2, 2), color);
+								fillColorRect(x3 + (blksize-2), y3 + (blksize-2), 2, 2, whiteColor);
 							}
 						} else {
 							Block blkTemp = new Block(piece.block[i]);
@@ -704,37 +716,37 @@ public class RendererSDL extends EventReceiver {
 						int colorID = blkTemp.getDrawColor();
 						if(blkTemp.getAttribute(Block.BLOCK_ATTRIBUTE_BONE)) colorID = -1;
 						long color = getColorByID(colorID);
-						graphics.fillRect(new SDLRect(x3, y3, blksize * 2, blksize * 2), color);
+						fillColorRect(x3, y3, blksize * 2, blksize * 2, color);
 
 						if(!blkTemp.getAttribute(Block.BLOCK_ATTRIBUTE_CONNECT_UP)) {
-							ResourceHolderSDL.imgSprite.blitSurface(new SDLRect(1,16,blksize*2,1), graphics, new SDLRect(x3,y3,blksize*2,1));
-							ResourceHolderSDL.imgSprite.blitSurface(new SDLRect(1,16,blksize*2,1), graphics, new SDLRect(x3,y3+1,blksize*2,1));
+							renderTexture(ResourceHolderSDL.imgSprite, new SDLStructs.SDL_FRect(1,16,blksize*2,1), new SDLStructs.SDL_FRect(x3,y3,blksize*2,1));
+							renderTexture(ResourceHolderSDL.imgSprite, new SDLStructs.SDL_FRect(1,16,blksize*2,1), new SDLStructs.SDL_FRect(x3,y3+1,blksize*2,1));
 						}
 						if(!blkTemp.getAttribute(Block.BLOCK_ATTRIBUTE_CONNECT_DOWN)) {
-							ResourceHolderSDL.imgSprite.blitSurface(new SDLRect(1,16,blksize*2,1), graphics, new SDLRect(x3,y3 + blksize*2-1,blksize*2,1));
-							ResourceHolderSDL.imgSprite.blitSurface(new SDLRect(1,16,blksize*2,1), graphics, new SDLRect(x3,y3 + blksize*2-2,blksize*2,1));
+							renderTexture(ResourceHolderSDL.imgSprite, new SDLStructs.SDL_FRect(1,16,blksize*2,1), new SDLStructs.SDL_FRect(x3,y3 + blksize*2-1,blksize*2,1));
+							renderTexture(ResourceHolderSDL.imgSprite, new SDLStructs.SDL_FRect(1,16,blksize*2,1), new SDLStructs.SDL_FRect(x3,y3 + blksize*2-2,blksize*2,1));
 						}
 						if(!blkTemp.getAttribute(Block.BLOCK_ATTRIBUTE_CONNECT_LEFT)) {
-							ResourceHolderSDL.imgSprite.blitSurface(new SDLRect(0,16,1,blksize*2), graphics, new SDLRect(x3,y3,1,blksize*2));
-							ResourceHolderSDL.imgSprite.blitSurface(new SDLRect(0,16,1,blksize*2), graphics, new SDLRect(x3+1,y3,1,blksize*2));
+							renderTexture(ResourceHolderSDL.imgSprite, new SDLStructs.SDL_FRect(0,16,1,blksize*2), new SDLStructs.SDL_FRect(x3,y3,1,blksize*2));
+							renderTexture(ResourceHolderSDL.imgSprite, new SDLStructs.SDL_FRect(0,16,1,blksize*2), new SDLStructs.SDL_FRect(x3+1,y3,1,blksize*2));
 						}
 						if(!blkTemp.getAttribute(Block.BLOCK_ATTRIBUTE_CONNECT_RIGHT)) {
-							ResourceHolderSDL.imgSprite.blitSurface(new SDLRect(0,16,1,blksize*2), graphics, new SDLRect(x3 + blksize*2-1,y3,1,blksize*2));
-							ResourceHolderSDL.imgSprite.blitSurface(new SDLRect(0,16,1,blksize*2), graphics, new SDLRect(x3 + blksize*2-2,y3,1,blksize*2));
+							renderTexture(ResourceHolderSDL.imgSprite, new SDLStructs.SDL_FRect(0,16,1,blksize*2), new SDLStructs.SDL_FRect(x3 + blksize*2-1,y3,1,blksize*2));
+							renderTexture(ResourceHolderSDL.imgSprite, new SDLStructs.SDL_FRect(0,16,1,blksize*2), new SDLStructs.SDL_FRect(x3 + blksize*2-2,y3,1,blksize*2));
 						}
 
-						color = getColorValue(255, 255, 255);
+						long whiteColor = getColorValue(255, 255, 255);
 						if(blkTemp.getAttribute(Block.BLOCK_ATTRIBUTE_CONNECT_LEFT | Block.BLOCK_ATTRIBUTE_CONNECT_UP)) {
-							graphics.fillRect(new SDLRect(x3, y3, 2, 2), color);
+							fillColorRect(x3, y3, 2, 2, whiteColor);
 						}
 						if(blkTemp.getAttribute(Block.BLOCK_ATTRIBUTE_CONNECT_LEFT | Block.BLOCK_ATTRIBUTE_CONNECT_DOWN)) {
-							graphics.fillRect(new SDLRect(x3, y3 + (blksize*2-2), 2, 2), color);
+							fillColorRect(x3, y3 + (blksize*2-2), 2, 2, whiteColor);
 						}
 						if(blkTemp.getAttribute(Block.BLOCK_ATTRIBUTE_CONNECT_RIGHT | Block.BLOCK_ATTRIBUTE_CONNECT_UP)) {
-							graphics.fillRect(new SDLRect(x3 + (blksize*2-2), y3, 2, 2), color);
+							fillColorRect(x3 + (blksize*2-2), y3, 2, 2, whiteColor);
 						}
 						if(blkTemp.getAttribute(Block.BLOCK_ATTRIBUTE_CONNECT_RIGHT | Block.BLOCK_ATTRIBUTE_CONNECT_DOWN)) {
-							graphics.fillRect(new SDLRect(x3 + (blksize*2-2), y3 + (blksize*2-2), 2, 2), color);
+							fillColorRect(x3 + (blksize*2-2), y3 + (blksize*2-2), 2, 2, whiteColor);
 						}
 					} else {
 						Block blkTemp = new Block(piece.block[i]);
@@ -749,7 +761,7 @@ public class RendererSDL extends EventReceiver {
 		}
 	}
 
-	protected void drawHintPiece(int x, int y, GameEngine engine, float scale) throws SDLException {
+	protected void drawHintPiece(int x, int y, GameEngine engine, float scale) {
 		Piece piece = engine.aiHintPiece;
 		if (piece != null) {
 			piece.direction=engine.ai.bestRt;
@@ -772,24 +784,23 @@ public class RendererSDL extends EventReceiver {
 							int colorID = blkTemp.getDrawColor();
 							if(blkTemp.getAttribute(Block.BLOCK_ATTRIBUTE_BONE)) colorID = -1;
 							long color = getColorByIDBright(colorID);
-							//graphics.fillRect(new SDLRect(x3, y3, blksize, blksize), color);
 
 							if(!blkTemp.getAttribute(Block.BLOCK_ATTRIBUTE_CONNECT_UP))
-								graphics.fillRect(new SDLRect(x3, y3, ls, 2), color);
+								fillColorRect(x3, y3, ls, 2, color);
 							if(!blkTemp.getAttribute(Block.BLOCK_ATTRIBUTE_CONNECT_DOWN))
-								graphics.fillRect(new SDLRect(x3, y3 + ls - 1, ls, 2), color);
+								fillColorRect(x3, y3 + ls - 1, ls, 2, color);
 							if(!blkTemp.getAttribute(Block.BLOCK_ATTRIBUTE_CONNECT_LEFT))
-								graphics.fillRect(new SDLRect(x3, y3, 2, ls), color);
+								fillColorRect(x3, y3, 2, ls, color);
 							if(!blkTemp.getAttribute(Block.BLOCK_ATTRIBUTE_CONNECT_RIGHT))
-								graphics.fillRect(new SDLRect(x3 + ls - 1, y3, 2, ls), color);
+								fillColorRect(x3 + ls - 1, y3, 2, ls, color);
 							if(blkTemp.getAttribute(Block.BLOCK_ATTRIBUTE_CONNECT_LEFT | Block.BLOCK_ATTRIBUTE_CONNECT_UP))
-								graphics.fillRect(new SDLRect(x3, y3, 2, 2), color);
+								fillColorRect(x3, y3, 2, 2, color);
 							if(blkTemp.getAttribute(Block.BLOCK_ATTRIBUTE_CONNECT_LEFT | Block.BLOCK_ATTRIBUTE_CONNECT_DOWN))
-								graphics.fillRect(new SDLRect(x3, y3 + (blksize-2), 2, 2), color);
+								fillColorRect(x3, y3 + (blksize-2), 2, 2, color);
 							if(blkTemp.getAttribute(Block.BLOCK_ATTRIBUTE_CONNECT_RIGHT | Block.BLOCK_ATTRIBUTE_CONNECT_UP))
-								graphics.fillRect(new SDLRect(x3 + (blksize-2), y3, 2, 2), color);
+								fillColorRect(x3 + (blksize-2), y3, 2, 2, color);
 							if(blkTemp.getAttribute(Block.BLOCK_ATTRIBUTE_CONNECT_RIGHT | Block.BLOCK_ATTRIBUTE_CONNECT_DOWN))
-								graphics.fillRect(new SDLRect(x3 + (blksize-2), y3 + (blksize-2), 2, 2), color);
+								fillColorRect(x3 + (blksize-2), y3 + (blksize-2), 2, 2, color);
 						}
 					} else {
 						int x2 = engine.ai.bestX + (piece.dataX[piece.direction][i] * 2);
@@ -802,37 +813,36 @@ public class RendererSDL extends EventReceiver {
 						int colorID = blkTemp.getDrawColor();
 						if(blkTemp.getAttribute(Block.BLOCK_ATTRIBUTE_BONE)) colorID = -1;
 						long color = getColorByID(colorID);
-						//graphics.fillRect(new SDLRect(x3, y3, blksize * 2, blksize * 2), color);
 
 						if(!blkTemp.getAttribute(Block.BLOCK_ATTRIBUTE_CONNECT_UP)) {
-							ResourceHolderSDL.imgSprite.blitSurface(new SDLRect(1,16,blksize*2,1), graphics, new SDLRect(x3,y3,blksize*2,1));
-							ResourceHolderSDL.imgSprite.blitSurface(new SDLRect(1,16,blksize*2,1), graphics, new SDLRect(x3,y3+1,blksize*2,1));
+							renderTexture(ResourceHolderSDL.imgSprite, new SDLStructs.SDL_FRect(1,16,blksize*2,1), new SDLStructs.SDL_FRect(x3,y3,blksize*2,1));
+							renderTexture(ResourceHolderSDL.imgSprite, new SDLStructs.SDL_FRect(1,16,blksize*2,1), new SDLStructs.SDL_FRect(x3,y3+1,blksize*2,1));
 						}
 						if(!blkTemp.getAttribute(Block.BLOCK_ATTRIBUTE_CONNECT_DOWN)) {
-							ResourceHolderSDL.imgSprite.blitSurface(new SDLRect(1,16,blksize*2,1), graphics, new SDLRect(x3,y3 + blksize*2-1,blksize*2,1));
-							ResourceHolderSDL.imgSprite.blitSurface(new SDLRect(1,16,blksize*2,1), graphics, new SDLRect(x3,y3 + blksize*2-2,blksize*2,1));
+							renderTexture(ResourceHolderSDL.imgSprite, new SDLStructs.SDL_FRect(1,16,blksize*2,1), new SDLStructs.SDL_FRect(x3,y3 + blksize*2-1,blksize*2,1));
+							renderTexture(ResourceHolderSDL.imgSprite, new SDLStructs.SDL_FRect(1,16,blksize*2,1), new SDLStructs.SDL_FRect(x3,y3 + blksize*2-2,blksize*2,1));
 						}
 						if(!blkTemp.getAttribute(Block.BLOCK_ATTRIBUTE_CONNECT_LEFT)) {
-							ResourceHolderSDL.imgSprite.blitSurface(new SDLRect(0,16,1,blksize*2), graphics, new SDLRect(x3,y3,1,blksize*2));
-							ResourceHolderSDL.imgSprite.blitSurface(new SDLRect(0,16,1,blksize*2), graphics, new SDLRect(x3+1,y3,1,blksize*2));
+							renderTexture(ResourceHolderSDL.imgSprite, new SDLStructs.SDL_FRect(0,16,1,blksize*2), new SDLStructs.SDL_FRect(x3,y3,1,blksize*2));
+							renderTexture(ResourceHolderSDL.imgSprite, new SDLStructs.SDL_FRect(0,16,1,blksize*2), new SDLStructs.SDL_FRect(x3+1,y3,1,blksize*2));
 						}
 						if(!blkTemp.getAttribute(Block.BLOCK_ATTRIBUTE_CONNECT_RIGHT)) {
-							ResourceHolderSDL.imgSprite.blitSurface(new SDLRect(0,16,1,blksize*2), graphics, new SDLRect(x3 + blksize*2-1,y3,1,blksize*2));
-							ResourceHolderSDL.imgSprite.blitSurface(new SDLRect(0,16,1,blksize*2), graphics, new SDLRect(x3 + blksize*2-2,y3,1,blksize*2));
+							renderTexture(ResourceHolderSDL.imgSprite, new SDLStructs.SDL_FRect(0,16,1,blksize*2), new SDLStructs.SDL_FRect(x3 + blksize*2-1,y3,1,blksize*2));
+							renderTexture(ResourceHolderSDL.imgSprite, new SDLStructs.SDL_FRect(0,16,1,blksize*2), new SDLStructs.SDL_FRect(x3 + blksize*2-2,y3,1,blksize*2));
 						}
 
-						color = getColorValue(255, 255, 255);
+						long whiteColor = getColorValue(255, 255, 255);
 						if(blkTemp.getAttribute(Block.BLOCK_ATTRIBUTE_CONNECT_LEFT | Block.BLOCK_ATTRIBUTE_CONNECT_UP)) {
-							graphics.fillRect(new SDLRect(x3, y3, 2, 2), color);
+							fillColorRect(x3, y3, 2, 2, whiteColor);
 						}
 						if(blkTemp.getAttribute(Block.BLOCK_ATTRIBUTE_CONNECT_LEFT | Block.BLOCK_ATTRIBUTE_CONNECT_DOWN)) {
-							graphics.fillRect(new SDLRect(x3, y3 + (blksize*2-2), 2, 2), color);
+							fillColorRect(x3, y3 + (blksize*2-2), 2, 2, whiteColor);
 						}
 						if(blkTemp.getAttribute(Block.BLOCK_ATTRIBUTE_CONNECT_RIGHT | Block.BLOCK_ATTRIBUTE_CONNECT_UP)) {
-							graphics.fillRect(new SDLRect(x3 + (blksize*2-2), y3, 2, 2), color);
+							fillColorRect(x3 + (blksize*2-2), y3, 2, 2, whiteColor);
 						}
 						if(blkTemp.getAttribute(Block.BLOCK_ATTRIBUTE_CONNECT_RIGHT | Block.BLOCK_ATTRIBUTE_CONNECT_DOWN)) {
-							graphics.fillRect(new SDLRect(x3 + (blksize*2-2), y3 + (blksize*2-2), 2, 2), color);
+							fillColorRect(x3 + (blksize*2-2), y3 + (blksize*2-2), 2, 2, whiteColor);
 						}
 
 					}
@@ -846,12 +856,9 @@ public class RendererSDL extends EventReceiver {
 	 * @param x X-coordinate
 	 * @param y Y-coordinate
 	 * @param engine GameEngineInstance of
-	 * @param small Half size
-	 * @throws SDLException If I failed to draw
+	 * @param size Display size (-1=small, 0=normal, 1=big)
 	 */
-	protected void drawField(int x, int y, GameEngine engine, int size) throws SDLException {
-		if(graphics == null) return;
-
+	protected void drawField(int x, int y, GameEngine engine, int size) {
 		int blksize = 16;
 		float scale = 1.0f;
 		if (size == -1) {
@@ -878,12 +885,11 @@ public class RendererSDL extends EventReceiver {
 		int outlineType = engine.blockOutlineType;
 		if(engine.owBlockOutlineType != -1) outlineType = engine.owBlockOutlineType;
 
-		SDLSurface imgFieldbg = ResourceHolderSDL.imgFieldbg;
-		//if((width == 10) && (height == 20)) imgFieldbg = ResourceHolderSDL.imgFieldbg2;
+		Pointer imgFieldbg = ResourceHolderSDL.imgFieldbg;
 		if(engine.owner.getPlayers() < 2)
-			imgFieldbg.setAlpha(SDLVideo.SDL_SRCALPHA | SDLVideo.SDL_RLEACCEL, fieldbgbright);
+			SDL3.setTextureAlpha(imgFieldbg, fieldbgbright);
 		else
-			imgFieldbg.setAlpha(0, 255);
+			SDL3.setTextureAlpha(imgFieldbg, 255);
 
 		for(int i = 0; i < viewHeight; i++) {
 			for(int j = 0; j < width; j++) {
@@ -906,48 +912,48 @@ public class RendererSDL extends EventReceiver {
 					if( (!blk.getAttribute(Block.BLOCK_ATTRIBUTE_VISIBLE) || (blk.alpha < 1.0f)) && (fieldbgbright > 0) ) {
 						if( ((width > 10) && (height > 20)) || (!showfieldbggrid) ) {
 							int sx = (((i % 2 == 0) && (j % 2 == 0)) || ((i % 2 != 0) && (j % 2 != 0))) ? 0 : 32;
-							imgFieldbg.blitSurface(new SDLRect(sx,0,blksize,blksize), graphics, new SDLRect(x2,y2,blksize,blksize));
+							renderTexture(imgFieldbg, new SDLStructs.SDL_FRect(sx,0,blksize,blksize), new SDLStructs.SDL_FRect(x2,y2,blksize,blksize));
 						}
 					}
 
 					if(blk.getAttribute(Block.BLOCK_ATTRIBUTE_OUTLINE) && !blk.getAttribute(Block.BLOCK_ATTRIBUTE_BONE)) {
-						ResourceHolderSDL.imgSprite.setAlpha(SDLVideo.SDL_SRCALPHA | SDLVideo.SDL_RLEACCEL, (int)(255 * blk.alpha));
+						SDL3.setTextureAlpha(ResourceHolderSDL.imgSprite, (int)(255 * blk.alpha));
 
 						if(outlineType == GameEngine.BLOCK_OUTLINE_NORMAL) {
 							if(field.getBlockColor(j, i - 1) == Block.BLOCK_COLOR_NONE)
-								ResourceHolderSDL.imgSprite.blitSurface(new SDLRect(1,16,blksize,1), graphics, new SDLRect(x2,y2,blksize,1));
+								renderTexture(ResourceHolderSDL.imgSprite, new SDLStructs.SDL_FRect(1,16,blksize,1), new SDLStructs.SDL_FRect(x2,y2,blksize,1));
 							if(field.getBlockColor(j, i + 1) == Block.BLOCK_COLOR_NONE)
-								ResourceHolderSDL.imgSprite.blitSurface(new SDLRect(1,16,blksize,1), graphics, new SDLRect(x2,y2 + blksize-1,blksize,1));
+								renderTexture(ResourceHolderSDL.imgSprite, new SDLStructs.SDL_FRect(1,16,blksize,1), new SDLStructs.SDL_FRect(x2,y2 + blksize-1,blksize,1));
 							if(field.getBlockColor(j - 1, i) == Block.BLOCK_COLOR_NONE)
-								ResourceHolderSDL.imgSprite.blitSurface(new SDLRect(0,16,1,blksize), graphics, new SDLRect(x2,y2,1,blksize));
+								renderTexture(ResourceHolderSDL.imgSprite, new SDLStructs.SDL_FRect(0,16,1,blksize), new SDLStructs.SDL_FRect(x2,y2,1,blksize));
 							if(field.getBlockColor(j + 1, i) == Block.BLOCK_COLOR_NONE)
-								ResourceHolderSDL.imgSprite.blitSurface(new SDLRect(0,16,1,blksize), graphics, new SDLRect(x2 + blksize-1,y2,1,blksize));
+								renderTexture(ResourceHolderSDL.imgSprite, new SDLStructs.SDL_FRect(0,16,1,blksize), new SDLStructs.SDL_FRect(x2 + blksize-1,y2,1,blksize));
 						} else if(outlineType == GameEngine.BLOCK_OUTLINE_CONNECT) {
 							if(!blk.getAttribute(Block.BLOCK_ATTRIBUTE_CONNECT_UP))
-								ResourceHolderSDL.imgSprite.blitSurface(new SDLRect(1,16,blksize,1), graphics, new SDLRect(x2,y2,blksize,1));
+								renderTexture(ResourceHolderSDL.imgSprite, new SDLStructs.SDL_FRect(1,16,blksize,1), new SDLStructs.SDL_FRect(x2,y2,blksize,1));
 							if(!blk.getAttribute(Block.BLOCK_ATTRIBUTE_CONNECT_DOWN))
-								ResourceHolderSDL.imgSprite.blitSurface(new SDLRect(1,16,blksize,1), graphics, new SDLRect(x2,y2 + blksize-1,blksize,1));
+								renderTexture(ResourceHolderSDL.imgSprite, new SDLStructs.SDL_FRect(1,16,blksize,1), new SDLStructs.SDL_FRect(x2,y2 + blksize-1,blksize,1));
 							if(!blk.getAttribute(Block.BLOCK_ATTRIBUTE_CONNECT_LEFT))
-								ResourceHolderSDL.imgSprite.blitSurface(new SDLRect(0,16,1,blksize), graphics, new SDLRect(x2,y2,1,blksize));
+								renderTexture(ResourceHolderSDL.imgSprite, new SDLStructs.SDL_FRect(0,16,1,blksize), new SDLStructs.SDL_FRect(x2,y2,1,blksize));
 							if(!blk.getAttribute(Block.BLOCK_ATTRIBUTE_CONNECT_RIGHT))
-								ResourceHolderSDL.imgSprite.blitSurface(new SDLRect(0,16,1,blksize), graphics, new SDLRect(x2 + blksize-1,y2,1,blksize));
+								renderTexture(ResourceHolderSDL.imgSprite, new SDLStructs.SDL_FRect(0,16,1,blksize), new SDLStructs.SDL_FRect(x2 + blksize-1,y2,1,blksize));
 						} else if(outlineType == GameEngine.BLOCK_OUTLINE_SAMECOLOR) {
 							if(field.getBlockColor(j, i - 1) != blk.color)
-								ResourceHolderSDL.imgSprite.blitSurface(new SDLRect(1,16,blksize,1), graphics, new SDLRect(x2,y2,blksize,1));
+								renderTexture(ResourceHolderSDL.imgSprite, new SDLStructs.SDL_FRect(1,16,blksize,1), new SDLStructs.SDL_FRect(x2,y2,blksize,1));
 							if(field.getBlockColor(j, i + 1) != blk.color)
-								ResourceHolderSDL.imgSprite.blitSurface(new SDLRect(1,16,blksize,1), graphics, new SDLRect(x2,y2 + blksize-1,blksize,1));
+								renderTexture(ResourceHolderSDL.imgSprite, new SDLStructs.SDL_FRect(1,16,blksize,1), new SDLStructs.SDL_FRect(x2,y2 + blksize-1,blksize,1));
 							if(field.getBlockColor(j - 1, i) != blk.color)
-								ResourceHolderSDL.imgSprite.blitSurface(new SDLRect(0,16,1,blksize), graphics, new SDLRect(x2,y2,1,blksize));
+								renderTexture(ResourceHolderSDL.imgSprite, new SDLStructs.SDL_FRect(0,16,1,blksize), new SDLStructs.SDL_FRect(x2,y2,1,blksize));
 							if(field.getBlockColor(j + 1, i) != blk.color)
-								ResourceHolderSDL.imgSprite.blitSurface(new SDLRect(0,16,1,blksize), graphics, new SDLRect(x2 + blksize-1,y2,1,blksize));
+								renderTexture(ResourceHolderSDL.imgSprite, new SDLStructs.SDL_FRect(0,16,1,blksize), new SDLStructs.SDL_FRect(x2 + blksize-1,y2,1,blksize));
 						}
 
-						ResourceHolderSDL.imgSprite.setAlpha(0, 255);
+						SDL3.setTextureAlpha(ResourceHolderSDL.imgSprite, 255);
 					}
 				} else if(fieldbgbright > 0) {
 					if( ((width > 10) && (height > 20)) || (!showfieldbggrid) ) {
 						int sx = (((i % 2 == 0) && (j % 2 == 0)) || ((i % 2 != 0) && (j % 2 != 0))) ? 0 : 32;
-						imgFieldbg.blitSurface(new SDLRect(sx,0,blksize,blksize), graphics, new SDLRect(x2,y2,blksize,blksize));
+						renderTexture(imgFieldbg, new SDLStructs.SDL_FRect(sx,0,blksize,blksize), new SDLStructs.SDL_FRect(x2,y2,blksize,blksize));
 					}
 				}
 			}
@@ -970,12 +976,9 @@ public class RendererSDL extends EventReceiver {
 	 * @param x X-coordinate
 	 * @param y Y-coordinate
 	 * @param engine GameEngineInstance of
-	 * @param small Half size
-	 * @throws SDLException If I failed to draw
+	 * @param displaysize Display size (-1=small, 0=normal, 1=big)
 	 */
-	protected void drawFrame(int x, int y, GameEngine engine, int displaysize) throws SDLException {
-		if(graphics == null) return;
-
+	protected void drawFrame(int x, int y, GameEngine engine, int displaysize) {
 		int size = 4;
 		if (displaysize == -1)
 			size = 2;
@@ -996,83 +999,83 @@ public class RendererSDL extends EventReceiver {
 		// Field Background
 		if(fieldbgbright > 0) {
 			if((width <= 10) && (height <= 20) && (showfieldbggrid)) {
-				SDLSurface img = ResourceHolderSDL.imgFieldbg2;
+				Pointer img = ResourceHolderSDL.imgFieldbg2;
 				if(displaysize == -1) img = ResourceHolderSDL.imgFieldbg2Small;
 				if(displaysize == 1) img = ResourceHolderSDL.imgFieldbg2Big;
 
 				if(engine.owner.getPlayers() < 2)
-					img.setAlpha(SDLVideo.SDL_SRCALPHA | SDLVideo.SDL_RLEACCEL, fieldbgbright);
+					SDL3.setTextureAlpha(img, fieldbgbright);
 				else
-					img.setAlpha(0, 255);
+					SDL3.setTextureAlpha(img, 255);
 
-				img.blitSurface(new SDLRect(0, 0, width*size*4, height*size*4), graphics, new SDLRect(x + 4, y + 4, width*size*4, height*size*4));
+				renderTexture(img, new SDLStructs.SDL_FRect(0, 0, width*size*4, height*size*4), new SDLStructs.SDL_FRect(x + 4, y + 4, width*size*4, height*size*4));
 			}
 		}
 
-		SDLRect rectSrc = null;
-		SDLRect rectDst = null;
+		SDLStructs.SDL_FRect rectSrc = null;
+		SDLStructs.SDL_FRect rectDst = null;
 
 		// UpAnd the lower
 		int maxWidth = (width * size);
 		if(showmeter) maxWidth = (width * size) + 2;
 
 		for(int i = 0; i < maxWidth; i++) {
-			rectSrc = new SDLRect(offsetX + 4, 0, 4, 4);
-			rectDst = new SDLRect(x + ((i + 1) * 4), y, 4, 4);
-			ResourceHolderSDL.imgFrame.blitSurface(rectSrc, graphics, rectDst);
+			rectSrc = new SDLStructs.SDL_FRect(offsetX + 4, 0, 4, 4);
+			rectDst = new SDLStructs.SDL_FRect(x + ((i + 1) * 4), y, 4, 4);
+			renderTexture(ResourceHolderSDL.imgFrame, rectSrc, rectDst);
 
-			rectSrc = new SDLRect(offsetX + 4, 8, 4, 4);
-			rectDst = new SDLRect(x + ((i + 1) * 4), y + (height * size * 4) + 4, 4, 4);
-			ResourceHolderSDL.imgFrame.blitSurface(rectSrc, graphics, rectDst);
+			rectSrc = new SDLStructs.SDL_FRect(offsetX + 4, 8, 4, 4);
+			rectDst = new SDLStructs.SDL_FRect(x + ((i + 1) * 4), y + (height * size * 4) + 4, 4, 4);
+			renderTexture(ResourceHolderSDL.imgFrame, rectSrc, rectDst);
 		}
 
 		// Left and Right
 		for(int i = 0; i < height * size; i++) {
-			rectSrc = new SDLRect(offsetX + 0, 4, 4, 4);
-			rectDst = new SDLRect(x, y + ((i + 1) * 4), 4, 4);
-			ResourceHolderSDL.imgFrame.blitSurface(rectSrc, graphics, rectDst);
+			rectSrc = new SDLStructs.SDL_FRect(offsetX + 0, 4, 4, 4);
+			rectDst = new SDLStructs.SDL_FRect(x, y + ((i + 1) * 4), 4, 4);
+			renderTexture(ResourceHolderSDL.imgFrame, rectSrc, rectDst);
 
-			rectSrc = new SDLRect(offsetX + 8, 4, 4, 4);
-			if(showmeter) rectDst = new SDLRect(x + (width * size * 4) + 12, y + ((i + 1) * 4), 4, 4);
-			else rectDst = new SDLRect(x + (width * size * 4) + 4, y + ((i + 1) * 4), 4, 4);
-			ResourceHolderSDL.imgFrame.blitSurface(rectSrc, graphics, rectDst);
+			rectSrc = new SDLStructs.SDL_FRect(offsetX + 8, 4, 4, 4);
+			if(showmeter) rectDst = new SDLStructs.SDL_FRect(x + (width * size * 4) + 12, y + ((i + 1) * 4), 4, 4);
+			else rectDst = new SDLStructs.SDL_FRect(x + (width * size * 4) + 4, y + ((i + 1) * 4), 4, 4);
+			renderTexture(ResourceHolderSDL.imgFrame, rectSrc, rectDst);
 		}
 
 		// Upper left
-		rectSrc = new SDLRect(offsetX + 0, 0, 4, 4);
-		rectDst = new SDLRect(x, y, 4, 4);
-		ResourceHolderSDL.imgFrame.blitSurface(rectSrc, graphics, rectDst);
+		rectSrc = new SDLStructs.SDL_FRect(offsetX + 0, 0, 4, 4);
+		rectDst = new SDLStructs.SDL_FRect(x, y, 4, 4);
+		renderTexture(ResourceHolderSDL.imgFrame, rectSrc, rectDst);
 
 		// Lower left
-		rectSrc = new SDLRect(offsetX + 0, 8, 4, 4);
-		rectDst = new SDLRect(x, y + (height * size * 4) + 4, 4, 4);
-		ResourceHolderSDL.imgFrame.blitSurface(rectSrc, graphics, rectDst);
+		rectSrc = new SDLStructs.SDL_FRect(offsetX + 0, 8, 4, 4);
+		rectDst = new SDLStructs.SDL_FRect(x, y + (height * size * 4) + 4, 4, 4);
+		renderTexture(ResourceHolderSDL.imgFrame, rectSrc, rectDst);
 
 		if(showmeter) {
 			// MeterONWhen the upper right corner of the
-			rectSrc = new SDLRect(offsetX + 8, 0, 4, 4);
-			rectDst = new SDLRect(x + (width * size * 4) + 12, y, 4, 4);
-			ResourceHolderSDL.imgFrame.blitSurface(rectSrc, graphics, rectDst);
+			rectSrc = new SDLStructs.SDL_FRect(offsetX + 8, 0, 4, 4);
+			rectDst = new SDLStructs.SDL_FRect(x + (width * size * 4) + 12, y, 4, 4);
+			renderTexture(ResourceHolderSDL.imgFrame, rectSrc, rectDst);
 
 			// MeterONWhen the lower-right corner of
-			rectSrc = new SDLRect(offsetX + 8, 8, 4, 4);
-			rectDst = new SDLRect(x + (width * size * 4) + 12, y + (height * size * 4) + 4, 4, 4);
-			ResourceHolderSDL.imgFrame.blitSurface(rectSrc, graphics, rectDst);
+			rectSrc = new SDLStructs.SDL_FRect(offsetX + 8, 8, 4, 4);
+			rectDst = new SDLStructs.SDL_FRect(x + (width * size * 4) + 12, y + (height * size * 4) + 4, 4, 4);
+			renderTexture(ResourceHolderSDL.imgFrame, rectSrc, rectDst);
 
 			// RightMeterFrame
 			for(int i = 0; i < height * size; i++) {
-				rectSrc = new SDLRect(offsetX + 12, 4, 4, 4);
-				rectDst = new SDLRect(x + (width * size * 4) + 4, y + ((i + 1) * 4), 4, 4);
-				ResourceHolderSDL.imgFrame.blitSurface(rectSrc, graphics, rectDst);
+				rectSrc = new SDLStructs.SDL_FRect(offsetX + 12, 4, 4, 4);
+				rectDst = new SDLStructs.SDL_FRect(x + (width * size * 4) + 4, y + ((i + 1) * 4), 4, 4);
+				renderTexture(ResourceHolderSDL.imgFrame, rectSrc, rectDst);
 			}
 
-			rectSrc = new SDLRect(offsetX + 12, 0, 4, 4);
-			rectDst = new SDLRect(x + (width * size * 4) + 4, y, 4, 4);
-			ResourceHolderSDL.imgFrame.blitSurface(rectSrc, graphics, rectDst);
+			rectSrc = new SDLStructs.SDL_FRect(offsetX + 12, 0, 4, 4);
+			rectDst = new SDLStructs.SDL_FRect(x + (width * size * 4) + 4, y, 4, 4);
+			renderTexture(ResourceHolderSDL.imgFrame, rectSrc, rectDst);
 
-			rectSrc = new SDLRect(offsetX + 12, 8, 4, 4);
-			rectDst = new SDLRect(x + (width * size * 4) + 4, y + (height * size * 4) + 4, 4, 4);
-			ResourceHolderSDL.imgFrame.blitSurface(rectSrc, graphics, rectDst);
+			rectSrc = new SDLStructs.SDL_FRect(offsetX + 12, 8, 4, 4);
+			rectDst = new SDLStructs.SDL_FRect(x + (width * size * 4) + 4, y + (height * size * 4) + 4, 4, 4);
+			renderTexture(ResourceHolderSDL.imgFrame, rectSrc, rectDst);
 
 			// RightMeter
 			int maxHeight = height * size * 4;
@@ -1080,9 +1083,9 @@ public class RendererSDL extends EventReceiver {
 				maxHeight -= Math.max(engine.meterValue, engine.meterValueSub);
 
 			for(int i = 0; i < maxHeight; i++) {
-				rectSrc = new SDLRect(59, 0, 4, 1);
-				rectDst = new SDLRect(x + (width * size * 4) + 8, y + 4 + i, 4, 1);
-				ResourceHolderSDL.imgSprite.blitSurface(rectSrc, graphics, rectDst);
+				rectSrc = new SDLStructs.SDL_FRect(59, 0, 4, 1);
+				rectDst = new SDLStructs.SDL_FRect(x + (width * size * 4) + 8, y + 4 + i, 4, 1);
+				renderTexture(ResourceHolderSDL.imgSprite, rectSrc, rectDst);
 			}
 
 			if(engine != null) {
@@ -1091,32 +1094,32 @@ public class RendererSDL extends EventReceiver {
 					if(value > height * size * 4) value = height * size * 4;
 
 					for(int i = 0; i < value; i++) {
-						rectSrc = new SDLRect(63 + (engine.meterColorSub * 4), 0, 4, 1);
-						rectDst = new SDLRect(x + (width * size * 4) + 8, y + (height * size * 4) + 3 - i, 4, 1);
-						ResourceHolderSDL.imgSprite.blitSurface(rectSrc, graphics, rectDst);
+						rectSrc = new SDLStructs.SDL_FRect(63 + (engine.meterColorSub * 4), 0, 4, 1);
+						rectDst = new SDLStructs.SDL_FRect(x + (width * size * 4) + 8, y + (height * size * 4) + 3 - i, 4, 1);
+						renderTexture(ResourceHolderSDL.imgSprite, rectSrc, rectDst);
 					}
 				}
 				if (engine.meterValue > 0) {
 					int value = engine.meterValue;
 					if(value > height * size * 4) value = height * size * 4;
-	
+
 					for(int i = 0; i < value; i++) {
-						rectSrc = new SDLRect(63 + (engine.meterColor * 4), 0, 4, 1);
-						rectDst = new SDLRect(x + (width * size * 4) + 8, y + (height * size * 4) + 3 - i, 4, 1);
-						ResourceHolderSDL.imgSprite.blitSurface(rectSrc, graphics, rectDst);
+						rectSrc = new SDLStructs.SDL_FRect(63 + (engine.meterColor * 4), 0, 4, 1);
+						rectDst = new SDLStructs.SDL_FRect(x + (width * size * 4) + 8, y + (height * size * 4) + 3 - i, 4, 1);
+						renderTexture(ResourceHolderSDL.imgSprite, rectSrc, rectDst);
 					}
 				}
 			}
 		} else {
 			// MeterOFFWhen the upper right corner of the
-			rectSrc = new SDLRect(offsetX + 8, 0, 4, 4);
-			rectDst = new SDLRect(x + (width * size * 4) + 4, y, 4, 4);
-			ResourceHolderSDL.imgFrame.blitSurface(rectSrc, graphics, rectDst);
+			rectSrc = new SDLStructs.SDL_FRect(offsetX + 8, 0, 4, 4);
+			rectDst = new SDLStructs.SDL_FRect(x + (width * size * 4) + 4, y, 4, 4);
+			renderTexture(ResourceHolderSDL.imgFrame, rectSrc, rectDst);
 
 			// MeterOFFWhen the lower-right corner of
-			rectSrc = new SDLRect(offsetX + 8, 8, 4, 4);
-			rectDst = new SDLRect(x + (width * size * 4) + 4, y + (height * size * 4) + 4, 4, 4);
-			ResourceHolderSDL.imgFrame.blitSurface(rectSrc, graphics, rectDst);
+			rectSrc = new SDLStructs.SDL_FRect(offsetX + 8, 8, 4, 4);
+			rectDst = new SDLStructs.SDL_FRect(x + (width * size * 4) + 4, y + (height * size * 4) + 4, 4, 4);
+			renderTexture(ResourceHolderSDL.imgFrame, rectSrc, rectDst);
 		}
 	}
 
@@ -1125,11 +1128,8 @@ public class RendererSDL extends EventReceiver {
 	 * @param x X-coordinate
 	 * @param y Y-coordinate
 	 * @param engine GameEngineInstance of
-	 * @throws SDLException If I failed to draw
 	 */
-	protected void drawNext(int x, int y, GameEngine engine) throws SDLException {
-		if(graphics == null) return;
-
+	protected void drawNext(int x, int y, GameEngine engine) {
 		int fldWidth = 10;
 		int fldBlkSize = 16;
 		int meterWidth = showmeter ? 8 : 0;
@@ -1146,36 +1146,29 @@ public class RendererSDL extends EventReceiver {
 
 				// HOLD area
 				if(engine.ruleopt.holdEnable && engine.isHoldVisible) {
-					ResourceHolderSDL.imgBlankBlack.setAlpha(0, 255);
-					ResourceHolderSDL.imgBlankBlack.blitSurface(new SDLRect(0,0,64,64 - 16), graphics, new SDLRect(x - 64, y + 48 + 8, 64, 64 - 16));
+					drawDarkOverlay(x - 64, y + 48 + 8, 64, 64 - 16, 255);
 
 					for(int i = 0; i <= 8; i++) {
 						int alpha = (int)(((float)i / (float)8) * 255);
-						ResourceHolderSDL.imgBlankBlack.setAlpha(SDLVideo.SDL_SRCALPHA | SDLVideo.SDL_RLEACCEL, alpha);
-						ResourceHolderSDL.imgBlankBlack.blitSurface(new SDLRect(0,0,64,1), graphics, new SDLRect(x - 64, y + 47 + i, 64, 1));
+						drawDarkOverlay(x - 64, y + 47 + i, 64, 1, alpha);
 					}
 					for(int i = 0; i <= 8; i++) {
 						int alpha = (int)(((float)i / (float)8) * 255);
-						ResourceHolderSDL.imgBlankBlack.setAlpha(SDLVideo.SDL_SRCALPHA | SDLVideo.SDL_RLEACCEL, alpha);
-						ResourceHolderSDL.imgBlankBlack.blitSurface(new SDLRect(0,0,64,1), graphics, new SDLRect(x - 64, y + 112 - i, 64, 1));
+						drawDarkOverlay(x - 64, y + 112 - i, 64, 1, alpha);
 					}
 				}
 
 				// NEXT area
 				if(maxNext > 0) {
-					ResourceHolderSDL.imgBlankBlack.setAlpha(0, 255);
-					ResourceHolderSDL.imgBlankBlack.blitSurface(new SDLRect(0,0,64,(64 * maxNext)-16),graphics,
-							new SDLRect(x2,y + 48 + 8,64,(64 * maxNext) - 16));
+					drawDarkOverlay(x2, y + 48 + 8, 64, (64 * maxNext) - 16, 255);
 
 					for(int i = 0; i <= 8; i++) {
 						int alpha = (int)(((float)i / (float)8) * 255);
-						ResourceHolderSDL.imgBlankBlack.setAlpha(SDLVideo.SDL_SRCALPHA | SDLVideo.SDL_RLEACCEL, alpha);
-						ResourceHolderSDL.imgBlankBlack.blitSurface(new SDLRect(0,0,64,1), graphics, new SDLRect(x2, y + 47 + i, 64, 1));
+						drawDarkOverlay(x2, y + 47 + i, 64, 1, alpha);
 					}
 					for(int i = 0; i <= 8; i++) {
 						int alpha = (int)(((float)i / (float)8) * 255);
-						ResourceHolderSDL.imgBlankBlack.setAlpha(SDLVideo.SDL_SRCALPHA | SDLVideo.SDL_RLEACCEL, alpha);
-						ResourceHolderSDL.imgBlankBlack.blitSurface(new SDLRect(0,0,64,1), graphics, new SDLRect(x2, y + 48+(64*maxNext)-i, 64, 1));
+						drawDarkOverlay(x2, y + 48+(64*maxNext)-i, 64, 1, alpha);
 					}
 				}
 			} else if(getNextDisplayType() == 1) {
@@ -1184,57 +1177,45 @@ public class RendererSDL extends EventReceiver {
 
 				// HOLD area
 				if(engine.ruleopt.holdEnable && engine.isHoldVisible) {
-					ResourceHolderSDL.imgBlankBlack.setAlpha(0, 255);
-					ResourceHolderSDL.imgBlankBlack.blitSurface(new SDLRect(0,0,32,32 - 16), graphics, new SDLRect(x - 32, y + 48 + 8, 32, 32 - 16));
+					drawDarkOverlay(x - 32, y + 48 + 8, 32, 32 - 16, 255);
 
 					for(int i = 0; i <= 8; i++) {
 						int alpha = (int)(((float)i / (float)8) * 255);
-						ResourceHolderSDL.imgBlankBlack.setAlpha(SDLVideo.SDL_SRCALPHA | SDLVideo.SDL_RLEACCEL, alpha);
-						ResourceHolderSDL.imgBlankBlack.blitSurface(new SDLRect(0,0,32,1), graphics, new SDLRect(x - 32, y + 47 + i, 32, 1));
+						drawDarkOverlay(x - 32, y + 47 + i, 32, 1, alpha);
 					}
 					for(int i = 0; i <= 8; i++) {
 						int alpha = (int)(((float)i / (float)8) * 255);
-						ResourceHolderSDL.imgBlankBlack.setAlpha(SDLVideo.SDL_SRCALPHA | SDLVideo.SDL_RLEACCEL, alpha);
-						ResourceHolderSDL.imgBlankBlack.blitSurface(new SDLRect(0,0,32,1), graphics, new SDLRect(x - 32, y + 80 - i, 32, 1));
+						drawDarkOverlay(x - 32, y + 80 - i, 32, 1, alpha);
 					}
 				}
 
 				// NEXT area
 				if(maxNext > 0) {
-					ResourceHolderSDL.imgBlankBlack.setAlpha(0, 255);
-					ResourceHolderSDL.imgBlankBlack.blitSurface(new SDLRect(0,0,32,(32 * maxNext)-16),graphics,
-							new SDLRect(x2,y + 48 + 8,32,(32 * maxNext) - 16));
+					drawDarkOverlay(x2, y + 48 + 8, 32, (32 * maxNext) - 16, 255);
 
 					for(int i = 0; i <= 8; i++) {
 						int alpha = (int)(((float)i / (float)8) * 255);
-						ResourceHolderSDL.imgBlankBlack.setAlpha(SDLVideo.SDL_SRCALPHA | SDLVideo.SDL_RLEACCEL, alpha);
-						ResourceHolderSDL.imgBlankBlack.blitSurface(new SDLRect(0,0,32,1), graphics, new SDLRect(x2, y + 47 + i, 32, 1));
+						drawDarkOverlay(x2, y + 47 + i, 32, 1, alpha);
 					}
 					for(int i = 0; i <= 8; i++) {
 						int alpha = (int)(((float)i / (float)8) * 255);
-						ResourceHolderSDL.imgBlankBlack.setAlpha(SDLVideo.SDL_SRCALPHA | SDLVideo.SDL_RLEACCEL, alpha);
-						ResourceHolderSDL.imgBlankBlack.blitSurface(new SDLRect(0,0,32,1), graphics, new SDLRect(x2, y + 48+(32*maxNext)-i, 32, 1));
+						drawDarkOverlay(x2, y + 48+(32*maxNext)-i, 32, 1, alpha);
 					}
 				}
 			} else {
 				int w = (fldWidth * fldBlkSize) + 15;
 
-				ResourceHolderSDL.imgBlankBlack.setAlpha(0, 255);
-				ResourceHolderSDL.imgBlankBlack.blitSurface(new SDLRect(0,0,w-40,48), graphics, new SDLRect(x + 20, y, w-40, 48));
+				drawDarkOverlay(x + 20, y, w - 40, 48, 255);
 
 				for(int i = 0; i <= 20; i++) {
 					int alpha = (int)(((float)i / (float)20) * 255);
-					ResourceHolderSDL.imgBlankBlack.setAlpha(SDLVideo.SDL_SRCALPHA | SDLVideo.SDL_RLEACCEL, alpha);
-					ResourceHolderSDL.imgBlankBlack.blitSurface(new SDLRect(0,0,1,48), graphics, new SDLRect(x + i - 1, y, 1, 48));
+					drawDarkOverlay(x + i - 1, y, 1, 48, alpha);
 				}
 				for(int i = 0; i <= 20; i++) {
 					int alpha = (int)(((float)(20 - i) / (float)20) * 255);
-					ResourceHolderSDL.imgBlankBlack.setAlpha(SDLVideo.SDL_SRCALPHA | SDLVideo.SDL_RLEACCEL, alpha);
-					ResourceHolderSDL.imgBlankBlack.blitSurface(new SDLRect(0,0,1,48), graphics, new SDLRect(x + i + (w-20), y, 1, 48));
+					drawDarkOverlay(x + i + (w-20), y, 1, 48, alpha);
 				}
 			}
-
-			ResourceHolderSDL.imgBlankBlack.setAlpha(0, 255);
 		}
 
 		if(engine.isNextVisible) {
@@ -1275,8 +1256,7 @@ public class RendererSDL extends EventReceiver {
 
 					Piece piece = engine.getNextObject(engine.nextPieceCount);
 					if(piece != null) {
-						//int x2 = x + 4 + ((-1 + (engine.field.getWidth() - piece.getWidth() + 1) / 2) * 16);
-						int x2 = x + 4 + engine.getSpawnPosX(engine.field, piece) * fldBlkSize; //Rules with spawn x modified were misaligned.
+						int x2 = x + 4 + engine.getSpawnPosX(engine.field, piece) * fldBlkSize;
 						int y2 = y + 48 - ((piece.getMaximumBlockY() + 1) * 16);
 						drawPiece(x2, y2, piece);
 					}
@@ -1358,9 +1338,8 @@ public class RendererSDL extends EventReceiver {
 	 * @param engine GameEngine
 	 * @param scale Display size of piece
 	 * @author Wojtek
-	 * @throws SDLException
 	 */
-	protected void drawShadowNexts(int x, int y, GameEngine engine, float scale) throws SDLException {
+	protected void drawShadowNexts(int x, int y, GameEngine engine, float scale) {
 		Piece piece = engine.nowPieceObject;
 		int blksize = (int) (16 * scale);
 
@@ -1395,47 +1374,43 @@ public class RendererSDL extends EventReceiver {
 	 */
 	@Override
 	public void renderFirst(GameEngine engine, int playerID) {
-		try {
-			// Background
-			if(playerID == 0) {
-				if(engine.owner.menuOnly) {
-					ResourceHolderSDL.imgMenu.blitSurface(graphics);
-				} else {
-					int bg = engine.owner.backgroundStatus.bg;
-					if(engine.owner.backgroundStatus.fadesw && !heavyeffect) {
-						bg = engine.owner.backgroundStatus.fadebg;
-					}
+		// Background
+		if(playerID == 0) {
+			if(engine.owner.menuOnly) {
+				renderTextureFullscreen(ResourceHolderSDL.imgMenu);
+			} else {
+				int bg = engine.owner.backgroundStatus.bg;
+				if(engine.owner.backgroundStatus.fadesw && !heavyeffect) {
+					bg = engine.owner.backgroundStatus.fadebg;
+				}
 
-					if((ResourceHolderSDL.imgPlayBG != null) && (bg >= 0) && (bg < ResourceHolderSDL.imgPlayBG.length) && (showbg == true)) {
-						ResourceHolderSDL.imgPlayBG[bg].blitSurface(graphics);
+				if((ResourceHolderSDL.imgPlayBG != null) && (bg >= 0) && (bg < ResourceHolderSDL.imgPlayBG.length) && (showbg == true)) {
+					renderTextureFullscreen(ResourceHolderSDL.imgPlayBG[bg]);
 
-						if(engine.owner.backgroundStatus.fadesw && heavyeffect) {
-							int alphalv = engine.owner.backgroundStatus.fadestat ? (100 - engine.owner.backgroundStatus.fadecount) : engine.owner.backgroundStatus.fadecount;
-							ResourceHolderSDL.imgBlankBlack.setAlpha(SDLVideo.SDL_SRCALPHA | SDLVideo.SDL_RLEACCEL, alphalv * 2);
-							ResourceHolderSDL.imgBlankBlack.blitSurface(graphics);
-						}
-					} else if(bg != -2) {
-						graphics.fillRect(SDLVideo.mapRGB(graphics.getFormat(), 0, 0, 0));
+					if(engine.owner.backgroundStatus.fadesw && heavyeffect) {
+						int alphalv = engine.owner.backgroundStatus.fadestat ? (100 - engine.owner.backgroundStatus.fadecount) : engine.owner.backgroundStatus.fadecount;
+						drawDarkOverlay(0, 0, 640, 480, alphalv * 2);
 					}
+				} else if(bg != -2) {
+					SDL3.setDrawColor(renderer(), 0, 0, 0, 255);
+					SDL3.INSTANCE.SDL_RenderFillRect(renderer(), null);
 				}
 			}
+		}
 
-			// NEXTなど
-			if(!engine.owner.menuOnly && engine.isVisible) {
-				int offsetX = getFieldDisplayPositionX(engine, playerID);
-				int offsetY = getFieldDisplayPositionY(engine, playerID);
+		// NEXTなど
+		if(!engine.owner.menuOnly && engine.isVisible) {
+			int offsetX = getFieldDisplayPositionX(engine, playerID);
+			int offsetY = getFieldDisplayPositionY(engine, playerID);
 
-				if(engine.displaysize != -1) {
-					drawNext(offsetX, offsetY, engine);
-					drawFrame(offsetX, offsetY + 48, engine, engine.displaysize);
-					drawField(offsetX + 4, offsetY + 52, engine, engine.displaysize);
-				} else {
-					drawFrame(offsetX, offsetY, engine, -1);
-					drawField(offsetX + 4, offsetY + 4, engine, -1);
-				}
+			if(engine.displaysize != -1) {
+				drawNext(offsetX, offsetY, engine);
+				drawFrame(offsetX, offsetY + 48, engine, engine.displaysize);
+				drawField(offsetX + 4, offsetY + 52, engine, engine.displaysize);
+			} else {
+				drawFrame(offsetX, offsetY, engine, -1);
+				drawField(offsetX + 4, offsetY + 4, engine, -1);
 			}
-		} catch (SDLException e) {
-			log.debug("SDLException thrown", e);
 		}
 	}
 
@@ -1444,29 +1419,23 @@ public class RendererSDL extends EventReceiver {
 	 */
 	@Override
 	public void renderReady(GameEngine engine, int playerID) {
-		if(graphics == null) return;
 		if(engine.allowTextRenderByReceiver == false) return;
-		//if(!engine.isVisible) return;
 
-		try {
-			int offsetX = getFieldDisplayPositionX(engine, playerID);
-			int offsetY = getFieldDisplayPositionY(engine, playerID);
+		int offsetX = getFieldDisplayPositionX(engine, playerID);
+		int offsetY = getFieldDisplayPositionY(engine, playerID);
 
-			if(engine.statc[0] > 0) {
-				if(engine.displaysize != -1) {
-					if((engine.statc[0] >= engine.readyStart) && (engine.statc[0] < engine.readyEnd))
-						NormalFontSDL.printFont(offsetX + 44, offsetY + 204, "READY", COLOR_WHITE, 1.0f);
-					else if((engine.statc[0] >= engine.goStart) && (engine.statc[0] < engine.goEnd))
-						NormalFontSDL.printFont(offsetX + 62, offsetY + 204, "GO!", COLOR_WHITE, 1.0f);
-				} else {
-					if((engine.statc[0] >= engine.readyStart) && (engine.statc[0] < engine.readyEnd))
-						NormalFontSDL.printFont(offsetX + 24, offsetY + 80, "READY", COLOR_WHITE, 0.5f);
-					else if((engine.statc[0] >= engine.goStart) && (engine.statc[0] < engine.goEnd))
-						NormalFontSDL.printFont(offsetX + 32, offsetY + 80, "GO!", COLOR_WHITE, 0.5f);
-				}
+		if(engine.statc[0] > 0) {
+			if(engine.displaysize != -1) {
+				if((engine.statc[0] >= engine.readyStart) && (engine.statc[0] < engine.readyEnd))
+					NormalFontSDL.printFont(offsetX + 44, offsetY + 204, "READY", COLOR_WHITE, 1.0f);
+				else if((engine.statc[0] >= engine.goStart) && (engine.statc[0] < engine.goEnd))
+					NormalFontSDL.printFont(offsetX + 62, offsetY + 204, "GO!", COLOR_WHITE, 1.0f);
+			} else {
+				if((engine.statc[0] >= engine.readyStart) && (engine.statc[0] < engine.readyEnd))
+					NormalFontSDL.printFont(offsetX + 24, offsetY + 80, "READY", COLOR_WHITE, 0.5f);
+				else if((engine.statc[0] >= engine.goStart) && (engine.statc[0] < engine.goEnd))
+					NormalFontSDL.printFont(offsetX + 32, offsetY + 80, "GO!", COLOR_WHITE, 0.5f);
 			}
-		} catch (SDLException e) {
-			log.debug("SDLException thrown", e);
 		}
 	}
 
@@ -1475,31 +1444,27 @@ public class RendererSDL extends EventReceiver {
 	 */
 	@Override
 	public void renderMove(GameEngine engine, int playerID) {
-		try {
-			if(!engine.isVisible) return;
+		if(!engine.isVisible) return;
 
-			int offsetX = getFieldDisplayPositionX(engine, playerID);
-			int offsetY = getFieldDisplayPositionY(engine, playerID);
+		int offsetX = getFieldDisplayPositionX(engine, playerID);
+		int offsetY = getFieldDisplayPositionY(engine, playerID);
 
-			if((engine.statc[0] > 1) || (engine.ruleopt.moveFirstFrame)) {
-				if(engine.displaysize == 1) {
-					if(nextshadow) drawShadowNexts(offsetX + 4, offsetY + 52, engine, 2.0f);
-					if(engine.ghost && engine.ruleopt.ghost) drawGhostPiece(offsetX + 4, offsetY + 52, engine, 2.0f);
-					if((engine.ai!=null) && (engine.aiShowHint)&& engine.aiHintReady) drawHintPiece(offsetX + 4, offsetY + 52, engine, 2.0f);
-					drawCurrentPiece(offsetX + 4, offsetY + 52, engine, 2.0f);
-				} else if(engine.displaysize == 0) {
-					if(nextshadow) drawShadowNexts(offsetX + 4, offsetY + 52, engine, 1.0f);
-					if(engine.ghost && engine.ruleopt.ghost) drawGhostPiece(offsetX + 4, offsetY + 52, engine, 1.0f);
-					if((engine.ai!=null) && (engine.aiShowHint ) && engine.aiHintReady) drawHintPiece(offsetX + 4, offsetY + 52, engine, 1.0f);
-					drawCurrentPiece(offsetX + 4, offsetY + 52, engine, 1.0f);
-				} else {
-					if(engine.ghost && engine.ruleopt.ghost) drawGhostPiece(offsetX + 4, offsetY + 4, engine, 0.5f);
-					if((engine.ai!=null) && (engine.aiShowHint) &&engine.aiHintReady) drawHintPiece(offsetX + 4, offsetY + 4, engine, 0.5f);
-					drawCurrentPiece(offsetX + 4, offsetY + 4, engine, 0.5f);
-				}
+		if((engine.statc[0] > 1) || (engine.ruleopt.moveFirstFrame)) {
+			if(engine.displaysize == 1) {
+				if(nextshadow) drawShadowNexts(offsetX + 4, offsetY + 52, engine, 2.0f);
+				if(engine.ghost && engine.ruleopt.ghost) drawGhostPiece(offsetX + 4, offsetY + 52, engine, 2.0f);
+				if((engine.ai!=null) && (engine.aiShowHint)&& engine.aiHintReady) drawHintPiece(offsetX + 4, offsetY + 52, engine, 2.0f);
+				drawCurrentPiece(offsetX + 4, offsetY + 52, engine, 2.0f);
+			} else if(engine.displaysize == 0) {
+				if(nextshadow) drawShadowNexts(offsetX + 4, offsetY + 52, engine, 1.0f);
+				if(engine.ghost && engine.ruleopt.ghost) drawGhostPiece(offsetX + 4, offsetY + 52, engine, 1.0f);
+				if((engine.ai!=null) && (engine.aiShowHint ) && engine.aiHintReady) drawHintPiece(offsetX + 4, offsetY + 52, engine, 1.0f);
+				drawCurrentPiece(offsetX + 4, offsetY + 52, engine, 1.0f);
+			} else {
+				if(engine.ghost && engine.ruleopt.ghost) drawGhostPiece(offsetX + 4, offsetY + 4, engine, 0.5f);
+				if((engine.ai!=null) && (engine.aiShowHint) &&engine.aiHintReady) drawHintPiece(offsetX + 4, offsetY + 4, engine, 0.5f);
+				drawCurrentPiece(offsetX + 4, offsetY + 4, engine, 0.5f);
 			}
-		} catch (SDLException e) {
-			log.debug("SDLException thrown", e);
 		}
 	}
 
@@ -1536,31 +1501,26 @@ public class RendererSDL extends EventReceiver {
 	 */
 	@Override
 	public void renderExcellent(GameEngine engine, int playerID) {
-		if(graphics == null) return;
 		if(engine.allowTextRenderByReceiver == false) return;
 		if(!engine.isVisible) return;
 
-		try {
-			int offsetX = getFieldDisplayPositionX(engine, playerID);
-			int offsetY = getFieldDisplayPositionY(engine, playerID);
+		int offsetX = getFieldDisplayPositionX(engine, playerID);
+		int offsetY = getFieldDisplayPositionY(engine, playerID);
 
-			if(engine.displaysize != -1) {
-				if(engine.statc[1] == 0)
-					NormalFontSDL.printFont(offsetX + 4, offsetY + 204, "EXCELLENT!", COLOR_ORANGE, 1.0f);
-				else if(engine.owner.getPlayers() < 3)
-					NormalFontSDL.printFont(offsetX + 52, offsetY + 204, "WIN!", COLOR_ORANGE, 1.0f);
-				else
-					NormalFontSDL.printFont(offsetX + 4, offsetY + 204, "1ST PLACE!", COLOR_ORANGE, 1.0f);
-			} else {
-				if(engine.statc[1] == 0)
-					NormalFontSDL.printFont(offsetX + 4, offsetY + 80, "EXCELLENT!", COLOR_ORANGE, 0.5f);
-				else if(engine.owner.getPlayers() < 3)
-					NormalFontSDL.printFont(offsetX + 33, offsetY + 80, "WIN!", COLOR_ORANGE, 0.5f);
-				else
-					NormalFontSDL.printFont(offsetX + 4, offsetY + 80, "1ST PLACE!", COLOR_ORANGE, 0.5f);
-			}
-		} catch (SDLException e) {
-			log.debug("SDLException thrown", e);
+		if(engine.displaysize != -1) {
+			if(engine.statc[1] == 0)
+				NormalFontSDL.printFont(offsetX + 4, offsetY + 204, "EXCELLENT!", COLOR_ORANGE, 1.0f);
+			else if(engine.owner.getPlayers() < 3)
+				NormalFontSDL.printFont(offsetX + 52, offsetY + 204, "WIN!", COLOR_ORANGE, 1.0f);
+			else
+				NormalFontSDL.printFont(offsetX + 4, offsetY + 204, "1ST PLACE!", COLOR_ORANGE, 1.0f);
+		} else {
+			if(engine.statc[1] == 0)
+				NormalFontSDL.printFont(offsetX + 4, offsetY + 80, "EXCELLENT!", COLOR_ORANGE, 0.5f);
+			else if(engine.owner.getPlayers() < 3)
+				NormalFontSDL.printFont(offsetX + 33, offsetY + 80, "WIN!", COLOR_ORANGE, 0.5f);
+			else
+				NormalFontSDL.printFont(offsetX + 4, offsetY + 80, "1ST PLACE!", COLOR_ORANGE, 0.5f);
 		}
 	}
 
@@ -1569,33 +1529,29 @@ public class RendererSDL extends EventReceiver {
 	 */
 	@Override
 	public void renderGameOver(GameEngine engine, int playerID) {
-		if(graphics == null) return;
 		if(engine.allowTextRenderByReceiver == false) return;
 		if(!engine.isVisible) return;
 
-		if((engine.statc[0] >= engine.field.getHeight() + 1) && (engine.statc[0] < engine.field.getHeight() + 1 + 180))
-			try {
-				int offsetX = getFieldDisplayPositionX(engine, playerID);
-				int offsetY = getFieldDisplayPositionY(engine, playerID);
+		if((engine.statc[0] >= engine.field.getHeight() + 1) && (engine.statc[0] < engine.field.getHeight() + 1 + 180)) {
+			int offsetX = getFieldDisplayPositionX(engine, playerID);
+			int offsetY = getFieldDisplayPositionY(engine, playerID);
 
-				if(engine.displaysize != -1) {
-					if(engine.owner.getPlayers() < 2)
-						NormalFontSDL.printFont(offsetX + 12, offsetY + 204, "GAME OVER", COLOR_WHITE, 1.0f);
-					else if(engine.owner.getWinner() == -2)
-						NormalFontSDL.printFont(offsetX + 52, offsetY + 204, "DRAW", COLOR_GREEN, 1.0f);
-					else if(engine.owner.getPlayers() < 3)
-						NormalFontSDL.printFont(offsetX + 52, offsetY + 204, "LOSE", COLOR_WHITE, 1.0f);
-				} else {
-					if(engine.owner.getPlayers() < 2)
-						NormalFontSDL.printFont(offsetX + 4, offsetY + 80, "GAME OVER", COLOR_WHITE, 0.5f);
-					else if(engine.owner.getWinner() == -2)
-						NormalFontSDL.printFont(offsetX + 28, offsetY + 80, "DRAW", COLOR_GREEN, 0.5f);
-					else if(engine.owner.getPlayers() < 3)
-						NormalFontSDL.printFont(offsetX + 28, offsetY + 80, "LOSE", COLOR_WHITE, 0.5f);
-				}
-			} catch (SDLException e) {
-				log.debug("SDLException thrown", e);
+			if(engine.displaysize != -1) {
+				if(engine.owner.getPlayers() < 2)
+					NormalFontSDL.printFont(offsetX + 12, offsetY + 204, "GAME OVER", COLOR_WHITE, 1.0f);
+				else if(engine.owner.getWinner() == -2)
+					NormalFontSDL.printFont(offsetX + 52, offsetY + 204, "DRAW", COLOR_GREEN, 1.0f);
+				else if(engine.owner.getPlayers() < 3)
+					NormalFontSDL.printFont(offsetX + 52, offsetY + 204, "LOSE", COLOR_WHITE, 1.0f);
+			} else {
+				if(engine.owner.getPlayers() < 2)
+					NormalFontSDL.printFont(offsetX + 4, offsetY + 80, "GAME OVER", COLOR_WHITE, 0.5f);
+				else if(engine.owner.getWinner() == -2)
+					NormalFontSDL.printFont(offsetX + 28, offsetY + 80, "DRAW", COLOR_GREEN, 0.5f);
+				else if(engine.owner.getPlayers() < 3)
+					NormalFontSDL.printFont(offsetX + 28, offsetY + 80, "LOSE", COLOR_WHITE, 0.5f);
 			}
+		}
 	}
 
 	/*
@@ -1603,30 +1559,25 @@ public class RendererSDL extends EventReceiver {
 	 */
 	@Override
 	public void renderResult(GameEngine engine, int playerID) {
-		if(graphics == null) return;
 		if(engine.allowTextRenderByReceiver == false) return;
 		if(!engine.isVisible) return;
 
-		try {
-			int offsetX = getFieldDisplayPositionX(engine, playerID);
-			int offsetY = getFieldDisplayPositionY(engine, playerID);
+		int offsetX = getFieldDisplayPositionX(engine, playerID);
+		int offsetY = getFieldDisplayPositionY(engine, playerID);
 
-			int tempColor;
+		int tempColor;
 
-			if(engine.statc[0] == 0)
-				tempColor = COLOR_RED;
-			else
-				tempColor = COLOR_WHITE;
-			NormalFontSDL.printFont(offsetX + 12, offsetY + 340, "RETRY", tempColor, 1.0f);
+		if(engine.statc[0] == 0)
+			tempColor = COLOR_RED;
+		else
+			tempColor = COLOR_WHITE;
+		NormalFontSDL.printFont(offsetX + 12, offsetY + 340, "RETRY", tempColor, 1.0f);
 
-			if(engine.statc[0] == 1)
-				tempColor = COLOR_RED;
-			else
-				tempColor = COLOR_WHITE;
-			NormalFontSDL.printFont(offsetX + 108, offsetY + 340, "END", tempColor, 1.0f);
-		} catch (SDLException e) {
-			log.debug("SDLException thrown", e);
-		}
+		if(engine.statc[0] == 1)
+			tempColor = COLOR_RED;
+		else
+			tempColor = COLOR_WHITE;
+		NormalFontSDL.printFont(offsetX + 108, offsetY + 340, "END", tempColor, 1.0f);
 	}
 
 	/*
@@ -1634,16 +1585,10 @@ public class RendererSDL extends EventReceiver {
 	 */
 	@Override
 	public void renderFieldEdit(GameEngine engine, int playerID) {
-		if(graphics == null) return;
-
-		try {
-			int x = getFieldDisplayPositionX(engine, playerID) + 4 + (engine.fldeditX * 16);
-			int y = getFieldDisplayPositionY(engine, playerID) + 52 + (engine.fldeditY * 16);
-			float bright = (engine.fldeditFrames % 60 >= 30) ? -0.5f : -0.2f;
-			drawBlock(x, y, engine.fldeditColor, engine.getSkin(), false, bright, 1.0f, 1.0f);
-		} catch (SDLException e) {
-			log.debug("SDLException thrown", e);
-		}
+		int x = getFieldDisplayPositionX(engine, playerID) + 4 + (engine.fldeditX * 16);
+		int y = getFieldDisplayPositionY(engine, playerID) + 52 + (engine.fldeditY * 16);
+		float bright = (engine.fldeditFrames % 60 >= 30) ? -0.5f : -0.2f;
+		drawBlock(x, y, engine.fldeditColor, engine.getSkin(), false, bright, 1.0f, 1.0f);
 	}
 
 	/*
@@ -1708,20 +1653,15 @@ public class RendererSDL extends EventReceiver {
 					srcy = ((obj.anim-30) / 6) * 96;
 				}
 
-				SDLRect rectSrc = new SDLRect(srcx, srcy, 96, 96);
-				SDLRect rectDst = new SDLRect(x, y, 96, 96);
-				NullpoMinoSDL.fixRect(rectSrc, rectDst);
+				SDLStructs.SDL_FRect rectSrc = new SDLStructs.SDL_FRect(srcx, srcy, 96, 96);
+				SDLStructs.SDL_FRect rectDst = new SDLStructs.SDL_FRect(x, y, 96, 96);
 
-				try {
-					if(ResourceHolderSDL.imgBreak != null) {
-						if(obj.anim < 30) {
-							ResourceHolderSDL.imgBreak[color][0].blitSurface(rectSrc, graphics, rectDst);
-						} else {
-							ResourceHolderSDL.imgBreak[color][1].blitSurface(rectSrc, graphics, rectDst);
-						}
+				if(ResourceHolderSDL.imgBreak != null) {
+					if(obj.anim < 30) {
+						renderTexture(ResourceHolderSDL.imgBreak[color][0], rectSrc, rectDst);
+					} else {
+						renderTexture(ResourceHolderSDL.imgBreak[color][1], rectSrc, rectDst);
 					}
-				} catch (SDLException e) {
-					log.debug("SDLException thrown", e);
 				}
 			}
 			// Gem Block
@@ -1732,16 +1672,11 @@ public class RendererSDL extends EventReceiver {
 				int srcy = ((obj.anim-1) / 10) * 32;
 				int color = obj.param - Block.BLOCK_COLOR_GEM_RED;
 
-				SDLRect rectSrc = new SDLRect(srcx, srcy, 32, 32);
-				SDLRect rectDst = new SDLRect(x, y, 32, 32);
-				NullpoMinoSDL.fixRect(rectSrc, rectDst);
+				SDLStructs.SDL_FRect rectSrc = new SDLStructs.SDL_FRect(srcx, srcy, 32, 32);
+				SDLStructs.SDL_FRect rectDst = new SDLStructs.SDL_FRect(x, y, 32, 32);
 
-				try {
-					if(ResourceHolderSDL.imgPErase != null) {
-						ResourceHolderSDL.imgPErase[color].blitSurface(rectSrc, graphics, rectDst);
-					}
-				} catch (SDLException e) {
-					log.debug("SDLException thrown", e);
+				if(ResourceHolderSDL.imgPErase != null) {
+					renderTexture(ResourceHolderSDL.imgPErase[color], rectSrc, rectDst);
 				}
 			}
 		}

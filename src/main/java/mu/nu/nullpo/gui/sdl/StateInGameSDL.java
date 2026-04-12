@@ -35,14 +35,10 @@ import mu.nu.nullpo.game.play.GameManager;
 import mu.nu.nullpo.game.subsystem.ai.DummyAI;
 import mu.nu.nullpo.game.subsystem.mode.GameMode;
 import mu.nu.nullpo.game.subsystem.wallkick.Wallkick;
+import mu.nu.nullpo.gui.sdl.binding.SDL3;
 import mu.nu.nullpo.util.CustomProperties;
 import mu.nu.nullpo.util.GeneralUtil;
 import net.omegaboshi.nullpomino.game.subsystem.randomizer.Randomizer;
-
-import sdljava.SDLException;
-import sdljava.mixer.SDLMixer;
-import sdljava.video.SDLSurface;
-import sdljava.video.SDLVideo;
 
 /**
  * Game screen state (Local play)
@@ -82,20 +78,13 @@ public class StateInGameSDL extends BaseStateSDL {
 	 * Called when entering this state
 	 */
 	@Override
-	public void enter() throws SDLException {
+	public void enter() {
 		NullpoMinoSDL.disableAutoInputUpdate = true;
 		NullpoMinoSDL.isInGame = true;
 		enableframestep = NullpoMinoSDL.propConfig.getProperty("option.enableframestep", false);
 		fastforward = 0;
 		cursor = 0;
 		prevInGameFlag = false;
-	}
-
-	@Override
-	public void onGameSurfaceChanged(SDLSurface gameSurface) {
-		if((gameManager != null) && (gameManager.receiver != null)) {
-			gameManager.receiver.setGraphics(gameSurface);
-		}
 	}
 
 	/**
@@ -113,7 +102,7 @@ public class StateInGameSDL extends BaseStateSDL {
 		gameManager = new GameManager(new RendererSDL());
 		pause = false;
 
-		gameManager.receiver.setGraphics(NullpoMinoSDL.gameSurface);
+		gameManager.receiver.setGraphics(NullpoMinoSDL.renderer);
 
 		// Mode
 		modeName = NullpoMinoSDL.propGlobal.getProperty("name.mode", "");
@@ -201,7 +190,7 @@ public class StateInGameSDL extends BaseStateSDL {
 		gameManager.replayProp = prop;
 		pause = false;
 
-		gameManager.receiver.setGraphics(NullpoMinoSDL.gameSurface);
+		gameManager.receiver.setGraphics(NullpoMinoSDL.renderer);
 
 		// Mode
 		modeName = prop.getProperty("name.mode", "");
@@ -273,14 +262,14 @@ public class StateInGameSDL extends BaseStateSDL {
 				strTitle = "[MENU] NullpoMino - " + modeName;
 		}
 
-		SDLVideo.wmSetCaption(strTitle, null);
+		SDL3.INSTANCE.SDL_SetWindowTitle(NullpoMinoSDL.window, strTitle);
 	}
 
 	/*
 	 * Called when leaving this state
 	 */
 	@Override
-	public void leave() throws SDLException {
+	public void leave() {
 		gameManager.shutdown();
 		gameManager = null;
 		NullpoMinoSDL.disableAutoInputUpdate = false;
@@ -291,7 +280,7 @@ public class StateInGameSDL extends BaseStateSDL {
 	 * Draw the game screen
 	 */
 	@Override
-	public void render(SDLSurface screen) throws SDLException {
+	public void render() {
 		if(gameManager != null) {
 			gameManager.renderAll();
 
@@ -322,7 +311,7 @@ public class StateInGameSDL extends BaseStateSDL {
 	 * Update game state
 	 */
 	@Override
-	public void update() throws SDLException {
+	public void update() {
 		// Update key input states
 		for(int i = 0; i < 2; i++) {
 			int joynum = NullpoMinoSDL.joyUseNumber[i];
@@ -480,7 +469,8 @@ public class StateInGameSDL extends BaseStateSDL {
 				int newvolume = (int)(128 * (gameManager.bgmStatus.volume * basevolume2));
 				if(newvolume < 0) newvolume = 0;
 				if(newvolume > 128) newvolume = 128;
-				SDLMixer.volumeMusic(newvolume);
+				if(NullpoMinoSDL.mixerLib != null && ResourceHolderSDL.bgmTrack != null)
+					NullpoMinoSDL.mixerLib.MIX_SetTrackGain(ResourceHolderSDL.bgmTrack, newvolume / 128.0f);
 				if(newvolume <= 0) ResourceHolderSDL.bgmStop();
 			}
 		}

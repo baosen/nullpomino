@@ -30,9 +30,6 @@ package mu.nu.nullpo.gui.sdl;
 
 import java.util.LinkedList;
 
-import sdljava.SDLException;
-import sdljava.video.SDLSurface;
-
 /**
  * Mode select screen (SDL)
  */
@@ -133,7 +130,7 @@ public class StateSelectModeSDL extends DummyMenuScrollStateSDL {
 	 * Enter
 	 */
 	@Override
-	public void enter() throws SDLException {
+	public void enter() {
 		prepareModeList();
 	}
 
@@ -141,7 +138,7 @@ public class StateSelectModeSDL extends DummyMenuScrollStateSDL {
 	 * Draw the screen
 	 */
 	@Override
-	public void onRenderSuccess(SDLSurface screen) throws SDLException {
+	public void onRenderSuccess() {
 		if(!isTopLevel && (strCurrentFolder.length() > 0)) {
 			NormalFontSDL.printFontGrid(1, 1, strCurrentFolder + " (" + (cursor + 1) + "/" + list.length + ")",
 					NormalFontSDL.COLOR_ORANGE);
@@ -157,7 +154,7 @@ public class StateSelectModeSDL extends DummyMenuScrollStateSDL {
 	 * Decide
 	 */
 	@Override
-	protected boolean onDecide() throws SDLException {
+	protected boolean onDecide() {
 		ResourceHolderSDL.soundManager.play("decide");
 
 		if(isTopLevel && (cursor == list.length - 1)) {
@@ -184,7 +181,7 @@ public class StateSelectModeSDL extends DummyMenuScrollStateSDL {
 	 * Cancel
 	 */
 	@Override
-	protected boolean onCancel() throws SDLException {
+	protected boolean onCancel() {
 		if(isTopLevel) {
 			NullpoMinoSDL.enterState(NullpoMinoSDL.STATE_TITLE);
 		} else {

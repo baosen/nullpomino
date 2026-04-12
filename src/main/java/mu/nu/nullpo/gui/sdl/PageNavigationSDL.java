@@ -1,6 +1,6 @@
 package mu.nu.nullpo.gui.sdl;
 
-import sdljava.event.SDLKey;
+import mu.nu.nullpo.gui.sdl.binding.SDLConstants;
 
 /**
  * Shared utility for Page Up / Page Down edge detection in SDL menus.
@@ -17,8 +17,8 @@ public class PageNavigationSDL {
 	 * @return -1 on page-up press, 1 on page-down press, 0 otherwise
 	 */
 	public static int checkPageEvent() {
-		boolean up = NullpoMinoSDL.keyPressedState[SDLKey.SDLK_PAGEUP];
-		boolean down = NullpoMinoSDL.keyPressedState[SDLKey.SDLK_PAGEDOWN];
+		boolean up = NullpoMinoSDL.keyPressedState[SDLConstants.SDL_SCANCODE_PAGEUP];
+		boolean down = NullpoMinoSDL.keyPressedState[SDLConstants.SDL_SCANCODE_PAGEDOWN];
 		int result = 0;
 		if(up && !prevPageUpPressed) result = -1;
 		else if(down && !prevPageDownPressed) result = 1;

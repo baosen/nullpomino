@@ -28,9 +28,8 @@
 */
 package mu.nu.nullpo.gui.sdl;
 
-import sdljava.SDLException;
-import sdljava.event.SDLKey;
-import sdljava.video.SDLSurface;
+import mu.nu.nullpo.gui.sdl.binding.SDL3;
+import mu.nu.nullpo.gui.sdl.binding.SDLConstants;
 
 /**
  * Joystick buttonState of the configuration screen
@@ -98,8 +97,8 @@ public class StateConfigJoystickButtonSDL extends BaseStateSDL {
 	 * Draw the screen
 	 */
 	@Override
-	public void render(SDLSurface screen) throws SDLException {
-		ResourceHolderSDL.imgMenu.blitSurface(screen);
+	public void render() {
+		SDL3.INSTANCE.SDL_RenderTexture(NullpoMinoSDL.renderer, ResourceHolderSDL.imgMenu, null, null);
 
 		NormalFontSDL.printFontGrid(1, 1, "JOYSTICK BUTTON SETTING (" + (player + 1) + "P)", NormalFontSDL.COLOR_ORANGE);
 
@@ -135,17 +134,17 @@ public class StateConfigJoystickButtonSDL extends BaseStateSDL {
 	 * Update game state
 	 */
 	@Override
-	public void update() throws SDLException {
+	public void update() {
 		if(frame >= KEYACCEPTFRAME) {
 			// Up
-			if(NullpoMinoSDL.keyPressedState[SDLKey.SDLK_UP]) {
+			if(NullpoMinoSDL.keyPressedState[SDLConstants.SDL_SCANCODE_UP]) {
 				ResourceHolderSDL.soundManager.play("cursor");
 				keynum--;
 				if(keynum < 4) keynum = 15;
 				frame = 0;
 			}
 			// Down
-			else if(NullpoMinoSDL.keyPressedState[SDLKey.SDLK_DOWN]) {
+			else if(NullpoMinoSDL.keyPressedState[SDLConstants.SDL_SCANCODE_DOWN]) {
 				ResourceHolderSDL.soundManager.play("cursor");
 				keynum++;
 				if(keynum > 15) keynum = 4;
@@ -156,18 +155,18 @@ public class StateConfigJoystickButtonSDL extends BaseStateSDL {
 			keynum = PageNavigationSDL.jumpToEnd(PageNavigationSDL.checkPageEvent(), keynum, 4, 15);
 			if(keynum != prevKeynum) frame = 0;
 			// Delete
-			if(NullpoMinoSDL.keyPressedState[SDLKey.SDLK_DELETE]) {
+			if(NullpoMinoSDL.keyPressedState[SDLConstants.SDL_SCANCODE_DELETE]) {
 				ResourceHolderSDL.soundManager.play("change");
 				buttonmap[keynum] = -1;
 				frame = 0;
 			}
 			// Backspace
-			else if(NullpoMinoSDL.keyPressedState[SDLKey.SDLK_BACKSPACE]) {
+			else if(NullpoMinoSDL.keyPressedState[SDLConstants.SDL_SCANCODE_BACKSPACE]) {
 				NullpoMinoSDL.enterState(NullpoMinoSDL.STATE_CONFIG_JOYSTICK_MAIN);
 				return;
 			}
 			// Enter/Return
-			else if(NullpoMinoSDL.keyPressedState[SDLKey.SDLK_RETURN]) {
+			else if(NullpoMinoSDL.keyPressedState[SDLConstants.SDL_SCANCODE_RETURN]) {
 				ResourceHolderSDL.soundManager.play("decide");
 
 				for(int i = 0; i < GameKeySDL.MAX_BUTTON; i++) {
@@ -201,7 +200,7 @@ public class StateConfigJoystickButtonSDL extends BaseStateSDL {
 	 * Called when entering this state
 	 */
 	@Override
-	public void enter() throws SDLException {
+	public void enter() {
 		reset();
 		NullpoMinoSDL.enableSpecialKeys = false;
 	}
@@ -210,7 +209,7 @@ public class StateConfigJoystickButtonSDL extends BaseStateSDL {
 	 * Called when leaving this state
 	 */
 	@Override
-	public void leave() throws SDLException {
+	public void leave() {
 		reset();
 		NullpoMinoSDL.enableSpecialKeys = true;
 	}

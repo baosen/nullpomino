@@ -35,8 +35,6 @@ import java.util.Arrays;
 import java.util.LinkedList;
 
 import mu.nu.nullpo.util.CustomProperties;
-import sdljava.SDLException;
-import sdljava.video.SDLSurface;
 
 /**
  * Rule selector state
@@ -163,7 +161,7 @@ public class StateConfigRuleSelectSDL extends DummyMenuScrollStateSDL {
 	 * Called when entering this state
 	 */
 	@Override
-	public void enter() throws SDLException {
+	public void enter() {
 		strFileList = getRuleFileList();
 		createRuleEntries(strFileList, style);
 		strRuleNameList = extractRuleNameListFromRuleEntries();
@@ -191,7 +189,7 @@ public class StateConfigRuleSelectSDL extends DummyMenuScrollStateSDL {
 	 * Draw the screen
 	 */
 	@Override
-	protected void onRenderSuccess(SDLSurface screen) throws SDLException {
+	protected void onRenderSuccess() {
 		String title = "SELECT " + (player + 1) + "P RULE (" + (cursor + 1) + "/" + (list.length) + ")";
 		NormalFontSDL.printFontGrid(1, 1, title, NormalFontSDL.COLOR_ORANGE);
 
@@ -205,7 +203,7 @@ public class StateConfigRuleSelectSDL extends DummyMenuScrollStateSDL {
 	 * Decide
 	 */
 	@Override
-	protected boolean onDecide() throws SDLException {
+	protected boolean onDecide() {
 		ResourceHolderSDL.soundManager.play("decide");
 		RuleEntry entry = ruleEntries.get(cursor);
 		if(style == 0) {
@@ -226,7 +224,7 @@ public class StateConfigRuleSelectSDL extends DummyMenuScrollStateSDL {
 	 * Cancel
 	 */
 	@Override
-	protected boolean onCancel() throws SDLException {
+	protected boolean onCancel() {
 		NullpoMinoSDL.enterState(NullpoMinoSDL.STATE_CONFIG_RULESTYLESELECT);
 		return true;
 	}
@@ -235,7 +233,7 @@ public class StateConfigRuleSelectSDL extends DummyMenuScrollStateSDL {
 	 * D button
 	 */
 	@Override
-	protected boolean onPushButtonD() throws SDLException {
+	protected boolean onPushButtonD() {
 		ResourceHolderSDL.soundManager.play("change");
 		if(list == strRuleNameList) {
 			list = strRuleFileList;

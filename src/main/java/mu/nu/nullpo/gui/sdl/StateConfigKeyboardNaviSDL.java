@@ -28,8 +28,8 @@
 */
 package mu.nu.nullpo.gui.sdl;
 
-import sdljava.SDLException;
-import sdljava.video.SDLSurface;
+import mu.nu.nullpo.gui.sdl.binding.SDL3;
+import mu.nu.nullpo.gui.sdl.binding.SDLConstants;
 
 /**
  * State of the keyboard setting screen
@@ -45,21 +45,21 @@ public class StateConfigKeyboardNaviSDL extends DummyMenuChooseStateSDL {
 
 	/**
 	 * Get key name
-	 * @param key Keycode
+	 * @param key Keycode (scancode)
 	 * @return Key name
 	 */
 	protected String getKeyName(int key) {
-		if((key < 0) || (key >= NullpoMinoSDL.SDL_KEYNAMES.length)) {
+		if((key < 0) || (key >= SDLConstants.SCANCODE_NAMES.length)) {
 			return "(" + key + ")";
 		}
-		return NullpoMinoSDL.SDL_KEYNAMES[key];
+		return SDLConstants.SCANCODE_NAMES[key];
 	}
 
 	/*
 	 * Draw the screen
 	 */
-	public void render(SDLSurface screen) throws SDLException {
-		ResourceHolderSDL.imgMenu.blitSurface(screen);
+	public void render() {
+		SDL3.INSTANCE.SDL_RenderTexture(NullpoMinoSDL.renderer, ResourceHolderSDL.imgMenu, null, null);
 
 		NormalFontSDL.printFontGrid(1, 1, "KEYBOARD NAVIGATION SETTING (" + (player + 1) + "P)", NormalFontSDL.COLOR_ORANGE);
 
@@ -70,7 +70,7 @@ public class StateConfigKeyboardNaviSDL extends DummyMenuChooseStateSDL {
 	}
 
 	@Override
-	protected boolean onDecide() throws SDLException {
+	protected boolean onDecide() {
 		if (cursor == 0) {
 			for(int i = 0; i < GameKeySDL.MAX_BUTTON; i++) {
 				GameKeySDL.gamekey[player].keymapNav[i] = GameKeySDL.gamekey[player].keymap[i];
@@ -91,7 +91,7 @@ public class StateConfigKeyboardNaviSDL extends DummyMenuChooseStateSDL {
 	}
 
 	@Override
-	protected boolean onCancel() throws SDLException {
+	protected boolean onCancel() {
 		NullpoMinoSDL.enterState(NullpoMinoSDL.STATE_CONFIG_MAINMENU);
 		return false;
 	}
@@ -100,13 +100,13 @@ public class StateConfigKeyboardNaviSDL extends DummyMenuChooseStateSDL {
 	 * Called when entering this state
 	 */
 	@Override
-	public void enter() throws SDLException {
+	public void enter() {
 	}
 
 	/*
 	 * Called when leaving this state
 	 */
 	@Override
-	public void leave() throws SDLException {
+	public void leave() {
 	}
 }

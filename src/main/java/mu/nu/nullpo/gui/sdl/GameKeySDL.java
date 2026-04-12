@@ -29,60 +29,65 @@
 package mu.nu.nullpo.gui.sdl;
 
 import mu.nu.nullpo.gui.GameKeyDummy;
+import mu.nu.nullpo.gui.sdl.binding.SDLConstants;
 import mu.nu.nullpo.util.CustomProperties;
-import sdljava.event.SDLKey;
-import sdljava.joystick.HatState;
 
 /**
- * Key input state manager for SDL
+ * Key input state manager for SDL3 (uses scancodes instead of keysyms)
  */
 public class GameKeySDL extends GameKeyDummy {
 	/** Key input state (Used by all game states) */
 	public static GameKeySDL gamekey[];
 
-	/** Default key mappings */
+	/** SDL3 hat bitmask values */
+	public static final int SDL_HAT_UP    = 0x01;
+	public static final int SDL_HAT_RIGHT = 0x02;
+	public static final int SDL_HAT_DOWN  = 0x04;
+	public static final int SDL_HAT_LEFT  = 0x08;
+
+	/** Default key mappings (using SDL3 scancodes) */
 	public static int[][][] DEFAULTKEYS =
 	{
 		// Ingame
 		{
 			// Blockbox type
 			{
-				SDLKey.SDLK_UP,SDLKey.SDLK_DOWN,SDLKey.SDLK_LEFT,SDLKey.SDLK_RIGHT,
-				SDLKey.SDLK_z,SDLKey.SDLK_x,SDLKey.SDLK_a,SDLKey.SDLK_SPACE,SDLKey.SDLK_d,SDLKey.SDLK_s,
-				SDLKey.SDLK_F12,SDLKey.SDLK_ESCAPE,SDLKey.SDLK_F9,SDLKey.SDLK_F10,SDLKey.SDLK_n,SDLKey.SDLK_F5
+				SDLConstants.SDL_SCANCODE_UP, SDLConstants.SDL_SCANCODE_DOWN, SDLConstants.SDL_SCANCODE_LEFT, SDLConstants.SDL_SCANCODE_RIGHT,
+				SDLConstants.SDL_SCANCODE_Z, SDLConstants.SDL_SCANCODE_X, SDLConstants.SDL_SCANCODE_A, SDLConstants.SDL_SCANCODE_SPACE, SDLConstants.SDL_SCANCODE_D, SDLConstants.SDL_SCANCODE_S,
+				SDLConstants.SDL_SCANCODE_F12, SDLConstants.SDL_SCANCODE_ESCAPE, SDLConstants.SDL_SCANCODE_F9, SDLConstants.SDL_SCANCODE_F10, SDLConstants.SDL_SCANCODE_N, SDLConstants.SDL_SCANCODE_F5
 			},
 			// Guideline games type
 			{
-				SDLKey.SDLK_SPACE,SDLKey.SDLK_DOWN,SDLKey.SDLK_LEFT,SDLKey.SDLK_RIGHT,
-				SDLKey.SDLK_z,SDLKey.SDLK_UP,SDLKey.SDLK_c,SDLKey.SDLK_LSHIFT,SDLKey.SDLK_x,SDLKey.SDLK_v,SDLKey.SDLK_F12,
-				SDLKey.SDLK_ESCAPE,SDLKey.SDLK_F9,SDLKey.SDLK_F10,SDLKey.SDLK_n,SDLKey.SDLK_F5
+				SDLConstants.SDL_SCANCODE_SPACE, SDLConstants.SDL_SCANCODE_DOWN, SDLConstants.SDL_SCANCODE_LEFT, SDLConstants.SDL_SCANCODE_RIGHT,
+				SDLConstants.SDL_SCANCODE_Z, SDLConstants.SDL_SCANCODE_UP, SDLConstants.SDL_SCANCODE_C, SDLConstants.SDL_SCANCODE_LSHIFT, SDLConstants.SDL_SCANCODE_X, SDLConstants.SDL_SCANCODE_V, SDLConstants.SDL_SCANCODE_F12,
+				SDLConstants.SDL_SCANCODE_ESCAPE, SDLConstants.SDL_SCANCODE_F9, SDLConstants.SDL_SCANCODE_F10, SDLConstants.SDL_SCANCODE_N, SDLConstants.SDL_SCANCODE_F5
 			},
 			// NullpoMino classic type
 			{
-				SDLKey.SDLK_UP,SDLKey.SDLK_DOWN,SDLKey.SDLK_LEFT,SDLKey.SDLK_RIGHT,
-				SDLKey.SDLK_a,SDLKey.SDLK_s,SDLKey.SDLK_d,SDLKey.SDLK_z,SDLKey.SDLK_x,SDLKey.SDLK_c,
-				SDLKey.SDLK_ESCAPE,SDLKey.SDLK_F1,SDLKey.SDLK_F12,SDLKey.SDLK_F9,SDLKey.SDLK_n,SDLKey.SDLK_F10
+				SDLConstants.SDL_SCANCODE_UP, SDLConstants.SDL_SCANCODE_DOWN, SDLConstants.SDL_SCANCODE_LEFT, SDLConstants.SDL_SCANCODE_RIGHT,
+				SDLConstants.SDL_SCANCODE_A, SDLConstants.SDL_SCANCODE_S, SDLConstants.SDL_SCANCODE_D, SDLConstants.SDL_SCANCODE_Z, SDLConstants.SDL_SCANCODE_X, SDLConstants.SDL_SCANCODE_C,
+				SDLConstants.SDL_SCANCODE_ESCAPE, SDLConstants.SDL_SCANCODE_F1, SDLConstants.SDL_SCANCODE_F12, SDLConstants.SDL_SCANCODE_F9, SDLConstants.SDL_SCANCODE_N, SDLConstants.SDL_SCANCODE_F10
 			},
 		},
 		// Menu
 		{
 			// Blockbox type
 			{
-				SDLKey.SDLK_UP,SDLKey.SDLK_DOWN,SDLKey.SDLK_LEFT,SDLKey.SDLK_RIGHT,
-				SDLKey.SDLK_RETURN,SDLKey.SDLK_ESCAPE,SDLKey.SDLK_a,SDLKey.SDLK_SPACE,SDLKey.SDLK_d,SDLKey.SDLK_s,
-				SDLKey.SDLK_F12,SDLKey.SDLK_F1,SDLKey.SDLK_F9,SDLKey.SDLK_F10,SDLKey.SDLK_n,SDLKey.SDLK_F5
+				SDLConstants.SDL_SCANCODE_UP, SDLConstants.SDL_SCANCODE_DOWN, SDLConstants.SDL_SCANCODE_LEFT, SDLConstants.SDL_SCANCODE_RIGHT,
+				SDLConstants.SDL_SCANCODE_RETURN, SDLConstants.SDL_SCANCODE_ESCAPE, SDLConstants.SDL_SCANCODE_A, SDLConstants.SDL_SCANCODE_SPACE, SDLConstants.SDL_SCANCODE_D, SDLConstants.SDL_SCANCODE_S,
+				SDLConstants.SDL_SCANCODE_F12, SDLConstants.SDL_SCANCODE_F1, SDLConstants.SDL_SCANCODE_F9, SDLConstants.SDL_SCANCODE_F10, SDLConstants.SDL_SCANCODE_N, SDLConstants.SDL_SCANCODE_F5
 			},
 			// Guideline games type
 			{
-				SDLKey.SDLK_UP,SDLKey.SDLK_DOWN,SDLKey.SDLK_LEFT,SDLKey.SDLK_RIGHT,
-				SDLKey.SDLK_RETURN,SDLKey.SDLK_ESCAPE,SDLKey.SDLK_c,SDLKey.SDLK_LSHIFT,SDLKey.SDLK_x,SDLKey.SDLK_v,
-				SDLKey.SDLK_F12,SDLKey.SDLK_F1,SDLKey.SDLK_F9,SDLKey.SDLK_F10,SDLKey.SDLK_n,SDLKey.SDLK_F5
+				SDLConstants.SDL_SCANCODE_UP, SDLConstants.SDL_SCANCODE_DOWN, SDLConstants.SDL_SCANCODE_LEFT, SDLConstants.SDL_SCANCODE_RIGHT,
+				SDLConstants.SDL_SCANCODE_RETURN, SDLConstants.SDL_SCANCODE_ESCAPE, SDLConstants.SDL_SCANCODE_C, SDLConstants.SDL_SCANCODE_LSHIFT, SDLConstants.SDL_SCANCODE_X, SDLConstants.SDL_SCANCODE_V,
+				SDLConstants.SDL_SCANCODE_F12, SDLConstants.SDL_SCANCODE_F1, SDLConstants.SDL_SCANCODE_F9, SDLConstants.SDL_SCANCODE_F10, SDLConstants.SDL_SCANCODE_N, SDLConstants.SDL_SCANCODE_F5
 			},
 			// NullpoMino classic type
 			{
-				SDLKey.SDLK_UP,SDLKey.SDLK_DOWN,SDLKey.SDLK_LEFT,SDLKey.SDLK_RIGHT,
-				SDLKey.SDLK_a,SDLKey.SDLK_s,SDLKey.SDLK_d,SDLKey.SDLK_z,SDLKey.SDLK_x,SDLKey.SDLK_c,
-				SDLKey.SDLK_ESCAPE,SDLKey.SDLK_F1,SDLKey.SDLK_F12,SDLKey.SDLK_F9,SDLKey.SDLK_n,SDLKey.SDLK_F10
+				SDLConstants.SDL_SCANCODE_UP, SDLConstants.SDL_SCANCODE_DOWN, SDLConstants.SDL_SCANCODE_LEFT, SDLConstants.SDL_SCANCODE_RIGHT,
+				SDLConstants.SDL_SCANCODE_A, SDLConstants.SDL_SCANCODE_S, SDLConstants.SDL_SCANCODE_D, SDLConstants.SDL_SCANCODE_Z, SDLConstants.SDL_SCANCODE_X, SDLConstants.SDL_SCANCODE_C,
+				SDLConstants.SDL_SCANCODE_ESCAPE, SDLConstants.SDL_SCANCODE_F1, SDLConstants.SDL_SCANCODE_F12, SDLConstants.SDL_SCANCODE_F9, SDLConstants.SDL_SCANCODE_N, SDLConstants.SDL_SCANCODE_F10
 			},
 		},
 	};
@@ -105,72 +110,68 @@ public class GameKeySDL extends GameKeyDummy {
 	}
 
 	/**
-	 * Update button input status
-	 * @param keyboard Keyboard input array
+	 * Update button input status (keyboard only)
+	 * @param keyboard Keyboard input array (indexed by scancode)
 	 */
 	public void update(boolean[] keyboard) {
-		update(keyboard, null, 0, 0, null, false);
+		update(keyboard, null, 0, 0, 0, false);
 	}
 
 	/**
-	 * Update button input status
-	 * @param keyboard Keyboard input array
+	 * Update button input status (keyboard only, with ingame flag)
+	 * @param keyboard Keyboard input array (indexed by scancode)
 	 * @param ingame true if ingame
 	 */
 	public void update(boolean[] keyboard, boolean ingame) {
-		update(keyboard, null, 0, 0, null, ingame);
+		update(keyboard, null, 0, 0, 0, ingame);
 	}
 
 	/**
 	 * Update button input status
-	 * @param keyboard Keyboard input array
+	 * @param keyboard Keyboard input array (indexed by scancode)
 	 * @param joyButton Joystick button input array (Can be null)
-	 * @param joyX Joystick X
-	 * @param joyY Joystick Y
-	 * @param hat Joystick HatState (Can be null)
+	 * @param joyX Joystick X axis
+	 * @param joyY Joystick Y axis
+	 * @param hat Joystick hat bitmask (SDL_HAT_UP/DOWN/LEFT/RIGHT)
 	 */
-	public void update(boolean[] keyboard, boolean[] joyButton, int joyX, int joyY, HatState hat) {
+	public void update(boolean[] keyboard, boolean[] joyButton, int joyX, int joyY, int hat) {
 		update(keyboard, joyButton, joyX, joyY, hat, false);
 	}
 
 	/**
 	 * Update button input status
-	 * @param keyboard Keyboard input array
+	 * @param keyboard Keyboard input array (indexed by scancode)
 	 * @param joyButton Joystick button input array (Can be null)
-	 * @param joyX Joystick X
-	 * @param joyY Joystick Y
-	 * @param hat Joystick HatState (Can be null)
+	 * @param joyX Joystick X axis
+	 * @param joyY Joystick Y axis
+	 * @param hat Joystick hat bitmask (SDL_HAT_UP/DOWN/LEFT/RIGHT)
 	 * @param ingame true if ingame
 	 */
-	public void update(boolean[] keyboard, boolean[] joyButton, int joyX, int joyY, HatState hat, boolean ingame) {
+	public void update(boolean[] keyboard, boolean[] joyButton, int joyX, int joyY, int hat, boolean ingame) {
 		for(int i = 0; i < MAX_BUTTON; i++) {
 			int[] kmap = ingame ? keymap : keymapNav;
 			boolean flag = keyboard[kmap[i]];
 
 			if(i == BUTTON_UP) {
-				// Up
-				if( (flag) || (joyY < -joyBorder) || ((hat != null) && (hat.hatUp())) ) {
+				if( (flag) || (joyY < -joyBorder) || ((hat & SDL_HAT_UP) != 0) ) {
 					inputstate[i]++;
 				} else {
 					inputstate[i] = 0;
 				}
 			} else if(i == BUTTON_DOWN) {
-				// Down
-				if( (flag) || (joyY > joyBorder) || ((hat != null) && (hat.hatDown())) ) {
+				if( (flag) || (joyY > joyBorder) || ((hat & SDL_HAT_DOWN) != 0) ) {
 					inputstate[i]++;
 				} else {
 					inputstate[i] = 0;
 				}
 			} else if(i == BUTTON_LEFT) {
-				// Left
-				if((flag) || (joyX < -joyBorder) || ((hat != null) && (hat.hatLeft())) ) {
+				if((flag) || (joyX < -joyBorder) || ((hat & SDL_HAT_LEFT) != 0) ) {
 					inputstate[i]++;
 				} else {
 					inputstate[i] = 0;
 				}
 			} else if(i == BUTTON_RIGHT) {
-				// Right
-				if((flag) || (joyX > joyBorder) || ((hat != null) && (hat.hatRight())) ) {
+				if((flag) || (joyX > joyBorder) || ((hat & SDL_HAT_RIGHT) != 0) ) {
 					inputstate[i]++;
 				} else {
 					inputstate[i] = 0;

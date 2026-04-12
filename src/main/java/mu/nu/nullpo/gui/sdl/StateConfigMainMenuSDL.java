@@ -28,8 +28,7 @@
 */
 package mu.nu.nullpo.gui.sdl;
 
-import sdljava.SDLException;
-import sdljava.video.SDLSurface;
+import mu.nu.nullpo.gui.sdl.binding.SDL3;
 
 /**
  * State of the configuration screen
@@ -59,8 +58,8 @@ public class StateConfigMainMenuSDL extends DummyMenuChooseStateSDL {
 	 * Draw the screen
 	 */
 	@Override
-	public void render(SDLSurface screen) throws SDLException {
-		ResourceHolderSDL.imgMenu.blitSurface(screen);
+	public void render() {
+		SDL3.INSTANCE.SDL_RenderTexture(NullpoMinoSDL.renderer, ResourceHolderSDL.imgMenu, null, null);
 
 		NormalFontSDL.printFontGrid(1, 1, "OPTIONS", NormalFontSDL.COLOR_ORANGE);
 
@@ -87,7 +86,7 @@ public class StateConfigMainMenuSDL extends DummyMenuChooseStateSDL {
 	}
 
 	@Override
-	protected boolean onDecide() throws SDLException {
+	protected boolean onDecide() {
 		ResourceHolderSDL.soundManager.play("decide");
 
 		switch(cursor) {
@@ -135,7 +134,7 @@ public class StateConfigMainMenuSDL extends DummyMenuChooseStateSDL {
 	}
 
 	@Override
-	protected boolean onCancel() throws SDLException {
+	protected boolean onCancel() {
 		NullpoMinoSDL.enterState(NullpoMinoSDL.STATE_TITLE);
 		return false;
 	}

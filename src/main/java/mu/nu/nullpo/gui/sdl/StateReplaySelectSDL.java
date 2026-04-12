@@ -40,8 +40,6 @@ import mu.nu.nullpo.util.GeneralUtil;
 
 import org.apache.log4j.Logger;
 
-import sdljava.SDLException;
-import sdljava.video.SDLSurface;
 
 /**
  * State selection screen replay
@@ -72,7 +70,7 @@ public class StateReplaySelectSDL extends DummyMenuScrollStateSDL {
 	 * Called when entering this state
 	 */
 	@Override
-	public void enter() throws SDLException {
+	public void enter() {
 		list = getReplayFileList();
 		if (list != null) { maxCursor = list.length-1; }
 		setReplayRuleAndModeList();
@@ -134,7 +132,7 @@ public class StateReplaySelectSDL extends DummyMenuScrollStateSDL {
 	 * Draw the screen
 	 */
 	@Override
-	protected void onRenderSuccess(SDLSurface screen) throws SDLException {
+	protected void onRenderSuccess() {
 		String title = "SELECT REPLAY FILE";
 		title += " (" + (cursor + 1) + "/" + (list.length) + ")";
 
@@ -154,7 +152,7 @@ public class StateReplaySelectSDL extends DummyMenuScrollStateSDL {
 	}
 
 	@Override
-	protected boolean onDecide() throws SDLException {
+	protected boolean onDecide() {
 		ResourceHolderSDL.soundManager.play("decide");
 
 		CustomProperties prop = new CustomProperties();
@@ -177,7 +175,7 @@ public class StateReplaySelectSDL extends DummyMenuScrollStateSDL {
 	}
 
 	@Override
-	protected boolean onCancel() throws SDLException {
+	protected boolean onCancel() {
 		NullpoMinoSDL.enterState(NullpoMinoSDL.STATE_TITLE);
 		return false;
 	}

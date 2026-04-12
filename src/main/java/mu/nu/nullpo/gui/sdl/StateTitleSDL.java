@@ -29,9 +29,7 @@
 package mu.nu.nullpo.gui.sdl;
 
 import mu.nu.nullpo.game.play.GameManager;
-import sdljava.SDLException;
-import sdljava.video.SDLSurface;
-import sdljava.video.SDLVideo;
+import mu.nu.nullpo.gui.sdl.binding.SDL3;
 
 /**
  * Title screen state (SDL)
@@ -54,9 +52,9 @@ public class StateTitleSDL extends DummyMenuChooseStateSDL {
 	 * Called when entering this state
 	 */
 	@Override
-	public void enter() throws SDLException {
+	public void enter() {
 		// Update title bar
-		SDLVideo.wmSetCaption("NullpoMino version" + GameManager.getVersionString(), null);
+		SDL3.INSTANCE.SDL_SetWindowTitle(NullpoMinoSDL.window, "NullpoMino version" + GameManager.getVersionString());
 		// Observer start
 		NullpoMinoSDL.startObserverClient();
 		// Call GC
@@ -68,8 +66,8 @@ public class StateTitleSDL extends DummyMenuChooseStateSDL {
 	 * Draw the game screen
 	 */
 	@Override
-	public void render(SDLSurface screen) throws SDLException {
-		ResourceHolderSDL.imgTitle.blitSurface(screen);
+	public void render() {
+		SDL3.INSTANCE.SDL_RenderTexture(NullpoMinoSDL.renderer, ResourceHolderSDL.imgTitle, null, null);
 
 		NormalFontSDL.printFontGrid(1, 1, "NULLPOMINO", NormalFontSDL.COLOR_ORANGE);
 		NormalFontSDL.printFontGrid(1, 2, "VERSION " + GameManager.getVersionString(), NormalFontSDL.COLOR_ORANGE);
@@ -82,7 +80,7 @@ public class StateTitleSDL extends DummyMenuChooseStateSDL {
 	}
 
 	@Override
-	protected boolean onDecide () throws SDLException {
+	protected boolean onDecide() {
 		ResourceHolderSDL.soundManager.play("decide");
 
 		switch(cursor) {

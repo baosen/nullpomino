@@ -29,12 +29,9 @@
 package mu.nu.nullpo.gui.sdl;
 
 import mu.nu.nullpo.game.play.GameManager;
+import mu.nu.nullpo.gui.sdl.binding.SDL3;
+import mu.nu.nullpo.gui.sdl.binding.SDLConstants;
 import mu.nu.nullpo.util.GeneralUtil;
-
-import sdljava.SDLException;
-import sdljava.event.SDLKey;
-import sdljava.video.SDLSurface;
-import sdljava.video.SDLVideo;
 
 /**
  * Keyboard config screen state
@@ -76,7 +73,7 @@ public class StateConfigKeyboardSDL extends BaseStateSDL {
 		keyConfigRestFrame = 0;
 
 		keymap = new int[NUM_KEYS];
-		previousKeyPressedState = new boolean[NullpoMinoSDL.SDL_KEY_MAX];
+		previousKeyPressedState = new boolean[SDLConstants.SDL_SCANCODE_COUNT];
 
 		for(int i = 0; i < NUM_KEYS; i++) {
 			if(!isNavSetting)
@@ -90,7 +87,7 @@ public class StateConfigKeyboardSDL extends BaseStateSDL {
 	 * Get newly pressed key code
 	 * @param prev Previous input state
 	 * @param now New input state
-	 * @return The newly pressed key code. It will return SDLKey.SDLK_UNKNOWN if none are pressed.
+	 * @return The newly pressed key code. It will return -1 if none are pressed.
 	 */
 	protected int getPressedKeyNumber(boolean[] prev, boolean[] now) {
 		for(int i = 0; i < now.length; i++) {
@@ -99,27 +96,27 @@ public class StateConfigKeyboardSDL extends BaseStateSDL {
 			}
 		}
 
-		return SDLKey.SDLK_UNKNOWN;
+		return -1;
 	}
 
 	/**
 	 * Get key name
-	 * @param key Keycode
+	 * @param key Keycode (scancode)
 	 * @return Key name
 	 */
 	protected String getKeyName(int key) {
-		if((key < 0) || (key >= NullpoMinoSDL.SDL_KEYNAMES.length)) {
+		if((key < 0) || (key >= SDLConstants.SCANCODE_NAMES.length)) {
 			return "(" + key + ")";
 		}
-		return NullpoMinoSDL.SDL_KEYNAMES[key];
+		return SDLConstants.SCANCODE_NAMES[key];
 	}
 
 	/*
 	 * Draw the screen
 	 */
 	@Override
-	public void render(SDLSurface screen) throws SDLException {
-		ResourceHolderSDL.imgMenu.blitSurface(screen);
+	public void render() {
+		SDL3.INSTANCE.SDL_RenderTexture(NullpoMinoSDL.renderer, ResourceHolderSDL.imgMenu, null, null);
 
 		if(!isNavSetting) {
 			NormalFontSDL.printFontGrid(1,  1, "KEYBOARD SETTING (" + (player + 1) + "P)", NormalFontSDL.COLOR_ORANGE);
@@ -175,7 +172,7 @@ public class StateConfigKeyboardSDL extends BaseStateSDL {
 	 * Update game state
 	 */
 	@Override
-	public void update() throws SDLException {
+	public void update() {
 		// Always poll page nav so edge detection stays in sync during key-set mode
 		int pageEvent = PageNavigationSDL.checkPageEvent();
 
@@ -184,7 +181,7 @@ public class StateConfigKeyboardSDL extends BaseStateSDL {
 				// Key-set mode
 				int key = getPressedKeyNumber(previousKeyPressedState, NullpoMinoSDL.keyPressedState);
 
-				if(key != SDLKey.SDLK_UNKNOWN) {
+				if(key != -1) {
 					ResourceHolderSDL.soundManager.play("change");
 					keymap[keynum] = key;
 					frame = 0;
@@ -195,13 +192,13 @@ public class StateConfigKeyboardSDL extends BaseStateSDL {
 				keyConfigRestFrame--;
 			} else {
 				// Menu mode
-				if(NullpoMinoSDL.keyPressedState[SDLKey.SDLK_UP]) {
+				if(NullpoMinoSDL.keyPressedState[SDLConstants.SDL_SCANCODE_UP]) {
 					frame = 0;
 					ResourceHolderSDL.soundManager.play("cursor");
 					keynum--;
 					if(keynum < 0) keynum = NUM_KEYS;
 				}
-				if(NullpoMinoSDL.keyPressedState[SDLKey.SDLK_DOWN]) {
+				if(NullpoMinoSDL.keyPressedState[SDLConstants.SDL_SCANCODE_DOWN]) {
 					frame = 0;
 					ResourceHolderSDL.soundManager.play("cursor");
 					keynum++;
@@ -214,7 +211,7 @@ public class StateConfigKeyboardSDL extends BaseStateSDL {
 				if(keynum != prevKeynum) frame = 0;
 
 				// Enter
-				if(NullpoMinoSDL.keyPressedState[SDLKey.SDLK_RETURN]) {
+				if(NullpoMinoSDL.keyPressedState[SDLConstants.SDL_SCANCODE_RETURN]) {
 					ResourceHolderSDL.soundManager.play("decide");
 
 					if(keynum >= NUM_KEYS) {
@@ -237,15 +234,15 @@ public class StateConfigKeyboardSDL extends BaseStateSDL {
 				}
 
 				// Delete
-				if(NullpoMinoSDL.keyPressedState[SDLKey.SDLK_DELETE]) {
-					if((keynum < NUM_KEYS) && (keymap[keynum] != SDLKey.SDLK_UNKNOWN)) {
+				if(NullpoMinoSDL.keyPressedState[SDLConstants.SDL_SCANCODE_DELETE]) {
+					if((keynum < NUM_KEYS) && (keymap[keynum] != -1)) {
 						ResourceHolderSDL.soundManager.play("change");
-						keymap[keynum] = SDLKey.SDLK_UNKNOWN;
+						keymap[keynum] = -1;
 					}
 				}
 
 				// Backspace
-				if(NullpoMinoSDL.keyPressedState[SDLKey.SDLK_BACKSPACE]) {
+				if(NullpoMinoSDL.keyPressedState[SDLConstants.SDL_SCANCODE_BACKSPACE]) {
 					if(isNavSetting)
 						NullpoMinoSDL.enterState(NullpoMinoSDL.STATE_CONFIG_KEYBOARD_NAVI);
 					else
@@ -265,17 +262,17 @@ public class StateConfigKeyboardSDL extends BaseStateSDL {
 	 * Called when entering this state
 	 */
 	@Override
-	public void enter() throws SDLException {
+	public void enter() {
 		reset();
 		NullpoMinoSDL.enableSpecialKeys = false;
-		SDLVideo.wmSetCaption("NullpoMino version" + GameManager.getVersionString(), null);
+		SDL3.INSTANCE.SDL_SetWindowTitle(NullpoMinoSDL.window, "NullpoMino version" + GameManager.getVersionString());
 	}
 
 	/*
 	 * Called when leaving this state
 	 */
 	@Override
-	public void leave() throws SDLException {
+	public void leave() {
 		reset();
 		NullpoMinoSDL.enableSpecialKeys = true;
 	}

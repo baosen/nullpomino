@@ -1,7 +1,6 @@
 package mu.nu.nullpo.gui.sdl;
 
-import sdljava.SDLException;
-import sdljava.video.SDLSurface;
+import mu.nu.nullpo.gui.sdl.binding.SDL3;
 
 /**
  * Keyboard Reset menu (SDL)
@@ -23,8 +22,8 @@ public class StateConfigKeyboardResetSDL extends DummyMenuChooseStateSDL {
 	 * Draw the screen
 	 */
 	@Override
-	public void render(SDLSurface screen) throws SDLException {
-		ResourceHolderSDL.imgMenu.blitSurface(screen);
+	public void render() {
+		SDL3.INSTANCE.SDL_RenderTexture(NullpoMinoSDL.renderer, ResourceHolderSDL.imgMenu, null, null);
 
 		NormalFontSDL.printFontGrid(1, 1, "KEYBOARD RESET (" + (player+1) + "P)", NormalFontSDL.COLOR_ORANGE);
 		NormalFontSDL.printFontGrid(1, 3, "RESET SETTINGS TO...", NormalFontSDL.COLOR_GREEN);
@@ -35,14 +34,14 @@ public class StateConfigKeyboardResetSDL extends DummyMenuChooseStateSDL {
 		NormalFontSDL.printFontGrid(2, 5, "GUIDELINE STYLE", (cursor == 1));
 		NormalFontSDL.printFontGrid(2, 6, "NULLPOMINO CLASSIC STYLE", (cursor == 2));
 
-		super.render(screen);
+		super.render();
 	}
 
 	/*
 	 * Decide
 	 */
 	@Override
-	protected boolean onDecide() throws SDLException {
+	protected boolean onDecide() {
 		ResourceHolderSDL.soundManager.play("decide");
 		GameKeySDL.gamekey[player].loadDefaultKeymap(cursor);
 		GameKeySDL.gamekey[player].saveConfig(NullpoMinoSDL.propConfig);
@@ -55,7 +54,7 @@ public class StateConfigKeyboardResetSDL extends DummyMenuChooseStateSDL {
 	 * Cancel
 	 */
 	@Override
-	protected boolean onCancel() throws SDLException {
+	protected boolean onCancel() {
 		NullpoMinoSDL.enterState(NullpoMinoSDL.STATE_CONFIG_MAINMENU);
 		return false;
 	}

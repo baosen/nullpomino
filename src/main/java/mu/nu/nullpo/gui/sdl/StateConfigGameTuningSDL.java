@@ -28,21 +28,21 @@
 */
 package mu.nu.nullpo.gui.sdl;
 
+import com.sun.jna.Pointer;
+
 import mu.nu.nullpo.game.component.Controller;
 import mu.nu.nullpo.game.component.RuleOptions;
 import mu.nu.nullpo.game.play.GameManager;
 import mu.nu.nullpo.game.subsystem.ai.DummyAI;
 import mu.nu.nullpo.game.subsystem.mode.PreviewMode;
 import mu.nu.nullpo.game.subsystem.wallkick.Wallkick;
+import mu.nu.nullpo.gui.sdl.binding.SDL3;
+import mu.nu.nullpo.gui.sdl.binding.SDLStructs;
 import mu.nu.nullpo.util.CustomProperties;
 import mu.nu.nullpo.util.GeneralUtil;
 import net.omegaboshi.nullpomino.game.subsystem.randomizer.Randomizer;
 
 import org.apache.log4j.Logger;
-
-import sdljava.SDLException;
-import sdljava.video.SDLRect;
-import sdljava.video.SDLSurface;
 
 /**
  * Game Tuning menu state
@@ -148,23 +148,16 @@ public class StateConfigGameTuningSDL extends BaseStateSDL {
 	 * Called when entering this state
 	 */
 	@Override
-	public void enter() throws SDLException {
+	public void enter() {
 		isPreview = false;
 		loadConfig(NullpoMinoSDL.propGlobal);
-	}
-
-	@Override
-	public void onGameSurfaceChanged(SDLSurface gameSurface) {
-		if((gameManager != null) && (gameManager.receiver != null)) {
-			gameManager.receiver.setGraphics(gameSurface);
-		}
 	}
 
 	/*
 	 * Called when leaving the state
 	 */
 	@Override
-	public void leave() throws SDLException {
+	public void leave() {
 		stopPreviewGame();
 	}
 
@@ -175,7 +168,7 @@ public class StateConfigGameTuningSDL extends BaseStateSDL {
 		NullpoMinoSDL.disableAutoInputUpdate = true;
 
 		gameManager = new GameManager(new RendererSDL());
-		gameManager.receiver.setGraphics(NullpoMinoSDL.gameSurface);
+		gameManager.receiver.setGraphics(NullpoMinoSDL.renderer);
 
 		gameManager.mode = new PreviewMode();
 		gameManager.init();
@@ -262,8 +255,8 @@ public class StateConfigGameTuningSDL extends BaseStateSDL {
 	 * Draw the game screen
 	 */
 	@Override
-	public void render(SDLSurface screen) throws SDLException {
-		ResourceHolderSDL.imgMenu.blitSurface(screen);
+	public void render() {
+		SDL3.INSTANCE.SDL_RenderTexture(NullpoMinoSDL.renderer, ResourceHolderSDL.imgMenu, null, null);
 
 		if(isPreview) {
 			// Preview
@@ -290,18 +283,18 @@ public class StateConfigGameTuningSDL extends BaseStateSDL {
 
 			NormalFontSDL.printFontGrid(2, 4, "BLOCK SKIN:" + ((owSkin == -1) ? "AUTO": String.valueOf(owSkin)), (cursor == 1));
 			if((owSkin >= 0) && (owSkin < ResourceHolderSDL.imgNormalBlockList.size())) {
-				SDLSurface imgBlock = ResourceHolderSDL.imgNormalBlockList.get(owSkin);
+				Pointer imgBlock = ResourceHolderSDL.imgNormalBlockList.get(owSkin);
 
 				if(ResourceHolderSDL.blockStickyFlagList.get(owSkin) == true) {
 					for(int j = 0; j < 9; j++) {
-						SDLRect rectSkinSrc = new SDLRect(0, j * 16, 16, 16);
-						SDLRect rectSkinDst = new SDLRect(256 + (j * 16), 64, 144, 16);
-						imgBlock.blitSurface(rectSkinSrc, screen, rectSkinDst);
+						SDLStructs.SDL_FRect rectSkinSrc = new SDLStructs.SDL_FRect(0, j * 16, 16, 16);
+						SDLStructs.SDL_FRect rectSkinDst = new SDLStructs.SDL_FRect(256 + (j * 16), 64, 16, 16);
+						SDL3.INSTANCE.SDL_RenderTexture(NullpoMinoSDL.renderer, imgBlock, rectSkinSrc, rectSkinDst);
 					}
 				} else {
-					SDLRect rectSkinSrc = new SDLRect(0, 0, 144, 16);
-					SDLRect rectSkinDst = new SDLRect(256, 64, 144, 16);
-					imgBlock.blitSurface(rectSkinSrc, screen, rectSkinDst);
+					SDLStructs.SDL_FRect rectSkinSrc = new SDLStructs.SDL_FRect(0, 0, 144, 16);
+					SDLStructs.SDL_FRect rectSkinDst = new SDLStructs.SDL_FRect(256, 64, 144, 16);
+					SDL3.INSTANCE.SDL_RenderTexture(NullpoMinoSDL.renderer, imgBlock, rectSkinSrc, rectSkinDst);
 				}
 			}
 
@@ -332,7 +325,7 @@ public class StateConfigGameTuningSDL extends BaseStateSDL {
 	 * Update game state
 	 */
 	@Override
-	public void update() throws SDLException {
+	public void update() {
 		// Always poll page nav so edge detection stays in sync during preview mode
 		int pageEvent = PageNavigationSDL.checkPageEvent();
 

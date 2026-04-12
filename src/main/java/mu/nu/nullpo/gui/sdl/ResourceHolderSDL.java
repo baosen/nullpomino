@@ -31,27 +31,26 @@ package mu.nu.nullpo.gui.sdl;
 import java.io.File;
 import java.util.LinkedList;
 
+import com.sun.jna.Pointer;
+import com.sun.jna.ptr.FloatByReference;
+
 import mu.nu.nullpo.game.component.BGMStatus;
+import mu.nu.nullpo.gui.sdl.binding.SDL3;
+import mu.nu.nullpo.gui.sdl.binding.SDL3Image;
+import mu.nu.nullpo.gui.sdl.binding.SDL3Mixer;
+import mu.nu.nullpo.gui.sdl.binding.SDL3TTF;
+import mu.nu.nullpo.gui.sdl.binding.SDLConstants;
 
 import org.apache.log4j.Logger;
 
-import sdljava.SDLException;
-import sdljava.image.SDLImage;
-import sdljava.mixer.MixMusic;
-import sdljava.mixer.SDLMixer;
-import sdljava.ttf.SDLTTF;
-import sdljava.ttf.SDLTrueTypeFont;
-import sdljava.video.SDLSurface;
-import sdljava.video.SDLVideo;
-
 /**
- * Class to the management of image and sound
+ * Class to manage images and sounds (SDL3 version)
  */
 public class ResourceHolderSDL {
 	/** Log */
 	static Logger log = Logger.getLogger(ResourceHolderSDL.class);
 
-	/** BackgroundOfcount */
+	/** Background count */
 	public static final int BACKGROUND_MAX = 20;
 
 	/** Number of images for block spatter animation during line clears */
@@ -62,61 +61,62 @@ public class ResourceHolderSDL {
 
 	/** Number of gem block clear effects */
 	public static final int PERASE_MAX = 7;
-	
 
-	/** Block images */
-	public static LinkedList<SDLSurface> imgNormalBlockList, imgSmallBlockList, imgBigBlockList;
+	/** Block images (SDL_Texture*) */
+	public static LinkedList<Pointer> imgNormalBlockList, imgSmallBlockList, imgBigBlockList;
 
 	/** Block sticky flag */
 	public static LinkedList<Boolean> blockStickyFlagList;
 
-	/** Regular font */
-	public static SDLSurface imgFont, imgFontSmall, imgFontBig;
+	/** Regular font textures */
+	public static Pointer imgFont, imgFontSmall, imgFontBig;
 
 	/** Small image */
-	public static SDLSurface imgSprite;
+	public static Pointer imgSprite;
 
 	/** Title */
-	public static SDLSurface imgTitle;
+	public static Pointer imgTitle;
 
-	/** Menu Background */
-	public static SDLSurface imgMenu;
+	/** Menu background */
+	public static Pointer imgMenu;
 
 	/** Field frame */
-	public static SDLSurface imgFrame;
+	public static Pointer imgFrame;
 
 	/** Field background */
-	public static SDLSurface imgFieldbg, imgFieldbg2, imgFieldbg2Small, imgFieldbg2Big;
+	public static Pointer imgFieldbg, imgFieldbg2, imgFieldbg2Small, imgFieldbg2Big;
 
-	/** Black and white image image */
-	public static SDLSurface imgBlankBlack, imgBlankWhite;
+	/** Black and white textures (used for darkness/brightness overlays) */
+	public static Pointer imgBlankBlack, imgBlankWhite;
 
 	/** Block spatter animation during line clears */
-	public static SDLSurface[][] imgBreak;
+	public static Pointer[][] imgBreak;
 
 	/** Effects for clearing gem blocks */
-	public static SDLSurface[] imgPErase;
+	public static Pointer[] imgPErase;
 
-	/** In playBackground */
-	public static SDLSurface[] imgPlayBG;
+	/** In play background */
+	public static Pointer[] imgPlayBG;
 
-	/** TTF font */
-	public static SDLTrueTypeFont ttfFont;
+	/** TTF font (TTF_Font*) */
+	public static Pointer ttfFont;
 
 	/** Sound effects */
 	public static SoundManagerSDL soundManager;
 
-	/** BGM */
-	public static MixMusic[] bgm;
+	/** BGM audio data (MIX_Audio*) */
+	public static Pointer[] bgm;
+
+	/** BGM playback track (MIX_Track*) — single track for all BGM */
+	public static Pointer bgmTrack;
 
 	/** Current BGM number */
 	public static int bgmPlaying;
 
 	/**
-	 * Loading images and sound files
-	 * @throws SDLException Failed to load
+	 * Load images and sound files
 	 */
-	public static void load() throws SDLException {
+	public static void load() {
 		String skindir = NullpoMinoSDL.propConfig.getProperty("custom.skin.directory", "res");
 
 		log.info("Loading Image");
@@ -134,19 +134,26 @@ public class ResourceHolderSDL {
 		}
 		log.debug(numBlocks + " block skins found");
 
-		imgNormalBlockList = new LinkedList<SDLSurface>();
-		imgSmallBlockList = new LinkedList<SDLSurface>();
-		imgBigBlockList = new LinkedList<SDLSurface>();
+		imgNormalBlockList = new LinkedList<Pointer>();
+		imgSmallBlockList = new LinkedList<Pointer>();
+		imgBigBlockList = new LinkedList<Pointer>();
 		blockStickyFlagList = new LinkedList<Boolean>();
 
 		for(int i = 0; i < numBlocks; i++) {
-			SDLSurface imgNormal = loadImage(skindir + "/graphics/blockskin/normal/n" + i + ".png");
+			Pointer imgNormal = loadImage(skindir + "/graphics/blockskin/normal/n" + i + ".png");
 			imgNormalBlockList.add(imgNormal);
 			imgSmallBlockList.add(loadImage(skindir + "/graphics/blockskin/small/s" + i + ".png"));
 			imgBigBlockList.add(loadImage(skindir + "/graphics/blockskin/big/b" + i + ".png"));
 
-			if((imgNormal.getWidth() >= 400) && (imgNormal.getHeight() >= 304)) {
-				blockStickyFlagList.add(Boolean.TRUE);
+			if(imgNormal != null) {
+				FloatByReference tw = new FloatByReference();
+				FloatByReference th = new FloatByReference();
+				SDL3.INSTANCE.SDL_GetTextureSize(imgNormal, tw, th);
+				if(tw.getValue() >= 400 && th.getValue() >= 304) {
+					blockStickyFlagList.add(Boolean.TRUE);
+				} else {
+					blockStickyFlagList.add(Boolean.FALSE);
+				}
 			} else {
 				blockStickyFlagList.add(Boolean.FALSE);
 			}
@@ -174,15 +181,13 @@ public class ResourceHolderSDL {
 
 		// Font
 		try {
-			ttfFont = SDLTTF.openFont(skindir + "/font/font.ttf", 16);
+			ttfFont = SDL3TTF.INSTANCE.TTF_OpenFont(skindir + "/font/font.ttf", 16);
 		} catch (Throwable e) {
 			log.warn("TTF Font load failed", e);
 			ttfFont = null;
 		}
 
 		// Sound effects
-		SDLMixer.allocateChannels(NullpoMinoSDL.propConfig.getProperty("option.soundChannels", 15));
-
 		soundManager = new SoundManagerSDL();
 		if(NullpoMinoSDL.propConfig.getProperty("option.se", true) == true) {
 			log.info("Loading Sound Effect");
@@ -254,8 +259,11 @@ public class ResourceHolderSDL {
 			}
 		}
 
+		// Warm up SE tracks so first play doesn't allocate audio streams
+		soundManager.warmUp();
+
 		// Music
-		bgm = new MixMusic[BGMStatus.BGM_COUNT];
+		bgm = new Pointer[BGMStatus.BGM_COUNT];
 		bgmPlaying = -1;
 
 		if(NullpoMinoSDL.propConfig.getProperty("option.bgmpreload", false) == true) {
@@ -270,7 +278,7 @@ public class ResourceHolderSDL {
 	 */
 	public static void loadBackgroundImages() {
 		if(imgPlayBG == null) {
-			imgPlayBG = new SDLSurface[BACKGROUND_MAX];
+			imgPlayBG = new Pointer[BACKGROUND_MAX];
 
 			String skindir = NullpoMinoSDL.propConfig.getProperty("custom.skin.directory", "res");
 			for(int i = 0; i < imgPlayBG.length; i++) {
@@ -286,7 +294,7 @@ public class ResourceHolderSDL {
 		String skindir = NullpoMinoSDL.propConfig.getProperty("custom.skin.directory", "res");
 
 		if(imgBreak == null) {
-			imgBreak = new SDLSurface[BLOCK_BREAK_MAX][BLOCK_BREAK_SEGMENTS];
+			imgBreak = new Pointer[BLOCK_BREAK_MAX][BLOCK_BREAK_SEGMENTS];
 
 			for(int i = 0; i < BLOCK_BREAK_MAX; i++) {
 				for(int j = 0; j < BLOCK_BREAK_SEGMENTS; j++) {
@@ -295,7 +303,7 @@ public class ResourceHolderSDL {
 			}
 		}
 		if(imgPErase == null) {
-			imgPErase = new SDLSurface[PERASE_MAX];
+			imgPErase = new Pointer[PERASE_MAX];
 
 			for(int i = 0; i < imgPErase.length; i++) {
 				imgPErase[i] = loadImage(skindir + "/graphics/perase" + i + ".png");
@@ -304,32 +312,41 @@ public class ResourceHolderSDL {
 	}
 
 	/**
-	 * Image loading
-	 * @param filename Filename
-	 * @return Image data
+	 * Load an image as an SDL3 texture.
+	 * @param filename file path
+	 * @return SDL_Texture* pointer, or null on failure
 	 */
-	public static SDLSurface loadImage(String filename) {
-		SDLSurface img = null;
-
-		try {
-			img = SDLImage.load(filename);
-		} catch (Throwable e) {
-			log.error("Failed to load image from " + filename, e);
-			try {
-				img = SDLVideo.createRGBSurface(SDLVideo.SDL_SWSURFACE, 256, 256, 4, 0, 0, 0, 0);
-			} catch (Throwable e2) {}
+	public static Pointer loadImage(String filename) {
+		Pointer surface = SDL3Image.INSTANCE.IMG_Load(filename);
+		if(surface == null) {
+			log.error("Failed to load image from " + filename + ": " + SDL3.INSTANCE.SDL_GetError());
+			return null;
 		}
 
-		return img;
+		Pointer texture = SDL3.INSTANCE.SDL_CreateTextureFromSurface(NullpoMinoSDL.renderer, surface);
+		SDL3.INSTANCE.SDL_DestroySurface(surface);
+
+		if(texture == null) {
+			log.error("Failed to create texture from " + filename + ": " + SDL3.INSTANCE.SDL_GetError());
+			return null;
+		}
+
+		// Enable blending for alpha transparency
+		SDL3.INSTANCE.SDL_SetTextureBlendMode(texture, SDLConstants.SDL_BLENDMODE_BLEND);
+		// Use nearest-neighbor scaling for crisp pixel art
+		SDL3.INSTANCE.SDL_SetTextureScaleMode(texture, SDLConstants.SDL_SCALEMODE_NEAREST);
+
+		return texture;
 	}
 
 	/**
-	 * Specified numberOfBGMRead into memory
+	 * Load a specific BGM into memory
 	 * @param no BGM number
-	 * @param showerr displayed on the console when an exception occurs
+	 * @param showerr display errors on console
 	 */
 	public static void bgmLoad(int no, boolean showerr) {
 		if(NullpoMinoSDL.propConfig.getProperty("option.bgm", false) == false) return;
+		if(NullpoMinoSDL.mixerLib == null || NullpoMinoSDL.mixer == null) return;
 
 		if(bgm[no] == null) {
 			if(showerr) {
@@ -343,9 +360,11 @@ public class ResourceHolderSDL {
 					return;
 				}
 
-				bgm[no] = SDLMixer.loadMUS(filename);
+				bgm[no] = NullpoMinoSDL.mixerLib.MIX_LoadAudio(NullpoMinoSDL.mixer, filename, 0);
 
-				if(!showerr) {
+				if(bgm[no] == null) {
+					if(showerr) log.warn("BGM " + no + " load failed: " + SDL3.INSTANCE.SDL_GetError());
+				} else if(!showerr) {
 					log.info("Loaded BGM " + no);
 				}
 			} catch(Throwable e) {
@@ -359,11 +378,14 @@ public class ResourceHolderSDL {
 	}
 
 	/**
-	 * Specified numberOfBGMPlay
+	 * Play a specific BGM
 	 * @param no BGM number
 	 */
 	public static void bgmStart(int no) {
 		if(NullpoMinoSDL.propConfig.getProperty("option.bgm", false) == false) return;
+		SDL3Mixer lib = NullpoMinoSDL.mixerLib;
+		Pointer mixer = NullpoMinoSDL.mixer;
+		if(lib == null || mixer == null) return;
 
 		bgmStop();
 		bgmPlaying = no;
@@ -374,12 +396,26 @@ public class ResourceHolderSDL {
 
 		if(bgm[no] != null) {
 			try {
-				if(NullpoMinoSDL.propMusic.getProperty("music.noloop." + no, false) == true)
-					SDLMixer.playMusic(bgm[no], 1);
-				else
-					SDLMixer.playMusic(bgm[no], -1);
+				// Create a BGM track if we don't have one
+				if(bgmTrack == null) {
+					bgmTrack = lib.MIX_CreateTrack(mixer);
+				}
+				if(bgmTrack == null) {
+					log.warn("Failed to create BGM track");
+					return;
+				}
 
-				SDLMixer.volumeMusic(NullpoMinoSDL.propConfig.getProperty("option.bgmvolume", 128));
+				lib.MIX_SetTrackAudio(bgmTrack, bgm[no]);
+
+				if(NullpoMinoSDL.propMusic.getProperty("music.noloop." + no, false) == true)
+					lib.MIX_SetTrackLoops(bgmTrack, 0);
+				else
+					lib.MIX_SetTrackLoops(bgmTrack, -1);
+
+				float gain = NullpoMinoSDL.propConfig.getProperty("option.bgmvolume", 128) / 128.0f;
+				lib.MIX_SetTrackGain(bgmTrack, Math.max(0.0f, Math.min(1.0f, gain)));
+
+				lib.MIX_PlayTrack(bgmTrack, 0);
 			} catch (Exception e) {
 				log.warn("BGM " + no + " start failed", e);
 			}
@@ -387,42 +423,87 @@ public class ResourceHolderSDL {
 	}
 
 	/**
-	 * Current BGMPause
+	 * Pause current BGM
 	 */
 	public static void bgmPause() {
-		if(bgmIsPlaying()) {
-			SDLMixer.pauseMusic();
+		if(NullpoMinoSDL.mixerLib != null && bgmTrack != null && bgmIsPlaying()) {
+			NullpoMinoSDL.mixerLib.MIX_PauseTrack(bgmTrack);
 		}
 	}
 
 	/**
-	 * PausedBGMResumes
+	 * Resume paused BGM
 	 */
 	public static void bgmResume() {
-		if(bgmIsPlaying()) {
-			SDLMixer.resumeMusic();
+		if(NullpoMinoSDL.mixerLib != null && bgmTrack != null) {
+			NullpoMinoSDL.mixerLib.MIX_ResumeTrack(bgmTrack);
 		}
 	}
 
 	/**
-	 * BGMWhether during playback
-	 * @return If during playbacktrue
+	 * Whether BGM is playing
+	 * @return true if playing
 	 */
 	public static boolean bgmIsPlaying() {
-		return SDLMixer.playingMusic();
+		if(NullpoMinoSDL.mixerLib == null || bgmTrack == null) return false;
+		return NullpoMinoSDL.mixerLib.MIX_TrackPlaying(bgmTrack) != 0;
 	}
 
 	/**
-	 * BGMStop
+	 * Stop BGM
 	 */
 	public static void bgmStop() {
+		if(NullpoMinoSDL.mixerLib == null) return;
 		try {
-			if(bgmIsPlaying()) {
-				SDLMixer.haltMusic();
+			if(bgmTrack != null && bgmIsPlaying()) {
+				NullpoMinoSDL.mixerLib.MIX_StopTrack(bgmTrack, 0);
 				bgmPlaying = -1;
 			}
-		} catch (SDLException e) {
+		} catch (Throwable e) {
 			log.debug("BGM stop failed", e);
+		}
+	}
+
+	/**
+	 * Destroy all loaded resources.
+	 */
+	public static void destroy() {
+		SDL3Mixer lib = NullpoMinoSDL.mixerLib;
+
+		// Destroy BGM track before audio
+		if(lib != null && bgmTrack != null) {
+			lib.MIX_DestroyTrack(bgmTrack);
+			bgmTrack = null;
+		}
+		// Destroy BGM audio
+		if(lib != null && bgm != null) {
+			for(int i = 0; i < bgm.length; i++) {
+				if(bgm[i] != null) {
+					lib.MIX_DestroyAudio(bgm[i]);
+					bgm[i] = null;
+				}
+			}
+		}
+		// Destroy sound effects
+		if(soundManager != null) {
+			soundManager.destroy();
+		}
+		// Textures
+		if(imgNormalBlockList != null) {
+			for(Pointer p : imgNormalBlockList) if(p != null) SDL3.INSTANCE.SDL_DestroyTexture(p);
+			imgNormalBlockList = null;
+		}
+		if(imgSmallBlockList != null) {
+			for(Pointer p : imgSmallBlockList) if(p != null) SDL3.INSTANCE.SDL_DestroyTexture(p);
+			imgSmallBlockList = null;
+		}
+		if(imgBigBlockList != null) {
+			for(Pointer p : imgBigBlockList) if(p != null) SDL3.INSTANCE.SDL_DestroyTexture(p);
+			imgBigBlockList = null;
+		}
+		if(ttfFont != null) {
+			SDL3TTF.INSTANCE.TTF_CloseFont(ttfFont);
+			ttfFont = null;
 		}
 	}
 }

@@ -42,13 +42,9 @@ import mu.nu.nullpo.game.subsystem.mode.NetDummyMode;
 import mu.nu.nullpo.game.subsystem.wallkick.Wallkick;
 import mu.nu.nullpo.gui.net.NetLobbyFrame;
 import mu.nu.nullpo.gui.net.NetLobbyListener;
+import mu.nu.nullpo.gui.sdl.binding.SDL3;
 import mu.nu.nullpo.util.GeneralUtil;
 import net.omegaboshi.nullpomino.game.subsystem.randomizer.Randomizer;
-
-import sdljava.SDLException;
-import sdljava.mixer.SDLMixer;
-import sdljava.video.SDLSurface;
-import sdljava.video.SDLVideo;
 
 /**
  * Game screen state (Netplay)
@@ -76,7 +72,7 @@ public class StateNetGameSDL extends BaseStateSDL implements NetLobbyListener {
 	 * Called when entering this state
 	 */
 	@Override
-	public void enter() throws SDLException {
+	public void enter() {
 		// Init variables
 		NullpoMinoSDL.disableAutoInputUpdate = true;
 		NullpoMinoSDL.isInGame = true;
@@ -91,7 +87,7 @@ public class StateNetGameSDL extends BaseStateSDL implements NetLobbyListener {
 
 		// gameManager initialization
 		gameManager = new GameManager(new RendererSDL());
-		gameManager.receiver.setGraphics(NullpoMinoSDL.gameSurface);
+		gameManager.receiver.setGraphics(NullpoMinoSDL.renderer);
 
 		// Lobby initialization
 		netLobby = new NetLobbyFrame();
@@ -105,18 +101,11 @@ public class StateNetGameSDL extends BaseStateSDL implements NetLobbyListener {
 		netLobby.setVisible(true);
 	}
 
-	@Override
-	public void onGameSurfaceChanged(SDLSurface gameSurface) {
-		if((gameManager != null) && (gameManager.receiver != null)) {
-			gameManager.receiver.setGraphics(gameSurface);
-		}
-	}
-
 	/*
 	 * Called when leaving this state
 	 */
 	@Override
-	public void leave() throws SDLException {
+	public void leave() {
 		if(gameManager != null) {
 			gameManager.shutdown();
 			gameManager = null;
@@ -141,7 +130,7 @@ public class StateNetGameSDL extends BaseStateSDL implements NetLobbyListener {
 	 * Draw the game screen
 	 */
 	@Override
-	public void render(SDLSurface screen) throws SDLException {
+	public void render() {
 		try {
 			if(gameManager != null) {
 				gameManager.renderAll();
@@ -165,7 +154,7 @@ public class StateNetGameSDL extends BaseStateSDL implements NetLobbyListener {
 	 * Update game state
 	 */
 	@Override
-	public void update() throws SDLException {
+	public void update() {
 		try {
 			// Update key input states
 			int joynum = NullpoMinoSDL.joyUseNumber[0];
@@ -205,7 +194,8 @@ public class StateNetGameSDL extends BaseStateSDL implements NetLobbyListener {
 					int newvolume = (int)(128 * (gameManager.bgmStatus.volume * basevolume2));
 					if(newvolume < 0) newvolume = 0;
 					if(newvolume > 128) newvolume = 128;
-					SDLMixer.volumeMusic(newvolume);
+					if(NullpoMinoSDL.mixerLib != null && ResourceHolderSDL.bgmTrack != null)
+						NullpoMinoSDL.mixerLib.MIX_SetTrackGain(ResourceHolderSDL.bgmTrack, newvolume / 128.0f);
 					if(newvolume <= 0) ResourceHolderSDL.bgmStop();
 				}
 			}
@@ -362,7 +352,7 @@ public class StateNetGameSDL extends BaseStateSDL implements NetLobbyListener {
 				strTitle = "[MENU] NullpoMino Netplay - " + modeName;
 		}
 
-		SDLVideo.wmSetCaption(strTitle, null);
+		SDL3.INSTANCE.SDL_SetWindowTitle(NullpoMinoSDL.window, strTitle);
 	}
 
 	public void netlobbyOnDisconnect(NetLobbyFrame lobby, NetPlayerClient client, Throwable ex) {

@@ -28,9 +28,6 @@
 */
 package mu.nu.nullpo.gui.sdl;
 
-import sdljava.SDLException;
-import sdljava.video.SDLSurface;
-
 /**
  * Dummy class for menus where the player picks from a list of options
  */
@@ -54,7 +51,7 @@ public abstract class DummyMenuChooseStateSDL extends BaseStateSDL {
 	}
 
 	@Override
-	public void update() throws SDLException
+	public void update()
 	{
 		// Mouse
 		boolean mouseConfirm = false;
@@ -103,7 +100,7 @@ public abstract class DummyMenuChooseStateSDL extends BaseStateSDL {
 		}
 	}
 
-	protected boolean updateMouseInput() throws SDLException
+	protected boolean updateMouseInput()
 	{
 		MouseInputSDL.mouseInput.update();
 		if (MouseInputSDL.mouseInput.isMouseClicked())
@@ -121,12 +118,12 @@ public abstract class DummyMenuChooseStateSDL extends BaseStateSDL {
 		return false;
 	}
 
-	protected void renderChoices(int x, String[] choices) throws SDLException
+	protected void renderChoices(int x, String[] choices)
 	{
 		renderChoices(x, minChoiceY, choices);
 	}
 
-	protected void renderChoices(int x, int y, String[] choices) throws SDLException
+	protected void renderChoices(int x, int y, String[] choices)
 	{
 		NormalFontSDL.printFontGrid(x-1, y+cursor, "b", NormalFontSDL.COLOR_RED);
 		for (int i = 0; i < choices.length; i++)
@@ -135,26 +132,23 @@ public abstract class DummyMenuChooseStateSDL extends BaseStateSDL {
 
 	/**
 	 * Called when left or right is pressed.
-	 * @throws SDLException When something bad happens.
 	 */
-	protected void onChange(int change) throws SDLException {
+	protected void onChange(int change) {
 	}
 
 	/**
 	 * Called on a decide operation (left click on highlighted entry or select button).
 	 * @return True to skip all further update processing, false otherwise.
-	 * @throws SDLException When something bad happens.
 	 */
-	protected boolean onDecide() throws SDLException {
+	protected boolean onDecide() {
 		return false;
 	}
 
 	/**
 	 * Called on a cancel operation (right click or cancel button).
 	 * @return True to skip all further update processing, false otherwise.
-	 * @throws SDLException When something bad happens.
 	 */
-	protected boolean onCancel() throws SDLException {
+	protected boolean onCancel() {
 		return false;
 	}
 
@@ -162,9 +156,8 @@ public abstract class DummyMenuChooseStateSDL extends BaseStateSDL {
 	 * Called when D button is pushed.
 	 * Currently, this is the only one needed; methods for other buttons can be added if needed.
 	 * @return True to skip all further update processing, false otherwise.
-	 * @throws SDLException When something bad happens.
 	 */
-	protected boolean onPushButtonD() throws SDLException {
+	protected boolean onPushButtonD() {
 		return false;
 	}
 

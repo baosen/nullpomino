@@ -8,9 +8,6 @@ import java.util.LinkedList;
 
 import org.apache.log4j.Logger;
 
-import sdljava.SDLException;
-import sdljava.video.SDLSurface;
-
 /**
  * Mode folder select (SDL)
  */
@@ -135,7 +132,7 @@ public class StateSelectModeFolderSDL extends DummyMenuScrollStateSDL {
 	 * Render screen
 	 */
 	@Override
-	protected void onRenderSuccess(SDLSurface screen) throws SDLException {
+	protected void onRenderSuccess() {
 		NormalFontSDL.printFontGrid(1, 1, "SELECT MODE FOLDER (" + (cursor + 1) + "/" + list.length + ")", NormalFontSDL.COLOR_ORANGE);
 		NormalFontSDL.printTTFFont(16, 440, getFolderDesc(list[cursor]));
 	}
@@ -144,7 +141,7 @@ public class StateSelectModeFolderSDL extends DummyMenuScrollStateSDL {
 	 * Decide
 	 */
 	@Override
-	protected boolean onDecide() throws SDLException {
+	protected boolean onDecide() {
 		ResourceHolderSDL.soundManager.play("decide");
 		if(cursor < listFolder.size()) {
 			strCurrentFolder = list[cursor];
@@ -162,7 +159,7 @@ public class StateSelectModeFolderSDL extends DummyMenuScrollStateSDL {
 	 * Cancel
 	 */
 	@Override
-	protected boolean onCancel() throws SDLException {
+	protected boolean onCancel() {
 		StateSelectModeSDL.isTopLevel = true;
 		NullpoMinoSDL.enterState(NullpoMinoSDL.STATE_SELECTMODE);
 		return false;

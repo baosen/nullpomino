@@ -1,8 +1,7 @@
 package mu.nu.nullpo.gui.sdl;
 
-import sdljava.SDLException;
-import sdljava.video.SDLSurface;
 import mu.nu.nullpo.game.play.GameEngine;
+import mu.nu.nullpo.gui.sdl.binding.SDL3;
 
 /**
  * Style select menu (SDL)
@@ -21,8 +20,8 @@ public class StateConfigRuleStyleSelectSDL extends DummyMenuChooseStateSDL {
 	 * Draw the screen
 	 */
 	@Override
-	public void render(SDLSurface screen) throws SDLException {
-		ResourceHolderSDL.imgMenu.blitSurface(screen);
+	public void render() {
+		SDL3.INSTANCE.SDL_RenderTexture(NullpoMinoSDL.renderer, ResourceHolderSDL.imgMenu, null, null);
 
 		NormalFontSDL.printFontGrid(1, 1, "SELECT " + (player+1) + "P STYLE", NormalFontSDL.COLOR_ORANGE);
 
@@ -32,14 +31,14 @@ public class StateConfigRuleStyleSelectSDL extends DummyMenuChooseStateSDL {
 			NormalFontSDL.printFontGrid(2, 3 + i, GameEngine.GAMESTYLE_NAMES[i], (cursor == i));
 		}
 
-		super.render(screen);
+		super.render();
 	}
 
 	/*
 	 * Decide
 	 */
 	@Override
-	protected boolean onDecide() throws SDLException {
+	protected boolean onDecide() {
 		ResourceHolderSDL.soundManager.play("decide");
 		StateConfigRuleSelectSDL stateR = (StateConfigRuleSelectSDL)NullpoMinoSDL.gameStates[NullpoMinoSDL.STATE_CONFIG_RULESELECT];
 		stateR.player = player;
@@ -52,7 +51,7 @@ public class StateConfigRuleStyleSelectSDL extends DummyMenuChooseStateSDL {
 	 * Cancel
 	 */
 	@Override
-	protected boolean onCancel() throws SDLException {
+	protected boolean onCancel() {
 		NullpoMinoSDL.enterState(NullpoMinoSDL.STATE_CONFIG_MAINMENU);
 		return false;
 	}

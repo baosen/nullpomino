@@ -28,81 +28,107 @@
 */
 package mu.nu.nullpo.gui.sdl;
 
-import sdljava.SDLException;
-import sdljava.video.SDLColor;
-import sdljava.video.SDLRect;
-import sdljava.video.SDLSurface;
+import com.sun.jna.Pointer;
+
+import mu.nu.nullpo.gui.sdl.binding.SDL3;
+import mu.nu.nullpo.gui.sdl.binding.SDL3TTF;
+import mu.nu.nullpo.gui.sdl.binding.SDLConstants;
+import mu.nu.nullpo.gui.sdl.binding.SDLStructs;
 
 /**
- * Normal display class string
+ * Normal display class string (SDL3 version)
  */
 public class NormalFontSDL {
-	/** Character constant colorcount */
+	/** Character constant color count */
 	public static final int COLOR_WHITE = 0, COLOR_BLUE = 1, COLOR_RED = 2, COLOR_PINK = 3, COLOR_GREEN = 4, COLOR_YELLOW = 5, COLOR_CYAN = 6,
 			COLOR_ORANGE = 7, COLOR_PURPLE = 8, COLOR_DARKBLUE = 9;
 
-	/** Which to drawSDLSurface */
-	public static SDLSurface dest;
-
 	/**
-	 * Specified font ColorSDLColorObtained as
-	 * @param fontColor  font Color
-	 * @return  font ColorSDLColor
+	 * Get font color as RGB values
+	 * @param fontColor font color constant
+	 * @return int array {r, g, b}
 	 */
-	public static SDLColor getFontColorAsSDLColor(int fontColor) {
+	public static int[] getFontColorRGB(int fontColor) {
 		switch(fontColor) {
-		case COLOR_BLUE:		return new SDLColor(  0,  0,255);
-		case COLOR_RED:			return new SDLColor(255,  0,  0);
-		case COLOR_PINK:		return new SDLColor(255,128,128);
-		case COLOR_GREEN:		return new SDLColor(  0,255,  0);
-		case COLOR_YELLOW:		return new SDLColor(255,255,  0);
-		case COLOR_CYAN:		return new SDLColor(  0,255,255);
-		case COLOR_ORANGE:		return new SDLColor(255,128,  0);
-		case COLOR_PURPLE:		return new SDLColor(255,  0,255);
-		case COLOR_DARKBLUE:	return new SDLColor(  0,  0,128);
+		case COLOR_BLUE:     return new int[]{  0,  0,255};
+		case COLOR_RED:      return new int[]{255,  0,  0};
+		case COLOR_PINK:     return new int[]{255,128,128};
+		case COLOR_GREEN:    return new int[]{  0,255,  0};
+		case COLOR_YELLOW:   return new int[]{255,255,  0};
+		case COLOR_CYAN:     return new int[]{  0,255,255};
+		case COLOR_ORANGE:   return new int[]{255,128,  0};
+		case COLOR_PURPLE:   return new int[]{255,  0,255};
+		case COLOR_DARKBLUE: return new int[]{  0,  0,128};
 		}
-
-		return new SDLColor(255,255,255);
+		return new int[]{255,255,255};
 	}
 
 	/**
-	 * TTF font Drawing a string using the
+	 * TTF font draw a string
 	 * @param fontX X-coordinate
 	 * @param fontY Y-coordinate
 	 * @param fontStr String
 	 * @param fontColor Letter color
-	 * @throws SDLException If I failed to draw
 	 */
-	public static void printTTFFont(int fontX, int fontY, String fontStr, int fontColor) throws SDLException {
+	public static void printTTFFont(int fontX, int fontY, String fontStr, int fontColor) {
 		if(ResourceHolderSDL.ttfFont == null) return;
-		SDLSurface surfaceText;
-		surfaceText = ResourceHolderSDL.ttfFont.renderTextBlended(fontStr, new SDLColor(0,0,0));
-		surfaceText.blitSurface(dest, new SDLRect(fontX+1, fontY+1));
-		surfaceText= ResourceHolderSDL.ttfFont.renderTextBlended(fontStr, getFontColorAsSDLColor(fontColor));
-		surfaceText.blitSurface(dest, new SDLRect(fontX, fontY));
+		Pointer renderer = NullpoMinoSDL.renderer;
+
+		// Draw shadow
+		SDLStructs.SDL_Color.ByValue shadowColor = new SDLStructs.SDL_Color.ByValue(0, 0, 0);
+		Pointer shadowSurface = SDL3TTF.INSTANCE.TTF_RenderText_Blended(
+			ResourceHolderSDL.ttfFont, fontStr, 0, shadowColor);
+		if(shadowSurface != null) {
+			Pointer shadowTex = SDL3.INSTANCE.SDL_CreateTextureFromSurface(renderer, shadowSurface);
+			SDL3.INSTANCE.SDL_DestroySurface(shadowSurface);
+			if(shadowTex != null) {
+				com.sun.jna.ptr.FloatByReference tw = new com.sun.jna.ptr.FloatByReference();
+				com.sun.jna.ptr.FloatByReference th = new com.sun.jna.ptr.FloatByReference();
+				SDL3.INSTANCE.SDL_GetTextureSize(shadowTex, tw, th);
+				SDL3.INSTANCE.SDL_SetTextureBlendMode(shadowTex, SDLConstants.SDL_BLENDMODE_BLEND);
+				SDLStructs.SDL_FRect dst = new SDLStructs.SDL_FRect(fontX + 1, fontY + 1, tw.getValue(), th.getValue());
+				SDL3.INSTANCE.SDL_RenderTexture(renderer, shadowTex, null, dst);
+				SDL3.INSTANCE.SDL_DestroyTexture(shadowTex);
+			}
+		}
+
+		// Draw text
+		int[] rgb = getFontColorRGB(fontColor);
+		SDLStructs.SDL_Color.ByValue fgColor = new SDLStructs.SDL_Color.ByValue(rgb[0], rgb[1], rgb[2]);
+		Pointer textSurface = SDL3TTF.INSTANCE.TTF_RenderText_Blended(
+			ResourceHolderSDL.ttfFont, fontStr, 0, fgColor);
+		if(textSurface != null) {
+			Pointer textTex = SDL3.INSTANCE.SDL_CreateTextureFromSurface(renderer, textSurface);
+			SDL3.INSTANCE.SDL_DestroySurface(textSurface);
+			if(textTex != null) {
+				com.sun.jna.ptr.FloatByReference tw = new com.sun.jna.ptr.FloatByReference();
+				com.sun.jna.ptr.FloatByReference th = new com.sun.jna.ptr.FloatByReference();
+				SDL3.INSTANCE.SDL_GetTextureSize(textTex, tw, th);
+				SDL3.INSTANCE.SDL_SetTextureBlendMode(textTex, SDLConstants.SDL_BLENDMODE_BLEND);
+				SDLStructs.SDL_FRect dst = new SDLStructs.SDL_FRect(fontX, fontY, tw.getValue(), th.getValue());
+				SDL3.INSTANCE.SDL_RenderTexture(renderer, textTex, null, dst);
+				SDL3.INSTANCE.SDL_DestroyTexture(textTex);
+			}
+		}
 	}
 
 	/**
-	 * TTF font Drawing a string using the
-	 * @param fontX X-coordinate
-	 * @param fontY Y-coordinate
-	 * @param fontStr String
-	 * @throws SDLException If I failed to draw
+	 * TTF font draw a string (white)
 	 */
-	public static void printTTFFont(int fontX, int fontY, String fontStr) throws SDLException {
+	public static void printTTFFont(int fontX, int fontY, String fontStr) {
 		printTTFFont(fontX, fontY, fontStr, COLOR_WHITE);
 	}
 
 	/**
-	 * Draws the string
+	 * Draws the string using bitmap font
 	 * @param fontX X-coordinate
 	 * @param fontY Y-coordinate
 	 * @param fontStr String
 	 * @param fontColor Letter color
-	 * @param scale Enlargement factor (1.0fAnd0.5fOnly is enabled)
-	 * @throws SDLException If I failed to draw
+	 * @param scale Enlargement factor (2.0f, 1.0f, or 0.5f)
 	 */
-	public static void printFont(int fontX, int fontY, String fontStr, int fontColor, float scale) throws SDLException {
+	public static void printFont(int fontX, int fontY, String fontStr, int fontColor, float scale) {
+		Pointer renderer = NullpoMinoSDL.renderer;
 		int dx = fontX;
 		int dy = fontY;
 
@@ -112,172 +138,83 @@ public class NormalFontSDL {
 			if(stringChar == 0x0A) {
 				// New line (\n)
 				if(scale == 2.0f) {
-					dy = dy + 32;
-					dx = fontX;
+					dy = dy + 32; dx = fontX;
 				} else if(scale == 1.0f) {
-					dy = dy + 16;
-					dx = fontX;
+					dy = dy + 16; dx = fontX;
 				} else {
-					dy = dy + 8;
-					dx = fontX;
+					dy = dy + 8; dx = fontX;
 				}
 			} else {
 				// Character output
 				if(scale == 2.0f) {
 					int sx = ((stringChar - 32) % 32) * 32;
 					int sy = ((stringChar - 32) / 32) * 32 + fontColor * 96;
-					SDLRect rectSrc = new SDLRect(sx, sy, 32, 32);
-					SDLRect rectDst = new SDLRect(dx, dy, 32, 32);
-					ResourceHolderSDL.imgFontBig.blitSurface(rectSrc, dest, rectDst);
+					SDLStructs.SDL_FRect rectSrc = new SDLStructs.SDL_FRect(sx, sy, 32, 32);
+					SDLStructs.SDL_FRect rectDst = new SDLStructs.SDL_FRect(dx, dy, 32, 32);
+					SDL3.INSTANCE.SDL_RenderTexture(renderer, ResourceHolderSDL.imgFontBig, rectSrc, rectDst);
 					dx = dx + 32;
 				} else if(scale == 1.0f) {
 					int sx = ((stringChar - 32) % 32) * 16;
 					int sy = ((stringChar - 32) / 32) * 16 + fontColor * 48;
-					SDLRect rectSrc = new SDLRect(sx, sy, 16, 16);
-					SDLRect rectDst = new SDLRect(dx, dy, 16, 16);
-					ResourceHolderSDL.imgFont.blitSurface(rectSrc, dest, rectDst);
+					SDLStructs.SDL_FRect rectSrc = new SDLStructs.SDL_FRect(sx, sy, 16, 16);
+					SDLStructs.SDL_FRect rectDst = new SDLStructs.SDL_FRect(dx, dy, 16, 16);
+					SDL3.INSTANCE.SDL_RenderTexture(renderer, ResourceHolderSDL.imgFont, rectSrc, rectDst);
 					dx = dx + 16;
 				} else if(scale == 0.5f) {
 					int sx = ((stringChar - 32) % 32) * 8;
 					int sy = ((stringChar - 32) / 32) * 8 + fontColor * 24;
-					SDLRect rectSrc = new SDLRect(sx, sy, 8, 8);
-					SDLRect rectDst = new SDLRect(dx, dy, 8, 8);
-					ResourceHolderSDL.imgFontSmall.blitSurface(rectSrc, dest, rectDst);
+					SDLStructs.SDL_FRect rectSrc = new SDLStructs.SDL_FRect(sx, sy, 8, 8);
+					SDLStructs.SDL_FRect rectDst = new SDLStructs.SDL_FRect(dx, dy, 8, 8);
+					SDL3.INSTANCE.SDL_RenderTexture(renderer, ResourceHolderSDL.imgFontSmall, rectSrc, rectDst);
 					dx = dx + 8;
 				}
 			}
 		}
 	}
 
-	/**
-	 * Draws the string
-	 * @param fontX X-coordinate
-	 * @param fontY Y-coordinate
-	 * @param fontStr String
-	 * @param fontColor Letter color
-	 * @throws SDLException If I failed to draw
-	 */
-	public static void printFont(int fontX, int fontY, String fontStr, int fontColor) throws SDLException {
+	public static void printFont(int fontX, int fontY, String fontStr, int fontColor) {
 		printFont(fontX, fontY, fontStr, fontColor, 1.0f);
 	}
 
-	/**
-	 * Draws the string (Character color is white)
-	 * @param fontX X-coordinate
-	 * @param fontY Y-coordinate
-	 * @param fontStr String
-	 * @throws SDLException If I failed to draw
-	 */
-	public static void printFont(int fontX, int fontY, String fontStr) throws SDLException {
+	public static void printFont(int fontX, int fontY, String fontStr) {
 		printFont(fontX, fontY, fontStr, COLOR_WHITE);
 	}
 
-	/**
-	 * flagThefalseIf it&#39;s the casefontColorTrue color, trueIf it&#39;s the casefontColorTrue colorDraws the string in
-	 * @param fontX X-coordinate
-	 * @param fontY Y-coordinate
-	 * @param fontStr String
-	 * @param flag Conditional expression
-	 * @param fontColorFalse flagThefalseText color in the case of
-	 * @param fontColorTrue flagThetrueText color in the case of
-	 * @throws SDLException If I failed to draw
-	 */
-	public static void printFont(int fontX, int fontY, String fontStr, boolean flag, int fontColorFalse, int fontColorTrue) throws SDLException {
+	public static void printFont(int fontX, int fontY, String fontStr, boolean flag, int fontColorFalse, int fontColorTrue) {
 		if(!flag)
 			printFont(fontX, fontY, fontStr, fontColorFalse);
 		else
 			printFont(fontX, fontY, fontStr, fontColorTrue);
 	}
 
-	/**
-	 * flagThefalseIf I were white, trueDraws the string in red if I was
-	 * @param fontX X-coordinate
-	 * @param fontY Y-coordinate
-	 * @param fontStr String
-	 * @param flag Conditional expression
-	 * @throws SDLException If I failed to draw
-	 */
-	public static void printFont(int fontX, int fontY, String fontStr, boolean flag) throws SDLException {
+	public static void printFont(int fontX, int fontY, String fontStr, boolean flag) {
 		printFont(fontX, fontY, fontStr, flag, COLOR_WHITE, COLOR_RED);
 	}
 
-	/**
-	 * flagThefalseIf it&#39;s the casefontColorTrue color, trueIf it&#39;s the casefontColorTrue colorDraws the string in (You can specify the magnification)
-	 * @param fontX X-coordinate
-	 * @param fontY Y-coordinate
-	 * @param fontStr String
-	 * @param flag Conditional expression
-	 * @param fontColorFalse flagThefalseText color in the case of
-	 * @param fontColorTrue flagThetrueText color in the case of
-	 * @param scale Enlargement factor
-	 * @throws SDLException If I failed to draw
-	 */
-	public static void printFont(int fontX, int fontY, String fontStr, boolean flag, int fontColorFalse, int fontColorTrue, float scale) throws SDLException {
+	public static void printFont(int fontX, int fontY, String fontStr, boolean flag, int fontColorFalse, int fontColorTrue, float scale) {
 		if(!flag)
 			printFont(fontX, fontY, fontStr, fontColorFalse, scale);
 		else
 			printFont(fontX, fontY, fontStr, fontColorTrue, scale);
 	}
 
-	/**
-	 * flagThefalseIf I were white, trueDraws the string in red if I was (You can specify the magnification)
-	 * @param fontX X-coordinate
-	 * @param fontY Y-coordinate
-	 * @param fontStr String
-	 * @param flag Conditional expression
-	 * @param scale Enlargement factor
-	 * @throws SDLException If I failed to draw
-	 */
-	public static void printFont(int fontX, int fontY, String fontStr, boolean flag, float scale) throws SDLException {
+	public static void printFont(int fontX, int fontY, String fontStr, boolean flag, float scale) {
 		printFont(fontX, fontY, fontStr, flag, COLOR_WHITE, COLOR_RED, scale);
 	}
 
-	/**
-	 * Draws the string (16x16Grid units)
-	 * @param fontX X-coordinate
-	 * @param fontY Y-coordinate
-	 * @param fontStr String
-	 * @param fontColor Letter color
-	 * @throws SDLException If I failed to draw
-	 */
-	public static void printFontGrid(int fontX, int fontY, String fontStr, int fontColor) throws SDLException {
+	public static void printFontGrid(int fontX, int fontY, String fontStr, int fontColor) {
 		printFont(fontX * 16, fontY * 16, fontStr, fontColor);
 	}
 
-	/**
-	 * Draws the string (16x16Color and character of the white grid units)
-	 * @param fontX X-coordinate
-	 * @param fontY Y-coordinate
-	 * @param fontStr String
-	 * @throws SDLException If I failed to draw
-	 */
-	public static void printFontGrid(int fontX, int fontY, String fontStr) throws SDLException {
+	public static void printFontGrid(int fontX, int fontY, String fontStr) {
 		printFont(fontX * 16, fontY * 16, fontStr, COLOR_WHITE);
 	}
 
-	/**
-	 * flagThefalseIf it&#39;s the casefontColorTrue color, trueIf it&#39;s the casefontColorTrue colorDraws the string in (16x16Grid units)
-	 * @param fontX X-coordinate
-	 * @param fontY Y-coordinate
-	 * @param fontStr String
-	 * @param flag Conditional expression
-	 * @param fontColorFalse flagThefalseText color in the case of
-	 * @param fontColorTrue flagThetrueText color in the case of
-	 * @throws SDLException If I failed to draw
-	 */
-	public static void printFontGrid(int fontX, int fontY, String fontStr, boolean flag, int fontColorFalse, int fontColorTrue) throws SDLException {
+	public static void printFontGrid(int fontX, int fontY, String fontStr, boolean flag, int fontColorFalse, int fontColorTrue) {
 		printFont(fontX * 16, fontY * 16, fontStr, flag, fontColorFalse, fontColorTrue);
 	}
 
-	/**
-	 * flagThefalseIf I were white, trueDraws the string in red if I was (16x16Grid units)
-	 * @param fontX X-coordinate
-	 * @param fontY Y-coordinate
-	 * @param fontStr String
-	 * @param flag Conditional expression
-	 * @throws SDLException If I failed to draw
-	 */
-	public static void printFontGrid(int fontX, int fontY, String fontStr, boolean flag) throws SDLException {
+	public static void printFontGrid(int fontX, int fontY, String fontStr, boolean flag) {
 		printFont(fontX * 16, fontY * 16, fontStr, flag, COLOR_WHITE, COLOR_RED);
 	}
 }

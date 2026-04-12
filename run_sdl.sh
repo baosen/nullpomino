@@ -19,5 +19,5 @@ if [ ! -f "$JAR" ]; then
 	exit 1
 fi
 
-export LD_LIBRARY_PATH="target/lib:$LD_LIBRARY_PATH"
-java -Djava.library.path=target/lib -cp "$JAR:target/lib/*" mu.nu.nullpo.gui.sdl.NullpoMinoSDL
+export LD_LIBRARY_PATH="/usr/local/lib:target/lib:$LD_LIBRARY_PATH"
+java -Djava.library.path=target/lib -Djna.library.path=/usr/local/lib:/usr/lib/x86_64-linux-gnu -cp "$JAR:target/lib/*" mu.nu.nullpo.gui.sdl.NullpoMinoSDL

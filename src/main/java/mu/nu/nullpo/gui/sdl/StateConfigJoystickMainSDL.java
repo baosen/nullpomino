@@ -28,11 +28,9 @@
 */
 package mu.nu.nullpo.gui.sdl;
 
+import mu.nu.nullpo.gui.sdl.binding.SDL3;
 import mu.nu.nullpo.util.CustomProperties;
 import mu.nu.nullpo.util.GeneralUtil;
-
-import sdljava.SDLException;
-import sdljava.video.SDLSurface;
 
 /**
  * Joystick Settings MainMenu State
@@ -90,7 +88,7 @@ public class StateConfigJoystickMainSDL extends BaseStateSDL {
 	 * Called when entering this state
 	 */
 	@Override
-	public void enter() throws SDLException {
+	public void enter() {
 		loadConfig(NullpoMinoSDL.propConfig);
 	}
 
@@ -98,8 +96,8 @@ public class StateConfigJoystickMainSDL extends BaseStateSDL {
 	 * Draw the game screen
 	 */
 	@Override
-	public void render(SDLSurface screen) throws SDLException {
-		ResourceHolderSDL.imgMenu.blitSurface(screen);
+	public void render() {
+		SDL3.INSTANCE.SDL_RenderTexture(NullpoMinoSDL.renderer, ResourceHolderSDL.imgMenu, null, null);
 
 		NormalFontSDL.printFontGrid(1, 1, "JOYSTICK SETTING (" + (player+1) + "P)", NormalFontSDL.COLOR_ORANGE);
 
@@ -124,7 +122,7 @@ public class StateConfigJoystickMainSDL extends BaseStateSDL {
 	 * Update game state
 	 */
 	@Override
-	public void update() throws SDLException {
+	public void update() {
 		// Cursor movement
 		if(GameKeySDL.gamekey[0].isMenuRepeatKey(GameKeySDL.BUTTON_UP)) {
 			cursor--;

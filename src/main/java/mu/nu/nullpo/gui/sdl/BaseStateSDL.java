@@ -28,41 +28,27 @@
 */
 package mu.nu.nullpo.gui.sdl;
 
-import sdljava.SDLException;
-import sdljava.video.SDLSurface;
-
 /**
- * State
+ * Base class for game states in the SDL3 frontend.
  */
 public class BaseStateSDL {
 	/**
 	 * Called when entering this state
-	 * @throws SDLException SDLErrors
 	 */
-	public void enter() throws SDLException {}
+	public void enter() {}
 
 	/**
-	 * What happens when you leave this state
-	 * @throws SDLException SDLErrors
+	 * Called when leaving this state
 	 */
-	public void leave() throws SDLException {}
+	public void leave() {}
 
 	/**
-	 * Draw the game screen
-	 * @param screen Surface of the game screen
-	 * @throws SDLException SDLErrors
+	 * Draw the game screen to the SDL3 renderer
 	 */
-	public void render(SDLSurface screen) throws SDLException {}
+	public void render() {}
 
 	/**
 	 * Update game state
-	 * @throws SDLException SDLErrors
 	 */
-	public void update() throws SDLException {}
-
-	/**
-	 * Called when the shared off-screen game surface is recreated.
-	 * @param gameSurface New shared game surface
-	 */
-	public void onGameSurfaceChanged(SDLSurface gameSurface) {}
+	public void update() {}
 }

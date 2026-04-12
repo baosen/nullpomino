@@ -1,8 +1,7 @@
 package mu.nu.nullpo.gui.sdl;
 
-import sdljava.SDLException;
-import sdljava.video.SDLRect;
-import sdljava.video.SDLSurface;
+import mu.nu.nullpo.gui.sdl.binding.SDL3;
+import mu.nu.nullpo.gui.sdl.binding.SDLStructs;
 
 /**
  * Dummy class for menus with a scroll bar
@@ -16,11 +15,11 @@ public abstract class DummyMenuScrollStateSDL extends DummyMenuChooseStateSDL {
 		LINE_WIDTH = 2,
 		SB_WIDTH = 14;
 
-	/** Scroll bar colors */
-	protected static final int SB_SHADOW_COLOR = 0x0C4E9C,
-		SB_BORDER_COLOR = 0x3496FC,
-		SB_FILL_COLOR = 0xFFFFFF,
-		SB_BACK_COLOR = 0;
+	/** Scroll bar colors (RGBA) */
+	protected static final int[] SB_SHADOW_COLOR = {0x0C, 0x4E, 0x9C, 0xFF};
+	protected static final int[] SB_BORDER_COLOR = {0x34, 0x96, 0xFC, 0xFF};
+	protected static final int[] SB_FILL_COLOR   = {0xFF, 0xFF, 0xFF, 0xFF};
+	protected static final int[] SB_BACK_COLOR   = {0x00, 0x00, 0x00, 0xFF};
 
 	/** ID number of file at top of currently displayed section */
 	protected int minentry;
@@ -59,9 +58,9 @@ public abstract class DummyMenuScrollStateSDL extends DummyMenuChooseStateSDL {
 	 * Draw the screen
 	 */
 	@Override
-	public void render(SDLSurface screen) throws SDLException {
+	public void render() {
 		// Background
-		ResourceHolderSDL.imgMenu.blitSurface(screen);
+		SDL3.INSTANCE.SDL_RenderTexture(NullpoMinoSDL.renderer, ResourceHolderSDL.imgMenu, null, null);
 
 		// Menu
 		if(list == null) {
@@ -79,23 +78,21 @@ public abstract class DummyMenuScrollStateSDL extends DummyMenuChooseStateSDL {
 				maxentry = cursor;
 				minentry = maxentry - pageHeight + 1;
 			}
-			drawMenuList(screen);
-			onRenderSuccess(screen);
+			drawMenuList();
+			onRenderSuccess();
 		}
 
-		super.render(screen);
+		super.render();
 	}
 
 	/**
 	 * Called when render completes
-	 * @param screen SDLSurface
-	 * @throws SDLException When something bad happens
 	 */
-	protected void onRenderSuccess (SDLSurface screen) throws SDLException {
+	protected void onRenderSuccess() {
 	}
 
 	@Override
-	public boolean updateMouseInput () throws SDLException {
+	public boolean updateMouseInput () {
 		// Mouse
 		MouseInputSDL.mouseInput.update();
 		boolean clicked = MouseInputSDL.mouseInput.isMouseClicked();
@@ -144,7 +141,7 @@ public abstract class DummyMenuScrollStateSDL extends DummyMenuChooseStateSDL {
 		return false;
 	}
 
-	public void drawMenuList (SDLSurface screen) throws SDLException
+	public void drawMenuList()
 	{
 		int maxentry = minentry + pageHeight - 1;
 		if (maxentry >= list.length)
@@ -160,12 +157,12 @@ public abstract class DummyMenuScrollStateSDL extends DummyMenuChooseStateSDL {
 		NormalFontSDL.printFontGrid(SB_TEXT_X, 2 + pageHeight, "n", SB_TEXT_COLOR);
 
 		int sbHeight = 16*(pageHeight - 2) - (LINE_WIDTH << 1);
-		//Draw shadow
-		screen.fillRect(new SDLRect(SB_MIN_X+SB_WIDTH, SB_MIN_Y+LINE_WIDTH, LINE_WIDTH, sbHeight), SB_SHADOW_COLOR);
-		screen.fillRect(new SDLRect(SB_MIN_X+LINE_WIDTH, SB_MIN_Y+sbHeight, SB_WIDTH, LINE_WIDTH), SB_SHADOW_COLOR);
-		//Draw border
-		screen.fillRect(new SDLRect(SB_MIN_X, SB_MIN_Y, SB_WIDTH, sbHeight), SB_BORDER_COLOR);
-		//Draw inside
+
+		// Helper to fill a rectangle with a given color
+		fillColorRect(SB_MIN_X+SB_WIDTH, SB_MIN_Y+LINE_WIDTH, LINE_WIDTH, sbHeight, SB_SHADOW_COLOR);
+		fillColorRect(SB_MIN_X+LINE_WIDTH, SB_MIN_Y+sbHeight, SB_WIDTH, LINE_WIDTH, SB_SHADOW_COLOR);
+		fillColorRect(SB_MIN_X, SB_MIN_Y, SB_WIDTH, sbHeight, SB_BORDER_COLOR);
+
 		int insideHeight = sbHeight-(LINE_WIDTH << 1);
 		int insideWidth = SB_WIDTH-(LINE_WIDTH << 1);
 		int fillMinY = ((insideHeight*minentry)/list.length);
@@ -175,14 +172,23 @@ public abstract class DummyMenuScrollStateSDL extends DummyMenuChooseStateSDL {
 			fillHeight = LINE_WIDTH;
 			fillMinY = (((insideHeight-fillHeight+1)*minentry)/(list.length-pageHeight+1));
 		}
-		screen.fillRect(new SDLRect(SB_MIN_X+LINE_WIDTH, SB_MIN_Y+LINE_WIDTH, insideWidth, insideHeight), SB_BACK_COLOR);
-		screen.fillRect(new SDLRect(SB_MIN_X+LINE_WIDTH, SB_MIN_Y+LINE_WIDTH+fillMinY, insideWidth, fillHeight), SB_FILL_COLOR);
+		fillColorRect(SB_MIN_X+LINE_WIDTH, SB_MIN_Y+LINE_WIDTH, insideWidth, insideHeight, SB_BACK_COLOR);
+		fillColorRect(SB_MIN_X+LINE_WIDTH, SB_MIN_Y+LINE_WIDTH+fillMinY, insideWidth, fillHeight, SB_FILL_COLOR);
 
 		//Update coordinates
 		pUpMinY = SB_MIN_Y+LINE_WIDTH;
 		pUpMaxY = pUpMinY+fillMinY;
 		pDownMinY = pUpMaxY+fillHeight;
 		pDownMaxY = SB_MIN_Y+LINE_WIDTH+insideHeight;
+	}
+
+	/**
+	 * Fill a rectangle using the SDL3 renderer.
+	 */
+	private static void fillColorRect(int x, int y, int w, int h, int[] rgba) {
+		SDL3.setDrawColor(NullpoMinoSDL.renderer, rgba[0], rgba[1], rgba[2], rgba[3]);
+		SDLStructs.SDL_FRect rect = new SDLStructs.SDL_FRect(x, y, w, h);
+		SDL3.INSTANCE.SDL_RenderFillRect(NullpoMinoSDL.renderer, rect);
 	}
 
 	@Override

@@ -12,9 +12,6 @@ import mu.nu.nullpo.util.CustomProperties;
 
 import org.apache.log4j.Logger;
 
-import sdljava.SDLException;
-import sdljava.video.SDLSurface;
-
 /**
  * Rule select (after mode selection)
  */
@@ -134,7 +131,7 @@ public class StateSelectRuleFromListSDL extends DummyMenuScrollStateSDL {
 	 * When the player enters this state
 	 */
 	@Override
-	public void enter() throws SDLException {
+	public void enter() {
 		prepareRuleList();
 	}
 
@@ -142,7 +139,7 @@ public class StateSelectRuleFromListSDL extends DummyMenuScrollStateSDL {
 	 * Render
 	 */
 	@Override
-	protected void onRenderSuccess(SDLSurface screen) throws SDLException {
+	protected void onRenderSuccess() {
 		NormalFontSDL.printFontGrid(1, 1, strCurrentMode + " (" + (cursor + 1) + "/" + list.length + ")",
 				NormalFontSDL.COLOR_ORANGE);
 	}
@@ -151,7 +148,7 @@ public class StateSelectRuleFromListSDL extends DummyMenuScrollStateSDL {
 	 * Decide
 	 */
 	@Override
-	protected boolean onDecide() throws SDLException {
+	protected boolean onDecide() {
 		ResourceHolderSDL.soundManager.play("decide");
 		if(cursor >= 1) {
 			NullpoMinoSDL.propGlobal.setProperty("lastrule." + strCurrentMode, list[cursor]);
@@ -176,7 +173,7 @@ public class StateSelectRuleFromListSDL extends DummyMenuScrollStateSDL {
 	 * Cancel
 	 */
 	@Override
-	protected boolean onCancel() throws SDLException {
+	protected boolean onCancel() {
 		NullpoMinoSDL.enterState(NullpoMinoSDL.STATE_SELECTMODE);
 		return false;
 	}

@@ -28,11 +28,9 @@
 */
 package mu.nu.nullpo.gui.sdl;
 
+import mu.nu.nullpo.gui.sdl.binding.SDL3;
 import mu.nu.nullpo.util.CustomProperties;
 import mu.nu.nullpo.util.GeneralUtil;
-
-import sdljava.SDLException;
-import sdljava.video.SDLSurface;
 
 /**
  * State of the general settings screen
@@ -230,9 +228,9 @@ public class StateConfigGeneralSDL extends BaseStateSDL {
 	 * Draw the game screen
 	 */
 	@Override
-	public void render(SDLSurface screen) throws SDLException {
+	public void render() {
 		// Background
-		ResourceHolderSDL.imgMenu.blitSurface(screen);
+		SDL3.INSTANCE.SDL_RenderTexture(NullpoMinoSDL.renderer, ResourceHolderSDL.imgMenu, null, null);
 
 		// Basic Options
 		if(cursor < 17) {
@@ -285,7 +283,7 @@ public class StateConfigGeneralSDL extends BaseStateSDL {
 	 * Update game state
 	 */
 	@Override
-	public void update() throws SDLException {
+	public void update() {
 		// Cursor movement
 		if(GameKeySDL.gamekey[0].isMenuRepeatKey(GameKeySDL.BUTTON_UP)) {
 			cursor--;

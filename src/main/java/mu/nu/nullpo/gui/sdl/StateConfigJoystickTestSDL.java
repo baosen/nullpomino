@@ -28,10 +28,8 @@
 */
 package mu.nu.nullpo.gui.sdl;
 
-import sdljava.SDLException;
-import sdljava.event.SDLKey;
-import sdljava.joystick.HatState;
-import sdljava.video.SDLSurface;
+import mu.nu.nullpo.gui.sdl.binding.SDL3;
+import mu.nu.nullpo.gui.sdl.binding.SDLConstants;
 
 /**
  * Joystick State of the test screen
@@ -93,8 +91,8 @@ public class StateConfigJoystickTestSDL extends BaseStateSDL {
 	 * Draw the screen
 	 */
 	@Override
-	public void render(SDLSurface screen) throws SDLException {
-		ResourceHolderSDL.imgMenu.blitSurface(screen);
+	public void render() {
+		SDL3.INSTANCE.SDL_RenderTexture(NullpoMinoSDL.renderer, ResourceHolderSDL.imgMenu, null, null);
 
 		NormalFontSDL.printFontGrid(1, 1, "JOYSTICK INPUT TEST (" + (player + 1) + "P)", NormalFontSDL.COLOR_ORANGE);
 
@@ -109,13 +107,14 @@ public class StateConfigJoystickTestSDL extends BaseStateSDL {
 			NormalFontSDL.printFontGrid(1, 8, "AXIS Y:" + NullpoMinoSDL.joyAxisY[joyNumber]);
 
 			String strHat = "";
-			HatState hat = NullpoMinoSDL.joyHatState[joyNumber];
-			if(hat != null) {
-				if(hat.hatCentered()) strHat += "CENTER ";
-				if(hat.hatUp()) strHat += "UP ";
-				if(hat.hatDown()) strHat += "DOWN ";
-				if(hat.hatLeft()) strHat += "LEFT ";
-				if(hat.hatRight()) strHat += "RIGHT ";
+			int hat = NullpoMinoSDL.joyHatState[joyNumber];
+			if(hat == 0) {
+				strHat = "CENTER ";
+			} else {
+				if((hat & GameKeySDL.SDL_HAT_UP) != 0) strHat += "UP ";
+				if((hat & GameKeySDL.SDL_HAT_DOWN) != 0) strHat += "DOWN ";
+				if((hat & GameKeySDL.SDL_HAT_LEFT) != 0) strHat += "LEFT ";
+				if((hat & GameKeySDL.SDL_HAT_RIGHT) != 0) strHat += "RIGHT ";
 			}
 			NormalFontSDL.printFontGrid(1, 10, "POV:" + strHat);
 		}
@@ -129,10 +128,10 @@ public class StateConfigJoystickTestSDL extends BaseStateSDL {
 	 * Update game state
 	 */
 	@Override
-	public void update() throws SDLException {
+	public void update() {
 		if(frame >= KEYACCEPTFRAME) {
 			// Backspace & Enter/Return
-			if(NullpoMinoSDL.keyPressedState[SDLKey.SDLK_BACKSPACE] || NullpoMinoSDL.keyPressedState[SDLKey.SDLK_RETURN]) {
+			if(NullpoMinoSDL.keyPressedState[SDLConstants.SDL_SCANCODE_BACKSPACE] || NullpoMinoSDL.keyPressedState[SDLConstants.SDL_SCANCODE_RETURN]) {
 				NullpoMinoSDL.enterState(NullpoMinoSDL.STATE_CONFIG_JOYSTICK_MAIN);
 				return;
 			}
@@ -157,7 +156,7 @@ public class StateConfigJoystickTestSDL extends BaseStateSDL {
 	 * Called when entering this state
 	 */
 	@Override
-	public void enter() throws SDLException {
+	public void enter() {
 		reset();
 		NullpoMinoSDL.enableSpecialKeys = false;
 	}
@@ -166,7 +165,7 @@ public class StateConfigJoystickTestSDL extends BaseStateSDL {
 	 * Called when leaving this state
 	 */
 	@Override
-	public void leave() throws SDLException {
+	public void leave() {
 		reset();
 		NullpoMinoSDL.enableSpecialKeys = true;
 	}

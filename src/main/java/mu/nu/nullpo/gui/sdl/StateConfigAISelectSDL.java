@@ -34,12 +34,10 @@ import java.io.IOException;
 import java.util.ArrayList;
 
 import mu.nu.nullpo.game.subsystem.ai.AIPlayer;
+import mu.nu.nullpo.gui.sdl.binding.SDL3;
 import mu.nu.nullpo.util.GeneralUtil;
 
 import org.apache.log4j.Logger;
-
-import sdljava.SDLException;
-import sdljava.video.SDLSurface;
 
 /**
  * AIState selection screen
@@ -102,7 +100,7 @@ public class StateConfigAISelectSDL extends BaseStateSDL {
 	 * Called when entering this state
 	 */
 	@Override
-	public void enter() throws SDLException {
+	public void enter() {
 		currentAI = NullpoMinoSDL.propGlobal.getProperty(player + ".ai", "");
 		aiMoveDelay = NullpoMinoSDL.propGlobal.getProperty(player + ".aiMoveDelay", 0);
 		aiThinkDelay = NullpoMinoSDL.propGlobal.getProperty(player + ".aiThinkDelay", 0);
@@ -173,8 +171,8 @@ public class StateConfigAISelectSDL extends BaseStateSDL {
 	 * Draw the screen
 	 */
 	@Override
-	public void render(SDLSurface screen) throws SDLException {
-		ResourceHolderSDL.imgMenu.blitSurface(screen);
+	public void render() {
+		SDL3.INSTANCE.SDL_RenderTexture(NullpoMinoSDL.renderer, ResourceHolderSDL.imgMenu, null, null);
 
 		NormalFontSDL.printFontGrid(1, 1, (player + 1) + "P AI SETTING", NormalFontSDL.COLOR_ORANGE);
 
@@ -198,7 +196,7 @@ public class StateConfigAISelectSDL extends BaseStateSDL {
 	 * Update of the internal state
 	 */
 	@Override
-	public void update() throws SDLException {
+	public void update() {
 		// Cursor movement
 		if(GameKeySDL.gamekey[0].isMenuRepeatKey(GameKeySDL.BUTTON_UP)) {
 			cursor--;
