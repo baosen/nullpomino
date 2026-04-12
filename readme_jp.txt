@@ -176,6 +176,11 @@ SCREEN SHOT：スクリーンショットをssフォルダに保存
 |SCREEN SHOT  |F5          |F5          |F10         |
 +-------------+------------+------------+------------+
 
+※SDL版ではF11のフルスクリーン切替との競合を避けるため、
+  一部のデフォルトキーが異なります:
+  - Blockbox/Guideline: GIVEUPはF9（F11の代わり）
+  - NullpoMino Classic: RETRYはF9（F11の代わり）
+
 キー配置はタイトルの「CONFIG」の中にある「[KEYBOARD SETTING]」から変更できます。
 
 【設定のリセット】

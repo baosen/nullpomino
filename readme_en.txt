@@ -185,6 +185,11 @@ The game ends when the pile of blocks reaches to top of the field.
 |SCREEN SHOT  |F5          |F5          |F10         |
 +-------------+------------+------------+------------+
 
+Note: The SDL version uses different defaults for GIVEUP and RETRY
+to avoid conflict with the F11 fullscreen toggle:
+  - Blockbox/Guideline: GIVEUP is F9 (instead of F11)
+  - NullpoMino Classic: RETRY is F9 (instead of F11)
+
 You can change key mappings in CONFIG screen.
 
 * Reset
