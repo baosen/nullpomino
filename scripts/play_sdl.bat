@@ -1,3 +1,4 @@
 @echo off
-set PATH=lib;%PATH%;%systemroot%\SysWOW64
-start javaw -cp bin;NullpoMino.jar;lib\log4j-1.2.15.jar;lib\jna.jar -Djava.library.path=lib -Djna.library.path=lib mu.nu.nullpo.gui.sdl.NullpoMinoSDL
+cd /d "%~dp0.."
+set PATH=target\lib;%PATH%
+start javaw -cp "target\nullpomino-7.6.0-SNAPSHOT.jar;target\lib\*" -Djava.library.path=target\lib -Djna.library.path=target\lib mu.nu.nullpo.gui.sdl.NullpoMinoSDL
