@@ -13,8 +13,9 @@ Javaで作った落ちものアクションパズルゲームもどきです。
 　　play_slick.batまたはNullpoMino.exeをダブルクリックするとSlickバージョンが起動します。
 　　（OpenGLに対応したビデオカードが必要です。いくつかのPCではキーボードを認識しません。）
 　　play_sdl.batをダブルクリックするとSDLバージョンが起動します。
-　　（ほとんどのPCでSlickバージョンよりも安定して動作します。
-　　　ただしランダムにクラッシュするバグや、ネットプレイ時にメモリリークバグなどがあります。32bit限定）
+　　（JNA経由でSDL3を使用します。
+　　　SDL3、SDL3_image、SDL3_mixer、SDL3_ttfがインストールされ、ライブラリパスから見える必要があります。
+　　　ジョイスティック対応は最も充実しています。）
 
 　　ruleeditor.batをダブルクリックするとルールエディタを起動します。ルールの作成・編集ができます。
 　　sequencer.batをダブルクリックするとシーケンスビューアを起動します。リプレイファイルを開いてNEXTの順番を確認できるツールです。（Zirceanさん開発）
@@ -92,16 +93,14 @@ java -cp bin:NullpoMino.jar:lib/log4j-1.2.15.jar:lib/slick.jar:lib/lwjgl.jar:lib
 　　　ただし一部認識できないキー（;など）があります。
 
 　　SDLバージョン固有の問題:
-　　　自分がUbuntu 8.04で試した限りでは、これがLinuxでは最も問題なく動作します。
-　　　動かすにはlibsdlがインストールされている必要があります。
-　　　入ってない場合、Ubuntu 8.04だと以下のコマンドでインストールできるらしいです。
-sudo apt-get install libsdl1.2debian
-　　　i386以外だと動かないようです。
+　　　動かすにはSDL3、SDL3_image、SDL3_mixer、SDL3_ttfがインストールされていて、
+　　　システムのライブラリパスまたはJNAのライブラリパスから見える必要があります。
 
 ・Mac OS X
 　　持ってないのでよく分かりません(´・ω・｀)
 　　Slickバージョンは一応Linuxと同じコマンドで動くらしいです。
-　　SDLバージョンは、使ってるライブラリ（sdljava）がWindows版とLinux版しか存在しないため動きません。
+　　SDLバージョンはSDLJavaではなくJNA経由のSDL3を使うので、
+　　SDL3系ライブラリがインストールされていて動的ローダから見える必要があります。
 　　Swingバージョンは分かりません…
 
 【遊び方】
@@ -505,10 +504,11 @@ A: GENERAL CONFIG画面の"JOYSTICK METHOD"の設定をLWGJLに変えて、JOYST
    Slick版のジョイスティックサポートはSDL版ほど良くないです。
 
 Q: SDL版のネットプレイで使用RAMが激増する
-A: Swing版かSlick版を使ってください。今のところまともな解決方法はありません。SDLかSDLJava側の問題っぽいです。
+A: Swing版かSlick版を使ってください。今のところまともな解決方法はありません。SDL側の問題っぽいです。
 
 Q: 64bitのOSを使っています。SDL版が動きません。
-A: 無理。
+A: 以前のSDLJavaランタイムはもう使っていません。SDL3、SDL3_image、SDL3_mixer、
+   SDL3_ttfをインストールして、動的ローダまたはJNAのライブラリパスから見えるようにしてください。
 
 Q: ネットプレイでレートや1人プレイの記録が保存されない
 A: 名前にトリップが入っていないと記録は保存されません。
@@ -555,8 +555,8 @@ A: 名前にトリップが入っていないと記録は保存されません�
 	http://www.jcraft.com/jorbis/
 	IBXM Java MOD/S3M/XM Player
 	http://sites.google.com/site/mumart/
-	sdljava - Java Binding to SDL
-	http://sdljava.sourceforge.net/
+	JNA - Java Native Access
+	https://github.com/java-native-access/jna
 	Simple DirectMedia Layer
 	http://www.libsdl.org/
 	Apache log4j 1.2.15

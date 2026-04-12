@@ -1,4 +1,4 @@
 #!/bin/sh
 cd "$(dirname $0)";
 export LD_LIBRARY_PATH="lib:$LD_LIBRARY_PATH"
-java -cp bin:NullpoMino.jar:lib/log4j-1.2.15.jar:lib/sdljava.jar -Djava.library.path=lib mu.nu.nullpo.gui.sdl.NullpoMinoSDL
+java -cp bin:NullpoMino.jar:lib/log4j-1.2.15.jar:lib/jna.jar -Djava.library.path=lib -Djna.library.path=lib mu.nu.nullpo.gui.sdl.NullpoMinoSDL

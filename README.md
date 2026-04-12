@@ -35,4 +35,7 @@ This produces:
 ./run_sdl.sh
 ```
 
+The SDL frontend uses JNA to load `SDL3`, `SDL3_image`, `SDL3_mixer`, and
+`SDL3_ttf` from your system library path.
+
 Each run script builds the project first, then launches the game.

@@ -17,9 +17,9 @@ Windows:
 		(An OpenGL compatible video card required, some PCs may have problems with keyboard.
 		 Has limited support of joysticks.)
 	"play_sdl.bat" starts SDL version of NullpoMino.
-		(Aside from random crashing bug which I can't fix it, it's most stable for 32bit PCs, I think.
-		 Has best support of joysticks.
-		 Won't work with 64bit PCs.)
+		(Uses SDL3 through JNA.
+		 Requires SDL3, SDL3_image, SDL3_mixer and SDL3_ttf to be installed and visible in your library path.
+		 Has best support of joysticks.)
 
 	"ruleeditor.bat" runs Rule Editor, where you can create your own ruleset.
 	"sequencer.bat" runs Sequence Viewer, which should be helpful for TASing. (Created by Zircean)
@@ -102,15 +102,14 @@ java -cp bin:NullpoMino.jar:lib/log4j-1.2.15.jar:lib/slick.jar:lib/lwjgl.jar:lib
 		Please note when "-j" option is used, some keys (such as ;) won't be detected.
 
 	SDL version problems:
-		If you tried SDL version but it didn't work, you need to manually install libsdl.
-		In Ubuntu 8.04, I think you can install it with following command:
-sudo apt-get install libsdl1.2debian
-		SDL version requires i386 architecture CPU and 32bit OS to run.
+		If you tried SDL version but it didn't work, install SDL3, SDL3_image, SDL3_mixer and SDL3_ttf
+		and make sure your system library path (or JNA library path) can find them.
 
 Mac OS X:
 	Unfortunately I don't own any Mac OS X PC now :(
 	Slick version does seem to work with Linux version commandline.
-	SDL version does not work, because sdljava (Java SDL wrapper) doesn't support Mac OS X.
+	SDL version now uses SDL3 through JNA instead of SDLJava, so it depends on the SDL3 family
+	libraries being installed and visible to the dynamic loader.
 	I don't know anything about Swing version.
 
 3. How to play
@@ -504,10 +503,11 @@ A: Try changing "JOYSTICK METHOD" option (JOYSTICK SETTING screen) to LWGJL, the
 
 Q: Why NetPlay in SDL version eats too much RAM and crashes after few minutes?
 A: Try using Swing or Slick version. I know it's a bug, but I don't have any solution yet.
-   It seems large amount of RAM is eaten by SDL itself, not the Java code. If this bug is SDL itself or SDLJava, then it's out of my hand.
+   It seems large amount of RAM is eaten by SDL itself, not the Java code. If this bug is in SDL itself, then it's out of my hand.
 
 Q: I'm trying to run SDL version on 64bit systems but doesn't work.
-A: Give up! The SDL library for Java is already abandoned years ago, thus does not support 64bit at all.
+A: The old SDLJava runtime is no longer used. Install SDL3, SDL3_image, SDL3_mixer and SDL3_ttf,
+   then make sure the dynamic loader or JNA library path can find them.
 
 Q: My netplay rankings and single-player-records are not saved. Why?
 A: Your record will not be saved if you don't use tripcode in your name.
@@ -564,8 +564,8 @@ Libraries:
     http://sites.google.com/site/mumart/
     License: BSD
 
-    sdljava - Java Binding to SDL
-    http://sdljava.sourceforge.net/
+    JNA - Java Native Access
+    https://github.com/java-native-access/jna
     License: LGPL-2
 
     Simple DirectMedia Layer
