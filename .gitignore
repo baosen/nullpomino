@@ -31,7 +31,8 @@ target/
 .settings/
 
 # User data files
-config/
+config/setting/*
+!config/setting/.gitkeep
 log/
 replay/
 
