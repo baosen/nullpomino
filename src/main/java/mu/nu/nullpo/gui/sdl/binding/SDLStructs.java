@@ -149,5 +149,21 @@ public final class SDLStructs {
 		// Window event fields
 		public int getWindowData1() { return mem.getInt(20); }
 		public int getWindowData2() { return mem.getInt(24); }
+
+		// Mouse event fields (SDL_MouseMotionEvent & SDL_MouseButtonEvent)
+		// Layout: ...windowID(16) which(20) state/button(24) x(28) y(32)
+		public float getMouseX() { return mem.getFloat(28); }
+		public float getMouseY() { return mem.getFloat(32); }
+
+		// Mouse button event: button(24, Uint8), down(25, bool)
+		public int getMouseButton() { return mem.getByte(24) & 0xFF; }
+		public boolean isMousePressed() { return mem.getByte(25) != 0; }
+
+		// Text input event fields (SDL_TextInputEvent)
+		// SDL3 64-bit: text is const char* at offset 24 (after 4 bytes padding for pointer alignment)
+		public String getTextInput() {
+			Pointer p = mem.getPointer(24);
+			return (p != null) ? p.getString(0) : null;
+		}
 	}
 }

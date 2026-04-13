@@ -377,13 +377,13 @@ public interface GameMode {
 
 	/**
 	 * Initialization for netplay.
-	 * @param obj Any object (Currently NetLobbyFrame)
+	 * @param obj Any object (Currently NetLobby)
 	 */
 	public void netplayInit(Object obj);
 
 	/**
 	 * When the mode unloads during netplay (Called when mode change happens)
-	 * @param obj Any object (Currently NetLobbyFrame)
+	 * @param obj Any object (Currently NetLobby)
 	 */
 	public void netplayUnload(Object obj);
 

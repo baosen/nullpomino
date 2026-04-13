@@ -38,7 +38,7 @@ import mu.nu.nullpo.game.event.EventReceiver;
 import mu.nu.nullpo.game.net.NetPlayerClient;
 import mu.nu.nullpo.game.net.NetUtil;
 import mu.nu.nullpo.game.play.GameEngine;
-import mu.nu.nullpo.gui.net.NetLobbyFrame;
+import mu.nu.nullpo.gui.net.NetLobby;
 import mu.nu.nullpo.util.CustomProperties;
 import mu.nu.nullpo.util.GeneralUtil;
 
@@ -303,7 +303,7 @@ public class MarathonPlusMode extends NetDummyMode {
 				receiver.saveModeConfig(owner.modeConfig);
 
 				// NET: Signal start of the game
-				if(netIsNetPlay) netLobby.netPlayerClient.send("start1p\n");
+				if(netIsNetPlay) netLobby.getNetPlayerClient().send("start1p\n");
 
 				return false;
 			}
@@ -790,7 +790,7 @@ public class MarathonPlusMode extends NetDummyMode {
 					netSendField(engine);
 					netSendNextAndHold(engine);
 					netSendStats(engine);
-					netLobby.netPlayerClient.send("game\tbonuslevelenter\n");
+					netLobby.getNetPlayerClient().send("game\tbonuslevelenter\n");
 				}
 			}
 		} else if(engine.statc[0] == 90) {
@@ -810,7 +810,7 @@ public class MarathonPlusMode extends NetDummyMode {
 					netSendField(engine);
 					netSendNextAndHold(engine);
 					netSendStats(engine);
-					netLobby.netPlayerClient.send("game\tbonuslevelstart\n");
+					netLobby.getNetPlayerClient().send("game\tbonuslevelstart\n");
 				}
 			}
 
@@ -1043,7 +1043,7 @@ public class MarathonPlusMode extends NetDummyMode {
 	 * NET: Message received
 	 */
 	@Override
-	public void netlobbyOnMessage(NetLobbyFrame lobby, NetPlayerClient client, String[] message) throws IOException {
+	public void netlobbyOnMessage(NetLobby lobby, NetPlayerClient client, String[] message) throws IOException {
 		super.netlobbyOnMessage(lobby, client, message);
 
 		// Game messages
@@ -1095,7 +1095,7 @@ public class MarathonPlusMode extends NetDummyMode {
 		msg += lastscore + "\t" + scgettime + "\t" + lastevent + "\t" + lastb2b + "\t" + lastcombo + "\t" + lastpiece + "\t";
 		msg += bg + "\t";
 		msg += bonusLines + "\t" + bonusFlashNow + "\t" + bonusPieceCount + "\t" + bonusTime + "\n";
-		netLobby.netPlayerClient.send(msg);
+		netLobby.getNetPlayerClient().send(msg);
 	}
 
 	/**
@@ -1162,7 +1162,7 @@ public class MarathonPlusMode extends NetDummyMode {
 		subMsg += "PIECE/SEC;" + engine.statistics.pps + "\t";
 
 		String msg = "gstat1p\t" + NetUtil.urlEncode(subMsg) + "\n";
-		netLobby.netPlayerClient.send(msg);
+		netLobby.getNetPlayerClient().send(msg);
 	}
 
 	/**
@@ -1174,7 +1174,7 @@ public class MarathonPlusMode extends NetDummyMode {
 		String msg = "game\toption\t";
 		msg += startlevel + "\t" + tspinEnableType + "\t" + enableTSpinKick + "\t" + enableB2B + "\t";
 		msg += enableCombo + "\t" + big + "\t" + spinCheckType + "\t" + tspinEnableEZ + "\n";
-		netLobby.netPlayerClient.send(msg);
+		netLobby.getNetPlayerClient().send(msg);
 	}
 
 	/**

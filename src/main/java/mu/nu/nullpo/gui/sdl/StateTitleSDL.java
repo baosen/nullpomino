@@ -53,6 +53,10 @@ public class StateTitleSDL extends DummyMenuChooseStateSDL {
 	 */
 	@Override
 	public void enter() {
+		NullpoMinoSDL.transferredNetLobby = null;
+		NullpoMinoSDL.transferredNetMode = null;
+		NullpoMinoSDL.transferredNetStatusMessage = "";
+
 		// Update title bar
 		SDL3.INSTANCE.SDL_SetWindowTitle(NullpoMinoSDL.window, "NullpoMino version" + GameManager.getVersionString());
 		// Observer start
@@ -92,7 +96,7 @@ public class StateTitleSDL extends DummyMenuChooseStateSDL {
 			NullpoMinoSDL.enterState(NullpoMinoSDL.STATE_REPLAYSELECT);
 			break;
 		case 2:
-			NullpoMinoSDL.enterState(NullpoMinoSDL.STATE_NETGAME);
+			NullpoMinoSDL.enterState(NullpoMinoSDL.STATE_NETLOBBY);
 			break;
 		case 3:
 			NullpoMinoSDL.enterState(NullpoMinoSDL.STATE_CONFIG_MAINMENU);

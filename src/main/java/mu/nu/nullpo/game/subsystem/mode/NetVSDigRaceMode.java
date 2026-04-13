@@ -277,7 +277,7 @@ public class NetVSDigRaceMode extends NetDummyVSMode {
 						if(uidArray[i] != -1) strMsg += "\t" + uidArray[i];
 					}
 					strMsg += "\n";
-					netLobby.netPlayerClient.send(strMsg);
+					netLobby.getNetPlayerClient().send(strMsg);
 
 					// Wait until everyone dies
 					engine.stat = GameEngine.Status.NOTHING;
@@ -406,7 +406,7 @@ public class NetVSDigRaceMode extends NetDummyVSMode {
 		if((playerID == 0) && !netvsIsPractice && !netvsIsWatch()) {
 			int remainLines = playerRemainLines[playerID];
 			String strMsg = "game\tstats\t" + remainLines + "\n";
-			netLobby.netPlayerClient.send(strMsg);
+			netLobby.getNetPlayerClient().send(strMsg);
 		}
 	}
 
@@ -433,7 +433,7 @@ public class NetVSDigRaceMode extends NetDummyVSMode {
 		msg += engine.statistics.totalPieceLocked + "\t" + engine.statistics.pps + "\t";
 		msg += netvsPlayTimer + "\t" + 0 + "\t" + netvsPlayerWinCount[playerID] + "\t" + netvsPlayerPlayCount[playerID];
 		msg += "\n";
-		netLobby.netPlayerClient.send(msg);
+		netLobby.getNetPlayerClient().send(msg);
 	}
 
 	/*

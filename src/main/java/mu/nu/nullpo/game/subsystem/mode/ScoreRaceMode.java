@@ -369,7 +369,7 @@ public class ScoreRaceMode extends NetDummyMode {
 					receiver.saveModeConfig(owner.modeConfig);
 
 					// NET: Signal start of the game
-					if(netIsNetPlay) netLobby.netPlayerClient.send("start1p\n");
+					if(netIsNetPlay) netLobby.getNetPlayerClient().send("start1p\n");
 
 					return false;
 				}
@@ -933,7 +933,7 @@ public class ScoreRaceMode extends NetDummyMode {
 		msg += engine.gameActive + "\t" + engine.timerActive + "\t";
 		msg += lastscore + "\t" + scgettime + "\t" + lastevent + "\t" + lastb2b + "\t" + lastcombo + "\t" + lastpiece;
 		msg += "\n";
-		netLobby.netPlayerClient.send(msg);
+		netLobby.getNetPlayerClient().send(msg);
 	}
 
 	/**
@@ -976,7 +976,7 @@ public class ScoreRaceMode extends NetDummyMode {
 		subMsg += "PIECE/SEC;" + engine.statistics.pps + "\t";
 
 		String msg = "gstat1p\t" + NetUtil.urlEncode(subMsg) + "\n";
-		netLobby.netPlayerClient.send(msg);
+		netLobby.getNetPlayerClient().send(msg);
 	}
 
 	/**
@@ -991,7 +991,7 @@ public class ScoreRaceMode extends NetDummyMode {
 		msg += engine.speed.das + "\t" + bgmno + "\t" + big + "\t" + goaltype + "\t" + tspinEnableType + "\t";
 		msg += enableTSpinKick + "\t" + enableB2B + "\t" + enableCombo + "\t" + presetNumber + "\t";
 		msg += spinCheckType + "\t" + tspinEnableEZ + "\n";
-		netLobby.netPlayerClient.send(msg);
+		netLobby.getNetPlayerClient().send(msg);
 	}
 
 	/**

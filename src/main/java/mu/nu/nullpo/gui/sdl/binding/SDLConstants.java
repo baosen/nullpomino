@@ -41,6 +41,7 @@ public final class SDLConstants {
 	public static final int SDL_EVENT_WINDOW_CLOSE_REQUESTED = 0x212;
 	public static final int SDL_EVENT_KEY_DOWN              = 0x300;
 	public static final int SDL_EVENT_KEY_UP                = 0x301;
+	public static final int SDL_EVENT_TEXT_INPUT            = 0x303;
 	public static final int SDL_EVENT_MOUSE_MOTION          = 0x400;
 	public static final int SDL_EVENT_MOUSE_BUTTON_DOWN     = 0x401;
 	public static final int SDL_EVENT_MOUSE_BUTTON_UP       = 0x402;

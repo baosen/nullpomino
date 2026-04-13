@@ -292,7 +292,7 @@ public class DigChallengeMode extends NetDummyMode {
 				receiver.saveModeConfig(owner.modeConfig);
 
 				// NET: Signal start of the game
-				if(netIsNetPlay) netLobby.netPlayerClient.send("start1p\n");
+				if(netIsNetPlay) netLobby.getNetPlayerClient().send("start1p\n");
 
 				return false;
 			}
@@ -981,7 +981,7 @@ public class DigChallengeMode extends NetDummyMode {
 		msg += engine.gameActive + "\t" + engine.timerActive + "\t";
 		msg += lastscore + "\t" + scgettime + "\t" + lastevent + "\t" + lastb2b + "\t" + lastcombo + "\t" + lastpiece + "\t";
 		msg += bg + "\t" + garbagePending + "\n";
-		netLobby.netPlayerClient.send(msg);
+		netLobby.getNetPlayerClient().send(msg);
 	}
 
 	/**
@@ -1027,7 +1027,7 @@ public class DigChallengeMode extends NetDummyMode {
 		subMsg += "TIME;" + GeneralUtil.getTime(engine.statistics.time) + "\t";
 
 		String msg = "gstat1p\t" + NetUtil.urlEncode(subMsg) + "\n";
-		netLobby.netPlayerClient.send(msg);
+		netLobby.getNetPlayerClient().send(msg);
 	}
 
 	/**
@@ -1040,7 +1040,7 @@ public class DigChallengeMode extends NetDummyMode {
 		msg += goaltype + "\t" + startlevel + "\t" + bgmno + "\t";
 		msg += tspinEnableType + "\t" + enableTSpinKick + "\t" + spinCheckType + "\t" + tspinEnableEZ + "\t";
 		msg += enableB2B + "\t" + enableCombo + "\t" + engine.speed.das + "\n";
-		netLobby.netPlayerClient.send(msg);
+		netLobby.getNetPlayerClient().send(msg);
 	}
 
 	/**

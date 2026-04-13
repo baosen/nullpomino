@@ -39,7 +39,7 @@ import mu.nu.nullpo.game.event.EventReceiver;
 import mu.nu.nullpo.game.net.NetPlayerClient;
 import mu.nu.nullpo.game.play.GameEngine;
 import mu.nu.nullpo.game.play.GameManager;
-import mu.nu.nullpo.gui.net.NetLobbyFrame;
+import mu.nu.nullpo.gui.net.NetLobby;
 import mu.nu.nullpo.util.GeneralUtil;
 
 /**
@@ -466,7 +466,7 @@ public class NetVSBattleMode extends NetDummyVSMode {
 				if((targetID != -1) && !netvsIsAttackable(targetID)) setNewTarget();
 				int targetSeatID = (targetID == -1) ? -1 : netvsPlayerSeatID[targetID];
 
-				netLobby.netPlayerClient.send("game\tattack\t" + stringPts + "\t" + lastevent[playerID] + "\t" + lastb2b[playerID] + "\t" +
+				netLobby.getNetPlayerClient().send("game\tattack\t" + stringPts + "\t" + lastevent[playerID] + "\t" + lastb2b[playerID] + "\t" +
 						lastcombo[playerID] + "\t" + garbage[playerID] + "\t" + lastpiece[playerID] + "\t" + targetSeatID + "\n");
 			}
 		}
@@ -591,7 +591,7 @@ public class NetVSBattleMode extends NetDummyVSMode {
 		   (netvsPlayTimer == netCurrentRoomInfo.hurryupSeconds * 60) && (!hurryupStarted))
 		{
 			if(!netvsIsWatch() && !netvsIsPractice) {
-				netLobby.netPlayerClient.send("game\thurryup\n");
+				netLobby.getNetPlayerClient().send("game\thurryup\n");
 				owner.receiver.playSE("hurryup");
 			}
 			hurryupStarted = true;
@@ -892,7 +892,7 @@ public class NetVSBattleMode extends NetDummyVSMode {
 	@Override
 	protected void netSendStats(GameEngine engine) {
 		if((engine.playerID == 0) && !netvsIsPractice && !netvsIsWatch()) {
-			netLobby.netPlayerClient.send("game\tstats\t" + garbage[engine.playerID] + "\n");
+			netLobby.getNetPlayerClient().send("game\tstats\t" + garbage[engine.playerID] + "\n");
 		}
 	}
 
@@ -919,7 +919,7 @@ public class NetVSBattleMode extends NetDummyVSMode {
 		msg += engine.statistics.totalPieceLocked + "\t" + engine.statistics.pps + "\t";
 		msg += netvsPlayTimer + "\t" + currentKO + "\t" + netvsPlayerWinCount[playerID] + "\t" + netvsPlayerPlayCount[playerID];
 		msg += "\n";
-		netLobby.netPlayerClient.send(msg);
+		netLobby.getNetPlayerClient().send(msg);
 	}
 
 	/*
@@ -952,7 +952,7 @@ public class NetVSBattleMode extends NetDummyVSMode {
 	 * Message received
 	 */
 	@Override
-	public void netlobbyOnMessage(NetLobbyFrame lobby, NetPlayerClient client, String[] message) throws IOException {
+	public void netlobbyOnMessage(NetLobby lobby, NetPlayerClient client, String[] message) throws IOException {
 		super.netlobbyOnMessage(lobby, client, message);
 
 		// Dead
@@ -963,7 +963,7 @@ public class NetVSBattleMode extends NetDummyVSMode {
 			if(message.length > 5) koUID = Integer.parseInt(message[5]);
 
 			// Increase KO count
-			if(koUID == netLobby.netPlayerClient.getPlayerUID()) {
+			if(koUID == netLobby.getNetPlayerClient().getPlayerUID()) {
 				playerKObyYou[playerID] = true;
 				currentKO++;
 			}

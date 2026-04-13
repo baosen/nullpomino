@@ -340,7 +340,7 @@ public class TechnicianMode extends NetDummyMode {
 				receiver.saveModeConfig(owner.modeConfig);
 
 				// NET: Signal start of the game
-				if(netIsNetPlay) netLobby.netPlayerClient.send("start1p\n");
+				if(netIsNetPlay) netLobby.getNetPlayerClient().send("start1p\n");
 
 				return false;
 			}
@@ -1089,7 +1089,7 @@ public class TechnicianMode extends NetDummyMode {
 		msg += lastgoal + "\t" + lasttimebonus + "\t" + regretdispframe + "\t";
 		msg += bg + "\t" + engine.meterValue + "\t" + engine.meterColor + "\t";
 		msg += engine.statistics.level + "\t" + levelTimer + "\t" + totalTimer + "\t" + rolltime + "\t" + goal + "\n";
-		netLobby.netPlayerClient.send(msg);
+		netLobby.getNetPlayerClient().send(msg);
 	}
 
 	/**
@@ -1140,7 +1140,7 @@ public class TechnicianMode extends NetDummyMode {
 		subMsg += "LINE/MIN;" + engine.statistics.lpm + "\t";
 
 		String msg = "gstat1p\t" + NetUtil.urlEncode(subMsg) + "\n";
-		netLobby.netPlayerClient.send(msg);
+		netLobby.getNetPlayerClient().send(msg);
 	}
 
 	/**
@@ -1153,7 +1153,7 @@ public class TechnicianMode extends NetDummyMode {
 		msg += goaltype + "\t" + startlevel + "\t" + tspinEnableType + "\t";
 		msg += enableTSpinKick + "\t" + enableB2B + "\t" + enableCombo + "\t" + big + "\t";
 		msg += spinCheckType + "\t" + tspinEnableEZ + "\n";
-		netLobby.netPlayerClient.send(msg);
+		netLobby.getNetPlayerClient().send(msg);
 	}
 
 	/**

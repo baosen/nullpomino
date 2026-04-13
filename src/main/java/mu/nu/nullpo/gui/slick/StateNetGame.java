@@ -40,6 +40,7 @@ import mu.nu.nullpo.game.subsystem.ai.DummyAI;
 import mu.nu.nullpo.game.subsystem.mode.GameMode;
 import mu.nu.nullpo.game.subsystem.mode.NetDummyMode;
 import mu.nu.nullpo.game.subsystem.wallkick.Wallkick;
+import mu.nu.nullpo.gui.net.NetLobby;
 import mu.nu.nullpo.gui.net.NetLobbyFrame;
 import mu.nu.nullpo.gui.net.NetLobbyListener;
 import mu.nu.nullpo.util.GeneralUtil;
@@ -405,30 +406,30 @@ public class StateNetGame extends BasicGameState implements NetLobbyListener {
 		appContainer.setTitle(strTitle);
 	}
 
-	public void netlobbyOnDisconnect(NetLobbyFrame lobby, NetPlayerClient client, Throwable ex) {
+	public void netlobbyOnDisconnect(NetLobby lobby, NetPlayerClient client, Throwable ex) {
 		strModeToEnter = null;
 	}
 
-	public void netlobbyOnExit(NetLobbyFrame lobby) {
+	public void netlobbyOnExit(NetLobby lobby) {
 		if((gameManager != null) && (gameManager.engine.length > 0) && (gameManager.engine[0] != null)) {
 			gameManager.engine[0].quitflag = true;
 		}
 	}
 
-	public void netlobbyOnInit(NetLobbyFrame lobby) {
+	public void netlobbyOnInit(NetLobby lobby) {
 	}
 
-	public void netlobbyOnLoginOK(NetLobbyFrame lobby, NetPlayerClient client) {
+	public void netlobbyOnLoginOK(NetLobby lobby, NetPlayerClient client) {
 	}
 
-	public void netlobbyOnMessage(NetLobbyFrame lobby, NetPlayerClient client, String[] message) throws IOException {
+	public void netlobbyOnMessage(NetLobby lobby, NetPlayerClient client, String[] message) throws IOException {
 	}
 
-	public void netlobbyOnRoomJoin(NetLobbyFrame lobby, NetPlayerClient client, NetRoomInfo roomInfo) {
+	public void netlobbyOnRoomJoin(NetLobby lobby, NetPlayerClient client, NetRoomInfo roomInfo) {
 		strModeToEnter = roomInfo.strMode;
 	}
 
-	public void netlobbyOnRoomLeave(NetLobbyFrame lobby, NetPlayerClient client) {
+	public void netlobbyOnRoomLeave(NetLobby lobby, NetPlayerClient client) {
 		strModeToEnter = null;
 	}
 }

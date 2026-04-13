@@ -59,6 +59,9 @@
 			<artifactId>swing-layout-1.0.4</artifactId>
 			<version>LOCAL</version>
 		</dependency>
+		<!-- nuklear4j is vendored: Java sources in src/main/java/nuklear/,
+		     native lib in native-lib/libnuklear-java.so,
+		     C sources + Makefile in nuklear4j/ for rebuilding -->
 		<dependency>
 			<groupId>mu.nu.nullpo.local</groupId>
 			<artifactId>jinput</artifactId>

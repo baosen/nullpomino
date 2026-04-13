@@ -39,52 +39,52 @@ import mu.nu.nullpo.game.net.NetRoomInfo;
 public interface NetLobbyListener {
 	/**
 	 * Initialization Completed
-	 * @param lobby NetLobbyFrame
+	 * @param lobby NetLobby
 	 */
-	public void netlobbyOnInit(NetLobbyFrame lobby);
+	public void netlobbyOnInit(NetLobby lobby);
 
 	/**
 	 * Login completed
-	 * @param lobby NetLobbyFrame
+	 * @param lobby NetLobby
 	 * @param client NetClient
 	 */
-	public void netlobbyOnLoginOK(NetLobbyFrame lobby, NetPlayerClient client);
+	public void netlobbyOnLoginOK(NetLobby lobby, NetPlayerClient client);
 
 	/**
 	 * When you enter a room
-	 * @param lobby NetLobbyFrame
+	 * @param lobby NetLobby
 	 * @param client NetClient
 	 * @param roomInfo NetRoomInfo
 	 */
-	public void netlobbyOnRoomJoin(NetLobbyFrame lobby, NetPlayerClient client, NetRoomInfo roomInfo);
+	public void netlobbyOnRoomJoin(NetLobby lobby, NetPlayerClient client, NetRoomInfo roomInfo);
 
 	/**
 	 * When you returned to lobby
-	 * @param lobby NetLobbyFrame
+	 * @param lobby NetLobby
 	 * @param client NetClient
 	 */
-	public void netlobbyOnRoomLeave(NetLobbyFrame lobby, NetPlayerClient client);
+	public void netlobbyOnRoomLeave(NetLobby lobby, NetPlayerClient client);
 
 	/**
 	 * When disconnected
-	 * @param lobby NetLobbyFrame
+	 * @param lobby NetLobby
 	 * @param client NetClient
 	 * @param ex A Throwable that caused disconnection (null if unknown or normal termination)
 	 */
-	public void netlobbyOnDisconnect(NetLobbyFrame lobby, NetPlayerClient client, Throwable ex);
+	public void netlobbyOnDisconnect(NetLobby lobby, NetPlayerClient client, Throwable ex);
 
 	/**
 	 * Message received
-	 * @param lobby NetLobbyFrame
+	 * @param lobby NetLobby
 	 * @param client NetClient
 	 * @param message Message (Already sepatated by tabs)
 	 * @throws IOException When something bad occurs
 	 */
-	public void netlobbyOnMessage(NetLobbyFrame lobby, NetPlayerClient client, String[] message) throws IOException;
+	public void netlobbyOnMessage(NetLobby lobby, NetPlayerClient client, String[] message) throws IOException;
 
 	/**
 	 * When the lobby window is closed
-	 * @param lobby NetLobbyFrame
+	 * @param lobby NetLobby
 	 */
-	public void netlobbyOnExit(NetLobbyFrame lobby);
+	public void netlobbyOnExit(NetLobby lobby);
 }

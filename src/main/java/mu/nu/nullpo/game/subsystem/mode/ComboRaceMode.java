@@ -115,7 +115,7 @@ public class ComboRaceMode extends NetDummyMode {
 		Block.BLOCK_COLOR_BLUE,
 		Block.BLOCK_COLOR_PURPLE,
 	};
-	
+
 	/** Meter colors for really high combos in Endless */
 	private static final int[] METER_COLOUR_TABLE = {
 		GameEngine.METER_COLOR_GREEN,
@@ -129,7 +129,7 @@ public class ComboRaceMode extends NetDummyMode {
 		GameEngine.METER_COLOR_CYAN,
 		GameEngine.METER_COLOR_DARKGREEN,
 	};
-	
+
 
 	/** EventReceiver object (This receives many game events, can also be used for drawing the fonts.) */
 
@@ -417,7 +417,7 @@ public class ComboRaceMode extends NetDummyMode {
 					receiver.saveModeConfig(owner.modeConfig);
 
 					// NET: Signal start of the game
-					if(netIsNetPlay) netLobby.netPlayerClient.send("start1p\n");
+					if(netIsNetPlay) netLobby.getNetPlayerClient().send("start1p\n");
 
 					return false;
 				}
@@ -908,7 +908,7 @@ public class ComboRaceMode extends NetDummyMode {
 		msg += bg + "\t";
 		msg += scgettime + "\t" + lastevent + "\t" + lastb2b + "\t" + lastcombo + "\t" + lastpiece + "\t";
 		msg += engine.statistics.maxCombo + "\t" + engine.combo + "\n";
-		netLobby.netPlayerClient.send(msg);
+		netLobby.getNetPlayerClient().send(msg);
 	}
 
 	/**
@@ -950,7 +950,7 @@ public class ComboRaceMode extends NetDummyMode {
 		subMsg += "LINE/MIN;" + engine.statistics.lpm + "\t";
 		subMsg += "PIECE/SEC;" + engine.statistics.pps + "\t";
 		String msg = "gstat1p\t" + NetUtil.urlEncode(subMsg) + "\n";
-		netLobby.netPlayerClient.send(msg);
+		netLobby.getNetPlayerClient().send(msg);
 	}
 
 	/**
@@ -964,7 +964,7 @@ public class ComboRaceMode extends NetDummyMode {
 		msg += engine.speed.areLine + "\t" + engine.speed.lineDelay + "\t" + engine.speed.lockDelay + "\t";
 		msg += engine.speed.das + "\t" + bgmno + "\t" + goaltype + "\t" + presetNumber + "\t";
 		msg += shapetype + "\t" + comboColumn + "\t" + comboWidth + "\t" + ceilingAdjust + "\t" + spawnAboveField + "\n";
-		netLobby.netPlayerClient.send(msg);
+		netLobby.getNetPlayerClient().send(msg);
 	}
 
 	/**

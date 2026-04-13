@@ -124,7 +124,7 @@ import org.apache.log4j.PropertyConfigurator;
 /**
  * NullpoMino NetLobby
  */
-public class NetLobbyFrame extends JFrame implements ActionListener, NetMessageListener {
+public class NetLobbyFrame extends JFrame implements ActionListener, NetMessageListener, NetLobby {
 	/** Serial Version ID */
 	private static final long serialVersionUID = 1L;
 
@@ -4986,6 +4986,28 @@ public class NetLobbyFrame extends JFrame implements ActionListener, NetMessageL
 	 */
 	public NetDummyMode getNetDummyMode() {
 		return netDummyMode;
+	}
+
+	// --- NetLobby interface getters/setters ---
+
+	public NetPlayerClient getNetPlayerClient() {
+		return netPlayerClient;
+	}
+
+	public RuleOptions getRuleOptPlayer() {
+		return ruleOptPlayer;
+	}
+
+	public void setRuleOptPlayer(RuleOptions ruleopt) {
+		this.ruleOptPlayer = ruleopt;
+	}
+
+	public RuleOptions getRuleOptLock() {
+		return ruleOptLock;
+	}
+
+	public LinkedList<String> getMapList() {
+		return mapList;
 	}
 
 	/**

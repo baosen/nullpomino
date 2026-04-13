@@ -273,7 +273,7 @@ public class DigRaceMode extends NetDummyMode {
 					receiver.saveModeConfig(owner.modeConfig);
 
 					// NET: Signal start of the game
-					if(netIsNetPlay) netLobby.netPlayerClient.send("start1p\n");
+					if(netIsNetPlay) netLobby.getNetPlayerClient().send("start1p\n");
 
 					// Start game
 					return false;
@@ -663,7 +663,7 @@ public class DigRaceMode extends NetDummyMode {
 		msg += engine.gameActive + "\t" + engine.timerActive + "\t";
 		msg += engine.meterColor + "\t" + engine.meterValue;
 		msg += "\n";
-		netLobby.netPlayerClient.send(msg);
+		netLobby.getNetPlayerClient().send(msg);
 	}
 
 	/**
@@ -698,7 +698,7 @@ public class DigRaceMode extends NetDummyMode {
 		subMsg += "PIECE/SEC;" + engine.statistics.pps + "\t";
 
 		String msg = "gstat1p\t" + NetUtil.urlEncode(subMsg) + "\n";
-		netLobby.netPlayerClient.send(msg);
+		netLobby.getNetPlayerClient().send(msg);
 	}
 
 	/**
@@ -712,7 +712,7 @@ public class DigRaceMode extends NetDummyMode {
 		msg += engine.speed.areLine + "\t" + engine.speed.lineDelay + "\t" + engine.speed.lockDelay + "\t";
 		msg += engine.speed.das + "\t" + bgmno + "\t" + goaltype + "\t" + presetNumber;
 		msg += "\n";
-		netLobby.netPlayerClient.send(msg);
+		netLobby.getNetPlayerClient().send(msg);
 	}
 
 	/**

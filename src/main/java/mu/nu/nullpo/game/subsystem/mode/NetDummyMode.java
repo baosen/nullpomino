@@ -25,7 +25,7 @@ import mu.nu.nullpo.game.net.NetUtil;
 import mu.nu.nullpo.game.play.GameEngine;
 import mu.nu.nullpo.game.play.GameManager;
 import mu.nu.nullpo.game.subsystem.wallkick.Wallkick;
-import mu.nu.nullpo.gui.net.NetLobbyFrame;
+import mu.nu.nullpo.gui.net.NetLobby;
 import mu.nu.nullpo.gui.net.NetLobbyListener;
 import mu.nu.nullpo.util.CustomProperties;
 import mu.nu.nullpo.util.GeneralUtil;
@@ -38,7 +38,7 @@ public class NetDummyMode extends AbstractMode implements NetLobbyListener {
 	static Logger log = Logger.getLogger(NetDummyMode.class);
 
 	/** NET: Lobby (Declared in NetDummyMode) */
-	protected NetLobbyFrame netLobby;
+	protected NetLobby netLobby;
 
 	/** NET: GameManager (Declared in NetDummyMode; Don't override it!) */
 	protected GameManager owner;
@@ -146,18 +146,18 @@ public class NetDummyMode extends AbstractMode implements NetLobbyListener {
 	 */
 	@Override
 	public void netplayInit(Object obj) {
-		if(obj instanceof NetLobbyFrame) {
-			netLobby = (NetLobbyFrame)obj;
+		if(obj instanceof NetLobby) {
+			netLobby = (NetLobby)obj;
 			netLobby.setNetDummyMode(this);
 
 			try {
-				netLobby.ruleOptPlayer = new RuleOptions(owner.engine[0].ruleopt);
+				netLobby.setRuleOptPlayer(new RuleOptions(owner.engine[0].ruleopt));
 			} catch (NullPointerException e) {
 				log.error("NPE on netplayInit; Most likely the mode is overriding 'owner' variable", e);
 			}
 
-			if((netLobby != null) && (netLobby.netPlayerClient != null) && (netLobby.netPlayerClient.getCurrentRoomInfo() != null)) {
-				netOnJoin(netLobby, netLobby.netPlayerClient, netLobby.netPlayerClient.getCurrentRoomInfo());
+			if((netLobby != null) && (netLobby.getNetPlayerClient() != null) && (netLobby.getNetPlayerClient().getCurrentRoomInfo() != null)) {
+				netOnJoin(netLobby, netLobby.getNetPlayerClient(), netLobby.getNetPlayerClient().getCurrentRoomInfo());
 			}
 		}
 	}
@@ -317,7 +317,7 @@ public class NetDummyMode extends AbstractMode implements NetLobbyListener {
 				netSendField(engine);
 				netSendNextAndHold(engine);
 				netSendStats(engine);
-				netLobby.netPlayerClient.send("game\tending\n");
+				netLobby.getNetPlayerClient().send("game\tending\n");
 			}
 		}
 		return false;
@@ -334,7 +334,7 @@ public class NetDummyMode extends AbstractMode implements NetLobbyListener {
 				netSendField(engine);
 				netSendNextAndHold(engine);
 				netSendStats(engine);
-				netLobby.netPlayerClient.send("game\texcellent\n");
+				netLobby.getNetPlayerClient().send("game\texcellent\n");
 			}
 		}
 		return false;
@@ -356,10 +356,10 @@ public class NetDummyMode extends AbstractMode implements NetLobbyListener {
 						netSendStats(engine);
 					}
 					netSendEndGameStats(engine);
-					netLobby.netPlayerClient.send("dead\t-1\n");
+					netLobby.getNetPlayerClient().send("dead\t-1\n");
 				} else if(engine.statc[0] >= engine.field.getHeight() + 1 + 180) {
 					// To results screen
-					netLobby.netPlayerClient.send("game\tresultsscreen\n");
+					netLobby.getNetPlayerClient().send("game\tresultsscreen\n");
 				}
 			} else {
 				if(engine.statc[0] < engine.field.getHeight() + 1 + 180) {
@@ -397,7 +397,7 @@ public class NetDummyMode extends AbstractMode implements NetLobbyListener {
 			if(engine.ctrl.isPush(Controller.BUTTON_A) && !netIsWatch && (netReplaySendStatus == 2)) {
 				engine.playSE("decide");
 				if((netNumSpectators > 0) || (netForceSendMovements)) {
-					netLobby.netPlayerClient.send("game\tretry\n");
+					netLobby.getNetPlayerClient().send("game\tretry\n");
 					netSendOptions(engine);
 				}
 				owner.reset();
@@ -431,7 +431,7 @@ public class NetDummyMode extends AbstractMode implements NetLobbyListener {
 		if((engine.ctrl.isMenuRepeatKey(Controller.BUTTON_UP) || engine.ctrl.isMenuRepeatKey(Controller.BUTTON_DOWN)) &&
 			netIsNetPlay && ((netNumSpectators > 0) || (netForceSendMovements)))
 		{
-			netLobby.netPlayerClient.send("game\tcursor\t" + menuCursor + "\n");
+			netLobby.getNetPlayerClient().send("game\tcursor\t" + menuCursor + "\n");
 		}
 
 		return change;
@@ -444,7 +444,7 @@ public class NetDummyMode extends AbstractMode implements NetLobbyListener {
 	public void netplayOnRetryKey(GameEngine engine, int playerID) {
 		if(netIsNetPlay && !netIsWatch) {
 			owner.reset();
-			netLobby.netPlayerClient.send("reset1p\n");
+			netLobby.getNetPlayerClient().send("reset1p\n");
 			netSendOptions(engine);
 		}
 	}
@@ -452,37 +452,37 @@ public class NetDummyMode extends AbstractMode implements NetLobbyListener {
 	/**
 	 * NET: Initialization Completed (Never called)
 	 */
-	public void netlobbyOnInit(NetLobbyFrame lobby) {
+	public void netlobbyOnInit(NetLobby lobby) {
 	}
 
 	/**
 	 * NET: Login completed (Never called)
 	 */
-	public void netlobbyOnLoginOK(NetLobbyFrame lobby, NetPlayerClient client) {
+	public void netlobbyOnLoginOK(NetLobby lobby, NetPlayerClient client) {
 	}
 
 	/**
 	 * NET: When you enter a room (Never called)
 	 */
-	public void netlobbyOnRoomJoin(NetLobbyFrame lobby, NetPlayerClient client, NetRoomInfo roomInfo) {
+	public void netlobbyOnRoomJoin(NetLobby lobby, NetPlayerClient client, NetRoomInfo roomInfo) {
 	}
 
 	/**
 	 * NET: When you returned to lobby (Never called)
 	 */
-	public void netlobbyOnRoomLeave(NetLobbyFrame lobby, NetPlayerClient client) {
+	public void netlobbyOnRoomLeave(NetLobby lobby, NetPlayerClient client) {
 	}
 
 	/*
 	 * NET: When disconnected
 	 */
-	public void netlobbyOnDisconnect(NetLobbyFrame lobby, NetPlayerClient client, Throwable ex) {
+	public void netlobbyOnDisconnect(NetLobby lobby, NetPlayerClient client, Throwable ex) {
 	}
 
 	/*
 	 * NET: Message received
 	 */
-	public void netlobbyOnMessage(NetLobbyFrame lobby, NetPlayerClient client, String[] message) throws IOException {
+	public void netlobbyOnMessage(NetLobby lobby, NetPlayerClient client, String[] message) throws IOException {
 		// Player status update
 		if(message[0].equals("playerupdate")) {
 			netUpdatePlayerExist();
@@ -608,7 +608,7 @@ public class NetDummyMode extends AbstractMode implements NetLobbyListener {
 	/*
 	 * NET: When the lobby window is closed
 	 */
-	public void netlobbyOnExit(NetLobbyFrame lobby) {
+	public void netlobbyOnExit(NetLobby lobby) {
 		try {
 			for(int i = 0; i < owner.engine.length; i++) {
 				owner.engine[i].quitflag = true;
@@ -618,16 +618,16 @@ public class NetDummyMode extends AbstractMode implements NetLobbyListener {
 
 	/**
 	 * NET: When you join the room
-	 * @param lobby NetLobbyFrame
+	 * @param lobby NetLobby
 	 * @param client NetPlayerClient
 	 * @param roomInfo NetRoomInfo
 	 */
-	protected void netOnJoin(NetLobbyFrame lobby, NetPlayerClient client, NetRoomInfo roomInfo) {
+	protected void netOnJoin(NetLobby lobby, NetPlayerClient client, NetRoomInfo roomInfo) {
 		log.debug("onJoin on NetDummyMode");
 
 		netCurrentRoomInfo = roomInfo;
 		netIsNetPlay = true;
-		netIsWatch = (netLobby.netPlayerClient.getYourPlayerInfo().seatID == -1);
+		netIsWatch = (netLobby.getNetPlayerClient().getYourPlayerInfo().seatID == -1);
 		netNumSpectators = 0;
 		netUpdatePlayerExist();
 
@@ -638,11 +638,11 @@ public class NetDummyMode extends AbstractMode implements NetLobbyListener {
 
 		if(roomInfo != null) {
 			// Set to locked rule
-			if((roomInfo.ruleLock) && (netLobby != null) && (netLobby.ruleOptLock != null)) {
+			if((roomInfo.ruleLock) && (netLobby != null) && (netLobby.getRuleOptLock() != null)) {
 				log.info("Set locked rule");
-				Randomizer randomizer = GeneralUtil.loadRandomizer(netLobby.ruleOptLock.strRandomizer);
-				Wallkick wallkick = GeneralUtil.loadWallkick(netLobby.ruleOptLock.strWallkick);
-				owner.engine[0].ruleopt.copy(netLobby.ruleOptLock);
+				Randomizer randomizer = GeneralUtil.loadRandomizer(netLobby.getRuleOptLock().strRandomizer);
+				Wallkick wallkick = GeneralUtil.loadWallkick(netLobby.getRuleOptLock().strWallkick);
+				owner.engine[0].ruleopt.copy(netLobby.getRuleOptLock());
 				owner.engine[0].randomizer = randomizer;
 				owner.engine[0].wallkick = wallkick;
 				loadRanking(owner.modeConfig, owner.engine[0].ruleopt.strRuleName);
@@ -684,11 +684,11 @@ public class NetDummyMode extends AbstractMode implements NetLobbyListener {
 	 * @param engine GameEngine
 	 */
 	protected void netDrawAllPlayersCount(GameEngine engine) {
-		if((netLobby != null) && (netLobby.netPlayerClient != null) && (netLobby.netPlayerClient.isConnected())) {
+		if((netLobby != null) && (netLobby.getNetPlayerClient() != null) && (netLobby.getNetPlayerClient().isConnected())) {
 			int fontcolor = EventReceiver.COLOR_BLUE;
-			if(netLobby.netPlayerClient.getObserverCount() > 0) fontcolor = EventReceiver.COLOR_GREEN;
-			if(netLobby.netPlayerClient.getPlayerCount() > 1) fontcolor = EventReceiver.COLOR_RED;
-			String strObserverInfo = String.format("%d/%d", netLobby.netPlayerClient.getObserverCount(), netLobby.netPlayerClient.getPlayerCount());
+			if(netLobby.getNetPlayerClient().getObserverCount() > 0) fontcolor = EventReceiver.COLOR_GREEN;
+			if(netLobby.getNetPlayerClient().getPlayerCount() > 1) fontcolor = EventReceiver.COLOR_RED;
+			String strObserverInfo = String.format("%d/%d", netLobby.getNetPlayerClient().getObserverCount(), netLobby.getNetPlayerClient().getPlayerCount());
 			String strObserverString = String.format("%40s", strObserverInfo);
 			owner.receiver.drawDirectFont(engine, 0, 0, 480-16, strObserverString, fontcolor);
 		}
@@ -766,7 +766,7 @@ public class NetDummyMode extends AbstractMode implements NetLobbyListener {
 		if( ((engine.nowPieceObject == null) && (netPrevPieceID != Piece.PIECE_NONE)) || (engine.manualLock) )
 		{
 			netPrevPieceID = Piece.PIECE_NONE;
-			netLobby.netPlayerClient.send("game\tpiece\t" + netPrevPieceID + "\t" + netPrevPieceX + "\t" + netPrevPieceY + "\t" +
+			netLobby.getNetPlayerClient().send("game\tpiece\t" + netPrevPieceID + "\t" + netPrevPieceX + "\t" + netPrevPieceY + "\t" +
 					netPrevPieceDir + "\t" + 0 + "\t" + engine.getSkin() + "\t" + false + "\n");
 			return true;
 		}
@@ -781,7 +781,7 @@ public class NetDummyMode extends AbstractMode implements NetLobbyListener {
 
 			int x = netPrevPieceX + engine.nowPieceObject.dataOffsetX[netPrevPieceDir];
 			int y = netPrevPieceY + engine.nowPieceObject.dataOffsetY[netPrevPieceDir];
-			netLobby.netPlayerClient.send("game\tpiece\t" + netPrevPieceID + "\t" + x + "\t" + y + "\t" + netPrevPieceDir + "\t" +
+			netLobby.getNetPlayerClient().send("game\tpiece\t" + netPrevPieceID + "\t" + x + "\t" + y + "\t" + netPrevPieceDir + "\t" +
 							engine.nowPieceBottomY + "\t" + engine.ruleopt.pieceColor[netPrevPieceID] + "\t" + engine.getSkin() + "\t" +
 							engine.nowPieceObject.big + "\n");
 			return true;
@@ -857,7 +857,7 @@ public class NetDummyMode extends AbstractMode implements NetLobbyListener {
 			String msg = "game\tfieldattr\t";
 			msg += engine.getSkin() + "\t";
 			msg += strFieldData + "\t" + isCompressed + "\n";
-			netLobby.netPlayerClient.send(msg);
+			netLobby.getNetPlayerClient().send(msg);
 		} else {
 			// Send without attributes
 			String strSrcFieldData = engine.field.fieldToString();
@@ -877,7 +877,7 @@ public class NetDummyMode extends AbstractMode implements NetLobbyListener {
 			msg += engine.getSkin() + "\t";
 			msg += engine.field.getHeightWithoutHurryupFloor() + "\t";
 			msg += strFieldData + "\t" + isCompressed + "\n";
-			netLobby.netPlayerClient.send(msg);
+			netLobby.getNetPlayerClient().send(msg);
 		}
 	}
 
@@ -955,7 +955,7 @@ public class NetDummyMode extends AbstractMode implements NetLobbyListener {
 		}
 
 		msg += "\n";
-		netLobby.netPlayerClient.send(msg);
+		netLobby.getNetPlayerClient().send(msg);
 	}
 
 	/**
@@ -1030,7 +1030,7 @@ public class NetDummyMode extends AbstractMode implements NetLobbyListener {
 					String strMsg = "spdownload\t" + NetUtil.urlEncode(netCurrentRoomInfo.ruleName) + "\t" +
 									NetUtil.urlEncode(getName()) + "\t" + goaltype + "\t" +
 									(netRankingView != 0) + "\t" + NetUtil.urlEncode(netRankingName[d].get(netRankingCursor[d])) + "\n";
-					netLobby.netPlayerClient.send(strMsg);
+					netLobby.getNetPlayerClient().send(strMsg);
 					netIsNetRankingDisplayMode = false;
 					owner.menuOnly = false;
 				}
@@ -1214,9 +1214,9 @@ public class NetDummyMode extends AbstractMode implements NetLobbyListener {
 		netIsNetRankingDisplayMode = true;
 		owner.menuOnly = true;
 		String rule = (netCurrentRoomInfo.rated ? netCurrentRoomInfo.ruleName : "all");
-		netLobby.netPlayerClient.send("spranking\t" + NetUtil.urlEncode(rule) + "\t" +
+		netLobby.getNetPlayerClient().send("spranking\t" + NetUtil.urlEncode(rule) + "\t" +
 				NetUtil.urlEncode(getName()) + "\t" + goaltype + "\t" + false + "\n");
-		netLobby.netPlayerClient.send("spranking\t" + NetUtil.urlEncode(rule) + "\t" +
+		netLobby.getNetPlayerClient().send("spranking\t" + NetUtil.urlEncode(rule) + "\t" +
 				NetUtil.urlEncode(getName()) + "\t" + goaltype + "\t" + true + "\n");
 	}
 
@@ -1375,7 +1375,7 @@ public class NetDummyMode extends AbstractMode implements NetLobbyListener {
 			checksumObj.update(NetUtil.stringToBytes(strData));
 			long sChecksum = checksumObj.getValue();
 
-			netLobby.netPlayerClient.send("spsend\t" + sChecksum + "\t" + strData + "\n");
+			netLobby.getNetPlayerClient().send("spsend\t" + sChecksum + "\t" + strData + "\n");
 		} else {
 			netReplaySendStatus = 2;
 		}

@@ -82,10 +82,11 @@ public class NullpoMinoSDL {
 							STATE_CONFIG_KEYBOARD_NAVI = 15,
 							STATE_CONFIG_KEYBOARD_RESET = 16,
 							STATE_SELECTRULEFROMLIST = 17,
-							STATE_SELECTMODEFOLDER = 18;
+							STATE_SELECTMODEFOLDER = 18,
+							STATE_NETLOBBY = 19;
 
 	/** State of the game count */
-	public static final int STATE_MAX = 19;
+	public static final int STATE_MAX = 20;
 
 	public static final int LOGICAL_WIDTH = 640;
 	public static final int LOGICAL_HEIGHT = 480;
@@ -228,6 +229,18 @@ public class NullpoMinoSDL {
 	/** Shared event struct for polling */
 	private static SDLStructs.SDL_Event event;
 
+	/** Nuklear SDL3 backend (null until first use) */
+	public static SDL3Backend nkBackend;
+
+	/** Connected lobby instance transferred between the lobby state and net game state */
+	public static NetLobbySDL transferredNetLobby;
+
+	/** Netplay mode name paired with a transferred lobby instance */
+	public static String transferredNetMode;
+
+	/** Status message to show when re-entering the SDL net lobby */
+	public static String transferredNetStatusMessage = "";
+
 	/**
 	 * Main function
 	 * @param args command line arguments
@@ -369,6 +382,7 @@ public class NullpoMinoSDL {
 		gameStates[STATE_CONFIG_KEYBOARD_RESET] = new StateConfigKeyboardResetSDL();
 		gameStates[STATE_SELECTRULEFROMLIST] = new StateSelectRuleFromListSDL();
 		gameStates[STATE_SELECTMODEFOLDER] = new StateSelectModeFolderSDL();
+		gameStates[STATE_NETLOBBY] = new StateNetLobbySDL();
 
 		// SDL init
 		try {
@@ -848,17 +862,65 @@ public class NullpoMinoSDL {
 				enterState(-1);
 			} else if(type == SDLConstants.SDL_EVENT_KEY_DOWN) {
 				int scancode = event.getScancode();
+				boolean isRepeat = event.isKeyRepeat();
 				if(scancode >= 0 && scancode < keyPressedState.length) {
 					keyPressedState[scancode] = true;
+				}
+				if(nkBackend != null) {
+					if(isRepeat) {
+						nkBackend.feedKeyRepeat(scancode);
+					} else {
+						nkBackend.feedKey(scancode, true);
+					}
 				}
 			} else if(type == SDLConstants.SDL_EVENT_KEY_UP) {
 				int scancode = event.getScancode();
 				if(scancode >= 0 && scancode < keyPressedState.length) {
 					keyPressedState[scancode] = false;
 				}
+				if(nkBackend != null) nkBackend.feedKey(scancode, false);
+			} else if(type == SDLConstants.SDL_EVENT_TEXT_INPUT) {
+				if(nkBackend != null) {
+					String text = event.getTextInput();
+					if(text != null) {
+						for(int i = 0; i < text.length(); i++) {
+							nkBackend.feedChar(text.charAt(i));
+						}
+					}
+				}
+			} else if(type == SDLConstants.SDL_EVENT_MOUSE_MOTION) {
+				if(nkBackend != null) {
+					int[] logicalCoords = windowToLogical(event.getMouseX(), event.getMouseY());
+					nkBackend.feedMouseMotion(logicalCoords[0], logicalCoords[1]);
+				}
+			} else if(type == SDLConstants.SDL_EVENT_MOUSE_BUTTON_DOWN) {
+				if(nkBackend != null) {
+					int button = event.getMouseButton();
+					int btn = (button == 1) ? 1 : (button == 3) ? 3 : button;
+					int[] logicalCoords = windowToLogical(event.getMouseX(), event.getMouseY());
+					nkBackend.feedMouseButton(btn, true, logicalCoords[0], logicalCoords[1]);
+				}
+			} else if(type == SDLConstants.SDL_EVENT_MOUSE_BUTTON_UP) {
+				if(nkBackend != null) {
+					int button = event.getMouseButton();
+					int btn = (button == 1) ? 1 : (button == 3) ? 3 : button;
+					int[] logicalCoords = windowToLogical(event.getMouseX(), event.getMouseY());
+					nkBackend.feedMouseButton(btn, false, logicalCoords[0], logicalCoords[1]);
+				}
 			}
 			// Window resize events are handled automatically by SDL_SetRenderLogicalPresentation
 		}
+	}
+
+	/**
+	 * Convert window-space mouse coordinates to logical renderer coordinates.
+	 * Needed because SDL_SetRenderLogicalPresentation scales/letterboxes.
+	 */
+	private static int[] windowToLogical(float windowX, float windowY) {
+		com.sun.jna.ptr.FloatByReference lx = new com.sun.jna.ptr.FloatByReference();
+		com.sun.jna.ptr.FloatByReference ly = new com.sun.jna.ptr.FloatByReference();
+		SDL3.INSTANCE.SDL_RenderCoordinatesFromWindow(renderer, windowX, windowY, lx, ly);
+		return new int[]{ (int)lx.getValue(), (int)ly.getValue() };
 	}
 
 	/**

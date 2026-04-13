@@ -40,7 +40,7 @@ import mu.nu.nullpo.game.subsystem.ai.DummyAI;
 import mu.nu.nullpo.game.subsystem.mode.GameMode;
 import mu.nu.nullpo.game.subsystem.mode.NetDummyMode;
 import mu.nu.nullpo.game.subsystem.wallkick.Wallkick;
-import mu.nu.nullpo.gui.net.NetLobbyFrame;
+import mu.nu.nullpo.gui.net.NetLobby;
 import mu.nu.nullpo.gui.net.NetLobbyListener;
 import mu.nu.nullpo.gui.sdl.binding.SDL3;
 import mu.nu.nullpo.util.GeneralUtil;
@@ -57,7 +57,7 @@ public class StateNetGameSDL extends BaseStateSDL implements NetLobbyListener {
 	protected GameManager gameManager;
 
 	/** Lobby */
-	public NetLobbyFrame netLobby;
+	public NetLobby netLobby;
 
 	/** Mode name to enter (null=Exit) */
 	protected String strModeToEnter = "";
@@ -68,15 +68,33 @@ public class StateNetGameSDL extends BaseStateSDL implements NetLobbyListener {
 	/** Current game mode name */
 	protected String modeName;
 
+	/** Request to return to the SDL lobby while preserving the current connection */
+	protected volatile boolean returnToLobbyRequested = false;
+
+	/** Request to return to the SDL lobby after a disconnect */
+	protected volatile boolean disconnectedToLobbyRequested = false;
+
+	/** Disconnect status message to show in the SDL lobby */
+	protected volatile String disconnectStatusMessage = "";
+
 	/*
 	 * Called when entering this state
 	 */
 	@Override
 	public void enter() {
+		NetLobbySDL transferredLobby = NullpoMinoSDL.transferredNetLobby;
+		String initialModeName = NullpoMinoSDL.transferredNetMode;
+		NullpoMinoSDL.transferredNetLobby = null;
+		NullpoMinoSDL.transferredNetMode = null;
+		NullpoMinoSDL.transferredNetStatusMessage = "";
+
 		// Init variables
 		NullpoMinoSDL.disableAutoInputUpdate = true;
 		NullpoMinoSDL.isInGame = true;
 		prevInGameFlag = false;
+		returnToLobbyRequested = false;
+		disconnectedToLobbyRequested = false;
+		disconnectStatusMessage = "";
 
 		// Observer stop
 		NullpoMinoSDL.stopObserverClient();
@@ -90,15 +108,23 @@ public class StateNetGameSDL extends BaseStateSDL implements NetLobbyListener {
 		gameManager.receiver.setGraphics(NullpoMinoSDL.renderer);
 
 		// Lobby initialization
-		netLobby = new NetLobbyFrame();
+		netLobby = (transferredLobby != null) ? transferredLobby : new NetLobbySDL();
 		netLobby.addListener(this);
 
+		if(((initialModeName == null) || (initialModeName.length() <= 0)) &&
+		   (netLobby.getNetPlayerClient() != null) && (netLobby.getNetPlayerClient().getCurrentRoomInfo() != null))
+		{
+			initialModeName = netLobby.getNetPlayerClient().getCurrentRoomInfo().strMode;
+		}
+
 		// Mode initialization
-		enterNewMode(null);
+		enterNewMode(initialModeName);
 
 		// Lobby start
-		netLobby.init();
-		netLobby.setVisible(true);
+		if(transferredLobby == null) {
+			netLobby.init();
+			netLobby.setVisible(true);
+		}
 	}
 
 	/*
@@ -106,11 +132,17 @@ public class StateNetGameSDL extends BaseStateSDL implements NetLobbyListener {
 	 */
 	@Override
 	public void leave() {
+		if((gameManager != null) && (gameManager.mode != null) && (netLobby != null)) {
+			try {
+				gameManager.mode.netplayUnload(netLobby);
+			} catch (Exception e) {}
+		}
 		if(gameManager != null) {
 			gameManager.shutdown();
 			gameManager = null;
 		}
 		if(netLobby != null) {
+			netLobby.removeListener(this);
 			netLobby.shutdown();
 			netLobby = null;
 		}
@@ -181,6 +213,44 @@ public class StateNetGameSDL extends BaseStateSDL implements NetLobbyListener {
 					prevInGameFlag = nowInGame;
 					updateTitleBarCaption();
 				}
+			}
+
+			if(disconnectedToLobbyRequested) {
+				if((gameManager != null) && (gameManager.mode != null) && (netLobby != null)) {
+					gameManager.mode.netplayUnload(netLobby);
+				}
+				if(netLobby != null) {
+					netLobby.removeListener(this);
+					netLobby.shutdown();
+					netLobby = null;
+				}
+				disconnectedToLobbyRequested = false;
+				returnToLobbyRequested = false;
+				NullpoMinoSDL.transferredNetLobby = null;
+				NullpoMinoSDL.transferredNetMode = null;
+				NullpoMinoSDL.transferredNetStatusMessage = disconnectStatusMessage;
+				disconnectStatusMessage = "";
+				NullpoMinoSDL.enterState(NullpoMinoSDL.STATE_NETLOBBY);
+				return;
+			}
+
+			if(returnToLobbyRequested) {
+				if((gameManager != null) && (gameManager.mode != null) && (netLobby != null)) {
+					gameManager.mode.netplayUnload(netLobby);
+				}
+				if(netLobby != null) {
+					netLobby.removeListener(this);
+					NullpoMinoSDL.transferredNetLobby = (NetLobbySDL)netLobby;
+				} else {
+					NullpoMinoSDL.transferredNetLobby = null;
+				}
+				netLobby = null;
+				returnToLobbyRequested = false;
+				disconnectedToLobbyRequested = false;
+				NullpoMinoSDL.transferredNetMode = null;
+				NullpoMinoSDL.transferredNetStatusMessage = "";
+				NullpoMinoSDL.enterState(NullpoMinoSDL.STATE_NETLOBBY);
+				return;
 			}
 
 			if(gameManager != null) {
@@ -355,30 +425,33 @@ public class StateNetGameSDL extends BaseStateSDL implements NetLobbyListener {
 		SDL3.INSTANCE.SDL_SetWindowTitle(NullpoMinoSDL.window, strTitle);
 	}
 
-	public void netlobbyOnDisconnect(NetLobbyFrame lobby, NetPlayerClient client, Throwable ex) {
+	public void netlobbyOnDisconnect(NetLobby lobby, NetPlayerClient client, Throwable ex) {
 		strModeToEnter = null;
+		disconnectStatusMessage = (ex != null && ex.getMessage() != null) ? ("Disconnected: " + ex.getMessage()) : "Disconnected";
+		disconnectedToLobbyRequested = true;
 	}
 
-	public void netlobbyOnExit(NetLobbyFrame lobby) {
+	public void netlobbyOnExit(NetLobby lobby) {
 		if((gameManager != null) && (gameManager.engine.length > 0) && (gameManager.engine[0] != null)) {
 			gameManager.engine[0].quitflag = true;
 		}
 	}
 
-	public void netlobbyOnInit(NetLobbyFrame lobby) {
+	public void netlobbyOnInit(NetLobby lobby) {
 	}
 
-	public void netlobbyOnLoginOK(NetLobbyFrame lobby, NetPlayerClient client) {
+	public void netlobbyOnLoginOK(NetLobby lobby, NetPlayerClient client) {
 	}
 
-	public void netlobbyOnMessage(NetLobbyFrame lobby, NetPlayerClient client, String[] message) throws IOException {
+	public void netlobbyOnMessage(NetLobby lobby, NetPlayerClient client, String[] message) throws IOException {
 	}
 
-	public void netlobbyOnRoomJoin(NetLobbyFrame lobby, NetPlayerClient client, NetRoomInfo roomInfo) {
+	public void netlobbyOnRoomJoin(NetLobby lobby, NetPlayerClient client, NetRoomInfo roomInfo) {
 		strModeToEnter = roomInfo.strMode;
 	}
 
-	public void netlobbyOnRoomLeave(NetLobbyFrame lobby, NetPlayerClient client) {
+	public void netlobbyOnRoomLeave(NetLobby lobby, NetPlayerClient client) {
 		strModeToEnter = null;
+		returnToLobbyRequested = true;
 	}
 }

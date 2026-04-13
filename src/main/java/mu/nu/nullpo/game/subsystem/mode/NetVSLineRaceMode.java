@@ -147,7 +147,7 @@ public class NetVSLineRaceMode extends NetDummyVSMode {
 					if(uidArray[i] != -1) strMsg += "\t" + uidArray[i];
 				}
 				strMsg += "\n";
-				netLobby.netPlayerClient.send(strMsg);
+				netLobby.getNetPlayerClient().send(strMsg);
 
 				// Wait until everyone dies
 				engine.stat = GameEngine.Status.NOTHING;
@@ -272,7 +272,7 @@ public class NetVSLineRaceMode extends NetDummyVSMode {
 	protected void netSendStats(GameEngine engine) {
 		if((engine.playerID == 0) && !netvsIsPractice && !netvsIsWatch()) {
 			String strMsg = "game\tstats\t" + engine.statistics.lines + "\t" + engine.statistics.pps + "\t" + engine.statistics.lpm + "\n";
-			netLobby.netPlayerClient.send(strMsg);
+			netLobby.getNetPlayerClient().send(strMsg);
 		}
 	}
 
@@ -300,7 +300,7 @@ public class NetVSLineRaceMode extends NetDummyVSMode {
 		msg += engine.statistics.totalPieceLocked + "\t" + engine.statistics.pps + "\t";
 		msg += netvsPlayTimer + "\t" + 0 + "\t" + netvsPlayerWinCount[playerID] + "\t" + netvsPlayerPlayCount[playerID];
 		msg += "\n";
-		netLobby.netPlayerClient.send(msg);
+		netLobby.getNetPlayerClient().send(msg);
 	}
 
 	/*

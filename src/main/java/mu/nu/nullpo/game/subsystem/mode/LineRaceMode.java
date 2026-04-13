@@ -269,7 +269,7 @@ public class LineRaceMode extends NetDummyMode {
 					receiver.saveModeConfig(owner.modeConfig);
 
 					// NET: Signal start of the game
-					if(netIsNetPlay) netLobby.netPlayerClient.send("start1p\n");
+					if(netIsNetPlay) netLobby.getNetPlayerClient().send("start1p\n");
 
 					return false;
 				}
@@ -572,7 +572,7 @@ public class LineRaceMode extends NetDummyMode {
 		msg += engine.statistics.pps + "\t" + goaltype + "\t";
 		msg += engine.gameActive + "\t" + engine.timerActive;
 		msg += "\n";
-		netLobby.netPlayerClient.send(msg);
+		netLobby.getNetPlayerClient().send(msg);
 	}
 
 	/**
@@ -611,7 +611,7 @@ public class LineRaceMode extends NetDummyMode {
 		subMsg += "PIECE/SEC;" + engine.statistics.pps + "\t";
 
 		String msg = "gstat1p\t" + NetUtil.urlEncode(subMsg) + "\n";
-		netLobby.netPlayerClient.send(msg);
+		netLobby.getNetPlayerClient().send(msg);
 	}
 
 	/**
@@ -625,7 +625,7 @@ public class LineRaceMode extends NetDummyMode {
 		msg += engine.speed.areLine + "\t" + engine.speed.lineDelay + "\t" + engine.speed.lockDelay + "\t";
 		msg += engine.speed.das + "\t" + bgmno + "\t" + big + "\t" + goaltype + "\t" + presetNumber;
 		msg += "\n";
-		netLobby.netPlayerClient.send(msg);
+		netLobby.getNetPlayerClient().send(msg);
 	}
 
 	/**

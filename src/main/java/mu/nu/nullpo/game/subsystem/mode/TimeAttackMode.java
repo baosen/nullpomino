@@ -528,7 +528,7 @@ public class TimeAttackMode extends NetDummyMode {
 				receiver.saveModeConfig(owner.modeConfig);
 
 				// NET: Signal start of the game
-				if(netIsNetPlay) netLobby.netPlayerClient.send("start1p\n");
+				if(netIsNetPlay) netLobby.getNetPlayerClient().send("start1p\n");
 
 				return false;
 			}
@@ -1095,7 +1095,7 @@ public class TimeAttackMode extends NetDummyMode {
 		msg += rolltime + "\t" + norm + "\t" + bg + "\t" + engine.meterValue + "\t" + engine.meterColor + "\t";
 		msg += engine.heboHiddenEnable + "\t" + engine.heboHiddenTimerNow + "\t" + engine.heboHiddenTimerMax + "\t";
 		msg += engine.heboHiddenYNow + "\t" + engine.heboHiddenYLimit + "\n";
-		netLobby.netPlayerClient.send(msg);
+		netLobby.getNetPlayerClient().send(msg);
 	}
 
 	/**
@@ -1147,7 +1147,7 @@ public class TimeAttackMode extends NetDummyMode {
 		}
 
 		String msg = "gstat1p\t" + NetUtil.urlEncode(subMsg) + "\n";
-		netLobby.netPlayerClient.send(msg);
+		netLobby.getNetPlayerClient().send(msg);
 	}
 
 	/**
@@ -1158,7 +1158,7 @@ public class TimeAttackMode extends NetDummyMode {
 	protected void netSendOptions(GameEngine engine) {
 		String msg = "game\toption\t";
 		msg += goaltype + "\t" + startlevel + "\t" + showsectiontime + "\t" + big + "\n";
-		netLobby.netPlayerClient.send(msg);
+		netLobby.getNetPlayerClient().send(msg);
 	}
 
 	/**

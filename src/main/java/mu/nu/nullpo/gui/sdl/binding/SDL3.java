@@ -41,6 +41,8 @@ public interface SDL3 extends Library {
 	byte SDL_RenderCoordinatesFromWindow(Pointer renderer, float window_x, float window_y,
 		FloatByReference x, FloatByReference y);
 	byte SDL_SetRenderVSync(Pointer renderer, int vsync);
+	byte SDL_RenderLine(Pointer renderer, float x1, float y1, float x2, float y2);
+	byte SDL_SetRenderClipRect(Pointer renderer, SDLStructs.SDL_Rect rect);
 
 	// --- Texture ---
 	Pointer SDL_CreateTextureFromSurface(Pointer renderer, Pointer surface);
@@ -87,6 +89,10 @@ public interface SDL3 extends Library {
 
 	// --- Message Box ---
 	byte SDL_ShowSimpleMessageBox(int flags, String title, String message, Pointer window);
+
+	// --- Text Input ---
+	byte SDL_StartTextInput(Pointer window);
+	byte SDL_StopTextInput(Pointer window);
 
 	// --- Timer ---
 	long SDL_GetTicks();
