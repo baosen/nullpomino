@@ -6,6 +6,11 @@ package mu.nu.nullpo.gui.sdl.binding;
 public final class SDLConstants {
 	private SDLConstants() {}
 
+	// SDL_MessageBoxFlags
+	public static final int SDL_MESSAGEBOX_ERROR       = 0x00000010;
+	public static final int SDL_MESSAGEBOX_WARNING     = 0x00000020;
+	public static final int SDL_MESSAGEBOX_INFORMATION = 0x00000040;
+
 	// SDL_Init flags
 	public static final int SDL_INIT_AUDIO = 0x00000010;
 	public static final int SDL_INIT_VIDEO = 0x00000020;

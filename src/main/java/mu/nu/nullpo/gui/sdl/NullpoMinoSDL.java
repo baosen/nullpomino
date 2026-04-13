@@ -40,8 +40,6 @@ import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Locale;
 
-import javax.swing.JOptionPane;
-
 import com.sun.jna.Pointer;
 import com.sun.jna.ptr.FloatByReference;
 
@@ -379,7 +377,12 @@ public class NullpoMinoSDL {
 			log.fatal("SDL init failed", e);
 			String strErrorTitle = getUIText("InitFailedMessageGeneral_Title");
 			String strErrorMessage = String.format(getUIText("InitFailedMessageGeneral_Body"), e.toString());
-			JOptionPane.showMessageDialog(null, strErrorMessage, strErrorTitle, JOptionPane.ERROR_MESSAGE);
+			try {
+				SDL3.INSTANCE.SDL_ShowSimpleMessageBox(
+					SDLConstants.SDL_MESSAGEBOX_ERROR, strErrorTitle, strErrorMessage, null);
+			} catch (Throwable t) {
+				System.err.println(strErrorTitle + ": " + strErrorMessage);
+			}
 			System.exit(-1);
 		}
 

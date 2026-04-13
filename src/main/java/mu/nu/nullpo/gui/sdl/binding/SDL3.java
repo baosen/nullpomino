@@ -85,6 +85,9 @@ public interface SDL3 extends Library {
 	int SDL_GetNumJoystickButtons(Pointer joystick);
 	int SDL_GetNumJoystickHats(Pointer joystick);
 
+	// --- Message Box ---
+	byte SDL_ShowSimpleMessageBox(int flags, String title, String message, Pointer window);
+
 	// --- Timer ---
 	long SDL_GetTicks();
 
