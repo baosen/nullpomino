@@ -20,22 +20,22 @@ This produces:
 
 #### Run
 
-**Swing** (pure Java, no native dependencies):
-```bash
-./run_swing.sh
-```
-
-**Slick** (OpenGL via LWJGL):
-```bash
-./run_slick.sh
-```
-
-**SDL**:
 ```bash
 ./run_sdl.sh
 ```
 
 The SDL frontend uses JNA to load `SDL3`, `SDL3_image`, `SDL3_mixer`, and
-`SDL3_ttf` from your system library path.
+`SDL3_ttf` from your system library path. The script builds the project
+first, then launches the game.
 
-Each run script builds the project first, then launches the game.
+#### Standalone tools
+
+Swing-based utility programs live under `scripts/` and
+`src/main/java/mu/nu/nullpo/tool/`:
+
+- `scripts/ruleeditor` — edit game rulesets
+- `scripts/sequencer` — inspect replay piece sequences (by Zircean)
+- `scripts/musiclisteditor` — configure BGM files
+- `scripts/netserver` — run a netplay server
+- `scripts/netadmin` — manage a running NetServer
+- `scripts/airankstool` — generate a Ranks AI data file
