@@ -398,8 +398,12 @@ public class StateNetServerSelectSDL extends BaseStateSDL {
 		}
 
 		if(statusLine.length() > 0) {
-			// Show just under the title so it never collides with the server table.
-			NormalFontSDL.printFont(16, 20, NormalFontSDL.safeString(statusLine), NormalFontSDL.COLOR_RED);
+			// Right-aligned on the title row so the message doesn't overlap
+			// the NETPLAY header or the Nickname label below it.
+			String safe = NormalFontSDL.safeString(statusLine);
+			int tx = 632 - safe.length() * 16;
+			if(tx < 136) tx = 136;  // clear the 'NETPLAY' header
+			NormalFontSDL.printFont(tx, 16, safe, NormalFontSDL.COLOR_RED);
 		}
 	}
 }
