@@ -166,6 +166,18 @@ public class NetLobbyFrame implements NetMessageListener {
 	/** Rule catalog (all .rul files in config/rule/) for the rule-change screen. */
 	public final LinkedList<RuleEntry> ruleEntries = new LinkedList<RuleEntry>();
 
+	/**
+	 * Per-style multiplayer ranking rows decoded from server {@code mpranking}
+	 * messages.  Each row is [rank, name, rating, playCount, winCount].
+	 */
+	public final String[][][] mpRankingRows = new String[GameEngine.MAX_GAMESTYLE][][];
+
+	/** Where the local player sits in each style's ranking; -1 if unranked. */
+	public final int[] mpRankingMyRank = new int[GameEngine.MAX_GAMESTYLE];
+
+	/** Set to true by {@code dispatchMessage} whenever a new mpranking response arrives. */
+	public volatile boolean mpRankingDirty;
+
 	/** Server list for the server-select screen. Edited via {@link #saveServerList()}. */
 	public final LinkedList<String> serverList = new LinkedList<String>();
 
@@ -177,6 +189,9 @@ public class NetLobbyFrame implements NetMessageListener {
 
 	/** Create Room 1P form state. */
 	public NetRoomInfo backupRoomInfo1P;
+
+	/** When true, {@code StateNetCreateRoomSDL} builds a single-player room on OK. */
+	public boolean createRoomSinglePlayer;
 
 	/** Legacy: ID of room being viewed (detail view vs create). Used by ratedpresets handshake. */
 	public int currentViewDetailRoomID = -1;
@@ -222,6 +237,7 @@ public class NetLobbyFrame implements NetMessageListener {
 		for(int i = 0; i < listRatedRuleName.length; i++) {
 			listRatedRuleName[i] = new LinkedList<String>();
 		}
+		for(int i = 0; i < mpRankingMyRank.length; i++) mpRankingMyRank[i] = -1;
 	}
 
 	/** Initialize config, localization, rule list, server list. Safe to call once. */
@@ -587,6 +603,34 @@ public class NetLobbyFrame implements NetMessageListener {
 			int ratingChange = Integer.parseInt(message[5]);
 			chatLogRoom.appendSystem(String.format(getUIText("SysMsg_Rating"),
 					strPlayerName, ratingNow, ratingChange), NormalFontSDL.COLOR_GREEN);
+
+		} else if("mpranking".equals(cmd) && message.length >= 4) {
+			int style = Integer.parseInt(message[1]);
+			int myRank = Integer.parseInt(message[2]);
+			if(style >= 0 && style < mpRankingRows.length) {
+				String strPData = NetUtil.decompressString(message[3]);
+				String[] rows = strPData.split("\t");
+				String[][] decoded = new String[rows.length][];
+				int validCount = 0;
+				for(int i = 0; i < rows.length; i++) {
+					if(rows[i].length() == 0) continue;
+					String[] fields = rows[i].split(";");
+					if(fields.length < 5) continue;
+					String rankStr = (Integer.parseInt(fields[0]) == -1) ? "N/A" : String.valueOf(Integer.parseInt(fields[0]) + 1);
+					decoded[validCount++] = new String[] {
+						rankStr,
+						convTripCode(NetUtil.urlDecode(fields[1])),
+						fields[2],
+						fields[3],
+						fields[4],
+					};
+				}
+				String[][] trimmed = new String[validCount][];
+				System.arraycopy(decoded, 0, trimmed, 0, validCount);
+				mpRankingRows[style] = trimmed;
+				mpRankingMyRank[style] = myRank;
+				mpRankingDirty = true;
+			}
 
 		} else if("announce".equals(cmd) && message.length > 1) {
 			String strMessage = "<ADMIN>: " + NetUtil.urlDecode(message[1]);

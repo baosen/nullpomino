@@ -91,12 +91,12 @@ public class StateNetServerSelectSDL extends BaseStateSDL {
 		refreshServerTable();
 
 		int btnY = 398;
-		connectBtn = new ButtonSDL(16,  btnY, 108, 32, "CONNECT", new Runnable() { public void run() { attemptConnect(false); } });
+		connectBtn = new ButtonSDL( 16, btnY, 128, 32, "CONNECT", new Runnable() { public void run() { attemptConnect(false); } });
 		connectBtn.primary = true;
-		observeBtn = new ButtonSDL(128, btnY, 108, 32, "OBSERVE", new Runnable() { public void run() { attemptConnect(true); } });
-		addBtn     = new ButtonSDL(240, btnY,  80, 32, "ADD",     new Runnable() { public void run() { openAddServer(); } });
-		deleteBtn  = new ButtonSDL(324, btnY,  80, 32, "DELETE",  new Runnable() { public void run() { deleteSelectedServer(); } });
-		backBtn    = new ButtonSDL(540, btnY,  84, 32, "BACK",    new Runnable() { public void run() { NullpoMinoSDL.endNetplay(); } });
+		observeBtn = new ButtonSDL(148, btnY, 128, 32, "OBSERVE", new Runnable() { public void run() { attemptConnect(true); } });
+		addBtn     = new ButtonSDL(280, btnY,  64, 32, "ADD",     new Runnable() { public void run() { openAddServer(); } });
+		deleteBtn  = new ButtonSDL(348, btnY, 112, 32, "DELETE",  new Runnable() { public void run() { deleteSelectedServer(); } });
+		backBtn    = new ButtonSDL(556, btnY,  68, 32, "BACK",    new Runnable() { public void run() { NullpoMinoSDL.endNetplay(); } });
 
 		addServerInput = new TextInputSDL(16, 398, 400, 32);
 		addServerInput.placeholder = "host:port";

@@ -494,14 +494,24 @@ public class StateNetCreateRoomSDL extends BaseStateSDL {
 		NetPlayerInfo me = nl.netPlayerClient.getYourPlayerInfo();
 		if(me != null) r.style = 0;  // NullpoMino's default style for multiplayer
 
-		String msg = buildRoomCreateMessage(r);
-		if(msg == null) { statusLine = "ROOM NAME REQUIRED"; return; }
+		String msg;
+		if(nl.createRoomSinglePlayer) {
+			// singleroomcreate\t<name>\t<mode> — server fills the rest from the player's rule.
+			if(r.strName == null || r.strName.trim().length() == 0) { statusLine = "ROOM NAME REQUIRED"; return; }
+			String name = NetUtil.urlEncode(r.strName);
+			String mode = NetUtil.urlEncode(r.strMode == null ? "" : r.strMode);
+			msg = "singleroomcreate\t" + name + "\t" + mode + "\n";
+		} else {
+			msg = buildRoomCreateMessage(r);
+			if(msg == null) { statusLine = "ROOM NAME REQUIRED"; return; }
+		}
 
 		nl.backupRoomInfo = r;
 		// Persist the defaults so the user's tuning survives reconnects.
 		saveDefaultsToConfig(nl, r);
 		nl.saveConfig();
 		nl.netPlayerClient.send(msg);
+		nl.createRoomSinglePlayer = false;
 		NullpoMinoSDL.enterState(NullpoMinoSDL.STATE_NET_LOBBY);
 	}
 
@@ -542,47 +552,17 @@ public class StateNetCreateRoomSDL extends BaseStateSDL {
 	}
 
 	/**
-	 * Build the roomcreate protocol string.  Mirrors the tab-delimited format
-	 * the Swing lobby used, which the server parses via NetRoomInfo's ctor.
+	 * Build the roomcreate protocol string in the format the server expects:
+	 * {@code roomcreate\t<urlEncodedName>\t<urlEncodedExportString>\t<urlEncodedMode>\n}.
+	 * The server URL-decodes message[2] and feeds it to {@code NetRoomInfo(String)},
+	 * so the export needs to be a ';'-separated {@code exportString()} output.
 	 */
 	private String buildRoomCreateMessage(NetRoomInfo r) {
 		if(r.strName == null || r.strName.trim().length() == 0) return null;
-		StringBuilder sb = new StringBuilder("roomcreate\t");
-		sb.append(NetUtil.urlEncode(r.strName)).append('\t');
-		sb.append(r.maxPlayers).append('\t');
-		sb.append(r.autoStartSeconds).append('\t');
-		sb.append(r.gravity).append('\t');
-		sb.append(r.denominator).append('\t');
-		sb.append(r.are).append('\t');
-		sb.append(r.areLine).append('\t');
-		sb.append(r.lineDelay).append('\t');
-		sb.append(r.lockDelay).append('\t');
-		sb.append(r.das).append('\t');
-		sb.append(r.ruleLock).append('\t');
-		sb.append(r.tspinEnableType).append('\t');
-		sb.append(r.b2b).append('\t');
-		sb.append(r.combo).append('\t');
-		sb.append(NetUtil.urlEncode(r.strMode == null ? "" : r.strMode)).append('\t');
-		sb.append(r.useMap).append('\t');
-		sb.append(r.reduceLineSend).append('\t');
-		sb.append(r.hurryupSeconds).append('\t');
-		sb.append(r.hurryupInterval).append('\t');
-		sb.append(r.rensaBlock).append('\t');
-		sb.append(r.counter).append('\t');
-		sb.append(r.bravo).append('\t');
-		sb.append(r.autoStartTNET2).append('\t');
-		sb.append(r.disableTimerAfterSomeoneCancelled).append('\t');
-		sb.append(r.useFractionalGarbage).append('\t');
-		sb.append(r.garbagePercent).append('\t');
-		sb.append(r.garbageChangePerAttack).append('\t');
-		sb.append(r.b2bChunk).append('\t');
-		sb.append(r.tspinEnableEZ).append('\t');
-		sb.append(r.spinCheckType).append('\t');
-		sb.append(r.isTarget).append('\t');
-		sb.append(r.targetTimer).append('\t');
-		sb.append(r.divideChangeRateByPlayers).append('\t');
-		sb.append(r.style).append('\n');
-		return sb.toString();
+		String name = NetUtil.urlEncode(r.strName);
+		String export = NetUtil.urlEncode(r.exportString());
+		String mode = NetUtil.urlEncode(r.strMode == null ? "" : r.strMode);
+		return "roomcreate\t" + name + "\t" + export + "\t" + mode + "\n";
 	}
 
 	private static void saveDefaultsToConfig(NetLobbyFrame nl, NetRoomInfo r) {
@@ -628,7 +608,10 @@ public class StateNetCreateRoomSDL extends BaseStateSDL {
 		NetLobbyFrame nl = NullpoMinoSDL.netLobby;
 		if(nl == null) return;
 
-		NormalFontSDL.printFont(16, 8, detailMode ? "ROOM DETAIL" : "CREATE ROOM", NormalFontSDL.COLOR_CYAN);
+		String title = detailMode
+				? "ROOM DETAIL"
+				: (nl.createRoomSinglePlayer ? "CREATE 1P ROOM" : "CREATE ROOM");
+		NormalFontSDL.printFont(16, 8, title, NormalFontSDL.COLOR_CYAN);
 		tabStrip.render();
 
 		// Render labels + widgets for the active tab.

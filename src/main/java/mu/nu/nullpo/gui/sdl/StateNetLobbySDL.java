@@ -84,14 +84,14 @@ public class StateNetLobbySDL extends BaseStateSDL {
 		sendBtn.primary = true;
 
 		int actY = 266;
-		joinBtn       = new ButtonSDL(  8, actY, 92, 28, "JOIN",    new Runnable() { public void run() { attemptJoinSelected(false); } });
+		joinBtn       = new ButtonSDL(  4, actY,  80, 28, "JOIN",    new Runnable() { public void run() { attemptJoinSelected(false); } });
 		joinBtn.primary = true;
-		watchBtn      = new ButtonSDL(104, actY, 92, 28, "WATCH",   new Runnable() { public void run() { attemptJoinSelected(true); } });
-		createBtn     = new ButtonSDL(200, actY, 92, 28, "CREATE",  new Runnable() { public void run() { enterCreateRoom(false); } });
-		create1PBtn   = new ButtonSDL(296, actY, 80, 28, "1P",      new Runnable() { public void run() { enterCreateRoom(true); } });
-		rankingBtn    = new ButtonSDL(380, actY, 104, 28, "RANKING", new Runnable() { public void run() { NullpoMinoSDL.enterState(NullpoMinoSDL.STATE_NET_RANKING); } });
-		rulechangeBtn = new ButtonSDL(488, actY, 92, 28, "RULES",   new Runnable() { public void run() { NullpoMinoSDL.enterState(NullpoMinoSDL.STATE_NET_RULECHANGE); } });
-		disconnectBtn = new ButtonSDL(588, actY, 44, 28, "X",       new Runnable() { public void run() { NullpoMinoSDL.endNetplay(); } });
+		watchBtn      = new ButtonSDL( 88, actY,  88, 28, "WATCH",   new Runnable() { public void run() { attemptJoinSelected(true); } });
+		createBtn     = new ButtonSDL(180, actY, 112, 28, "CREATE",  new Runnable() { public void run() { enterCreateRoom(false); } });
+		create1PBtn   = new ButtonSDL(296, actY,  48, 28, "1P",      new Runnable() { public void run() { enterCreateRoom(true); } });
+		rankingBtn    = new ButtonSDL(348, actY, 128, 28, "RANKING", new Runnable() { public void run() { NullpoMinoSDL.enterState(NullpoMinoSDL.STATE_NET_RANKING); } });
+		rulechangeBtn = new ButtonSDL(480, actY,  96, 28, "RULES",   new Runnable() { public void run() { NullpoMinoSDL.enterState(NullpoMinoSDL.STATE_NET_RULECHANGE); } });
+		disconnectBtn = new ButtonSDL(580, actY,  52, 28, "X",       new Runnable() { public void run() { NullpoMinoSDL.endNetplay(); } });
 
 		// Default focus goes on the room table so arrow keys navigate rooms
 		// immediately; pressing TAB or clicking the chat field switches to typing.
@@ -293,6 +293,7 @@ public class StateNetLobbySDL extends BaseStateSDL {
 	private void enterCreateRoom(boolean onePlayer) {
 		NetLobbyFrame nl = NullpoMinoSDL.netLobby;
 		nl.currentViewDetailRoomID = -1;
+		nl.createRoomSinglePlayer = onePlayer;
 		NullpoMinoSDL.enterState(NullpoMinoSDL.STATE_NET_CREATEROOM);
 	}
 

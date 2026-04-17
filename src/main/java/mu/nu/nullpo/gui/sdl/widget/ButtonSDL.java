@@ -85,6 +85,8 @@ public class ButtonSDL extends WidgetSDL {
 
 		if(label != null && label.length() > 0) {
 			String safe = NormalFontSDL.safeString(label);
+			int maxChars = Math.max(1, (w - 4) / 16);
+			if(safe.length() > maxChars) safe = safe.substring(0, maxChars);
 			int textW = safe.length() * 16;
 			int tx = x + (w - textW) / 2;
 			int ty = y + (h - 16) / 2;

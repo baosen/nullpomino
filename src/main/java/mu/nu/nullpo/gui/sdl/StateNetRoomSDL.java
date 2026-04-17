@@ -41,10 +41,10 @@ public class StateNetRoomSDL extends BaseStateSDL {
 		int ay = 420;
 		sitInBtn    = new ButtonSDL(  8, ay,  80, 28, "JOIN");
 		sitInBtn.primary = true;
-		sitOutBtn   = new ButtonSDL( 92, ay,  80, 28, "SIT OUT");
-		teamBtn     = new ButtonSDL(176, ay,  80, 28, "TEAM");
-		settingsBtn = new ButtonSDL(260, ay,  96, 28, "SETTINGS");
-		leaveBtn    = new ButtonSDL(548, ay,  84, 28, "LEAVE");
+		sitOutBtn   = new ButtonSDL( 92, ay, 128, 28, "SIT OUT");
+		teamBtn     = new ButtonSDL(224, ay,  80, 28, "TEAM");
+		settingsBtn = new ButtonSDL(308, ay, 144, 28, "SETTINGS");
+		leaveBtn    = new ButtonSDL(540, ay,  92, 28, "LEAVE");
 
 		setFocus(chatInput);
 	}
