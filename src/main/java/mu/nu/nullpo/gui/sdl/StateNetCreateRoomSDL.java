@@ -213,7 +213,6 @@ public class StateNetCreateRoomSDL extends BaseStateSDL {
 		// BASIC
 		roomName = new TextInputSDL(colR, rowY + rowH * 0, wFull, 22);
 		roomName.maxChars = 64;
-		roomName.placeholder = "ROOM NAME";
 		roomName.setText(src.strName);
 
 		modeDropdown = new DropdownSDL(colR, rowY + rowH * 1, wFull, 22, loadModeList());
