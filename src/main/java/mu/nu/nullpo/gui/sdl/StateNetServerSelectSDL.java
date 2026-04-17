@@ -85,8 +85,9 @@ public class StateNetServerSelectSDL extends BaseStateSDL {
 		teamInput.maxChars = 24;
 		teamInput.setText(nl.propConfig.getProperty("serverselect.txtfldPlayerTeam.text", ""));
 
+		// 4 px gap below the SERVERS label, matching the Nickname/Team rows.
 		TableSDL.Column[] cols = { new TableSDL.Column("SERVER", 580) };
-		serverTable = new TableSDL(16, 160, 608, 262, cols);
+		serverTable = new TableSDL(16, 164, 608, 258, cols);
 		serverTable.showHeader = false;
 		refreshServerTable();
 
