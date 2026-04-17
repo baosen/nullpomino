@@ -465,7 +465,9 @@ public class NetLobbyFrame implements NetMessageListener {
 					text = String.format(getUIText("SysMsg_ChangeTeam_None"), getPlayerNameWithTripCode(pInfo));
 				}
 				ChatLogSDL target = (lobbyMode == LOBBYMODE_INROOM) ? chatLogRoom : chatLogLobby;
-				target.appendSystem(text, NormalFontSDL.COLOR_BLUE);
+				// Green to match /name success — both are user-initiated command
+				// responses and should share the same visual acknowledgment.
+				target.appendSystem(text, NormalFontSDL.COLOR_GREEN);
 			}
 
 		} else if("roomlist".equals(cmd) && message.length >= 2) {
