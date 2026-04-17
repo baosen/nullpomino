@@ -40,12 +40,11 @@ public class ChatLogSDL extends WidgetSDL {
 	}
 
 	public synchronized void appendSystem(String msg, int color) {
-		String prefix = "[" + formatClock(Calendar.getInstance()) + "] ";
-		push(new Entry(System.currentTimeMillis(), prefix, msg, color));
+		push(new Entry(System.currentTimeMillis(), "", msg, color));
 	}
 
 	public synchronized void appendUser(String user, Calendar time, String msg) {
-		String prefix = "[" + formatClock(time) + "] <" + user + "> ";
+		String prefix = "<" + user + "> ";
 		push(new Entry(time.getTimeInMillis(), prefix, msg, NormalFontSDL.COLOR_WHITE));
 	}
 
@@ -57,10 +56,6 @@ public class ChatLogSDL extends WidgetSDL {
 	private void push(Entry e) {
 		entries.addLast(e);
 		while(entries.size() > capacity) entries.removeFirst();
-	}
-
-	private static String formatClock(Calendar c) {
-		return String.format("%02d:%02d:%02d", c.get(Calendar.HOUR_OF_DAY), c.get(Calendar.MINUTE), c.get(Calendar.SECOND));
 	}
 
 	@Override
