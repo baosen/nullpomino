@@ -217,4 +217,31 @@ public class NormalFontSDL {
 	public static void printFontGrid(int fontX, int fontY, String fontStr, boolean flag) {
 		printFont(fontX * 16, fontY * 16, fontStr, flag, COLOR_WHITE, COLOR_RED);
 	}
+
+	/**
+	 * Normalize a string for bitmap-font rendering.  The bitmap atlas only contains
+	 * ASCII chars 32–95 (space, symbols, digits, uppercase A–Z) plus a handful of
+	 * custom glyphs sprinkled through the lowercase slots (e.g. 'b' is reused as a
+	 * cursor arrow).  Feeding untouched lowercase or non-ASCII text to
+	 * {@link #printFont} therefore fetches garbage glyphs.
+	 *
+	 * This helper uppercases Latin lowercase and substitutes anything outside
+	 * {@code 32..126} with '?'.  Newlines pass through unchanged so the existing
+	 * \n-wrapping in printFont still works.
+	 *
+	 * @param s raw input (may be null)
+	 * @return normalized string safe for {@link #printFont}
+	 */
+	public static String safeString(String s) {
+		if(s == null) return "";
+		StringBuilder sb = new StringBuilder(s.length());
+		for(int i = 0; i < s.length(); i++) {
+			char c = s.charAt(i);
+			if(c == '\n') { sb.append(c); continue; }
+			if(c >= 'a' && c <= 'z') { sb.append((char)(c - 'a' + 'A')); continue; }
+			if(c < 32 || c > 126) { sb.append('?'); continue; }
+			sb.append(c);
+		}
+		return sb.toString();
+	}
 }

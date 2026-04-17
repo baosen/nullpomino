@@ -234,7 +234,8 @@ public class StateNetLobbySDL extends BaseStateSDL {
 		NormalFontSDL.printFont(8, 8, "LOBBY", NormalFontSDL.COLOR_CYAN);
 		if(nl.netPlayerClient != null) {
 			NormalFontSDL.printFont(96, 8,
-					nl.netPlayerClient.getHost() + ":" + nl.netPlayerClient.getPort(), NormalFontSDL.COLOR_WHITE);
+					NormalFontSDL.safeString(nl.netPlayerClient.getHost() + ":" + nl.netPlayerClient.getPort()),
+					NormalFontSDL.COLOR_WHITE);
 		}
 
 		roomTable.render();
@@ -262,7 +263,7 @@ public class StateNetLobbySDL extends BaseStateSDL {
 			int shown = 0;
 			for(NetPlayerInfo p : list) {
 				if(shown >= 5) break;
-				String name = nl.getPlayerNameWithTripCode(p);
+				String name = NormalFontSDL.safeString(nl.getPlayerNameWithTripCode(p));
 				if(name.length() > 8) name = name.substring(0, 8);
 				NormalFontSDL.printFont(496, py, name, NormalFontSDL.COLOR_WHITE);
 				py += 16;
@@ -271,7 +272,7 @@ public class StateNetLobbySDL extends BaseStateSDL {
 		}
 
 		if(statusLine.length() > 0) {
-			NormalFontSDL.printFont(8, 424, statusLine, NormalFontSDL.COLOR_RED);
+			NormalFontSDL.printFont(8, 424, NormalFontSDL.safeString(statusLine), NormalFontSDL.COLOR_RED);
 		}
 	}
 }

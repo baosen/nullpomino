@@ -42,13 +42,13 @@ public class StateNetCreateRoomSDL extends BaseStateSDL {
 	public void render() {
 		NormalFontSDL.printFont(80, 40, "CREATE ROOM", NormalFontSDL.COLOR_CYAN);
 		NormalFontSDL.printFont(40, 120,
-				"Full create-room form not yet ported to SDL.",
+				"FULL CREATE-ROOM FORM NOT YET PORTED TO SDL.",
 				NormalFontSDL.COLOR_WHITE);
 		NormalFontSDL.printFont(40, 144,
-				"Use a legacy Swing client to create custom rooms for now,",
+				"USE A LEGACY SWING CLIENT TO CREATE CUSTOM ROOMS FOR NOW,",
 				NormalFontSDL.COLOR_WHITE);
 		NormalFontSDL.printFont(40, 168,
-				"or pick an existing room from the lobby.",
+				"OR PICK AN EXISTING ROOM FROM THE LOBBY.",
 				NormalFontSDL.COLOR_WHITE);
 		backBtn.render();
 	}

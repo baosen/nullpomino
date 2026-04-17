@@ -250,10 +250,10 @@ public class StateNetServerSelectSDL extends BaseStateSDL {
 		if(nl == null) return;
 
 		// Header
-		NormalFontSDL.printFont(16, 16, nl.getUIText("Title_NetLobby"), NormalFontSDL.COLOR_CYAN);
-		NormalFontSDL.printFont(16, 36, nl.getUIText("ServerSelect_LabelName"), NormalFontSDL.COLOR_WHITE);
+		NormalFontSDL.printFont(16, 16, NormalFontSDL.safeString(nl.getUIText("Title_NetLobby")), NormalFontSDL.COLOR_CYAN);
+		NormalFontSDL.printFont(16, 36, NormalFontSDL.safeString(nl.getUIText("ServerSelect_LabelName")), NormalFontSDL.COLOR_WHITE);
 		nameInput.render();
-		NormalFontSDL.printFont(16, 92, nl.getUIText("ServerSelect_LabelTeam"), NormalFontSDL.COLOR_WHITE);
+		NormalFontSDL.printFont(16, 92, NormalFontSDL.safeString(nl.getUIText("ServerSelect_LabelTeam")), NormalFontSDL.COLOR_WHITE);
 		teamInput.render();
 		NormalFontSDL.printFont(16, 144, "SERVERS", NormalFontSDL.COLOR_WHITE);
 		serverTable.render();
@@ -271,7 +271,7 @@ public class StateNetServerSelectSDL extends BaseStateSDL {
 		}
 
 		if(statusLine.length() > 0) {
-			NormalFontSDL.printFont(16, 440, statusLine, NormalFontSDL.COLOR_RED);
+			NormalFontSDL.printFont(16, 440, NormalFontSDL.safeString(statusLine), NormalFontSDL.COLOR_RED);
 		}
 	}
 }

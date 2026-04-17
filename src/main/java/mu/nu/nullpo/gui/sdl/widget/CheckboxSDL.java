@@ -62,7 +62,7 @@ public class CheckboxSDL extends WidgetSDL {
 		if(label != null && label.length() > 0) {
 			int ty = y + (h - 16) / 2;
 			int color = enabled ? (active ? NormalFontSDL.COLOR_YELLOW : NormalFontSDL.COLOR_WHITE) : NormalFontSDL.COLOR_DARKBLUE;
-			NormalFontSDL.printFont(x + boxSize + 6, ty, label, color);
+			NormalFontSDL.printFont(x + boxSize + 6, ty, NormalFontSDL.safeString(label), color);
 		}
 	}
 }

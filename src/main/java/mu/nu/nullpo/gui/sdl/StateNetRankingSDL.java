@@ -39,7 +39,7 @@ public class StateNetRankingSDL extends BaseStateSDL {
 	@Override
 	public void render() {
 		NormalFontSDL.printFont(80, 40, "MULTIPLAYER RANKING", NormalFontSDL.COLOR_CYAN);
-		NormalFontSDL.printFont(40, 120, "Ranking screen not yet ported to SDL.", NormalFontSDL.COLOR_WHITE);
+		NormalFontSDL.printFont(40, 120, "RANKING SCREEN NOT YET PORTED TO SDL.", NormalFontSDL.COLOR_WHITE);
 		backBtn.render();
 	}
 }

@@ -55,7 +55,7 @@ public class TabStripSDL extends WidgetSDL {
 			int b = isActive ? 128 : 40;
 			fillRect(tx, y, tabW, h, r, g, b, 220);
 			drawRect(tx, y, tabW, h, isActive ? 255 : 128, isActive ? 255 : 128, isActive ? 255 : 128, 255);
-			String s = labels[i];
+			String s = NormalFontSDL.safeString(labels[i]);
 			int maxChars = Math.max(1, (tabW - 4) / 16);
 			if(s.length() > maxChars) s = s.substring(0, maxChars);
 			int textX = tx + (tabW - s.length() * 16) / 2;

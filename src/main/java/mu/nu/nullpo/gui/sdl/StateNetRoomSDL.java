@@ -141,15 +141,17 @@ public class StateNetRoomSDL extends BaseStateSDL {
 
 		NormalFontSDL.printFont(8, 8, "ROOM", NormalFontSDL.COLOR_CYAN);
 		if(room != null) {
-			NormalFontSDL.printFont(80, 8, "#" + room.roomID + " " + room.strName, NormalFontSDL.COLOR_WHITE);
-			NormalFontSDL.printFont(8, 28, "Mode: " + room.strMode + "   Rule: "
-					+ (room.ruleLock ? room.ruleName : "any"), NormalFontSDL.COLOR_YELLOW);
-			NormalFontSDL.printFont(8, 44,
-					"Players: " + room.playerSeatedCount + "/" + room.maxPlayers
-					+ "   Spectators: " + room.spectatorCount,
+			NormalFontSDL.printFont(80, 8, NormalFontSDL.safeString("#" + room.roomID + " " + room.strName),
+					NormalFontSDL.COLOR_WHITE);
+			NormalFontSDL.printFont(8, 28, NormalFontSDL.safeString(
+					"MODE: " + room.strMode + "   RULE: " + (room.ruleLock ? room.ruleName : "ANY")),
+					NormalFontSDL.COLOR_YELLOW);
+			NormalFontSDL.printFont(8, 44, NormalFontSDL.safeString(
+					"PLAYERS: " + room.playerSeatedCount + "/" + room.maxPlayers
+					+ "   SPECTATORS: " + room.spectatorCount),
 					NormalFontSDL.COLOR_WHITE);
 		} else {
-			NormalFontSDL.printFont(80, 8, "(no room)", NormalFontSDL.COLOR_DARKBLUE);
+			NormalFontSDL.printFont(80, 8, "(NO ROOM)", NormalFontSDL.COLOR_DARKBLUE);
 		}
 
 		// Seated-player list (left side of stats area)
@@ -165,7 +167,7 @@ public class StateNetRoomSDL extends BaseStateSDL {
 						: p.ready ? NormalFontSDL.COLOR_YELLOW
 						: p.seatID == -1 ? NormalFontSDL.COLOR_DARKBLUE
 						: NormalFontSDL.COLOR_WHITE;
-				NormalFontSDL.printFont(8, py, (name + status), color);
+				NormalFontSDL.printFont(8, py, NormalFontSDL.safeString(name + status), color);
 				py += 16;
 				if(py > 370) break;
 			}
@@ -193,7 +195,7 @@ public class StateNetRoomSDL extends BaseStateSDL {
 		leaveBtn.render();
 
 		if(statusLine.length() > 0) {
-			NormalFontSDL.printFont(8, 464, statusLine, NormalFontSDL.COLOR_RED);
+			NormalFontSDL.printFont(8, 464, NormalFontSDL.safeString(statusLine), NormalFontSDL.COLOR_RED);
 		}
 	}
 }

@@ -40,8 +40,8 @@ public class StateNetRuleChangeSDL extends BaseStateSDL {
 	@Override
 	public void render() {
 		NormalFontSDL.printFont(80, 40, "RULE CHANGE", NormalFontSDL.COLOR_CYAN);
-		NormalFontSDL.printFont(40, 120, "Rule-change screen not yet ported to SDL.", NormalFontSDL.COLOR_WHITE);
-		NormalFontSDL.printFont(40, 144, "Use OPTIONS > RULE SELECT instead.", NormalFontSDL.COLOR_WHITE);
+		NormalFontSDL.printFont(40, 120, "RULE-CHANGE SCREEN NOT YET PORTED TO SDL.", NormalFontSDL.COLOR_WHITE);
+		NormalFontSDL.printFont(40, 144, "USE OPTIONS > RULE SELECT INSTEAD.", NormalFontSDL.COLOR_WHITE);
 		backBtn.render();
 	}
 }

@@ -142,7 +142,7 @@ public class DropdownSDL extends WidgetSDL {
 
 		panelBackground(x, y, w, h, focused || hoveringClosed);
 
-		String label = getSelectedItem();
+		String label = NormalFontSDL.safeString(getSelectedItem());
 		int innerX = x + 4;
 		int innerY = y + (h - 16) / 2;
 		int maxChars = Math.max(1, (w - 20) / 16);
@@ -150,8 +150,9 @@ public class DropdownSDL extends WidgetSDL {
 		NormalFontSDL.printFont(innerX, innerY, label,
 				enabled ? NormalFontSDL.COLOR_WHITE : NormalFontSDL.COLOR_DARKBLUE);
 
-		// Caret glyph on the right edge
-		NormalFontSDL.printFont(x + w - 18, innerY, open ? "^" : "v",
+		// Caret glyph on the right edge (use uppercase V — lowercase 'v' hits a
+		// custom glyph slot in the bitmap atlas).
+		NormalFontSDL.printFont(x + w - 18, innerY, open ? "^" : "V",
 				enabled ? NormalFontSDL.COLOR_YELLOW : NormalFontSDL.COLOR_DARKBLUE);
 	}
 
@@ -178,7 +179,7 @@ public class DropdownSDL extends WidgetSDL {
 			boolean hover = mx >= dropX && mx < dropX + w && my >= iy && my < iy + itemH;
 			if(hover) fillRect(dropX + 1, iy + 1, w - 2, itemH - 2, 64, 64, 96, 255);
 			if(idx == selected) drawRect(dropX + 2, iy + 2, w - 4, itemH - 4, 255, 255, 0, 255);
-			String s = items.get(idx);
+			String s = NormalFontSDL.safeString(items.get(idx));
 			int maxChars = Math.max(1, (w - 8) / 16);
 			if(s.length() > maxChars) s = s.substring(0, maxChars);
 			NormalFontSDL.printFont(dropX + 4, iy + (itemH - 16) / 2, s,

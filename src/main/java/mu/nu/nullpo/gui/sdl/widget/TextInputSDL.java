@@ -162,7 +162,7 @@ public class TextInputSDL extends WidgetSDL {
 		int visible = maxVisibleChars();
 
 		if(text.length() == 0 && !focused && placeholder != null && placeholder.length() > 0) {
-			String hint = placeholder;
+			String hint = NormalFontSDL.safeString(placeholder);
 			if(hint.length() > visible) hint = hint.substring(0, visible);
 			NormalFontSDL.printFont(innerX, innerY, hint, NormalFontSDL.COLOR_DARKBLUE);
 		} else {
@@ -171,6 +171,8 @@ public class TextInputSDL extends WidgetSDL {
 				StringBuilder sb = new StringBuilder(display.length());
 				for(int i = 0; i < display.length(); i++) sb.append('*');
 				display = sb.toString();
+			} else {
+				display = NormalFontSDL.safeString(display);
 			}
 			int end = Math.min(display.length(), scrollChar + visible);
 			if(scrollChar < end) {

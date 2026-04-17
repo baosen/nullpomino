@@ -133,7 +133,7 @@ public class ChatLogSDL extends WidgetSDL {
 		int drawY = y + 2;
 		for(int i = startLine; i < endLine; i++) {
 			RenderedLine ln = lines.get(i);
-			NormalFontSDL.printFont(x + 4, drawY, ln.text, ln.color);
+			NormalFontSDL.printFont(x + 4, drawY, NormalFontSDL.safeString(ln.text), ln.color);
 			drawY += 16;
 		}
 

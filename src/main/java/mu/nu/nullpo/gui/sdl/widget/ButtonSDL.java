@@ -54,13 +54,14 @@ public class ButtonSDL extends WidgetSDL {
 		                     enabled ? (hovering ? 255 : 180) : 96, 255);
 
 		if(label != null && label.length() > 0) {
-			int textW = label.length() * 16;
+			String safe = NormalFontSDL.safeString(label);
+			int textW = safe.length() * 16;
 			int tx = x + (w - textW) / 2;
 			int ty = y + (h - 16) / 2;
 			int color = enabled
 					? (hovering || primary ? NormalFontSDL.COLOR_YELLOW : NormalFontSDL.COLOR_WHITE)
 					: NormalFontSDL.COLOR_DARKBLUE;
-			NormalFontSDL.printFont(tx, ty, label, color);
+			NormalFontSDL.printFont(tx, ty, safe, color);
 		}
 	}
 }

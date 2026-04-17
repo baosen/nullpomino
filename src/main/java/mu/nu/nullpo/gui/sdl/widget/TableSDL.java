@@ -173,7 +173,7 @@ public class TableSDL extends WidgetSDL {
 		fillRect(x, y, w, headerHeight, 32, 32, 64, 240);
 		int colX = x + 4;
 		for(Column c : columns) {
-			String s = c.header == null ? "" : c.header;
+			String s = NormalFontSDL.safeString(c.header == null ? "" : c.header);
 			int maxChars = Math.max(1, (c.widthPx - 4) / 16);
 			if(s.length() > maxChars) s = s.substring(0, maxChars);
 			NormalFontSDL.printFont(colX, y + (headerHeight - 16) / 2, s, NormalFontSDL.COLOR_YELLOW);
@@ -196,7 +196,7 @@ public class TableSDL extends WidgetSDL {
 
 			int cx = x + 4;
 			for(int c = 0; c < columns.length && c < row.length; c++) {
-				String s = row[c] == null ? "" : row[c];
+				String s = NormalFontSDL.safeString(row[c] == null ? "" : row[c]);
 				int colWidthChars = Math.max(1, (columns[c].widthPx - 4) / 16);
 				if(s.length() > colWidthChars) s = s.substring(0, colWidthChars);
 				NormalFontSDL.printFont(cx, ry + (rowHeight - 16) / 2, s, rowColor);
