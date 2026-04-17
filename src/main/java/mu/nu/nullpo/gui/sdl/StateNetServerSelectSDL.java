@@ -90,7 +90,7 @@ public class StateNetServerSelectSDL extends BaseStateSDL {
 		teamInput.setText(nl.propConfig.getProperty("serverselect.txtfldPlayerTeam.text", ""));
 
 		TableSDL.Column[] cols = { new TableSDL.Column("SERVER", 580) };
-		serverTable = new TableSDL(16, 160, 608, 262, cols);
+		serverTable = new TableSDL(16, 160, 608, 280, cols);
 		serverTable.showHeader = false;
 		refreshServerTable();
 
@@ -398,9 +398,8 @@ public class StateNetServerSelectSDL extends BaseStateSDL {
 		}
 
 		if(statusLine.length() > 0) {
-			// Sits in the narrow band between the server table (y=160..422)
-			// and the bottom button row (y=444).
-			NormalFontSDL.printFont(16, 426, NormalFontSDL.safeString(statusLine), NormalFontSDL.COLOR_RED);
+			// Show just under the title so it never collides with the server table.
+			NormalFontSDL.printFont(16, 20, NormalFontSDL.safeString(statusLine), NormalFontSDL.COLOR_RED);
 		}
 	}
 }
