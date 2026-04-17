@@ -74,7 +74,7 @@ public class StateNetLobbySDL extends BaseStateSDL {
 			new TableSDL.Column("P",     40),
 			new TableSDL.Column("S",     40),
 		};
-		roomTable = new TableSDL(8, 40, 624, 220, cols);
+		roomTable = new TableSDL(8, 40, 624, 178, cols);
 
 		// Chat input + buttons at bottom
 		chatInput = new TextInputSDL(8, 390, 496, 28);
@@ -84,7 +84,7 @@ public class StateNetLobbySDL extends BaseStateSDL {
 		sendBtn = new ButtonSDL(508, 390, 80, 28, "SEND", new Runnable() { public void run() { sendChat(nlf); } });
 		sendBtn.primary = true;
 
-		int actY = 266;
+		int actY = 224;
 		joinBtn       = new ButtonSDL(  4, actY,  80, 28, "JOIN",    new Runnable() { public void run() { attemptJoinSelected(false); } });
 		joinBtn.primary = true;
 		watchBtn      = new ButtonSDL( 88, actY,  80, 28, "WATCH",   new Runnable() { public void run() { attemptJoinSelected(true); } });
@@ -338,21 +338,21 @@ public class StateNetLobbySDL extends BaseStateSDL {
 		disconnectBtn.render();
 
 		// Chat log occupies the centre-left strip; player list is a column on the right.
-		nl.chatLogLobby.x = 8;  nl.chatLogLobby.y = 298;
-		nl.chatLogLobby.w = 480; nl.chatLogLobby.h = 84;
+		nl.chatLogLobby.x = 8;  nl.chatLogLobby.y = 258;
+		nl.chatLogLobby.w = 480; nl.chatLogLobby.h = 124;
 		nl.chatLogLobby.render();
 
 		chatInput.render();
 		sendBtn.render();
 
-		// Online player list (right column)
-		NormalFontSDL.printFont(496, 298, "ONLINE", NormalFontSDL.COLOR_YELLOW);
-		int py = 314;
+		// Online player list (right column) — aligned with the chat log's top edge.
+		NormalFontSDL.printFont(496, 258, "ONLINE", NormalFontSDL.COLOR_YELLOW);
+		int py = 274;
 		if(nl.netPlayerClient != null) {
 			LinkedList<NetPlayerInfo> list = new LinkedList<NetPlayerInfo>(nl.netPlayerClient.getPlayerInfoList());
 			int shown = 0;
 			for(NetPlayerInfo p : list) {
-				if(shown >= 5) break;
+				if(shown >= 7) break;
 				String name = NormalFontSDL.safeString(nl.getPlayerNameWithTripCode(p));
 				if(name.length() > 8) name = name.substring(0, 8);
 				NormalFontSDL.printFont(496, py, name, NormalFontSDL.COLOR_WHITE);
