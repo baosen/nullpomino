@@ -757,11 +757,23 @@ public class NetLobbyFrame implements NetMessageListener {
 		} else if(lower.startsWith("/name ") || lower.equals("/name")) {
 			String arg = lower.equals("/name") ? "" : msg.substring("/name ".length()).trim();
 			sendChangeName(arg);
+		} else if(lower.equals("/help") || lower.equals("/?")) {
+			printHelp(roomchat);
 		} else if(roomchat) {
 			netPlayerClient.send("chat\t" + NetUtil.urlEncode(msg) + "\n");
 		} else {
 			netPlayerClient.send("lobbychat\t" + NetUtil.urlEncode(msg) + "\n");
 		}
+	}
+
+	/**
+	 * Emit a short local-only system message listing every chat command. The log
+	 * line appears in whichever chat the user typed from, so lobby /help goes to
+	 * the lobby log and room /help goes to the room log.
+	 */
+	private void printHelp(boolean roomchat) {
+		ChatLogSDL log = roomchat ? chatLogRoom : chatLogLobby;
+		log.appendSystem("COMMANDS: /NAME <NICK>   /TEAM [<NAME>]   /HELP", NormalFontSDL.COLOR_YELLOW);
 	}
 
 	/**

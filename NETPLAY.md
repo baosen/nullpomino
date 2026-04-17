@@ -57,6 +57,7 @@ Typed into the lobby or room chat box. Command prefix is case-insensitive (`/NAM
 |---|---|
 | `/name <nickname>` | Rename on the fly without reconnecting. The server rejects duplicates or renames while a game is running and broadcasts a system message to everyone in the lobby on success. |
 | `/team <team name>` | Change (or clear, with no argument) the player's team. Team appears in parentheses next to the nickname in player lists. |
+| `/help` (or `/?`) | Print the command list as a local-only system message. |
 
 Anything not starting with `/` is sent as a normal chat message to the current context (lobby or room).
 
