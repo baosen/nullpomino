@@ -112,6 +112,8 @@ public class StateNetCreateRoomSDL extends BaseStateSDL {
 	private ButtonSDL joinBtn;
 	private ButtonSDL watchBtn;
 	private ButtonSDL cancelBtn;
+	/** Rated-mode only: convert the current preset selection into an editable custom room. */
+	private ButtonSDL customRatedBtn;
 
 	/** Label rendered to the left of each widget. */
 	private static final class Field {
@@ -299,6 +301,9 @@ public class StateNetCreateRoomSDL extends BaseStateSDL {
 		joinBtn   = new ButtonSDL(140, btnY, 124, 32, "JOIN",   new Runnable() { public void run() { submit(true,  false); } });
 		joinBtn.primary = true;
 		watchBtn  = new ButtonSDL(272, btnY, 124, 32, "WATCH",  new Runnable() { public void run() { submit(true,  true); } });
+		// In rated mode, CUSTOM sits where JOIN/WATCH would live in detail mode.
+		customRatedBtn = new ButtonSDL(140, btnY, 160, 32, "CUSTOMIZE",
+				new Runnable() { public void run() { flipRatedToCustom(); } });
 		cancelBtn = new ButtonSDL(508, btnY, 124, 32, "CANCEL", new Runnable() { public void run() { cancel(); } });
 
 		// Build the per-tab widget arrays in the order they appear on screen.
@@ -371,6 +376,25 @@ public class StateNetCreateRoomSDL extends BaseStateSDL {
 		okBtn.visible = editable;
 		joinBtn.visible = detailMode;
 		watchBtn.visible = detailMode;
+		customRatedBtn.visible = ratedMode && !detailMode;
+	}
+
+	/**
+	 * Switch out of rated-preset mode: keep everything the user has typed so
+	 * far, seed the form from the currently-selected preset, and continue
+	 * editing as a regular custom room.
+	 */
+	private void flipRatedToCustom() {
+		NetLobbyFrame nl = NullpoMinoSDL.netLobby;
+		if(nl == null) return;
+		if(presetDropdown != null && !nl.presets.isEmpty()) {
+			int idx = Math.max(0, presetDropdown.getSelectedIndex());
+			if(idx < nl.presets.size()) applyRoomInfoToForm(nl.presets.get(idx));
+		}
+		nl.createRoomRated = false;
+		ratedMode = false;
+		presetDropdown = null;
+		applyDetailModeEnabled();
 	}
 
 	/**
@@ -478,6 +502,7 @@ public class StateNetCreateRoomSDL extends BaseStateSDL {
 		okBtn.update(mx, my, clicked);
 		joinBtn.update(mx, my, clicked);
 		watchBtn.update(mx, my, clicked);
+		customRatedBtn.update(mx, my, clicked);
 		cancelBtn.update(mx, my, clicked);
 
 		// Render-overlay step for any open dropdown happens in render().
@@ -546,6 +571,7 @@ public class StateNetCreateRoomSDL extends BaseStateSDL {
 		if(okBtn.visible) list.add(okBtn);
 		if(joinBtn.visible) list.add(joinBtn);
 		if(watchBtn.visible) list.add(watchBtn);
+		if(customRatedBtn.visible) list.add(customRatedBtn);
 		list.add(cancelBtn);
 
 		int idx = list.indexOf(focused);
@@ -563,6 +589,7 @@ public class StateNetCreateRoomSDL extends BaseStateSDL {
 		if(okBtn.visible) row.add(okBtn);
 		if(joinBtn.visible) row.add(joinBtn);
 		if(watchBtn.visible) row.add(watchBtn);
+		if(customRatedBtn.visible) row.add(customRatedBtn);
 		row.add(cancelBtn);
 		for(int i = 0; i < row.size(); i++) {
 			if(focused == row.get(i)) {
@@ -913,6 +940,7 @@ public class StateNetCreateRoomSDL extends BaseStateSDL {
 		okBtn.render();
 		joinBtn.render();
 		watchBtn.render();
+		customRatedBtn.render();
 		cancelBtn.render();
 
 		// Open dropdowns render on top of everything else.
