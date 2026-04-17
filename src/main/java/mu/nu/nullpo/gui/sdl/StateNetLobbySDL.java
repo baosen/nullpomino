@@ -151,26 +151,48 @@ public class StateNetLobbySDL extends BaseStateSDL {
 		if(rulechangeBtn.update(mx, my, clicked))    NullpoMinoSDL.enterState(NullpoMinoSDL.STATE_NET_RULECHANGE);
 		if(disconnectBtn.update(mx, my, clicked))    NullpoMinoSDL.endNetplay();
 
-		// Deliver typed text and key events.  UP/DOWN/HOME/END always drive the room
-		// table so users can navigate rooms even while chat has focus.  PAGEUP/PAGEDOWN
-		// stay with handleGlobalKey (chat log scroll).
+		// Deliver typed text and key events.  UP/DOWN navigate rows inside the room
+		// table and jump to the chat input at the list boundary; from chat they move
+		// focus back to the table.  HOME/END always drive the list.  PAGEUP/PAGEDOWN
+		// stay with the chat-log scroll handler in handleGlobalKey.
 		String typed = NullpoMinoSDL.consumeTextInput();
 		if(focused != null && typed.length() > 0) focused.handleTextInput(typed);
 		for(NullpoMinoSDL.KeyEvent ev : NullpoMinoSDL.frameKeyEvents) {
 			handleGlobalKey(nl, ev);
-			if(isRoomNavKey(ev) && focused != roomTable) {
+			if(ev.scancode == SDLConstants.SDL_SCANCODE_HOME || ev.scancode == SDLConstants.SDL_SCANCODE_END) {
 				roomTable.handleKey(ev);
-			} else if(focused != null) {
-				focused.handleKey(ev);
+				continue;
 			}
+			boolean up   = ev.scancode == SDLConstants.SDL_SCANCODE_UP;
+			boolean down = ev.scancode == SDLConstants.SDL_SCANCODE_DOWN;
+			if((up || down) && !ev.repeat && tryWidgetNav(up)) continue;
+			if((up || down) && ev.repeat && focused == roomTable) {
+				roomTable.handleKey(ev);
+				continue;
+			}
+			if(focused != null) focused.handleKey(ev);
 		}
 	}
 
-	private static boolean isRoomNavKey(NullpoMinoSDL.KeyEvent ev) {
-		return ev.scancode == SDLConstants.SDL_SCANCODE_UP
-				|| ev.scancode == SDLConstants.SDL_SCANCODE_DOWN
-				|| ev.scancode == SDLConstants.SDL_SCANCODE_HOME
-				|| ev.scancode == SDLConstants.SDL_SCANCODE_END;
+	/**
+	 * Boundary-aware widget navigation for the lobby: roomTable ↔ chatInput.
+	 * Inside the table, UP/DOWN scroll rows until the top/bottom is reached, at
+	 * which point focus jumps to the chat field.  From chat, UP/DOWN move focus
+	 * back to the table.
+	 */
+	private boolean tryWidgetNav(boolean up) {
+		if(focused == chatInput) {
+			setFocus(roomTable);
+			return true;
+		}
+		if(focused == roomTable) {
+			int sel = roomTable.getSelectedIndex();
+			int rows = roomTable.getRowCount();
+			if(up && sel <= 0) { setFocus(chatInput); return true; }
+			if(!up && (rows == 0 || sel >= rows - 1)) { setFocus(chatInput); return true; }
+			return false;
+		}
+		return false;
 	}
 
 	private void handleGlobalKey(NetLobbyFrame nl, NullpoMinoSDL.KeyEvent ev) {

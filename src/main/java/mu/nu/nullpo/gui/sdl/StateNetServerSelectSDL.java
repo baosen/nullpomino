@@ -168,25 +168,65 @@ public class StateNetServerSelectSDL extends BaseStateSDL {
 			if(backBtn.update(mx, my, clicked))    NullpoMinoSDL.endNetplay();
 		}
 
-		// Deliver typed text and key events to the focused widget.  Vertical nav keys
-		// (UP/DOWN/PAGEUP/PAGEDOWN/HOME/END) always drive the server list — even if
-		// the user is typing in the name/team field — so arrow keys "just work".
+		// Deliver typed text and key events to the focused widget.  UP/DOWN act as
+		// widget-to-widget navigation with boundary jumps: inside the server table
+		// they scroll rows, but at the top/bottom row (or inside a text field where
+		// they do nothing useful) they move focus to the adjacent widget.
+		// PAGEUP/PAGEDOWN/HOME/END always drive the list for quick jumps.
 		String typed = NullpoMinoSDL.consumeTextInput();
 		if(focused != null && typed.length() > 0) focused.handleTextInput(typed);
 		for(NullpoMinoSDL.KeyEvent ev : NullpoMinoSDL.frameKeyEvents) {
 			handleGlobalKey(ev);
-			if(!adding && isListNavKey(ev) && focused != serverTable) {
-				serverTable.handleKey(ev);
-			} else if(focused != null) {
-				focused.handleKey(ev);
+			if(adding) {
+				if(focused != null) focused.handleKey(ev);
+				continue;
 			}
+			if(isListJumpKey(ev)) {
+				serverTable.handleKey(ev);
+				continue;
+			}
+			boolean up   = ev.scancode == SDLConstants.SDL_SCANCODE_UP;
+			boolean down = ev.scancode == SDLConstants.SDL_SCANCODE_DOWN;
+			if((up || down) && !ev.repeat && tryWidgetNav(up)) continue;
+			if((up || down) && ev.repeat && focused == serverTable) {
+				// Held arrow on list: still scroll rows on repeat.
+				serverTable.handleKey(ev);
+				continue;
+			}
+			if(focused != null) focused.handleKey(ev);
 		}
 	}
 
-	private static boolean isListNavKey(NullpoMinoSDL.KeyEvent ev) {
-		return ev.scancode == SDLConstants.SDL_SCANCODE_UP
-				|| ev.scancode == SDLConstants.SDL_SCANCODE_DOWN
-				|| ev.scancode == SDLConstants.SDL_SCANCODE_PAGEUP
+	/**
+	 * Move focus to the previous/next widget in the nameInput → teamInput → serverTable
+	 * cycle.  When on the server table, only jumps when the current selection is at the
+	 * top (for UP) or bottom (for DOWN); otherwise returns false so the table gets the
+	 * key for row navigation.
+	 *
+	 * @param up true for UP, false for DOWN
+	 * @return true if focus moved (caller should skip normal dispatch)
+	 */
+	private boolean tryWidgetNav(boolean up) {
+		if(focused == nameInput) {
+			setFocus(up ? serverTable : teamInput);
+			return true;
+		}
+		if(focused == teamInput) {
+			setFocus(up ? nameInput : serverTable);
+			return true;
+		}
+		if(focused == serverTable) {
+			int sel = serverTable.getSelectedIndex();
+			int rows = serverTable.getRowCount();
+			if(up && sel <= 0) { setFocus(teamInput); return true; }
+			if(!up && (rows == 0 || sel >= rows - 1)) { setFocus(nameInput); return true; }
+			return false;
+		}
+		return false;
+	}
+
+	private static boolean isListJumpKey(NullpoMinoSDL.KeyEvent ev) {
+		return ev.scancode == SDLConstants.SDL_SCANCODE_PAGEUP
 				|| ev.scancode == SDLConstants.SDL_SCANCODE_PAGEDOWN
 				|| ev.scancode == SDLConstants.SDL_SCANCODE_HOME
 				|| ev.scancode == SDLConstants.SDL_SCANCODE_END;
