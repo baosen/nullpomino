@@ -85,15 +85,17 @@ public class StateNetLobbySDL extends BaseStateSDL {
 		sendBtn = new ButtonSDL(508, 448, 80, 28, "SEND", new Runnable() { public void run() { sendChat(nlf); } });
 		sendBtn.primary = true;
 
+		// Action row aligned with the room table (x=8, w=624). Total button
+		// widths sum to 600 px; six 4 px gaps make it meet the table's right edge.
 		int actY = 224;
-		joinBtn       = new ButtonSDL(  4, actY,  80, 28, "JOIN",    new Runnable() { public void run() { attemptJoinSelected(false); } });
+		joinBtn       = new ButtonSDL(  8, actY,  80, 28, "JOIN",    new Runnable() { public void run() { attemptJoinSelected(false); } });
 		joinBtn.primary = true;
-		watchBtn      = new ButtonSDL( 88, actY,  80, 28, "WATCH",   new Runnable() { public void run() { attemptJoinSelected(true); } });
-		createBtn     = new ButtonSDL(172, actY, 112, 28, "CREATE",  new Runnable() { public void run() { enterCreateRoom(false, false); } });
-		create1PBtn   = new ButtonSDL(288, actY,  40, 28, "1P",      new Runnable() { public void run() { enterCreateRoom(true,  false); } });
-		createRatedBtn= new ButtonSDL(332, actY,  80, 28, "RATED",   new Runnable() { public void run() { enterCreateRoom(false, true);  } });
-		rankingBtn    = new ButtonSDL(416, actY, 112, 28, "RANKING", new Runnable() { public void run() { NullpoMinoSDL.enterState(NullpoMinoSDL.STATE_NET_RANKING); } });
-		rulechangeBtn = new ButtonSDL(532, actY, 100, 28, "RULES",   new Runnable() { public void run() { NullpoMinoSDL.enterState(NullpoMinoSDL.STATE_NET_RULECHANGE); } });
+		watchBtn      = new ButtonSDL( 92, actY,  80, 28, "WATCH",   new Runnable() { public void run() { attemptJoinSelected(true); } });
+		createBtn     = new ButtonSDL(176, actY, 112, 28, "CREATE",  new Runnable() { public void run() { enterCreateRoom(false, false); } });
+		create1PBtn   = new ButtonSDL(292, actY,  40, 28, "1P",      new Runnable() { public void run() { enterCreateRoom(true,  false); } });
+		createRatedBtn= new ButtonSDL(336, actY,  80, 28, "RATED",   new Runnable() { public void run() { enterCreateRoom(false, true);  } });
+		rankingBtn    = new ButtonSDL(420, actY, 112, 28, "RANKING", new Runnable() { public void run() { NullpoMinoSDL.enterState(NullpoMinoSDL.STATE_NET_RANKING); } });
+		rulechangeBtn = new ButtonSDL(536, actY,  96, 28, "RULES",   new Runnable() { public void run() { NullpoMinoSDL.enterState(NullpoMinoSDL.STATE_NET_RULECHANGE); } });
 		// Disconnect lives in the top-right corner; reachable by mouse or ESC.
 		disconnectBtn = new ButtonSDL(608,    4,  28, 24, "X",       new Runnable() { public void run() { NullpoMinoSDL.endNetplay(); } });
 
