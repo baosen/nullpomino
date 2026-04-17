@@ -366,18 +366,18 @@ public class NetLobbyFrame implements NetMessageListener {
 		if("welcome".equals(cmd)) {
 			openLogFiles();
 			chatLogLobby.appendSystem(String.format(getUIText("SysMsg_ServerConnected"),
-					netPlayerClient.getHost(), netPlayerClient.getPort()), NormalFontSDL.COLOR_BLUE);
-			if(message.length > 1) chatLogLobby.appendSystem(getUIText("SysMsg_ServerVersion") + message[1], NormalFontSDL.COLOR_BLUE);
-			if(message.length > 2) chatLogLobby.appendSystem(getUIText("SysMsg_NumberOfPlayers") + message[2], NormalFontSDL.COLOR_BLUE);
+					netPlayerClient.getHost(), netPlayerClient.getPort()), NormalFontSDL.COLOR_ORANGE);
+			if(message.length > 1) chatLogLobby.appendSystem(getUIText("SysMsg_ServerVersion") + message[1], NormalFontSDL.COLOR_ORANGE);
+			if(message.length > 2) chatLogLobby.appendSystem(getUIText("SysMsg_NumberOfPlayers") + message[2], NormalFontSDL.COLOR_ORANGE);
 
 		} else if("loginsuccess".equals(cmd)) {
-			chatLogLobby.appendSystem(getUIText("SysMsg_LoginOK"), NormalFontSDL.COLOR_BLUE);
+			chatLogLobby.appendSystem(getUIText("SysMsg_LoginOK"), NormalFontSDL.COLOR_ORANGE);
 			if(message.length > 1) {
 				chatLogLobby.appendSystem(getUIText("SysMsg_YourNickname") + convTripCode(NetUtil.urlDecode(message[1])),
-						NormalFontSDL.COLOR_BLUE);
+						NormalFontSDL.COLOR_ORANGE);
 			}
-			chatLogLobby.appendSystem(getUIText("SysMsg_YourUID") + netPlayerClient.getPlayerUID(), NormalFontSDL.COLOR_BLUE);
-			chatLogLobby.appendSystem(getUIText("SysMsg_SendRuleDataStart"), NormalFontSDL.COLOR_BLUE);
+			chatLogLobby.appendSystem(getUIText("SysMsg_YourUID") + netPlayerClient.getPlayerUID(), NormalFontSDL.COLOR_ORANGE);
+			chatLogLobby.appendSystem(getUIText("SysMsg_SendRuleDataStart"), NormalFontSDL.COLOR_ORANGE);
 			sendMyRuleDataToServer();
 
 		} else if("loginfail".equals(cmd)) {
@@ -396,7 +396,7 @@ public class NetLobbyFrame implements NetMessageListener {
 				for(int i = 1; i < message.length; i++) { sb.append(message[i]); sb.append(' '); }
 				reason = sb.toString();
 			}
-			chatLogLobby.appendSystem(reason, NormalFontSDL.COLOR_RED);
+			chatLogLobby.appendSystem(reason, NormalFontSDL.COLOR_ORANGE);
 
 		} else if("banned".equals(cmd)) {
 			lobbyMode = LOBBYMODE_DISCONNECTED;
@@ -404,10 +404,10 @@ public class NetLobbyFrame implements NetMessageListener {
 			Calendar cExpire = (message.length > 2 && message[2].length() > 0) ? GeneralUtil.importCalendarString(message[2]) : null;
 			String strStart = cStart != null ? GeneralUtil.getCalendarString(cStart) : "???";
 			String strExpire = cExpire != null ? GeneralUtil.getCalendarString(cExpire) : getUIText("SysMsg_Banned_Permanent");
-			chatLogLobby.appendSystem(String.format(getUIText("SysMsg_Banned"), strStart, strExpire), NormalFontSDL.COLOR_RED);
+			chatLogLobby.appendSystem(String.format(getUIText("SysMsg_Banned"), strStart, strExpire), NormalFontSDL.COLOR_ORANGE);
 
 		} else if("ruledatasuccess".equals(cmd)) {
-			chatLogLobby.appendSystem(getUIText("SysMsg_SendRuleDataOK"), NormalFontSDL.COLOR_BLUE);
+			chatLogLobby.appendSystem(getUIText("SysMsg_SendRuleDataOK"), NormalFontSDL.COLOR_ORANGE);
 			lobbyMode = LOBBYMODE_LOBBY;
 			for(NetLobbyListener l : listeners) l.netlobbyOnLoginOK(this, netPlayerClient);
 			if(netDummyMode != null) netDummyMode.netlobbyOnLoginOK(this, netPlayerClient);
@@ -439,19 +439,19 @@ public class NetLobbyFrame implements NetMessageListener {
 				NetPlayerInfo p = new NetPlayerInfo(message[1]);
 				NetPlayerInfo me = netPlayerClient.getYourPlayerInfo();
 				if(me != null && p.roomID == me.roomID) {
-					chatLogRoom.appendSystem(formatLeaveRoom(p), NormalFontSDL.COLOR_BLUE);
+					chatLogRoom.appendSystem(formatLeaveRoom(p), NormalFontSDL.COLOR_ORANGE);
 				}
 			}
 
 		} else if("playerenter".equals(cmd) && message.length > 1) {
 			int uid = Integer.parseInt(message[1]);
 			NetPlayerInfo pInfo = netPlayerClient.getPlayerInfoByUID(uid);
-			if(pInfo != null) chatLogRoom.appendSystem(formatEnterRoom(pInfo), NormalFontSDL.COLOR_BLUE);
+			if(pInfo != null) chatLogRoom.appendSystem(formatEnterRoom(pInfo), NormalFontSDL.COLOR_ORANGE);
 
 		} else if("playerleave".equals(cmd) && message.length > 1) {
 			int uid = Integer.parseInt(message[1]);
 			NetPlayerInfo pInfo = netPlayerClient.getPlayerInfoByUID(uid);
-			if(pInfo != null) chatLogRoom.appendSystem(formatLeaveRoom(pInfo), NormalFontSDL.COLOR_BLUE);
+			if(pInfo != null) chatLogRoom.appendSystem(formatLeaveRoom(pInfo), NormalFontSDL.COLOR_ORANGE);
 
 		} else if("changeteam".equals(cmd) && message.length > 1) {
 			int uid = Integer.parseInt(message[1]);
@@ -465,7 +465,7 @@ public class NetLobbyFrame implements NetMessageListener {
 					text = String.format(getUIText("SysMsg_ChangeTeam_None"), getPlayerNameWithTripCode(pInfo));
 				}
 				ChatLogSDL target = (lobbyMode == LOBBYMODE_INROOM) ? chatLogRoom : chatLogLobby;
-				target.appendSystem(text, NormalFontSDL.COLOR_BLUE);
+				target.appendSystem(text, NormalFontSDL.COLOR_ORANGE);
 			}
 
 		} else if("roomlist".equals(cmd) && message.length >= 2) {
@@ -525,30 +525,30 @@ public class NetLobbyFrame implements NetMessageListener {
 					if(seatID == -1 && queueID == -1)       fmt = getUIText("SysMsg_StatusChange_Spectator");
 					else if(seatID == -1)                    fmt = getUIText("SysMsg_StatusChange_Queue");
 					else                                     fmt = getUIText("SysMsg_StatusChange_Joined");
-					chatLogRoom.appendSystem(String.format(fmt, getPlayerNameWithTripCode(myInfo)), NormalFontSDL.COLOR_BLUE);
-					chatLogRoom.appendSystem(getUIText("SysMsg_RoomJoin_Title") + roomInfo.strName, NormalFontSDL.COLOR_BLUE);
-					chatLogRoom.appendSystem(getUIText("SysMsg_RoomJoin_ID") + roomInfo.roomID, NormalFontSDL.COLOR_BLUE);
+					chatLogRoom.appendSystem(String.format(fmt, getPlayerNameWithTripCode(myInfo)), NormalFontSDL.COLOR_ORANGE);
+					chatLogRoom.appendSystem(getUIText("SysMsg_RoomJoin_Title") + roomInfo.strName, NormalFontSDL.COLOR_ORANGE);
+					chatLogRoom.appendSystem(getUIText("SysMsg_RoomJoin_ID") + roomInfo.roomID, NormalFontSDL.COLOR_ORANGE);
 					if(roomInfo.ruleLock) {
-						chatLogRoom.appendSystem(getUIText("SysMsg_RoomJoin_Rule") + roomInfo.ruleName, NormalFontSDL.COLOR_BLUE);
+						chatLogRoom.appendSystem(getUIText("SysMsg_RoomJoin_Rule") + roomInfo.ruleName, NormalFontSDL.COLOR_ORANGE);
 					}
 					lobbyMode = LOBBYMODE_INROOM;
 					for(NetLobbyListener l : listeners) l.netlobbyOnRoomJoin(this, netPlayerClient, roomInfo);
 					if(netDummyMode != null) netDummyMode.netlobbyOnRoomJoin(this, netPlayerClient, roomInfo);
 				}
 			} else {
-				chatLogRoom.appendSystem(getUIText("SysMsg_RoomJoin_Lobby"), NormalFontSDL.COLOR_BLUE);
+				chatLogRoom.appendSystem(getUIText("SysMsg_RoomJoin_Lobby"), NormalFontSDL.COLOR_ORANGE);
 				lobbyMode = LOBBYMODE_LOBBY;
 				for(NetLobbyListener l : listeners) l.netlobbyOnRoomLeave(this, netPlayerClient);
 				if(netDummyMode != null) netDummyMode.netlobbyOnRoomLeave(this, netPlayerClient);
 			}
 
 		} else if("roomjoinfail".equals(cmd)) {
-			chatLogRoom.appendSystem(getUIText("SysMsg_RoomJoinFail"), NormalFontSDL.COLOR_RED);
+			chatLogRoom.appendSystem(getUIText("SysMsg_RoomJoinFail"), NormalFontSDL.COLOR_ORANGE);
 
 		} else if("roomkicked".equals(cmd) && message.length > 3) {
 			String strKickMsg = String.format(getUIText("SysMsg_Kicked_" + message[1]),
 					NetUtil.urlDecode(message[3]), message[2]);
-			chatLogLobby.appendSystem(strKickMsg, NormalFontSDL.COLOR_RED);
+			chatLogLobby.appendSystem(strKickMsg, NormalFontSDL.COLOR_ORANGE);
 
 		} else if("map".equals(cmd) && message.length > 1) {
 			String decompressed = NetUtil.decompressString(message[1]);
@@ -589,30 +589,30 @@ public class NetLobbyFrame implements NetMessageListener {
 				if("watchonly".equals(mode)) fmt = getUIText("SysMsg_StatusChange_Spectator");
 				else if("joinqueue".equals(mode)) fmt = getUIText("SysMsg_StatusChange_Queue");
 				else if("joinseat".equals(mode)) fmt = getUIText("SysMsg_StatusChange_Joined");
-				if(fmt != null) chatLogRoom.appendSystem(String.format(fmt, getPlayerNameWithTripCode(pInfo)), NormalFontSDL.COLOR_BLUE);
+				if(fmt != null) chatLogRoom.appendSystem(String.format(fmt, getPlayerNameWithTripCode(pInfo)), NormalFontSDL.COLOR_ORANGE);
 			}
 
 		} else if("autostartbegin".equals(cmd) && message.length > 1) {
-			chatLogRoom.appendSystem(String.format(getUIText("SysMsg_AutoStartBegin"), message[1]), NormalFontSDL.COLOR_GREEN);
+			chatLogRoom.appendSystem(String.format(getUIText("SysMsg_AutoStartBegin"), message[1]), NormalFontSDL.COLOR_ORANGE);
 
 		} else if("start".equals(cmd)) {
-			chatLogRoom.appendSystem(getUIText("SysMsg_GameStart"), NormalFontSDL.COLOR_GREEN);
+			chatLogRoom.appendSystem(getUIText("SysMsg_GameStart"), NormalFontSDL.COLOR_ORANGE);
 
 		} else if("dead".equals(cmd) && message.length > 2) {
 			String name = convTripCode(NetUtil.urlDecode(message[2]));
 			if(message.length > 6) {
 				chatLogRoom.appendSystem(String.format(getUIText("SysMsg_KO"),
-						convTripCode(NetUtil.urlDecode(message[6])), name), NormalFontSDL.COLOR_GREEN);
+						convTripCode(NetUtil.urlDecode(message[6])), name), NormalFontSDL.COLOR_ORANGE);
 			}
 
 		} else if("finish".equals(cmd)) {
-			chatLogRoom.appendSystem(getUIText("SysMsg_GameEnd"), NormalFontSDL.COLOR_GREEN);
+			chatLogRoom.appendSystem(getUIText("SysMsg_GameEnd"), NormalFontSDL.COLOR_ORANGE);
 			if(message.length > 3 && message[3].length() > 0) {
 				boolean flagTeamWin = message.length > 4 && Boolean.parseBoolean(message[4]);
 				String strWinner = flagTeamWin
 						? String.format(getUIText("SysMsg_WinnerTeam"), NetUtil.urlDecode(message[3]))
 						: String.format(getUIText("SysMsg_Winner"), convTripCode(NetUtil.urlDecode(message[3])));
-				chatLogRoom.appendSystem(strWinner, NormalFontSDL.COLOR_GREEN);
+				chatLogRoom.appendSystem(strWinner, NormalFontSDL.COLOR_ORANGE);
 			}
 
 		} else if("rating".equals(cmd) && message.length > 5) {
@@ -620,7 +620,7 @@ public class NetLobbyFrame implements NetMessageListener {
 			int ratingNow = Integer.parseInt(message[4]);
 			int ratingChange = Integer.parseInt(message[5]);
 			chatLogRoom.appendSystem(String.format(getUIText("SysMsg_Rating"),
-					strPlayerName, ratingNow, ratingChange), NormalFontSDL.COLOR_GREEN);
+					strPlayerName, ratingNow, ratingChange), NormalFontSDL.COLOR_ORANGE);
 
 		} else if("mpranking".equals(cmd) && message.length >= 4) {
 			int style = Integer.parseInt(message[1]);
@@ -653,7 +653,7 @@ public class NetLobbyFrame implements NetMessageListener {
 		} else if("changenamesuccess".equals(cmd) && message.length > 2) {
 			String newName = NetUtil.urlDecode(message[2]);
 			propConfig.setProperty("serverselect.txtfldPlayerName.text", newName);
-			chatLogLobby.appendSystem("CHANGED NAME TO " + newName, NormalFontSDL.COLOR_GREEN);
+			chatLogLobby.appendSystem("CHANGED NAME TO " + newName, NormalFontSDL.COLOR_ORANGE);
 
 		} else if("changenamefail".equals(cmd)) {
 			String reason = message.length > 1 ? message[1] : "UNKNOWN";
@@ -662,12 +662,12 @@ public class NetLobbyFrame implements NetMessageListener {
 			else if("EMPTY".equals(reason)) hint = "NAME CANNOT BE EMPTY";
 			else if("PLAYING".equals(reason)) hint = "CANNOT RENAME WHILE PLAYING";
 			else hint = "RENAME FAILED: " + reason;
-			chatLogLobby.appendSystem(hint, NormalFontSDL.COLOR_RED);
+			chatLogLobby.appendSystem(hint, NormalFontSDL.COLOR_ORANGE);
 
 		} else if("announce".equals(cmd) && message.length > 1) {
 			String strMessage = "<ADMIN>: " + NetUtil.urlDecode(message[1]);
-			chatLogLobby.appendSystem(strMessage, NormalFontSDL.COLOR_RED);
-			chatLogRoom.appendSystem(strMessage, NormalFontSDL.COLOR_RED);
+			chatLogLobby.appendSystem(strMessage, NormalFontSDL.COLOR_ORANGE);
+			chatLogRoom.appendSystem(strMessage, NormalFontSDL.COLOR_ORANGE);
 
 		} else if("spdownload".equals(cmd) && message.length > 2) {
 			long sChecksum = Long.parseLong(message[1]);
@@ -681,8 +681,8 @@ public class NetLobbyFrame implements NetMessageListener {
 				try {
 					out = new FileOutputStream("replay/netreplay.rep");
 					prop.store(out, "NullpoMino NetReplay from " + netPlayerClient.getHost());
-					chatLogLobby.appendSystem(getUIText("SysMsg_ReplaySaved"), NormalFontSDL.COLOR_PURPLE);
-					chatLogRoom.appendSystem(getUIText("SysMsg_ReplaySaved"), NormalFontSDL.COLOR_PURPLE);
+					chatLogLobby.appendSystem(getUIText("SysMsg_ReplaySaved"), NormalFontSDL.COLOR_ORANGE);
+					chatLogRoom.appendSystem(getUIText("SysMsg_ReplaySaved"), NormalFontSDL.COLOR_ORANGE);
 				} catch(IOException e) {
 					log.error("Failed to write replay to replay/netreplay.rep", e);
 				} finally {
@@ -703,10 +703,10 @@ public class NetLobbyFrame implements NetMessageListener {
 		roomList.clear();
 
 		if(ex != null) {
-			chatLogLobby.appendSystem(getUIText("SysMsg_DisconnectedError") + " " + ex.getLocalizedMessage(), NormalFontSDL.COLOR_RED);
+			chatLogLobby.appendSystem(getUIText("SysMsg_DisconnectedError") + " " + ex.getLocalizedMessage(), NormalFontSDL.COLOR_ORANGE);
 			log.info("Server Disconnected", ex);
 		} else {
-			chatLogLobby.appendSystem(getUIText("SysMsg_DisconnectedOK"), NormalFontSDL.COLOR_RED);
+			chatLogLobby.appendSystem(getUIText("SysMsg_DisconnectedOK"), NormalFontSDL.COLOR_ORANGE);
 			log.info("Server Disconnected (normal)");
 		}
 
