@@ -91,8 +91,10 @@ public class StateNetLobbySDL extends BaseStateSDL {
 		//   [JOIN VIEW] | [CREATE 1P RATED] | [RANKING RULES]
 		// Intra-group gap = 4 px, inter-group gap = 16 px.
 		int actY = 224;
+		// All action-row buttons share the same default styling so each
+		// group's buttons are consistent with one another; group boundaries
+		// are communicated by spacing + the separator lines drawn below.
 		joinBtn       = new ButtonSDL(  8, actY,  72, 28, "JOIN",    new Runnable() { public void run() { attemptJoinSelected(); } });
-		joinBtn.primary = true;
 		viewBtn       = new ButtonSDL( 84, actY,  72, 28, "VIEW",    new Runnable() { public void run() { viewSelectedRoom(); } });
 
 		createBtn     = new ButtonSDL(172, actY, 104, 28, "CREATE",  new Runnable() { public void run() { enterCreateRoom(false, false); } });
