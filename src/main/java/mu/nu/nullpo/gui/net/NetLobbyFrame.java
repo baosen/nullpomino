@@ -651,10 +651,9 @@ public class NetLobbyFrame implements NetMessageListener {
 			}
 
 		} else if("changenamesuccess".equals(cmd) && message.length > 2) {
-			String oldName = NetUtil.urlDecode(message[1]);
 			String newName = NetUtil.urlDecode(message[2]);
 			propConfig.setProperty("serverselect.txtfldPlayerName.text", newName);
-			chatLogLobby.appendSystem("RENAMED " + oldName + " -> " + newName, NormalFontSDL.COLOR_GREEN);
+			chatLogLobby.appendSystem("CHANGED NAME TO " + newName, NormalFontSDL.COLOR_GREEN);
 
 		} else if("changenamefail".equals(cmd)) {
 			String reason = message.length > 1 ? message[1] : "UNKNOWN";
