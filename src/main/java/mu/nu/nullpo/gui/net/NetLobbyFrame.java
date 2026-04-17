@@ -172,6 +172,24 @@ public class NetLobbyFrame implements NetMessageListener {
 	/** ID of room being viewed in detail-view mode; -1 when creating a brand-new room. */
 	public int currentViewDetailRoomID = -1;
 
+	/**
+	 * Raw (un-hashed) form of our current player name — whatever the user typed,
+	 * including any {@code #tripkey} suffix. Seeded by {@link #connectToServer}
+	 * and updated on our own {@code changename} broadcast. Used to persist the
+	 * original trip key to config instead of the server's hashed form so that
+	 * next-session login re-derives the same tripcode.
+	 */
+	private String lastRawOwnName = "";
+
+	/**
+	 * Raw form of a pending {@code /name} request. Set in {@link #sendChangeName}
+	 * and consumed by the {@code changename} broadcast handler (or cleared by
+	 * {@code changenamefail}). Includes any preserved {@code #tripkey} suffix
+	 * that the server would merge in so the saved identity matches exactly what
+	 * the next login would reconstruct.
+	 */
+	private String pendingOwnRaw;
+
 	// ---------------- Callbacks ----------------
 
 	/** Registered NetLobbyListeners (StateNetGameSDL is one). */
@@ -600,9 +618,15 @@ public class NetLobbyFrame implements NetMessageListener {
 			int uid = Integer.parseInt(message[1]);
 			String oldName = NetUtil.urlDecode(message[2]);
 			String newName = NetUtil.urlDecode(message[3]);
-			// If the rename was our own, persist the new nickname for next session.
+			// If the rename was our own, persist the raw name (with the real
+			// #tripkey, not the server's hashed ' !<code>' form) so next-session
+			// login reproduces the same tripcode. Fall back to the broadcast
+			// form for renames we didn't originate (e.g. admin-driven).
 			if(netPlayerClient != null && uid == netPlayerClient.getPlayerUID()) {
-				propConfig.setProperty("serverselect.txtfldPlayerName.text", newName);
+				String toSave = (pendingOwnRaw != null) ? pendingOwnRaw : newName;
+				propConfig.setProperty("serverselect.txtfldPlayerName.text", toSave);
+				lastRawOwnName = toSave;
+				pendingOwnRaw = null;
 			}
 			// Broadcast happens to everyone; post in both logs so it's visible
 			// whether the user is on the lobby screen or already in a room.
@@ -611,6 +635,9 @@ public class NetLobbyFrame implements NetMessageListener {
 			chatLogRoom.appendSystem(renameMsg, NormalFontSDL.COLOR_GREEN);
 
 		} else if("changenamefail".equals(cmd)) {
+			// The attempt was rejected; drop the pending raw so it can't bleed
+			// into a later successful rename by the same player.
+			pendingOwnRaw = null;
 			String reason = message.length > 1 ? message[1] : "UNKNOWN";
 			String hint;
 			if("DUPLICATE".equals(reason)) hint = "NAME ALREADY IN USE";
@@ -683,6 +710,8 @@ public class NetLobbyFrame implements NetMessageListener {
 	public void connectToServer(String playerName, String playerTeam, String host, int port) {
 		propConfig.setProperty("serverselect.txtfldPlayerName.text", playerName);
 		propConfig.setProperty("serverselect.txtfldPlayerTeam.text", playerTeam);
+		lastRawOwnName = (playerName == null) ? "" : playerName;
+		pendingOwnRaw = null;
 
 		netPlayerClient = new NetPlayerClient(host, port, playerName, playerTeam == null ? "" : playerTeam.trim());
 		netPlayerClient.setDaemon(true);
@@ -739,7 +768,18 @@ public class NetLobbyFrame implements NetMessageListener {
 			return;
 		}
 		if(netPlayerClient == null || !netPlayerClient.isConnected()) return;
-		netPlayerClient.send("changename\t" + NetUtil.urlEncode(newName.trim()) + "\n");
+		String trimmed = newName.trim();
+		// Remember the raw form the server will effectively adopt: if the user
+		// didn't supply a new '#tripkey', the server keeps the existing one —
+		// carry the corresponding portion of our previous raw name forward so
+		// the saved identity stays reproducible across sessions.
+		if(trimmed.indexOf('#') != -1) {
+			pendingOwnRaw = trimmed;
+		} else {
+			int hashIdx = (lastRawOwnName == null) ? -1 : lastRawOwnName.indexOf('#');
+			pendingOwnRaw = (hashIdx == -1) ? trimmed : trimmed + lastRawOwnName.substring(hashIdx);
+		}
+		netPlayerClient.send("changename\t" + NetUtil.urlEncode(trimmed) + "\n");
 	}
 
 	/**
