@@ -81,37 +81,6 @@ import org.apache.log4j.Logger;
  *   race that existed in the Swing version (tables mutated from the network thread).
  */
 public class NetLobbyFrame implements NetMessageListener {
-	/** Room-table column names. Passed to {@link #getUIText(String)}. */
-	public static final String[] ROOMTABLE_COLUMNNAMES = {
-		"RoomTable_ID","RoomTable_Name","RoomTable_Rated","RoomTable_RuleName","RoomTable_ModeName",
-		"RoomTable_Status","RoomTable_Players","RoomTable_Spectators"
-	};
-
-	/** End-of-game statistics column names. */
-	public static final String[] STATTABLE_COLUMNNAMES = {
-		"StatTable_Rank","StatTable_Name",
-		"StatTable_Attack","StatTable_APL","StatTable_APM","StatTable_Lines","StatTable_LPM","StatTable_Piece","StatTable_PPS","StatTable_Time",
-		"StatTable_KO","StatTable_Wins","StatTable_Games"
-	};
-
-	/** 1P end-of-game statistics column names. */
-	public static final String[] STATTABLE1P_COLUMNNAMES = {
-		"StatTable1P_Description", "StatTable1P_Value"
-	};
-
-	/** Multiplayer leaderboard column names. */
-	public static final String[] MPRANKING_COLUMNNAMES = {
-		"MPRanking_Rank", "MPRanking_Name", "MPRanking_Rating", "MPRanking_PlayCount", "MPRanking_WinCount"
-	};
-
-	/** Spin-bonus labels. */
-	public static final String[] COMBOBOX_SPINBONUS_NAMES =
-		{"CreateRoom_TSpin_Disable", "CreateRoom_TSpin_TOnly", "CreateRoom_TSpin_All"};
-
-	/** Spin-check type labels. */
-	public static final String[] COMBOBOX_SPINCHECKTYPE_NAMES =
-		{"CreateRoom_SpinCheck_4Point", "CreateRoom_SpinCheck_Immobile"};
-
 	/** Lobby-mode flag used by states to decide which button set to enable. */
 	public static final int LOBBYMODE_DISCONNECTED = 0;
 	public static final int LOBBYMODE_LOBBY = 1;
