@@ -86,7 +86,7 @@ public class StateNetServerSelectSDL extends BaseStateSDL {
 		teamInput.setText(nl.propConfig.getProperty("serverselect.txtfldPlayerTeam.text", ""));
 
 		TableSDL.Column[] cols = { new TableSDL.Column("SERVER", 580) };
-		serverTable = new TableSDL(16, 160, 608, 262, cols);
+		serverTable = new TableSDL(16, 144, 608, 278, cols);
 		refreshServerTable();
 
 		// Buttons pinned to the bottom (h=32, y=444 → ends at y=476, 4 px above
