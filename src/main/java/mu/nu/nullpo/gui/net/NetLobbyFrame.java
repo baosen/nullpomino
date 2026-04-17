@@ -112,17 +112,6 @@ public class NetLobbyFrame implements NetMessageListener {
 	public static final String[] COMBOBOX_SPINCHECKTYPE_NAMES =
 		{"CreateRoom_SpinCheck_4Point", "CreateRoom_SpinCheck_Immobile"};
 
-	/** Legacy screen-card constants (preserved for the {@code ratedpresets} handshake path). */
-	public static final int SCREENCARD_SERVERSELECT = 0,
-							SCREENCARD_LOBBY = 1,
-							SCREENCARD_SERVERADD = 2,
-							SCREENCARD_CREATERATED_WAITING = 3,
-							SCREENCARD_CREATERATED = 4,
-							SCREENCARD_CREATEROOM = 5,
-							SCREENCARD_CREATEROOM1P = 6,
-							SCREENCARD_MPRANKING = 7,
-							SCREENCARD_RULECHANGE = 8;
-
 	/** Lobby-mode flag used by states to decide which button set to enable. */
 	public static final int LOBBYMODE_DISCONNECTED = 0;
 	public static final int LOBBYMODE_LOBBY = 1;
@@ -211,11 +200,8 @@ public class NetLobbyFrame implements NetMessageListener {
 	 */
 	public volatile long lastConnectAt;
 
-	/** Legacy: ID of room being viewed (detail view vs create). Used by ratedpresets handshake. */
+	/** ID of room being viewed in detail-view mode; -1 when creating a brand-new room. */
 	public int currentViewDetailRoomID = -1;
-
-	/** Legacy: which screen-card number the old state machine is on. */
-	public int currentScreenCardNumber = SCREENCARD_SERVERSELECT;
 
 	// ---------------- Callbacks ----------------
 
@@ -284,9 +270,6 @@ public class NetLobbyFrame implements NetMessageListener {
 		for(NetLobbyListener l : listeners) if(l != null) l.netlobbyOnInit(this);
 		if(netDummyMode != null) netDummyMode.netlobbyOnInit(this);
 	}
-
-	/** Legacy no-op — old callers used setVisible(true) to pop the JFrame open. */
-	public void setVisible(boolean on) { /* SDL states drive visibility via enterState() */ }
 
 	/** Clean shutdown: save config, close log writers, disconnect, fire exit callbacks. */
 	public void shutdown() {
