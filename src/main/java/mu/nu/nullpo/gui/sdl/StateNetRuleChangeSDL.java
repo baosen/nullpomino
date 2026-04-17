@@ -47,10 +47,12 @@ public class StateNetRuleChangeSDL extends BaseStateSDL {
 		};
 		ruleTable = new TableSDL(8, 76, 624, 336, cols);
 
-		okBtn = new ButtonSDL(380, 424, 124, 32, "OK",
+		// Same positions as CreateRoom's OK/CANCEL so the buttons stay where the
+		// eye expects them when flipping between the two screens.
+		okBtn = new ButtonSDL( 16, 432, 120, 30, "OK",
 				new Runnable() { public void run() { apply(); } });
 		okBtn.primary = true;
-		cancelBtn = new ButtonSDL(508, 424, 124, 32, "CANCEL",
+		cancelBtn = new ButtonSDL(508, 432, 120, 30, "CANCEL",
 				new Runnable() { public void run() { NullpoMinoSDL.enterState(NullpoMinoSDL.STATE_NET_LOBBY); } });
 
 		selectedIndex = new int[GameEngine.MAX_GAMESTYLE];
