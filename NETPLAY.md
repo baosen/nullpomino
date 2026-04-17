@@ -21,8 +21,9 @@ The server (`NetServer.java`) is the central authority. Key responsibilities:
 
 - **`NetBaseClient`** — background thread that reads from the socket, buffers incomplete packets, and dispatches complete messages to `NetMessageListener` listeners.
 - **`NetPlayerClient`** — extends the base client with player-specific state (room list, player list, current room).
-- **`NetLobbyFrame`** — Swing-based lobby UI for browsing rooms, chatting, creating/joining rooms, and toggling ready status.
-- **`StateNetGame`** — Slick2D game state that bridges the lobby with the game engine.
+- **`NetLobbyFrame`** — Swing-free session/protocol object. Owns the `NetPlayerClient`, chat buffers, room list, rule catalogue, and message pump. No longer a `JFrame`; all UI lives in SDL states.
+- **`StateNet*SDL`** — SDL3 lobby screens (server select, lobby, room, create room, ranking, rule change) that read/mutate the shared `NetLobbyFrame` session.
+- **`StateNetGameSDL`** — SDL game state that runs the netplay round once the server confirms a room join.
 
 ### Game Synchronization
 
@@ -57,7 +58,9 @@ The server relays these to all room members. Each client reconstructs other play
 | Net utilities | `src/main/java/mu/nu/nullpo/game/net/NetUtil.java` |
 | Base netplay mode | `src/main/java/mu/nu/nullpo/game/net/NetDummyMode.java` |
 | VS mode base | `src/main/java/mu/nu/nullpo/game/net/NetDummyVSMode.java` |
-| Lobby UI | `src/main/java/mu/nu/nullpo/gui/net/NetLobbyFrame.java` |
+| Lobby session | `src/main/java/mu/nu/nullpo/gui/net/NetLobbyFrame.java` |
+| SDL lobby screens | `src/main/java/mu/nu/nullpo/gui/sdl/StateNet*SDL.java` |
+| SDL lobby widgets | `src/main/java/mu/nu/nullpo/gui/sdl/widget/` |
 
 ## Server Setup
 

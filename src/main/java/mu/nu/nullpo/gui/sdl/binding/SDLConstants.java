@@ -41,14 +41,34 @@ public final class SDLConstants {
 	public static final int SDL_EVENT_WINDOW_CLOSE_REQUESTED = 0x212;
 	public static final int SDL_EVENT_KEY_DOWN              = 0x300;
 	public static final int SDL_EVENT_KEY_UP                = 0x301;
+	public static final int SDL_EVENT_TEXT_EDITING          = 0x302;
+	public static final int SDL_EVENT_TEXT_INPUT            = 0x303;
 	public static final int SDL_EVENT_MOUSE_MOTION          = 0x400;
 	public static final int SDL_EVENT_MOUSE_BUTTON_DOWN     = 0x401;
 	public static final int SDL_EVENT_MOUSE_BUTTON_UP       = 0x402;
+	public static final int SDL_EVENT_MOUSE_WHEEL           = 0x403;
 	public static final int SDL_EVENT_GAMEPAD_AXIS_MOTION   = 0x650;
 	public static final int SDL_EVENT_GAMEPAD_BUTTON_DOWN   = 0x651;
 	public static final int SDL_EVENT_GAMEPAD_BUTTON_UP     = 0x652;
 	public static final int SDL_EVENT_GAMEPAD_ADDED         = 0x653;
 	public static final int SDL_EVENT_GAMEPAD_REMOVED       = 0x654;
+
+	// SDL_Keymod bitmask (Uint16 in SDL_KeyboardEvent.mod)
+	public static final int SDL_KMOD_NONE   = 0x0000;
+	public static final int SDL_KMOD_LSHIFT = 0x0001;
+	public static final int SDL_KMOD_RSHIFT = 0x0002;
+	public static final int SDL_KMOD_LCTRL  = 0x0040;
+	public static final int SDL_KMOD_RCTRL  = 0x0080;
+	public static final int SDL_KMOD_LALT   = 0x0100;
+	public static final int SDL_KMOD_RALT   = 0x0200;
+	public static final int SDL_KMOD_LGUI   = 0x0400;
+	public static final int SDL_KMOD_RGUI   = 0x0800;
+	public static final int SDL_KMOD_NUM    = 0x1000;
+	public static final int SDL_KMOD_CAPS   = 0x2000;
+	public static final int SDL_KMOD_CTRL   = SDL_KMOD_LCTRL  | SDL_KMOD_RCTRL;
+	public static final int SDL_KMOD_SHIFT  = SDL_KMOD_LSHIFT | SDL_KMOD_RSHIFT;
+	public static final int SDL_KMOD_ALT    = SDL_KMOD_LALT   | SDL_KMOD_RALT;
+	public static final int SDL_KMOD_GUI    = SDL_KMOD_LGUI   | SDL_KMOD_RGUI;
 
 	// SDL_Scancode values (from SDL_scancode.h)
 	public static final int SDL_SCANCODE_A = 4;

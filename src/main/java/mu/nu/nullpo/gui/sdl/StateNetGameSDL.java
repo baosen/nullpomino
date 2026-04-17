@@ -47,63 +47,74 @@ import mu.nu.nullpo.util.GeneralUtil;
 import net.omegaboshi.nullpomino.game.subsystem.randomizer.Randomizer;
 
 /**
- * Game screen state (Netplay)
+ * Runs the actual netplay game engine inside the SDL main loop.  The lobby UI
+ * lives in the {@code StateNet*SDL} states; this state takes over once the
+ * server sends {@code roomjoinsuccess} and the game mode has been loaded.
+ *
+ * <p>Entry contract: {@link NullpoMinoSDL#netLobby} must be non-null and
+ * connected.  The mode to load is read from the current room's {@code strMode}
+ * or from {@link #strModeToEnter} if set by a {@link NetLobbyListener} callback
+ * (back-compat).</p>
  */
 public class StateNetGameSDL extends BaseStateSDL implements NetLobbyListener {
-	/** Log */
 	static final Logger log = Logger.getLogger(StateNetGameSDL.class);
 
-	/** Game main class */
+	/**
+	 * Shared instance, set in {@link #enter()} and cleared in {@link #leave()}.
+	 * Exposed because a couple of legacy callers still reach into the game-manager
+	 * field for title-bar updates.
+	 */
+	public static StateNetGameSDL instance;
+
 	protected GameManager gameManager;
-
-	/** Lobby */
-	public NetLobbyFrame netLobby;
-
-	/** Mode name to enter (null=Exit) */
 	protected String strModeToEnter = "";
-
-	/** Previous ingame flag (Used by title-bar text change) */
 	protected boolean prevInGameFlag = false;
-
-	/** Current game mode name */
 	protected String modeName;
 
-	/*
-	 * Called when entering this state
+	/**
+	 * Legacy shim: {@code public NetLobbyFrame netLobby} field is the only thing
+	 * some old game modes / helper code look at on this state object.  We proxy
+	 * it to the shared {@link NullpoMinoSDL#netLobby} so existing references still
+	 * compile without change.  Reads are always up to date; writes do nothing.
 	 */
+	public NetLobbyFrame netLobby;
+
 	@Override
 	public void enter() {
-		// Init variables
 		NullpoMinoSDL.disableAutoInputUpdate = true;
 		NullpoMinoSDL.isInGame = true;
 		prevInGameFlag = false;
-
-		// Observer stop
-		NullpoMinoSDL.stopObserverClient();
-
-		// 60FPS
 		NullpoMinoSDL.maxFPS = 60;
 		NullpoMinoSDL.allowQuit = false;
+		instance = this;
 
-		// gameManager initialization
+		netLobby = NullpoMinoSDL.netLobby;
+		if(netLobby == null) {
+			// No session — someone routed us here without going through the lobby.
+			// Bail cleanly back to title.
+			NullpoMinoSDL.isInGame = false;
+			NullpoMinoSDL.allowQuit = true;
+			NullpoMinoSDL.disableAutoInputUpdate = false;
+			NullpoMinoSDL.enterState(NullpoMinoSDL.STATE_TITLE);
+			return;
+		}
+		netLobby.addListener(this);
+
 		gameManager = new GameManager(new RendererSDL());
 		gameManager.receiver.setGraphics(NullpoMinoSDL.renderer);
 
-		// Lobby initialization
-		netLobby = new NetLobbyFrame();
-		netLobby.addListener(this);
-
-		// Mode initialization
-		enterNewMode(null);
-
-		// Lobby start
-		netLobby.init();
-		netLobby.setVisible(true);
+		// Seed the mode: prefer the current room's strMode, else the stub NET-DUMMY.
+		NetPlayerClient npc = netLobby.netPlayerClient;
+		if(npc != null && npc.getYourPlayerInfo() != null && npc.getYourPlayerInfo().roomID != -1) {
+			NetRoomInfo room = npc.getRoomInfo(npc.getYourPlayerInfo().roomID);
+			if(room != null && room.strMode != null && room.strMode.length() > 0) {
+				strModeToEnter = room.strMode;
+			}
+		}
+		enterNewMode(strModeToEnter.length() > 0 ? strModeToEnter : null);
+		strModeToEnter = "";
 	}
 
-	/*
-	 * Called when leaving this state
-	 */
 	@Override
 	public void leave() {
 		if(gameManager != null) {
@@ -111,58 +122,42 @@ public class StateNetGameSDL extends BaseStateSDL implements NetLobbyListener {
 			gameManager = null;
 		}
 		if(netLobby != null) {
-			netLobby.shutdown();
+			// Don't shut down the session on leave — the lobby states keep using it.
+			netLobby.removeListener(this);
 			netLobby = null;
 		}
 		ResourceHolderSDL.bgmStop();
 
-		// FPS restore
 		NullpoMinoSDL.maxFPS = NullpoMinoSDL.propConfig.getProperty("option.maxfps", 60);
 		NullpoMinoSDL.allowQuit = true;
 		NullpoMinoSDL.disableAutoInputUpdate = false;
 		NullpoMinoSDL.isInGame = false;
-
-		// Reload global config (because it can change rules)
 		NullpoMinoSDL.loadGlobalConfig();
+		if(instance == this) instance = null;
 	}
 
-	/*
-	 * Draw the game screen
-	 */
 	@Override
 	public void render() {
 		try {
-			if(gameManager != null) {
-				gameManager.renderAll();
-			}
-		} catch (NullPointerException e) {
-			try {
-				if((gameManager == null) || !gameManager.getQuitFlag()) {
-					log.error("render NPE", e);
-				}
-			} catch (Throwable e2) {}
-		} catch (Exception e) {
-			try {
-				if((gameManager == null) || !gameManager.getQuitFlag()) {
-					log.error("render fail", e);
-				}
-			} catch (Throwable e2) {}
+			if(gameManager != null) gameManager.renderAll();
+		} catch(NullPointerException e) {
+			if(gameManager == null || !gameManager.getQuitFlag()) log.error("render NPE", e);
+		} catch(Exception e) {
+			if(gameManager == null || !gameManager.getQuitFlag()) log.error("render fail", e);
 		}
 	}
 
-	/*
-	 * Update game state
-	 */
 	@Override
 	public void update() {
+		NetLobbyFrame nl = NullpoMinoSDL.netLobby;
+		if(nl != null) nl.pump();
+
 		try {
-			// Update key input states
 			int joynum = NullpoMinoSDL.joyUseNumber[0];
+			boolean ingame = gameManager != null && gameManager.engine.length > 0
+					&& gameManager.engine[0] != null && gameManager.engine[0].isInGame;
 
-			boolean ingame = (gameManager != null) && (gameManager.engine.length > 0) &&
-							 (gameManager.engine[0] != null) && (gameManager.engine[0].isInGame);
-
-			if((NullpoMinoSDL.joystickMax > 0) && (joynum >= 0) && (joynum < NullpoMinoSDL.joystickMax)) {
+			if(NullpoMinoSDL.joystickMax > 0 && joynum >= 0 && joynum < NullpoMinoSDL.joystickMax) {
 				GameKeySDL.gamekey[0].update(
 						NullpoMinoSDL.keyPressedState,
 						NullpoMinoSDL.joyPressedState[joynum],
@@ -174,8 +169,7 @@ public class StateNetGameSDL extends BaseStateSDL implements NetLobbyListener {
 				GameKeySDL.gamekey[0].update(NullpoMinoSDL.keyPressedState, ingame);
 			}
 
-			// Title bar update
-			if((gameManager != null) && (gameManager.engine != null) && (gameManager.engine.length > 0) && (gameManager.engine[0] != null)) {
+			if(gameManager != null && gameManager.engine != null && gameManager.engine.length > 0 && gameManager.engine[0] != null) {
 				boolean nowInGame = gameManager.engine[0].isInGame;
 				if(prevInGameFlag != nowInGame) {
 					prevInGameFlag = nowInGame;
@@ -184,7 +178,6 @@ public class StateNetGameSDL extends BaseStateSDL implements NetLobbyListener {
 			}
 
 			if(gameManager != null) {
-				// BGM
 				if(ResourceHolderSDL.bgmPlaying != gameManager.bgmStatus.bgm) {
 					ResourceHolderSDL.bgmStart(gameManager.bgmStatus.bgm);
 				}
@@ -200,185 +193,154 @@ public class StateNetGameSDL extends BaseStateSDL implements NetLobbyListener {
 				}
 			}
 
-			// Execute game loops
-			if((gameManager != null) && (gameManager.mode != null)) {
+			if(gameManager != null && gameManager.mode != null) {
 				GameKeySDL.gamekey[0].inputStatusUpdate(gameManager.engine[0].ctrl);
 				gameManager.updateAll();
 
 				if(gameManager.getQuitFlag()) {
-					NullpoMinoSDL.enterState(NullpoMinoSDL.STATE_TITLE);
+					// Quit flag can be set by a retry/exit-mode action; return to the room view.
+					NullpoMinoSDL.enterState(NullpoMinoSDL.STATE_NET_LOBBY);
 					return;
 				}
 
-				// Retry button
 				if(GameKeySDL.gamekey[0].isPushKey(GameKeySDL.BUTTON_RETRY)) {
 					gameManager.mode.netplayOnRetryKey(gameManager.engine[0], 0);
 				}
 			}
 
-			// Enter to new mode
+			// Mode switches driven by lobby callbacks.
 			if(strModeToEnter == null) {
-				enterNewMode(null);
+				// netlobbyOnDisconnect / RoomLeave set this to null — bail to room view.
 				strModeToEnter = "";
+				NullpoMinoSDL.enterState(NullpoMinoSDL.STATE_NET_LOBBY);
+				return;
 			} else if(strModeToEnter.length() > 0) {
 				enterNewMode(strModeToEnter);
 				strModeToEnter = "";
 			}
-		} catch (NullPointerException e) {
-			try {
-				if((gameManager != null) && gameManager.getQuitFlag()) {
-					NullpoMinoSDL.enterState(NullpoMinoSDL.STATE_TITLE);
-					return;
-				} else {
-					log.error("update NPE", e);
-				}
-			} catch (Throwable e2) {}
-		} catch (Exception e) {
-			try {
-				if((gameManager != null) && gameManager.getQuitFlag()) {
-					NullpoMinoSDL.enterState(NullpoMinoSDL.STATE_TITLE);
-					return;
-				} else {
-					log.error("update fail", e);
-				}
-			} catch (Throwable e2) {}
+		} catch(NullPointerException e) {
+			if(gameManager != null && gameManager.getQuitFlag()) {
+				NullpoMinoSDL.enterState(NullpoMinoSDL.STATE_NET_LOBBY);
+				return;
+			}
+			log.error("update NPE", e);
+		} catch(Exception e) {
+			if(gameManager != null && gameManager.getQuitFlag()) {
+				NullpoMinoSDL.enterState(NullpoMinoSDL.STATE_NET_LOBBY);
+				return;
+			}
+			log.error("update fail", e);
 		}
 	}
 
-	/**
-	 * Enter to a new mode
-	 * @param newModeName Mode name
-	 */
 	private void enterNewMode(String newModeName) {
-		NullpoMinoSDL.loadGlobalConfig();	// Reload global config file
+		NullpoMinoSDL.loadGlobalConfig();
 
 		GameMode previousMode = gameManager.mode;
 		GameMode newModeTemp = (newModeName == null) ? new NetDummyMode() : NullpoMinoSDL.modeManager.getMode(newModeName);
 
 		if(newModeTemp == null) {
-			log.error("Cannot find a mode:" + newModeName);
-		} else if(newModeTemp instanceof NetDummyMode) {
-			log.info("Enter new mode:" + newModeTemp.getName());
-
-			NetDummyMode newMode = (NetDummyMode)newModeTemp;
-			modeName = newMode.getName();
-
-			if(previousMode != null) {
-				if(gameManager.engine[0].ai != null) {
-					gameManager.engine[0].ai.shutdown(gameManager.engine[0], 0);
-				}
-				previousMode.netplayUnload(netLobby);
-			}
-			gameManager.mode = newMode;
-			gameManager.init();
-
-			// Tuning
-			gameManager.engine[0].owRotateButtonDefaultRight = NullpoMinoSDL.propGlobal.getProperty("0.tuning.owRotateButtonDefaultRight", -1);
-			gameManager.engine[0].owSkin = NullpoMinoSDL.propGlobal.getProperty("0.tuning.owSkin", -1);
-			gameManager.engine[0].owMinDAS = NullpoMinoSDL.propGlobal.getProperty("0.tuning.owMinDAS", -1);
-			gameManager.engine[0].owMaxDAS = NullpoMinoSDL.propGlobal.getProperty("0.tuning.owMaxDAS", -1);
-			gameManager.engine[0].owDasDelay = NullpoMinoSDL.propGlobal.getProperty("0.tuning.owDasDelay", -1);
-			gameManager.engine[0].owReverseUpDown = NullpoMinoSDL.propGlobal.getProperty("0.tuning.owReverseUpDown", false);
-			gameManager.engine[0].owMoveDiagonal = NullpoMinoSDL.propGlobal.getProperty("0.tuning.owMoveDiagonal", -1);
-			gameManager.engine[0].owBlockOutlineType = NullpoMinoSDL.propGlobal.getProperty("0.tuning.owBlockOutlineType", -1);
-			gameManager.engine[0].owBlockShowOutlineOnly = NullpoMinoSDL.propGlobal.getProperty("0.tuning.owBlockShowOutlineOnly", -1);
-
-			// Rule
-			RuleOptions ruleopt = null;
-			String rulename = NullpoMinoSDL.propGlobal.getProperty("0.rule", "");
-			if(gameManager.mode.getGameStyle() > 0) {
-				rulename = NullpoMinoSDL.propGlobal.getProperty("0.rule." + gameManager.mode.getGameStyle(), "");
-			}
-			if((rulename != null) && (rulename.length() > 0)) {
-				log.info("Load rule options from " + rulename);
-				ruleopt = GeneralUtil.loadRule(rulename);
-			} else {
-				log.info("Load rule options from setting file");
-				ruleopt = new RuleOptions();
-				ruleopt.readProperty(NullpoMinoSDL.propGlobal, 0);
-			}
-			gameManager.engine[0].ruleopt = ruleopt;
-
-			// Randomizer
-			if((ruleopt.strRandomizer != null) && (ruleopt.strRandomizer.length() > 0)) {
-				Randomizer randomizerObject = GeneralUtil.loadRandomizer(ruleopt.strRandomizer);
-				gameManager.engine[0].randomizer = randomizerObject;
-			}
-
-			// Wallkick
-			if((ruleopt.strWallkick != null) && (ruleopt.strWallkick.length() > 0)) {
-				Wallkick wallkickObject = GeneralUtil.loadWallkick(ruleopt.strWallkick);
-				gameManager.engine[0].wallkick = wallkickObject;
-			}
-
-			// AI
-			String aiName = NullpoMinoSDL.propGlobal.getProperty("0.ai", "");
-			if(aiName.length() > 0) {
-				DummyAI aiObj = GeneralUtil.loadAIPlayer(aiName);
-				gameManager.engine[0].ai = aiObj;
-				gameManager.engine[0].aiMoveDelay = NullpoMinoSDL.propGlobal.getProperty("0.aiMoveDelay", 0);
-				gameManager.engine[0].aiThinkDelay = NullpoMinoSDL.propGlobal.getProperty("0.aiThinkDelay", 0);
-				gameManager.engine[0].aiUseThread = NullpoMinoSDL.propGlobal.getProperty("0.aiUseThread", true);
-				gameManager.engine[0].aiShowHint = NullpoMinoSDL.propGlobal.getProperty("0.aiShowHint", false);
-				gameManager.engine[0].aiPrethink = NullpoMinoSDL.propGlobal.getProperty("0.aiPrethink", false);
-				gameManager.engine[0].aiShowState = NullpoMinoSDL.propGlobal.getProperty("0.aiShowState", false);
-			}
-			gameManager.showInput = NullpoMinoSDL.propConfig.getProperty("option.showInput", false);
-
-			// Initialization for each player
-			for(int i = 0; i < gameManager.getPlayers(); i++) {
-				gameManager.engine[i].init();
-			}
-
-			newMode.netplayInit(netLobby);
-		} else {
-			log.error("This mode does not support netplay:" + newModeName);
+			log.error("Cannot find a mode: " + newModeName);
+			return;
 		}
+		if(!(newModeTemp instanceof NetDummyMode)) {
+			log.error("Mode does not support netplay: " + newModeName);
+			return;
+		}
+
+		NetDummyMode newMode = (NetDummyMode)newModeTemp;
+		modeName = newMode.getName();
+		log.info("Enter new netplay mode: " + modeName);
+
+		if(previousMode != null) {
+			if(gameManager.engine[0].ai != null) gameManager.engine[0].ai.shutdown(gameManager.engine[0], 0);
+			previousMode.netplayUnload(netLobby);
+		}
+		gameManager.mode = newMode;
+		gameManager.init();
+
+		gameManager.engine[0].owRotateButtonDefaultRight = NullpoMinoSDL.propGlobal.getProperty("0.tuning.owRotateButtonDefaultRight", -1);
+		gameManager.engine[0].owSkin = NullpoMinoSDL.propGlobal.getProperty("0.tuning.owSkin", -1);
+		gameManager.engine[0].owMinDAS = NullpoMinoSDL.propGlobal.getProperty("0.tuning.owMinDAS", -1);
+		gameManager.engine[0].owMaxDAS = NullpoMinoSDL.propGlobal.getProperty("0.tuning.owMaxDAS", -1);
+		gameManager.engine[0].owDasDelay = NullpoMinoSDL.propGlobal.getProperty("0.tuning.owDasDelay", -1);
+		gameManager.engine[0].owReverseUpDown = NullpoMinoSDL.propGlobal.getProperty("0.tuning.owReverseUpDown", false);
+		gameManager.engine[0].owMoveDiagonal = NullpoMinoSDL.propGlobal.getProperty("0.tuning.owMoveDiagonal", -1);
+		gameManager.engine[0].owBlockOutlineType = NullpoMinoSDL.propGlobal.getProperty("0.tuning.owBlockOutlineType", -1);
+		gameManager.engine[0].owBlockShowOutlineOnly = NullpoMinoSDL.propGlobal.getProperty("0.tuning.owBlockShowOutlineOnly", -1);
+
+		RuleOptions ruleopt;
+		String rulename = NullpoMinoSDL.propGlobal.getProperty("0.rule", "");
+		if(gameManager.mode.getGameStyle() > 0) {
+			rulename = NullpoMinoSDL.propGlobal.getProperty("0.rule." + gameManager.mode.getGameStyle(), "");
+		}
+		if(rulename != null && rulename.length() > 0) {
+			log.info("Load rule options from " + rulename);
+			ruleopt = GeneralUtil.loadRule(rulename);
+		} else {
+			ruleopt = new RuleOptions();
+			ruleopt.readProperty(NullpoMinoSDL.propGlobal, 0);
+		}
+		gameManager.engine[0].ruleopt = ruleopt;
+
+		if(ruleopt.strRandomizer != null && ruleopt.strRandomizer.length() > 0) {
+			Randomizer randomizerObject = GeneralUtil.loadRandomizer(ruleopt.strRandomizer);
+			gameManager.engine[0].randomizer = randomizerObject;
+		}
+		if(ruleopt.strWallkick != null && ruleopt.strWallkick.length() > 0) {
+			Wallkick wallkickObject = GeneralUtil.loadWallkick(ruleopt.strWallkick);
+			gameManager.engine[0].wallkick = wallkickObject;
+		}
+
+		String aiName = NullpoMinoSDL.propGlobal.getProperty("0.ai", "");
+		if(aiName.length() > 0) {
+			DummyAI aiObj = GeneralUtil.loadAIPlayer(aiName);
+			gameManager.engine[0].ai = aiObj;
+			gameManager.engine[0].aiMoveDelay = NullpoMinoSDL.propGlobal.getProperty("0.aiMoveDelay", 0);
+			gameManager.engine[0].aiThinkDelay = NullpoMinoSDL.propGlobal.getProperty("0.aiThinkDelay", 0);
+			gameManager.engine[0].aiUseThread = NullpoMinoSDL.propGlobal.getProperty("0.aiUseThread", true);
+			gameManager.engine[0].aiShowHint = NullpoMinoSDL.propGlobal.getProperty("0.aiShowHint", false);
+			gameManager.engine[0].aiPrethink = NullpoMinoSDL.propGlobal.getProperty("0.aiPrethink", false);
+			gameManager.engine[0].aiShowState = NullpoMinoSDL.propGlobal.getProperty("0.aiShowState", false);
+		}
+		gameManager.showInput = NullpoMinoSDL.propConfig.getProperty("option.showInput", false);
+
+		for(int i = 0; i < gameManager.getPlayers(); i++) gameManager.engine[i].init();
+
+		newMode.netplayInit(netLobby);
 		updateTitleBarCaption();
 	}
 
-	/**
-	 * Update title bar text
-	 */
 	public void updateTitleBarCaption() {
 		String strTitle = "NullpoMino Netplay - " + modeName;
-
-		if(modeName.equals("NET-DUMMY")) {
+		if(modeName != null && modeName.equals("NET-DUMMY")) {
 			strTitle = "NullpoMino Netplay";
-		} else if((gameManager != null) && (gameManager.engine != null) && (gameManager.engine.length > 0) && (gameManager.engine[0] != null)) {
+		} else if(gameManager != null && gameManager.engine != null && gameManager.engine.length > 0 && gameManager.engine[0] != null) {
 			if(gameManager.engine[0].isInGame && !gameManager.replayMode && !gameManager.replayRerecord)
 				strTitle = "[PLAY] NullpoMino Netplay - " + modeName;
 			else
 				strTitle = "[MENU] NullpoMino Netplay - " + modeName;
 		}
-
 		SDL3.INSTANCE.SDL_SetWindowTitle(NullpoMinoSDL.window, strTitle);
 	}
 
-	public void netlobbyOnDisconnect(NetLobbyFrame lobby, NetPlayerClient client, Throwable ex) {
+	// ---------------- NetLobbyListener ----------------
+
+	@Override public void netlobbyOnDisconnect(NetLobbyFrame lobby, NetPlayerClient client, Throwable ex) {
 		strModeToEnter = null;
 	}
-
-	public void netlobbyOnExit(NetLobbyFrame lobby) {
-		if((gameManager != null) && (gameManager.engine.length > 0) && (gameManager.engine[0] != null)) {
+	@Override public void netlobbyOnExit(NetLobbyFrame lobby) {
+		if(gameManager != null && gameManager.engine.length > 0 && gameManager.engine[0] != null) {
 			gameManager.engine[0].quitflag = true;
 		}
 	}
-
-	public void netlobbyOnInit(NetLobbyFrame lobby) {
-	}
-
-	public void netlobbyOnLoginOK(NetLobbyFrame lobby, NetPlayerClient client) {
-	}
-
-	public void netlobbyOnMessage(NetLobbyFrame lobby, NetPlayerClient client, String[] message) throws IOException {
-	}
-
-	public void netlobbyOnRoomJoin(NetLobbyFrame lobby, NetPlayerClient client, NetRoomInfo roomInfo) {
+	@Override public void netlobbyOnInit(NetLobbyFrame lobby) {}
+	@Override public void netlobbyOnLoginOK(NetLobbyFrame lobby, NetPlayerClient client) {}
+	@Override public void netlobbyOnMessage(NetLobbyFrame lobby, NetPlayerClient client, String[] message) throws IOException {}
+	@Override public void netlobbyOnRoomJoin(NetLobbyFrame lobby, NetPlayerClient client, NetRoomInfo roomInfo) {
 		strModeToEnter = roomInfo.strMode;
 	}
-
-	public void netlobbyOnRoomLeave(NetLobbyFrame lobby, NetPlayerClient client) {
+	@Override public void netlobbyOnRoomLeave(NetLobbyFrame lobby, NetPlayerClient client) {
 		strModeToEnter = null;
 	}
 }

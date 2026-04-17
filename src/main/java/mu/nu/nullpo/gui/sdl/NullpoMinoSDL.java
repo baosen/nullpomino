@@ -44,6 +44,7 @@ import com.sun.jna.Pointer;
 import com.sun.jna.ptr.FloatByReference;
 
 import mu.nu.nullpo.game.net.NetObserverClient;
+import mu.nu.nullpo.gui.net.NetLobbyFrame;
 import mu.nu.nullpo.game.play.GameEngine;
 import mu.nu.nullpo.gui.sdl.binding.SDL3;
 import mu.nu.nullpo.gui.sdl.binding.SDL3Mixer;
@@ -82,10 +83,16 @@ public class NullpoMinoSDL {
 							STATE_CONFIG_KEYBOARD_NAVI = 15,
 							STATE_CONFIG_KEYBOARD_RESET = 16,
 							STATE_SELECTRULEFROMLIST = 17,
-							STATE_SELECTMODEFOLDER = 18;
+							STATE_SELECTMODEFOLDER = 18,
+							STATE_NET_SERVERSELECT = 19,
+							STATE_NET_LOBBY = 20,
+							STATE_NET_ROOM = 21,
+							STATE_NET_CREATEROOM = 22,
+							STATE_NET_RANKING = 23,
+							STATE_NET_RULECHANGE = 24;
 
 	/** State of the game count */
-	public static final int STATE_MAX = 19;
+	public static final int STATE_MAX = 25;
 
 	public static final int LOGICAL_WIDTH = 640;
 	public static final int LOGICAL_HEIGHT = 480;
@@ -153,6 +160,42 @@ public class NullpoMinoSDL {
 	/** If a key is held down, true */
 	public static boolean[] keyPressedState;
 
+	/** Key-down events that fired during the current frame (widget-facing). Cleared each frame. */
+	public static final java.util.List<KeyEvent> frameKeyEvents = new java.util.ArrayList<>();
+
+	/** UTF-8 text committed via SDL_EVENT_TEXT_INPUT this frame. Widgets append consumed text via consumeTextInput(). */
+	public static final StringBuilder pendingTextInput = new StringBuilder();
+
+	/** Current IME preedit (composition) string; empty if none in progress. Updated on SDL_EVENT_TEXT_EDITING. */
+	public static String imeComposition = "";
+
+	/** Caret offset within imeComposition (UTF-8 byte offset as reported by SDL). */
+	public static int imeCompositionStart = 0;
+
+	/** Selected range length within imeComposition (SDL reports both cursor + highlighted segment). */
+	public static int imeCompositionLength = 0;
+
+	/** Vertical mouse wheel delta accumulated this frame (positive = scroll up). Reset each frame. */
+	public static float mouseWheelDelta = 0;
+
+	/** When true, text-input keyboard events are consumed by the focused widget and not by GameKeySDL. */
+	public static boolean textInputActive = false;
+
+	/**
+	 * Single key-down event delivered to widgets during a frame.
+	 * Bundles scancode, active keymod bitmask, and whether it was a hold-repeat.
+	 */
+	public static class KeyEvent {
+		public final int scancode;
+		public final int keymod;
+		public final boolean repeat;
+		public KeyEvent(int scancode, int keymod, boolean repeat) {
+			this.scancode = scancode;
+			this.keymod = keymod;
+			this.repeat = repeat;
+		}
+	}
+
 	/** Use joystick number */
 	public static int[] joyUseNumber;
 
@@ -213,6 +256,13 @@ public class NullpoMinoSDL {
 	/** Observer client */
 	public static NetObserverClient netObserverClient;
 
+	/**
+	 * Shared netplay session (protocol client, chat buffers, room list, rule catalogue).
+	 * Created by {@code StateNetServerSelectSDL.enter()} and destroyed by
+	 * {@link #endNetplay()}.  All {@code StateNet*SDL} classes read/mutate this.
+	 */
+	public static NetLobbyFrame netLobby;
+
 	/** SDL3 window pointer */
 	public static Pointer window;
 
@@ -227,6 +277,9 @@ public class NullpoMinoSDL {
 
 	/** Shared event struct for polling */
 	private static SDLStructs.SDL_Event event;
+
+	/** Zero-filled keyboard state passed to GameKeySDL when textInputActive is true. */
+	private static boolean[] emptyKeyState;
 
 	/**
 	 * Main function
@@ -329,6 +382,7 @@ public class NullpoMinoSDL {
 
 		// Key input initialization (scancodes: 0..511)
 		keyPressedState = new boolean[SDLConstants.SDL_SCANCODE_COUNT];
+		emptyKeyState = new boolean[SDLConstants.SDL_SCANCODE_COUNT];
 		GameKeySDL.initGlobalGameKeySDL();
 		GameKeySDL.gamekey[0].loadConfig(propConfig);
 		GameKeySDL.gamekey[1].loadConfig(propConfig);
@@ -369,6 +423,12 @@ public class NullpoMinoSDL {
 		gameStates[STATE_CONFIG_KEYBOARD_RESET] = new StateConfigKeyboardResetSDL();
 		gameStates[STATE_SELECTRULEFROMLIST] = new StateSelectRuleFromListSDL();
 		gameStates[STATE_SELECTMODEFOLDER] = new StateSelectModeFolderSDL();
+		gameStates[STATE_NET_SERVERSELECT] = new StateNetServerSelectSDL();
+		gameStates[STATE_NET_LOBBY] = new StateNetLobbySDL();
+		gameStates[STATE_NET_ROOM] = new StateNetRoomSDL();
+		gameStates[STATE_NET_CREATEROOM] = new StateNetCreateRoomSDL();
+		gameStates[STATE_NET_RANKING] = new StateNetRankingSDL();
+		gameStates[STATE_NET_RULECHANGE] = new StateNetRuleChangeSDL();
 
 		// SDL init
 		try {
@@ -615,15 +675,18 @@ public class NullpoMinoSDL {
 			// Joystick updates
 			if(joystickMax > 0) joyUpdate();
 
-			// Update key input states
+			// Update key input states. When a text-input widget has focus, mask out the raw
+			// keyboard state so user typing doesn't also fire game buttons (e.g. 'A' bound to
+			// BUTTON_A would otherwise activate menu items while typing).
 			if(!disableAutoInputUpdate) {
+				boolean[] kbdForGameKey = textInputActive ? emptyKeyState : keyPressedState;
 				for(int i = 0; i < 2; i++) {
 					int joynum = joyUseNumber[i];
 
 					if((joystickMax > 0) && (joynum >= 0) && (joynum < joystickMax)) {
-						GameKeySDL.gamekey[i].update(keyPressedState, joyPressedState[joynum], joyAxisX[joynum], joyAxisY[joynum], joyHatState[joynum]);
+						GameKeySDL.gamekey[i].update(kbdForGameKey, joyPressedState[joynum], joyAxisX[joynum], joyAxisY[joynum], joyHatState[joynum]);
 					} else {
-						GameKeySDL.gamekey[i].update(keyPressedState);
+						GameKeySDL.gamekey[i].update(kbdForGameKey);
 					}
 				}
 			}
@@ -747,6 +810,20 @@ public class NullpoMinoSDL {
 	}
 
 	/**
+	 * End an ongoing netplay session and return to the title screen.  Safe to call
+	 * with {@code netLobby == null}. Intended for "Exit" buttons across the
+	 * netplay lobby states and for hard-disconnect recovery paths.
+	 */
+	public static void endNetplay() {
+		if(netLobby != null) {
+			try { netLobby.shutdown(); }
+			catch(Throwable t) { log.warn("netLobby shutdown failed", t); }
+			netLobby = null;
+		}
+		enterState(STATE_TITLE);
+	}
+
+	/**
 	 * Switch state
 	 * @param id Destination state ID (-1 to end)
 	 */
@@ -841,6 +918,10 @@ public class NullpoMinoSDL {
 	 * Event processing
 	 */
 	protected static void processEvent() {
+		// Per-frame widget event buffers reset at the top of each poll.
+		frameKeyEvents.clear();
+		mouseWheelDelta = 0;
+
 		while(SDL3.INSTANCE.SDL_PollEvent(event.getPointer()) != 0) {
 			int type = event.getType();
 
@@ -851,14 +932,80 @@ public class NullpoMinoSDL {
 				if(scancode >= 0 && scancode < keyPressedState.length) {
 					keyPressedState[scancode] = true;
 				}
+				frameKeyEvents.add(new KeyEvent(scancode, event.getKeymod(), event.isKeyRepeat()));
 			} else if(type == SDLConstants.SDL_EVENT_KEY_UP) {
 				int scancode = event.getScancode();
 				if(scancode >= 0 && scancode < keyPressedState.length) {
 					keyPressedState[scancode] = false;
 				}
+			} else if(type == SDLConstants.SDL_EVENT_TEXT_INPUT) {
+				pendingTextInput.append(event.getTextInputText());
+			} else if(type == SDLConstants.SDL_EVENT_TEXT_EDITING) {
+				imeComposition = event.getTextInputText();
+				imeCompositionStart = event.getTextEditingStart();
+				imeCompositionLength = event.getTextEditingLength();
+			} else if(type == SDLConstants.SDL_EVENT_MOUSE_WHEEL) {
+				mouseWheelDelta += event.getMouseWheelY();
 			}
 			// Window resize events are handled automatically by SDL_SetRenderLogicalPresentation
 		}
+	}
+
+	/**
+	 * Consume (read and clear) all text typed since last call. Intended for a focused text-input widget.
+	 * @return UTF-8 text that was committed this frame, or empty string if none
+	 */
+	public static String consumeTextInput() {
+		if(pendingTextInput.length() == 0) return "";
+		String s = pendingTextInput.toString();
+		pendingTextInput.setLength(0);
+		return s;
+	}
+
+	/**
+	 * Read the system clipboard as UTF-8. Handles SDL's malloc'd return value.
+	 * @return clipboard text, or empty string if empty/unavailable
+	 */
+	public static String getClipboardText() {
+		Pointer p = SDL3.INSTANCE.SDL_GetClipboardText();
+		if(p == null) return "";
+		try {
+			return p.getString(0, "UTF-8");
+		} finally {
+			SDL3.INSTANCE.SDL_free(p);
+		}
+	}
+
+	/**
+	 * Write a string to the system clipboard (UTF-8).
+	 * @param text new clipboard contents (null treated as empty)
+	 */
+	public static void setClipboardText(String text) {
+		SDL3.INSTANCE.SDL_SetClipboardText(text == null ? "" : text);
+	}
+
+	/**
+	 * Enable SDL text input on the main window. Called by text-input widgets on focus.
+	 * Sets {@link #textInputActive} so game-key input is suppressed while typing.
+	 * @param rect input area (used by IMEs for composition window placement); may be null
+	 */
+	public static void startTextInput(SDLStructs.SDL_Rect rect) {
+		if(window == null) return;
+		textInputActive = true;
+		SDL3.INSTANCE.SDL_StartTextInput(window);
+		if(rect != null) SDL3.INSTANCE.SDL_SetTextInputArea(window, rect, 0);
+	}
+
+	/**
+	 * Disable SDL text input. Called by text-input widgets on focus loss.
+	 */
+	public static void stopTextInput() {
+		textInputActive = false;
+		imeComposition = "";
+		imeCompositionStart = 0;
+		imeCompositionLength = 0;
+		if(window == null) return;
+		SDL3.INSTANCE.SDL_StopTextInput(window);
 	}
 
 	/**

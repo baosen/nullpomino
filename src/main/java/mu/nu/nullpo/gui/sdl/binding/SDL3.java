@@ -64,6 +64,16 @@ public interface SDL3 extends Library {
 	// --- Keyboard ---
 	Pointer SDL_GetKeyboardState(int[] numkeys);
 
+	// --- Text input (IME-aware typing) ---
+	byte SDL_StartTextInput(Pointer window);
+	byte SDL_StopTextInput(Pointer window);
+	byte SDL_SetTextInputArea(Pointer window, SDLStructs.SDL_Rect rect, int cursor);
+
+	// --- Clipboard (text returned is malloc'd by SDL; must be SDL_free'd) ---
+	Pointer SDL_GetClipboardText();
+	byte SDL_SetClipboardText(String text);
+	byte SDL_HasClipboardText();
+
 	// --- Mouse ---
 	int SDL_GetMouseState(FloatByReference x, FloatByReference y);
 

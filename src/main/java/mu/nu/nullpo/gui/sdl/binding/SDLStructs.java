@@ -122,6 +122,25 @@ public final class SDLStructs {
 	 *  36      1    down (bool)
 	 *  37      1    repeat (bool)
 	 *
+	 * SDL_TextInputEvent (type = SDL_EVENT_TEXT_INPUT):
+	 *  16      4    windowID
+	 *  24      8    text (const char *, UTF-8; pointer is owned by SDL)
+	 *
+	 * SDL_TextEditingEvent (type = SDL_EVENT_TEXT_EDITING):
+	 *  16      4    windowID
+	 *  24      8    text (const char *, UTF-8; IME preedit)
+	 *  32      4    start  (cursor position within preedit text)
+	 *  36      4    length (length of selected preedit range, 0 if none)
+	 *
+	 * SDL_MouseWheelEvent (type = SDL_EVENT_MOUSE_WHEEL):
+	 *  16      4    windowID
+	 *  20      4    which (mouse ID)
+	 *  24      4    x (float, horizontal wheel delta)
+	 *  28      4    y (float, vertical wheel delta; positive = up)
+	 *  32      4    direction (SDL_MouseWheelDirection)
+	 *  36      4    mouse_x (float)
+	 *  40      4    mouse_y (float)
+	 *
 	 * SDL_WindowEvent (type = SDL_EVENT_WINDOW_*):
 	 *  16      4    windowID
 	 *  20      4    data1
@@ -143,8 +162,26 @@ public final class SDLStructs {
 		// Keyboard event fields
 		public int getScancode() { return mem.getInt(24); }
 		public int getKeycode() { return mem.getInt(28); }
+		public int getKeymod() { return mem.getShort(32) & 0xFFFF; }
 		public boolean isKeyDown() { return mem.getByte(36) != 0; }
 		public boolean isKeyRepeat() { return mem.getByte(37) != 0; }
+
+		// Text input / editing event fields
+		/**
+		 * Read the UTF-8 text pointed to by SDL_Text{Input,Editing}Event.text.
+		 * Returns empty string if null. SDL owns the buffer — do not free.
+		 */
+		public String getTextInputText() {
+			Pointer p = mem.getPointer(24);
+			if(p == null) return "";
+			return p.getString(0, "UTF-8");
+		}
+		public int getTextEditingStart()  { return mem.getInt(32); }
+		public int getTextEditingLength() { return mem.getInt(36); }
+
+		// Mouse wheel event fields
+		public float getMouseWheelX() { return mem.getFloat(24); }
+		public float getMouseWheelY() { return mem.getFloat(28); }
 
 		// Window event fields
 		public int getWindowData1() { return mem.getInt(20); }

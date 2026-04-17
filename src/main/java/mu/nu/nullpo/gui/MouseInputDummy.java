@@ -52,4 +52,9 @@ public abstract class MouseInputDummy {
 	public int getMouseY() {
 		return mouseY;
 	}
+
+	/** Number of frames the left mouse button has been held (0 if released). */
+	public int getLeftHoldFrames() {
+		return mousePressed[0];
+	}
 }

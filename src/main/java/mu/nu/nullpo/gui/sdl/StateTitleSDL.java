@@ -92,7 +92,7 @@ public class StateTitleSDL extends DummyMenuChooseStateSDL {
 			NullpoMinoSDL.enterState(NullpoMinoSDL.STATE_REPLAYSELECT);
 			break;
 		case 2:
-			NullpoMinoSDL.enterState(NullpoMinoSDL.STATE_NETGAME);
+			NullpoMinoSDL.enterState(NullpoMinoSDL.STATE_NET_SERVERSELECT);
 			break;
 		case 3:
 			NullpoMinoSDL.enterState(NullpoMinoSDL.STATE_CONFIG_MAINMENU);
