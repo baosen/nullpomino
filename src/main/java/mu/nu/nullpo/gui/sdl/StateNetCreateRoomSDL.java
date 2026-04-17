@@ -12,6 +12,8 @@ import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 
+import org.apache.log4j.Logger;
+
 import mu.nu.nullpo.game.net.NetPlayerInfo;
 import mu.nu.nullpo.game.net.NetRoomInfo;
 import mu.nu.nullpo.game.net.NetUtil;
@@ -44,7 +46,9 @@ import mu.nu.nullpo.gui.sdl.widget.WidgetSDL;
  *     strip) switch tabs.
  */
 public class StateNetCreateRoomSDL extends BaseStateSDL {
-	private static final String[] TAB_LABELS = { "BASIC", "SPEED", "BONUS", "GARBAGE", "MISC" };
+	private static final Logger log = Logger.getLogger(StateNetCreateRoomSDL.class);
+
+	private static final String[] TAB_LABELS = { "BASIC", "SPEED", "BONUS", "GARBAGE", "MISC", "PRESET" };
 
 	private static final String[] TSPIN_TYPE_LABELS   = { "DISABLE", "T-ONLY", "ALL SPIN" };
 	private static final String[] SPIN_CHECK_LABELS   = { "4-POINT", "IMMOBILE" };
@@ -94,6 +98,14 @@ public class StateNetCreateRoomSDL extends BaseStateSDL {
 	private SpinnerSDL hurryupInterval;
 	private CheckboxSDL tnet2Timer;
 	private CheckboxSDL disableAfterCancel;
+
+	// PRESET
+	private SpinnerSDL presetID;
+	private ButtonSDL presetSaveBtn;
+	private ButtonSDL presetLoadBtn;
+	private TextInputSDL presetCodeInput;
+	private ButtonSDL presetExportBtn;
+	private ButtonSDL presetImportBtn;
 
 	// Bottom button row
 	private ButtonSDL okBtn;
@@ -263,6 +275,21 @@ public class StateNetCreateRoomSDL extends BaseStateSDL {
 		tnet2Timer         = new CheckboxSDL(colR, rowY + rowH * 2, wFull, 22, "TNET2 TIMER",           src.autoStartTNET2);
 		disableAfterCancel = new CheckboxSDL(colR, rowY + rowH * 3, wFull, 22, "DISABLE AFTER CANCEL",  src.disableTimerAfterSomeoneCancelled);
 
+		// PRESET tab: save/load current form state from numbered slots in
+		// netlobby.cfg, plus a text-based preset-code for sharing settings.
+		presetID        = new SpinnerSDL(colR, rowY + rowH * 0, wShort, 22, 0, 99, 1,
+				nl.propConfig.getProperty("createroom.defaultPresetID", 0));
+		presetSaveBtn   = new ButtonSDL(colR,        rowY + rowH * 1, 140, 22, "SAVE SLOT",
+				new Runnable() { public void run() { saveCurrentAsPreset(); } });
+		presetLoadBtn   = new ButtonSDL(colR + 152,  rowY + rowH * 1, 140, 22, "LOAD SLOT",
+				new Runnable() { public void run() { loadCurrentPreset(); } });
+		presetCodeInput = new TextInputSDL(colR, rowY + rowH * 3, wFull, 22);
+		presetCodeInput.maxChars = 2048;
+		presetExportBtn = new ButtonSDL(colR,        rowY + rowH * 4, 140, 22, "EXPORT",
+				new Runnable() { public void run() { exportPresetCode(); } });
+		presetImportBtn = new ButtonSDL(colR + 152,  rowY + rowH * 4, 140, 22, "IMPORT",
+				new Runnable() { public void run() { importPresetCode(); } });
+
 		// Bottom button row — OK (create) aligned with the tab strip's left
 		// edge, CANCEL with its right edge; JOIN / WATCH fill the middle in
 		// detail-view mode.
@@ -324,6 +351,15 @@ public class StateNetCreateRoomSDL extends BaseStateSDL {
 				new Field("HURRYUP INT",  hurryupInterval),
 				new Field("",             tnet2Timer),
 				new Field("",             disableAfterCancel),
+			},
+			// PRESET
+			{
+				new Field("PRESET ID",    presetID),
+				new Field("",             presetSaveBtn),
+				new Field("",             presetLoadBtn),
+				new Field("PRESET CODE",  presetCodeInput),
+				new Field("",             presetExportBtn),
+				new Field("",             presetImportBtn),
 			},
 		};
 	}
@@ -734,6 +770,108 @@ public class StateNetCreateRoomSDL extends BaseStateSDL {
 			nl.createRoomRated = false;
 		}
 		NullpoMinoSDL.enterState(NullpoMinoSDL.STATE_NET_LOBBY);
+	}
+
+	// ---------------- Preset slots ----------------
+
+	/**
+	 * Capture the current form into a NetRoomInfo, compress its export string,
+	 * and store under {@code 0.preset.<id>} in netlobby.cfg.  One-shot preset
+	 * save identical to the Swing lobby's behaviour.
+	 */
+	private void saveCurrentAsPreset() {
+		NetLobbyFrame nl = NullpoMinoSDL.netLobby;
+		if(nl == null) return;
+		NetRoomInfo r = new NetRoomInfo();
+		collectFormInto(r);
+		int id = presetID.getValue();
+		nl.propConfig.setProperty("0.preset." + id, NetUtil.compressString(r.exportString()));
+		nl.propConfig.setProperty("createroom.defaultPresetID", id);
+		nl.saveConfig();
+		statusLine = "SAVED TO SLOT " + id;
+	}
+
+	/**
+	 * Read the preset saved under the current slot ID, decompress it into a
+	 * NetRoomInfo, and repopulate every widget on the form.
+	 */
+	private void loadCurrentPreset() {
+		NetLobbyFrame nl = NullpoMinoSDL.netLobby;
+		if(nl == null) return;
+		int id = presetID.getValue();
+		String stored = nl.propConfig.getProperty("0.preset." + id);
+		if(stored == null || stored.length() == 0) { statusLine = "SLOT " + id + " EMPTY"; return; }
+		try {
+			String decoded = NetUtil.decompressString(stored);
+			NetRoomInfo r = new NetRoomInfo(decoded);
+			applyRoomInfoToForm(r);
+			nl.propConfig.setProperty("createroom.defaultPresetID", id);
+			statusLine = "LOADED SLOT " + id;
+		} catch(Exception e) {
+			log.error("Failed to load preset " + id, e);
+			statusLine = "SLOT " + id + " INVALID";
+		}
+	}
+
+	/** Put the current form state into the presetCode input as a shareable base64 string. */
+	private void exportPresetCode() {
+		NetRoomInfo r = new NetRoomInfo();
+		collectFormInto(r);
+		String code = NetUtil.compressString(r.exportString());
+		presetCodeInput.setText(code);
+		statusLine = "CODE EXPORTED";
+	}
+
+	/** Take the presetCode input, validate, decompress, and apply to the form. */
+	private void importPresetCode() {
+		String code = presetCodeInput.getText().replaceAll("[^a-zA-Z0-9+/=]", "");
+		if(code.length() == 0) { statusLine = "NO CODE TO IMPORT"; return; }
+		try {
+			String decoded = NetUtil.decompressString(code);
+			NetRoomInfo r = new NetRoomInfo(decoded);
+			applyRoomInfoToForm(r);
+			statusLine = "CODE IMPORTED";
+		} catch(Exception e) {
+			log.error("Failed to import preset code", e);
+			statusLine = "INVALID PRESET CODE";
+		}
+	}
+
+	/** Copy every field of {@code r} back into the widget set. */
+	private void applyRoomInfoToForm(NetRoomInfo r) {
+		roomName.setText(r.strName == null ? "" : r.strName);
+		setDropdownSelection(modeDropdown, r.strMode);
+		maxPlayers.setValue(r.maxPlayers);
+		autoStartSeconds.setValue(r.autoStartSeconds);
+		useMap.checked = r.useMap;
+		ruleLock.checked = r.ruleLock;
+		gravity.setValue(r.gravity);
+		denominator.setValue(r.denominator);
+		are.setValue(r.are);
+		areLine.setValue(r.areLine);
+		lineDelay.setValue(r.lineDelay);
+		lockDelay.setValue(r.lockDelay);
+		das.setValue(r.das);
+		tspinType.setSelectedIndex(r.tspinEnableType);
+		spinCheck.setSelectedIndex(r.spinCheckType);
+		ezTSpin.checked = r.tspinEnableEZ;
+		b2b.checked = r.b2b;
+		combo.checked = r.combo;
+		rensaBlock.checked = r.rensaBlock;
+		counter.checked = r.counter;
+		bravo.checked = r.bravo;
+		garbagePercent.setValue(r.garbagePercent);
+		targetTimer.setValue(r.targetTimer);
+		changePerAttack.checked = r.garbageChangePerAttack;
+		divideRate.checked = r.divideChangeRateByPlayers;
+		b2bChunk.checked = r.b2bChunk;
+		fractGarbage.checked = r.useFractionalGarbage;
+		target.checked = r.isTarget;
+		reduceLineSend.checked = r.reduceLineSend;
+		hurryupSeconds.setValue(r.hurryupSeconds);
+		hurryupInterval.setValue(r.hurryupInterval);
+		tnet2Timer.checked = r.autoStartTNET2;
+		disableAfterCancel.checked = r.disableTimerAfterSomeoneCancelled;
 	}
 
 	@Override
