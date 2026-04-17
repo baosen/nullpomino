@@ -76,18 +76,21 @@ public class StateNetServerSelectSDL extends BaseStateSDL {
 		}
 		NetLobbyFrame nl = NullpoMinoSDL.netLobby;
 
+		// Every row keeps a uniform 4 px gap between widget bottoms and the
+		// label below, and between labels and the widget they head.
+		// Nickname label at y=36 → nameInput y=56 → Team label y=88 →
+		// teamInput y=108 → SERVERS label y=140 → serverTable y=160.
 		nameInput = new TextInputSDL(16, 56, 608, 28);
 		nameInput.maxChars = 32;
 		nameInput.placeholder = "Player name";
 		nameInput.setText(nl.propConfig.getProperty("serverselect.txtfldPlayerName.text", ""));
 
-		teamInput = new TextInputSDL(16, 112, 608, 28);
+		teamInput = new TextInputSDL(16, 108, 608, 28);
 		teamInput.maxChars = 24;
 		teamInput.setText(nl.propConfig.getProperty("serverselect.txtfldPlayerTeam.text", ""));
 
-		// 4 px gap below the SERVERS label, matching the Nickname/Team rows.
 		TableSDL.Column[] cols = { new TableSDL.Column("SERVER", 580) };
-		serverTable = new TableSDL(16, 164, 608, 258, cols);
+		serverTable = new TableSDL(16, 160, 608, 262, cols);
 		serverTable.showHeader = false;
 		refreshServerTable();
 
@@ -377,9 +380,9 @@ public class StateNetServerSelectSDL extends BaseStateSDL {
 		NormalFontSDL.printFont(16, 16, NormalFontSDL.safeString(nl.getUIText("Title_NetLobby")), NormalFontSDL.COLOR_CYAN);
 		NormalFontSDL.printFont(16, 36, NormalFontSDL.safeString(nl.getUIText("ServerSelect_LabelName")), NormalFontSDL.COLOR_WHITE);
 		nameInput.render();
-		NormalFontSDL.printFont(16, 92, NormalFontSDL.safeString(nl.getUIText("ServerSelect_LabelTeam")), NormalFontSDL.COLOR_WHITE);
+		NormalFontSDL.printFont(16, 88, NormalFontSDL.safeString(nl.getUIText("ServerSelect_LabelTeam")), NormalFontSDL.COLOR_WHITE);
 		teamInput.render();
-		NormalFontSDL.printFont(16, 144, "SERVERS", NormalFontSDL.COLOR_WHITE);
+		NormalFontSDL.printFont(16, 140, "SERVERS", NormalFontSDL.COLOR_WHITE);
 		serverTable.render();
 
 		if(adding) {
