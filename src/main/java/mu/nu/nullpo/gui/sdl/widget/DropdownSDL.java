@@ -90,7 +90,10 @@ public class DropdownSDL extends WidgetSDL {
 						open = false;
 						return true;
 					}
-				} else if(!containsPoint(mx, my)) {
+				} else {
+					// Any click outside the drop list closes the menu — whether
+					// that's the header (same widget, used as a toggle) or an
+					// entirely unrelated region of the screen.
 					open = false;
 				}
 			}
