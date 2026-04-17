@@ -322,10 +322,27 @@ public class StateNetServerSelectSDL extends BaseStateSDL {
 		}
 
 		nl.propConfig.setProperty("serverselect.listboxServerList.value", server);
+
 		if(observer) {
-			statusLine = "Observer connect not yet supported in SDL lobby";
+			// Observer mode: the NetObserverClient polls the title screen's
+			// observer.cfg and starts a read-only stream on re-entry to STATE_TITLE.
+			// Persist the server choice + enable flag, then bail back.
+			if(nl.propObserver == null) nl.propObserver = new mu.nu.nullpo.util.CustomProperties();
+			nl.propObserver.setProperty("observer.enable", true);
+			nl.propObserver.setProperty("observer.host", host);
+			nl.propObserver.setProperty("observer.port", port);
+			try {
+				java.io.FileOutputStream out = new java.io.FileOutputStream("config/setting/netobserver.cfg");
+				nl.propObserver.store(out, "NullpoMino Netplay Observer Config");
+				out.close();
+			} catch(java.io.IOException e) {
+				statusLine = "FAILED TO SAVE OBSERVER CONFIG";
+				return;
+			}
+			NullpoMinoSDL.endNetplay();  // Returns to the title; startObserverClient runs there.
 			return;
 		}
+
 		nl.connectToServer(name, teamInput.getText(), host, port);
 		NullpoMinoSDL.enterState(NullpoMinoSDL.STATE_NET_LOBBY);
 	}

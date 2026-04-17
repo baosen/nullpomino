@@ -193,6 +193,15 @@ public class NetLobbyFrame implements NetMessageListener {
 	/** When true, {@code StateNetCreateRoomSDL} builds a single-player room on OK. */
 	public boolean createRoomSinglePlayer;
 
+	/** When true, {@code StateNetCreateRoomSDL} enters rated-room mode on entry. */
+	public boolean createRoomRated;
+
+	/** Game style for the active rated-room form (0-3). */
+	public int createRoomStyle;
+
+	/** Set to true when a {@code ratedpresets} message has been received and {@link #presets} is fresh. */
+	public volatile boolean presetsDirty;
+
 	/** Legacy: ID of room being viewed (detail view vs create). Used by ratedpresets handshake. */
 	public int currentViewDetailRoomID = -1;
 
@@ -465,7 +474,7 @@ public class NetLobbyFrame implements NetMessageListener {
 					presets.add(new NetRoomInfo(preset));
 				}
 			}
-			// State transition from WAITING → CREATERATED/CREATEROOM is the screen's job.
+			presetsDirty = true;
 
 		} else if("roomcreate".equals(cmd) && message.length > 1) {
 			roomList.add(new NetRoomInfo(message[1]));

@@ -112,7 +112,11 @@ public class StateNetCreateRoomSDL extends BaseStateSDL {
 
 	private WidgetSDL focused;
 	private boolean detailMode;  // true when viewing an existing room (read-only)
+	private boolean ratedMode;   // true when building a rated room (preset required)
 	private String statusLine = "";
+
+	/** Preset dropdown used in rated mode; shown only on the BASIC tab when rated. */
+	private DropdownSDL presetDropdown;
 
 	@Override
 	public void enter() {
@@ -120,6 +124,7 @@ public class StateNetCreateRoomSDL extends BaseStateSDL {
 		if(nl == null) { NullpoMinoSDL.enterState(NullpoMinoSDL.STATE_TITLE); return; }
 
 		detailMode = nl.currentViewDetailRoomID != -1;
+		ratedMode  = !detailMode && nl.createRoomRated;
 		NetRoomInfo source = resolveSource(nl);
 
 		tabStrip = new TabStripSDL(8, 32, 624, 28, TAB_LABELS);
@@ -127,6 +132,19 @@ public class StateNetCreateRoomSDL extends BaseStateSDL {
 
 		buildWidgets(nl, source);
 		applyDetailModeEnabled();
+
+		if(ratedMode) {
+			// Ask the server for the current style's rated-room presets; the
+			// response arrives asynchronously and will populate presetDropdown.
+			nl.presets.clear();
+			nl.presetsDirty = false;
+			if(nl.netPlayerClient != null && nl.netPlayerClient.isConnected()) {
+				nl.netPlayerClient.send("getpresets\t" + nl.createRoomStyle + "\n");
+			}
+			presetDropdown = new DropdownSDL(200, 76 + 26 * 6, 416, 22);
+			refreshPresetDropdown();
+		}
+
 		setFocus(detailMode ? (WidgetSDL)joinBtn : (WidgetSDL)roomName);
 	}
 
@@ -354,12 +372,32 @@ public class StateNetCreateRoomSDL extends BaseStateSDL {
 
 	private Field[] activeTab() { return tabFields[tabStrip.getActiveTab()]; }
 
+	/** Rebuild preset dropdown items from {@code nl.presets}. */
+	private void refreshPresetDropdown() {
+		if(presetDropdown == null) return;
+		NetLobbyFrame nl = NullpoMinoSDL.netLobby;
+		if(nl == null) return;
+		String[] labels = new String[nl.presets.size()];
+		for(int i = 0; i < nl.presets.size(); i++) {
+			NetRoomInfo p = nl.presets.get(i);
+			labels[i] = (p.strName != null && p.strName.length() > 0) ? p.strName : ("PRESET " + i);
+		}
+		presetDropdown.setItems(labels);
+		if(labels.length > 0) presetDropdown.setSelectedIndex(0);
+	}
+
 	@Override
 	public void update() {
 		NetLobbyFrame nl = NullpoMinoSDL.netLobby;
 		if(nl == null) { NullpoMinoSDL.enterState(NullpoMinoSDL.STATE_TITLE); return; }
 		nl.pump();
 		MouseInputSDL.mouseInput.update();
+
+		// Rated preset response arrived — repopulate the dropdown.
+		if(ratedMode && nl.presetsDirty) {
+			nl.presetsDirty = false;
+			refreshPresetDropdown();
+		}
 
 		int mx = MouseInputSDL.mouseInput.getMouseX();
 		int my = MouseInputSDL.mouseInput.getMouseY();
@@ -371,6 +409,10 @@ public class StateNetCreateRoomSDL extends BaseStateSDL {
 		// Update all widgets on the active tab so their hover states stay live.
 		for(Field f : activeTab()) {
 			if(f.widget.update(mx, my, clicked)) setFocus(f.widget);
+		}
+		// Rated mode: the preset dropdown lives on the BASIC tab below the form.
+		if(ratedMode && presetDropdown != null && tabStrip.getActiveTab() == 0) {
+			if(presetDropdown.update(mx, my, clicked)) setFocus(presetDropdown);
 		}
 
 		// Button row always visible
@@ -495,7 +537,15 @@ public class StateNetCreateRoomSDL extends BaseStateSDL {
 		if(me != null) r.style = 0;  // NullpoMino's default style for multiplayer
 
 		String msg;
-		if(nl.createRoomSinglePlayer) {
+		if(ratedMode) {
+			// ratedroomcreate\t<name>\t<maxPlayers>\t<presetIndex>\t<mode>
+			if(r.strName == null || r.strName.trim().length() == 0) { statusLine = "ROOM NAME REQUIRED"; return; }
+			if(presetDropdown == null || nl.presets.isEmpty()) { statusLine = "NO PRESETS AVAILABLE"; return; }
+			int presetIdx = Math.max(0, presetDropdown.getSelectedIndex());
+			String name = NetUtil.urlEncode(r.strName);
+			String mode = NetUtil.urlEncode(r.strMode == null ? "" : r.strMode);
+			msg = "ratedroomcreate\t" + name + "\t" + r.maxPlayers + "\t" + presetIdx + "\t" + mode + "\n";
+		} else if(nl.createRoomSinglePlayer) {
 			// singleroomcreate\t<name>\t<mode> — server fills the rest from the player's rule.
 			if(r.strName == null || r.strName.trim().length() == 0) { statusLine = "ROOM NAME REQUIRED"; return; }
 			String name = NetUtil.urlEncode(r.strName);
@@ -512,6 +562,7 @@ public class StateNetCreateRoomSDL extends BaseStateSDL {
 		nl.saveConfig();
 		nl.netPlayerClient.send(msg);
 		nl.createRoomSinglePlayer = false;
+		nl.createRoomRated = false;
 		NullpoMinoSDL.enterState(NullpoMinoSDL.STATE_NET_LOBBY);
 	}
 
@@ -600,6 +651,11 @@ public class StateNetCreateRoomSDL extends BaseStateSDL {
 	}
 
 	private void cancel() {
+		NetLobbyFrame nl = NullpoMinoSDL.netLobby;
+		if(nl != null) {
+			nl.createRoomSinglePlayer = false;
+			nl.createRoomRated = false;
+		}
 		NullpoMinoSDL.enterState(NullpoMinoSDL.STATE_NET_LOBBY);
 	}
 
@@ -608,9 +664,11 @@ public class StateNetCreateRoomSDL extends BaseStateSDL {
 		NetLobbyFrame nl = NullpoMinoSDL.netLobby;
 		if(nl == null) return;
 
-		String title = detailMode
-				? "ROOM DETAIL"
-				: (nl.createRoomSinglePlayer ? "CREATE 1P ROOM" : "CREATE ROOM");
+		String title;
+		if(detailMode) title = "ROOM DETAIL";
+		else if(ratedMode) title = "CREATE RATED ROOM";
+		else if(nl.createRoomSinglePlayer) title = "CREATE 1P ROOM";
+		else title = "CREATE ROOM";
 		NormalFontSDL.printFont(16, 8, title, NormalFontSDL.COLOR_CYAN);
 		tabStrip.render();
 
@@ -625,6 +683,17 @@ public class StateNetCreateRoomSDL extends BaseStateSDL {
 			f.widget.render();
 		}
 
+		// Rated mode: show the preset dropdown + loading status on the BASIC tab.
+		if(ratedMode && tabStrip.getActiveTab() == 0 && presetDropdown != null) {
+			NormalFontSDL.printFont(16, 76 + 26 * 6 + 3, "PRESET", NormalFontSDL.COLOR_WHITE);
+			if(nl.presets.isEmpty()) {
+				NormalFontSDL.printFont(200, 76 + 26 * 6 + 3,
+						"WAITING FOR PRESETS...", NormalFontSDL.COLOR_YELLOW);
+			} else {
+				presetDropdown.render();
+			}
+		}
+
 		// Button row
 		okBtn.render();
 		joinBtn.render();
@@ -636,6 +705,9 @@ public class StateNetCreateRoomSDL extends BaseStateSDL {
 		int my = MouseInputSDL.mouseInput.getMouseY();
 		for(Field f : tab) {
 			if(f.widget instanceof DropdownSDL) ((DropdownSDL)f.widget).renderOverlay(mx, my);
+		}
+		if(ratedMode && tabStrip.getActiveTab() == 0 && presetDropdown != null && !nl.presets.isEmpty()) {
+			presetDropdown.renderOverlay(mx, my);
 		}
 
 		if(statusLine.length() > 0) {

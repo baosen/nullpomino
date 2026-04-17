@@ -51,6 +51,7 @@ public class StateNetLobbySDL extends BaseStateSDL {
 	private ButtonSDL watchBtn;
 	private ButtonSDL createBtn;
 	private ButtonSDL create1PBtn;
+	private ButtonSDL createRatedBtn;
 	private ButtonSDL rankingBtn;
 	private ButtonSDL rulechangeBtn;
 	private ButtonSDL disconnectBtn;
@@ -86,12 +87,13 @@ public class StateNetLobbySDL extends BaseStateSDL {
 		int actY = 266;
 		joinBtn       = new ButtonSDL(  4, actY,  80, 28, "JOIN",    new Runnable() { public void run() { attemptJoinSelected(false); } });
 		joinBtn.primary = true;
-		watchBtn      = new ButtonSDL( 88, actY,  88, 28, "WATCH",   new Runnable() { public void run() { attemptJoinSelected(true); } });
-		createBtn     = new ButtonSDL(180, actY, 112, 28, "CREATE",  new Runnable() { public void run() { enterCreateRoom(false); } });
-		create1PBtn   = new ButtonSDL(296, actY,  48, 28, "1P",      new Runnable() { public void run() { enterCreateRoom(true); } });
-		rankingBtn    = new ButtonSDL(348, actY, 128, 28, "RANKING", new Runnable() { public void run() { NullpoMinoSDL.enterState(NullpoMinoSDL.STATE_NET_RANKING); } });
-		rulechangeBtn = new ButtonSDL(480, actY,  96, 28, "RULES",   new Runnable() { public void run() { NullpoMinoSDL.enterState(NullpoMinoSDL.STATE_NET_RULECHANGE); } });
-		disconnectBtn = new ButtonSDL(580, actY,  52, 28, "X",       new Runnable() { public void run() { NullpoMinoSDL.endNetplay(); } });
+		watchBtn      = new ButtonSDL( 88, actY,  80, 28, "WATCH",   new Runnable() { public void run() { attemptJoinSelected(true); } });
+		createBtn     = new ButtonSDL(172, actY,  96, 28, "CREATE",  new Runnable() { public void run() { enterCreateRoom(false, false); } });
+		create1PBtn   = new ButtonSDL(272, actY,  40, 28, "1P",      new Runnable() { public void run() { enterCreateRoom(true,  false); } });
+		createRatedBtn= new ButtonSDL(316, actY,  80, 28, "RATED",   new Runnable() { public void run() { enterCreateRoom(false, true);  } });
+		rankingBtn    = new ButtonSDL(400, actY, 112, 28, "RANKING", new Runnable() { public void run() { NullpoMinoSDL.enterState(NullpoMinoSDL.STATE_NET_RANKING); } });
+		rulechangeBtn = new ButtonSDL(516, actY,  80, 28, "RULES",   new Runnable() { public void run() { NullpoMinoSDL.enterState(NullpoMinoSDL.STATE_NET_RULECHANGE); } });
+		disconnectBtn = new ButtonSDL(600, actY,  32, 28, "X",       new Runnable() { public void run() { NullpoMinoSDL.endNetplay(); } });
 
 		// Default focus goes on the room table so arrow keys navigate rooms
 		// immediately; pressing TAB or clicking the chat field switches to typing.
@@ -150,6 +152,7 @@ public class StateNetLobbySDL extends BaseStateSDL {
 		watchBtn.update(mx, my, clicked);
 		createBtn.update(mx, my, clicked);
 		create1PBtn.update(mx, my, clicked);
+		createRatedBtn.update(mx, my, clicked);
 		rankingBtn.update(mx, my, clicked);
 		rulechangeBtn.update(mx, my, clicked);
 		disconnectBtn.update(mx, my, clicked);
@@ -186,7 +189,8 @@ public class StateNetLobbySDL extends BaseStateSDL {
 
 	/** Ordered action-button row used for keyboard navigation. */
 	private ButtonSDL[] buttonRow() {
-		return new ButtonSDL[] { joinBtn, watchBtn, createBtn, create1PBtn, rankingBtn, rulechangeBtn, disconnectBtn };
+		return new ButtonSDL[] { joinBtn, watchBtn, createBtn, create1PBtn, createRatedBtn,
+				rankingBtn, rulechangeBtn, disconnectBtn };
 	}
 
 	/**
@@ -290,10 +294,12 @@ public class StateNetLobbySDL extends BaseStateSDL {
 		nl.joinRoom(r.roomID, watch);
 	}
 
-	private void enterCreateRoom(boolean onePlayer) {
+	private void enterCreateRoom(boolean onePlayer, boolean rated) {
 		NetLobbyFrame nl = NullpoMinoSDL.netLobby;
 		nl.currentViewDetailRoomID = -1;
 		nl.createRoomSinglePlayer = onePlayer;
+		nl.createRoomRated = rated;
+		nl.createRoomStyle = 0;
 		NullpoMinoSDL.enterState(NullpoMinoSDL.STATE_NET_CREATEROOM);
 	}
 
@@ -321,6 +327,7 @@ public class StateNetLobbySDL extends BaseStateSDL {
 		watchBtn.render();
 		createBtn.render();
 		create1PBtn.render();
+		createRatedBtn.render();
 		rankingBtn.render();
 		rulechangeBtn.render();
 		disconnectBtn.render();

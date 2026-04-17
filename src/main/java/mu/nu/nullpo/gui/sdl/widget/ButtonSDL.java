@@ -2,6 +2,7 @@ package mu.nu.nullpo.gui.sdl.widget;
 
 import mu.nu.nullpo.gui.sdl.NormalFontSDL;
 import mu.nu.nullpo.gui.sdl.NullpoMinoSDL;
+import mu.nu.nullpo.gui.sdl.ResourceHolderSDL;
 import mu.nu.nullpo.gui.sdl.binding.SDLConstants;
 
 /**
@@ -41,6 +42,7 @@ public class ButtonSDL extends WidgetSDL {
 		if(hovering && leftJustPressed) fire = true;
 		if(fire) {
 			pressing = true;
+			if(ResourceHolderSDL.soundManager != null) ResourceHolderSDL.soundManager.play("decide");
 			if(action != null) action.run();
 			return true;
 		}
