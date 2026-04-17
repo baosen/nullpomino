@@ -47,7 +47,18 @@ The SDL frontend uses observer mode for a single purpose — a live activity ind
 
 The **OBSERVE** button on the server-select screen is a shortcut for setting up this mode: it writes the picked server's host/port into `netobserver.cfg` with `observer.enable=true` and bounces back to the title, where the indicator starts up.
 
-Not to be confused with **watching a running room**: that is done through the lobby's **WATCH** button, which uses the normal `NetPlayerClient` connection to join a room as a spectator (no seat, no garbage sent/received, no rating change).
+Not to be confused with **watching a running room**: that is done through the lobby's **VIEW** button, which opens the target room's settings in read-only detail mode. From there, the room-detail screen's **WATCH** button uses the normal `NetPlayerClient` connection to join as a spectator (no seat, no garbage sent/received, no rating change).
+
+### Chat commands
+
+Typed into the lobby or room chat box. Command prefix is case-insensitive (`/NAME`, `/Name`, and `/name` all work); arguments keep their original case.
+
+| Command | Effect |
+|---|---|
+| `/name <nickname>` | Rename on the fly without reconnecting. The server rejects duplicates or renames while a game is running and broadcasts a system message to everyone in the lobby on success. |
+| `/team <team name>` | Change (or clear, with no argument) the player's team. Team appears in parentheses next to the nickname in player lists. |
+
+Anything not starting with `/` is sent as a normal chat message to the current context (lobby or room).
 
 ### Game Flow
 
