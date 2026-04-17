@@ -52,6 +52,7 @@ public class StateNetLobbySDL extends BaseStateSDL {
 	private ButtonSDL createBtn;
 	private ButtonSDL create1PBtn;
 	private ButtonSDL createRatedBtn;
+	private ButtonSDL viewBtn;
 	private ButtonSDL rankingBtn;
 	private ButtonSDL rulechangeBtn;
 	private ButtonSDL teamBtn;
@@ -86,17 +87,19 @@ public class StateNetLobbySDL extends BaseStateSDL {
 		sendBtn = new ButtonSDL(552, 448, 80, 28, "SEND", new Runnable() { public void run() { sendChat(nlf); } });
 		sendBtn.primary = true;
 
-		// Action row aligned with the room table (x=8, w=624). Total button
-		// widths sum to 600 px; six 4 px gaps make it meet the table's right edge.
+		// Action row aligned with the room table (x=8, w=624). Eight buttons
+		// fit with 4 px gaps once RANKING → RANK and RULES → RULE are
+		// abbreviated to free up space for VIEW.
 		int actY = 224;
-		joinBtn       = new ButtonSDL(  8, actY,  80, 28, "JOIN",    new Runnable() { public void run() { attemptJoinSelected(false); } });
+		joinBtn       = new ButtonSDL(  8, actY,  72, 28, "JOIN",    new Runnable() { public void run() { attemptJoinSelected(false); } });
 		joinBtn.primary = true;
-		watchBtn      = new ButtonSDL( 92, actY,  80, 28, "WATCH",   new Runnable() { public void run() { attemptJoinSelected(true); } });
-		createBtn     = new ButtonSDL(176, actY, 112, 28, "CREATE",  new Runnable() { public void run() { enterCreateRoom(false, false); } });
-		create1PBtn   = new ButtonSDL(292, actY,  40, 28, "1P",      new Runnable() { public void run() { enterCreateRoom(true,  false); } });
-		createRatedBtn= new ButtonSDL(336, actY,  80, 28, "RATED",   new Runnable() { public void run() { enterCreateRoom(false, true);  } });
-		rankingBtn    = new ButtonSDL(420, actY, 112, 28, "RANKING", new Runnable() { public void run() { NullpoMinoSDL.enterState(NullpoMinoSDL.STATE_NET_RANKING); } });
-		rulechangeBtn = new ButtonSDL(536, actY,  96, 28, "RULES",   new Runnable() { public void run() { NullpoMinoSDL.enterState(NullpoMinoSDL.STATE_NET_RULECHANGE); } });
+		watchBtn      = new ButtonSDL( 84, actY,  84, 28, "WATCH",   new Runnable() { public void run() { attemptJoinSelected(true); } });
+		createBtn     = new ButtonSDL(172, actY, 100, 28, "CREATE",  new Runnable() { public void run() { enterCreateRoom(false, false); } });
+		create1PBtn   = new ButtonSDL(276, actY,  36, 28, "1P",      new Runnable() { public void run() { enterCreateRoom(true,  false); } });
+		createRatedBtn= new ButtonSDL(316, actY,  84, 28, "RATED",   new Runnable() { public void run() { enterCreateRoom(false, true);  } });
+		viewBtn       = new ButtonSDL(404, actY,  68, 28, "VIEW",    new Runnable() { public void run() { viewSelectedRoom(); } });
+		rankingBtn    = new ButtonSDL(476, actY,  68, 28, "RANK",    new Runnable() { public void run() { NullpoMinoSDL.enterState(NullpoMinoSDL.STATE_NET_RANKING); } });
+		rulechangeBtn = new ButtonSDL(548, actY,  84, 28, "RULE",    new Runnable() { public void run() { NullpoMinoSDL.enterState(NullpoMinoSDL.STATE_NET_RULECHANGE); } });
 		// Top-right corner: TEAM-change shortcut + disconnect X. TEAM prefills
 		// the chat with '/team ' and focuses it; the user types a name and
 		// hits Enter to submit. Disconnect's right edge matches the room
@@ -162,6 +165,7 @@ public class StateNetLobbySDL extends BaseStateSDL {
 		createBtn.update(mx, my, clicked);
 		create1PBtn.update(mx, my, clicked);
 		createRatedBtn.update(mx, my, clicked);
+		viewBtn.update(mx, my, clicked);
 		rankingBtn.update(mx, my, clicked);
 		rulechangeBtn.update(mx, my, clicked);
 		teamBtn.update(mx, my, clicked);
@@ -204,7 +208,7 @@ public class StateNetLobbySDL extends BaseStateSDL {
 	 */
 	private ButtonSDL[] buttonRow() {
 		return new ButtonSDL[] { joinBtn, watchBtn, createBtn, create1PBtn, createRatedBtn,
-				rankingBtn, rulechangeBtn };
+				viewBtn, rankingBtn, rulechangeBtn };
 	}
 
 	/**
@@ -308,6 +312,21 @@ public class StateNetLobbySDL extends BaseStateSDL {
 		nl.joinRoom(r.roomID, watch);
 	}
 
+	/**
+	 * Open the currently selected room in the CreateRoom form in read-only
+	 * detail mode so the user can inspect its settings without joining.
+	 */
+	private void viewSelectedRoom() {
+		NetLobbyFrame nl = NullpoMinoSDL.netLobby;
+		int idx = roomTable.getSelectedIndex();
+		if(idx < 0 || idx >= nl.roomList.size()) { statusLine = "Select a room"; return; }
+		NetRoomInfo r = nl.roomList.get(idx);
+		nl.currentViewDetailRoomID = r.roomID;
+		nl.createRoomSinglePlayer = false;
+		nl.createRoomRated = false;
+		NullpoMinoSDL.enterState(NullpoMinoSDL.STATE_NET_CREATEROOM);
+	}
+
 	private void enterCreateRoom(boolean onePlayer, boolean rated) {
 		NetLobbyFrame nl = NullpoMinoSDL.netLobby;
 		nl.currentViewDetailRoomID = -1;
@@ -352,6 +371,7 @@ public class StateNetLobbySDL extends BaseStateSDL {
 		createBtn.render();
 		create1PBtn.render();
 		createRatedBtn.render();
+		viewBtn.render();
 		rankingBtn.render();
 		rulechangeBtn.render();
 		teamBtn.render();
