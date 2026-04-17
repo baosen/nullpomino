@@ -231,7 +231,13 @@ public class StateNetCreateRoomSDL extends BaseStateSDL {
 		roomName.setText(src.strName);
 
 		modeDropdown = new DropdownSDL(colR, rowY + rowH * 1, wFull, 22, loadModeList());
-		setDropdownSelection(modeDropdown, src.strMode);
+		// Prefer the room's own strMode (set when viewing an existing room);
+		// otherwise fall back to the last-saved default for this mode type.
+		String defaultMode = (src.strMode != null && src.strMode.length() > 0) ? src.strMode
+				: nl.propConfig.getProperty(
+						nl.createRoomSinglePlayer ? "createroom1p.strMode" : "createroom.strMode",
+						"");
+		setDropdownSelection(modeDropdown, defaultMode);
 
 		maxPlayers       = new SpinnerSDL(colR, rowY + rowH * 2, wShort, 22, 1, 6, 1, src.maxPlayers);
 		autoStartSeconds = new SpinnerSDL(colR, rowY + rowH * 3, wShort, 22, 0, 600, 1, src.autoStartSeconds);
@@ -646,6 +652,7 @@ public class StateNetCreateRoomSDL extends BaseStateSDL {
 		// Persist the defaults so the user's tuning survives reconnects.
 		saveDefaultsToConfig(nl, r);
 		saveMapSetIDDefault(nl);
+		savePreviousMode(nl);
 		nl.saveConfig();
 		nl.netPlayerClient.send(msg);
 		nl.createRoomSinglePlayer = false;
@@ -788,6 +795,18 @@ public class StateNetCreateRoomSDL extends BaseStateSDL {
 	/** Persist the map-set spinner separately since it's not part of NetRoomInfo. */
 	private void saveMapSetIDDefault(NetLobbyFrame nl) {
 		nl.propConfig.setProperty("createroom.defaultMapSetID", mapSetID.getValue());
+	}
+
+	/**
+	 * Persist the last-used mode pick under a mode-type-specific key so the
+	 * dropdown preselects it next session. Rated rooms don't save — their
+	 * mode is effectively always the rated rule's mode.
+	 */
+	private void savePreviousMode(NetLobbyFrame nl) {
+		String mode = modeDropdown.getSelectedItem();
+		if(mode == null) mode = "";
+		String key = nl.createRoomSinglePlayer ? "createroom1p.strMode" : "createroom.strMode";
+		nl.propConfig.setProperty(key, mode);
 	}
 
 	private void cancel() {
