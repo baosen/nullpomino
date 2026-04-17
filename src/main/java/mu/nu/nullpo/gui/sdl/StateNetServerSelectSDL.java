@@ -377,7 +377,6 @@ public class StateNetServerSelectSDL extends BaseStateSDL {
 		nameInput.render();
 		NormalFontSDL.printFont(16, 92, NormalFontSDL.safeString(nl.getUIText("ServerSelect_LabelTeam")), NormalFontSDL.COLOR_WHITE);
 		teamInput.render();
-		NormalFontSDL.printFont(16, 144, "SERVERS", NormalFontSDL.COLOR_WHITE);
 		serverTable.render();
 
 		if(adding) {
