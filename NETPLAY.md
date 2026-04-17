@@ -21,6 +21,7 @@ The server (`NetServer.java`) is the central authority. Key responsibilities:
 
 - **`NetBaseClient`** — background thread that reads from the socket, buffers incomplete packets, and dispatches complete messages to `NetMessageListener` listeners.
 - **`NetPlayerClient`** — extends the base client with player-specific state (room list, player list, current room).
+- **`NetObserverClient`** — a lighter-weight base-client variant that logs in as a spectator (see [Observer mode](#observer-mode) below). Runs on the title screen when `observer.enable=true`.
 - **`NetLobbyFrame`** — Swing-free session/protocol object. Owns the `NetPlayerClient`, chat buffers, room list, rule catalogue, and message pump. No longer a `JFrame`; all UI lives in SDL states.
 - **`StateNet*SDL`** — SDL3 lobby screens (server select, lobby, room, create room, ranking, rule change) that read/mutate the shared `NetLobbyFrame` session.
 - **`StateNetGameSDL`** — SDL game state that runs the netplay round once the server confirms a room join.
@@ -37,6 +38,16 @@ This is **distributed state sync**, not lockstep or rollback. Each player runs t
 | Stats (score, lines, etc.) | `netSendStats()` | Periodically |
 
 The server relays these to all room members. Each client reconstructs other players' boards from the received data and renders them.
+
+### Observer mode
+
+Separate from the normal player flow, a client can connect to a server as a **read-only observer** via `NetObserverClient`. The protocol handshake is `observerlogin` instead of `login`: the server responds with the current room list and player counts but does **not** assign a UID, does not add the connection to the player list, and rejects any command that would mutate server state (join a room, chat, etc.).
+
+The SDL frontend uses observer mode for a single purpose — a live activity indicator on the title screen. When `observer.enable=true` in `config/setting/netobserver.cfg`, `NullpoMinoSDL.startObserverClient()` opens a connection to the configured server on every re-entry into `STATE_TITLE` and renders the resulting `N/M` (observers/players) counter in the bottom-right corner of the menu. `stopObserverClient()` tears it down when leaving the title screen.
+
+The **OBSERVE** button on the server-select screen is a shortcut for setting up this mode: it writes the picked server's host/port into `netobserver.cfg` with `observer.enable=true` and bounces back to the title, where the indicator starts up.
+
+Not to be confused with **watching a running room**: that is done through the lobby's **WATCH** button, which uses the normal `NetPlayerClient` connection to join a room as a spectator (no seat, no garbage sent/received, no rating change).
 
 ### Game Flow
 
@@ -55,6 +66,7 @@ The server relays these to all room members. Each client reconstructs other play
 | Server | `src/main/java/mu/nu/nullpo/game/net/NetServer.java` |
 | Base client | `src/main/java/mu/nu/nullpo/game/net/NetBaseClient.java` |
 | Player client | `src/main/java/mu/nu/nullpo/game/net/NetPlayerClient.java` |
+| Observer client | `src/main/java/mu/nu/nullpo/game/net/NetObserverClient.java` |
 | Net utilities | `src/main/java/mu/nu/nullpo/game/net/NetUtil.java` |
 | Base netplay mode | `src/main/java/mu/nu/nullpo/game/net/NetDummyMode.java` |
 | VS mode base | `src/main/java/mu/nu/nullpo/game/net/NetDummyVSMode.java` |
