@@ -76,13 +76,13 @@ public class StateNetLobbySDL extends BaseStateSDL {
 		};
 		roomTable = new TableSDL(8, 40, 624, 178, cols);
 
-		// Chat input + buttons at the very bottom of the screen, so the chat log
-		// can fill the vertical space above them.
-		chatInput = new TextInputSDL(8, 448, 496, 28);
+		// Chat input along the bottom, aligned with the chat log's width. SEND
+		// sits flush with the screen's right edge (x=632 matches the room table).
+		chatInput = new TextInputSDL(8, 448, 540, 28);
 		chatInput.maxChars = 255;
 		chatInput.placeholder = "Chat...";
 		final NetLobbyFrame nlf = nl;
-		sendBtn = new ButtonSDL(508, 448, 80, 28, "SEND", new Runnable() { public void run() { sendChat(nlf); } });
+		sendBtn = new ButtonSDL(552, 448, 80, 28, "SEND", new Runnable() { public void run() { sendChat(nlf); } });
 		sendBtn.primary = true;
 
 		// Action row aligned with the room table (x=8, w=624). Total button
@@ -340,17 +340,18 @@ public class StateNetLobbySDL extends BaseStateSDL {
 		rulechangeBtn.render();
 		disconnectBtn.render();
 
-		// Chat log occupies the centre-left strip; player list is a column on the right.
-		// Stretched down to just above the chat input so no black space is wasted.
+		// Chat log fills the main bottom-left panel, matched in width to the
+		// chat input directly below it.
 		nl.chatLogLobby.x = 8;  nl.chatLogLobby.y = 258;
-		nl.chatLogLobby.w = 480; nl.chatLogLobby.h = 186;
+		nl.chatLogLobby.w = 540; nl.chatLogLobby.h = 186;
 		nl.chatLogLobby.render();
 
 		chatInput.render();
 		sendBtn.render();
 
-		// Online player list (right column) — aligned with the chat log's top edge.
-		NormalFontSDL.printFont(496, 258, "ONLINE", NormalFontSDL.COLOR_YELLOW);
+		// Online player list (right column) — narrower now that the chat panel
+		// grew. Names clipped to 5 chars to fit the 80 px column.
+		NormalFontSDL.printFont(552, 258, "ONLINE", NormalFontSDL.COLOR_YELLOW);
 		int py = 274;
 		if(nl.netPlayerClient != null) {
 			LinkedList<NetPlayerInfo> list = new LinkedList<NetPlayerInfo>(nl.netPlayerClient.getPlayerInfoList());
@@ -358,8 +359,8 @@ public class StateNetLobbySDL extends BaseStateSDL {
 			for(NetPlayerInfo p : list) {
 				if(shown >= 10) break;
 				String name = NormalFontSDL.safeString(nl.getPlayerNameWithTripCode(p));
-				if(name.length() > 8) name = name.substring(0, 8);
-				NormalFontSDL.printFont(496, py, name, NormalFontSDL.COLOR_WHITE);
+				if(name.length() > 5) name = name.substring(0, 5);
+				NormalFontSDL.printFont(552, py, name, NormalFontSDL.COLOR_WHITE);
 				py += 16;
 				shown++;
 			}
