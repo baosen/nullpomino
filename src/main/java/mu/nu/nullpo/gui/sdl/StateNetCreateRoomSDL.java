@@ -58,6 +58,7 @@ public class StateNetCreateRoomSDL extends BaseStateSDL {
 	private SpinnerSDL autoStartSeconds;
 	private CheckboxSDL useMap;
 	private CheckboxSDL ruleLock;
+	private SpinnerSDL mapSetID;
 
 	// SPEED
 	private SpinnerSDL gravity;
@@ -221,7 +222,9 @@ public class StateNetCreateRoomSDL extends BaseStateSDL {
 		maxPlayers       = new SpinnerSDL(colR, rowY + rowH * 2, wShort, 22, 1, 6, 1, src.maxPlayers);
 		autoStartSeconds = new SpinnerSDL(colR, rowY + rowH * 3, wShort, 22, 0, 600, 1, src.autoStartSeconds);
 		useMap    = new CheckboxSDL(colR, rowY + rowH * 4, wFull, 22, "USE MAP",   src.useMap);
-		ruleLock  = new CheckboxSDL(colR, rowY + rowH * 5, wFull, 22, "RULE LOCK", src.ruleLock);
+		mapSetID  = new SpinnerSDL (colR, rowY + rowH * 5, wShort, 22, 0, 99, 1,
+				nl.propConfig.getProperty("createroom.defaultMapSetID", 0));
+		ruleLock  = new CheckboxSDL(colR, rowY + rowH * 6, wFull, 22, "RULE LOCK", src.ruleLock);
 
 		// SPEED
 		gravity     = new SpinnerSDL(colR, rowY + rowH * 0, wShort, 22, 0, 99, 1, src.gravity);
@@ -280,6 +283,7 @@ public class StateNetCreateRoomSDL extends BaseStateSDL {
 				new Field("MAX PLAYERS",  maxPlayers),
 				new Field("AUTOSTART S",  autoStartSeconds),
 				new Field("",             useMap),
+				new Field("MAP SET ID",   mapSetID),
 				new Field("",             ruleLock),
 			},
 			// SPEED
@@ -571,13 +575,14 @@ public class StateNetCreateRoomSDL extends BaseStateSDL {
 			String mode = NetUtil.urlEncode(r.strMode == null ? "" : r.strMode);
 			msg = "singleroomcreate\t" + name + "\t" + mode + "\n";
 		} else {
-			msg = buildRoomCreateMessage(r);
+			msg = buildRoomCreateMessage(r, mapSetID.getValue());
 			if(msg == null) { statusLine = "ROOM NAME REQUIRED"; return; }
 		}
 
 		nl.backupRoomInfo = r;
 		// Persist the defaults so the user's tuning survives reconnects.
 		saveDefaultsToConfig(nl, r);
+		saveMapSetIDDefault(nl);
 		nl.saveConfig();
 		nl.netPlayerClient.send(msg);
 		nl.createRoomSinglePlayer = false;
@@ -623,16 +628,63 @@ public class StateNetCreateRoomSDL extends BaseStateSDL {
 
 	/**
 	 * Build the roomcreate protocol string in the format the server expects:
-	 * {@code roomcreate\t<urlEncodedName>\t<urlEncodedExportString>\t<urlEncodedMode>\n}.
-	 * The server URL-decodes message[2] and feeds it to {@code NetRoomInfo(String)},
-	 * so the export needs to be a ';'-separated {@code exportString()} output.
+	 * {@code roomcreate\t<name>\t<export>\t<mode>[\t<compressedMaps>]\n}.
+	 * When {@code useMap} is set, the map-set file at
+	 * {@code config/map/vsbattle/<mapSetID>.map} is loaded, its entries joined
+	 * with tabs, and appended as the compressed 5th field.  Also caches the
+	 * map list on the session so the game mode can reference it later.
 	 */
-	private String buildRoomCreateMessage(NetRoomInfo r) {
+	private String buildRoomCreateMessage(NetRoomInfo r, int mapSetID) {
 		if(r.strName == null || r.strName.trim().length() == 0) return null;
 		String name = NetUtil.urlEncode(r.strName);
 		String export = NetUtil.urlEncode(r.exportString());
 		String mode = NetUtil.urlEncode(r.strMode == null ? "" : r.strMode);
-		return "roomcreate\t" + name + "\t" + export + "\t" + mode + "\n";
+		StringBuilder sb = new StringBuilder("roomcreate\t");
+		sb.append(name).append('\t').append(export).append('\t').append(mode);
+
+		if(r.useMap) {
+			String compressedMaps = loadAndCompressMapSet(mapSetID);
+			if(compressedMaps != null) sb.append('\t').append(compressedMaps);
+			else r.useMap = false;  // silently disable useMap if we can't find the file
+		}
+		sb.append('\n');
+		return sb.toString();
+	}
+
+	/**
+	 * Load the numbered map set file and return a Deflate-compressed
+	 * tab-joined string of all its {@code map.N} entries, or null if the
+	 * file is missing/empty.  Also populates
+	 * {@link NetLobbyFrame#mapList} so the game mode can pull maps later.
+	 */
+	private static String loadAndCompressMapSet(int mapSetID) {
+		String path = "config/map/vsbattle/" + mapSetID + ".map";
+		mu.nu.nullpo.util.CustomProperties propMap = new mu.nu.nullpo.util.CustomProperties();
+		java.io.FileInputStream in = null;
+		try {
+			in = new java.io.FileInputStream(path);
+			propMap.load(in);
+		} catch(java.io.IOException e) {
+			return null;
+		} finally {
+			if(in != null) try { in.close(); } catch(java.io.IOException ignore) {}
+		}
+
+		int maxMap = propMap.getProperty("map.maxMapNumber", 0);
+		if(maxMap <= 0) return null;
+
+		NetLobbyFrame nl = NullpoMinoSDL.netLobby;
+		if(nl != null) nl.mapList.clear();
+
+		StringBuilder strMap = new StringBuilder();
+		for(int i = 0; i < maxMap; i++) {
+			String m = propMap.getProperty("map." + i, "");
+			if(nl != null) nl.mapList.add(m);
+			strMap.append(m);
+			if(i < maxMap - 1) strMap.append('\t');
+		}
+		if(strMap.length() == 0) return null;
+		return NetUtil.compressString(strMap.toString());
 	}
 
 	private static void saveDefaultsToConfig(NetLobbyFrame nl, NetRoomInfo r) {
@@ -667,6 +719,12 @@ public class StateNetCreateRoomSDL extends BaseStateSDL {
 		nl.propConfig.setProperty("createroom.defaultAutoStartTNET2", r.autoStartTNET2);
 		nl.propConfig.setProperty("createroom.defaultDisableTimerAfterSomeoneCancelled", r.disableTimerAfterSomeoneCancelled);
 		nl.propConfig.setProperty("createroom.defaultUseMap", r.useMap);
+		// mapSetID is written by the caller of this helper — it lives on the state, not NetRoomInfo.
+	}
+
+	/** Persist the map-set spinner separately since it's not part of NetRoomInfo. */
+	private void saveMapSetIDDefault(NetLobbyFrame nl) {
+		nl.propConfig.setProperty("createroom.defaultMapSetID", mapSetID.getValue());
 	}
 
 	private void cancel() {
