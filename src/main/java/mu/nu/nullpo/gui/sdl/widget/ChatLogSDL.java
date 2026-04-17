@@ -17,14 +17,19 @@ import mu.nu.nullpo.gui.sdl.NullpoMinoSDL;
 public class ChatLogSDL extends WidgetSDL {
 	public static class Entry {
 		public final long timestampMs;
-		public final String prefix;      // e.g. "[12:34:56] name: " — cached at append
+		/** Leading label (e.g. "name: " for user chat, "" for system messages). */
+		public final String prefix;
 		public final String body;
-		public final int color;           // NormalFontSDL.COLOR_*
-		public Entry(long t, String prefix, String body, int color) {
+		/** Colour for {@link #body}. */
+		public final int bodyColor;
+		/** Colour for {@link #prefix}; ignored when the prefix is empty. */
+		public final int prefixColor;
+		public Entry(long t, String prefix, int prefixColor, String body, int bodyColor) {
 			this.timestampMs = t;
 			this.prefix = prefix;
+			this.prefixColor = prefixColor;
 			this.body = body;
-			this.color = color;
+			this.bodyColor = bodyColor;
 		}
 	}
 
@@ -40,12 +45,14 @@ public class ChatLogSDL extends WidgetSDL {
 	}
 
 	public synchronized void appendSystem(String msg, int color) {
-		push(new Entry(System.currentTimeMillis(), "", msg, color));
+		push(new Entry(System.currentTimeMillis(), "", color, msg, color));
 	}
 
 	public synchronized void appendUser(String user, Calendar time, String msg) {
-		String prefix = "<" + user + "> ";
-		push(new Entry(time.getTimeInMillis(), prefix, msg, NormalFontSDL.COLOR_WHITE));
+		// 'name: ' label in cyan, message body in plain white so the speaker
+		// stands out at a glance.
+		String prefix = user + ": ";
+		push(new Entry(time.getTimeInMillis(), prefix, NormalFontSDL.COLOR_CYAN, msg, NormalFontSDL.COLOR_WHITE));
 	}
 
 	public synchronized void clear() {
@@ -100,22 +107,34 @@ public class ChatLogSDL extends WidgetSDL {
 		int visible = visibleLines();
 		int wrap = wrapChars();
 
-		// Build a flat line list from entries, wrapping long bodies. Iterate oldest-first
-		// so that the resulting array is oldest..newest; then render the visible tail.
+		// Build a flat list of rendered lines from oldest to newest. Each line can
+		// have an optional prefix segment (rendered in a different colour, e.g.
+		// the speaker's name) followed by a body segment. Only the first line of
+		// a wrapped entry carries the prefix; continuation lines inherit the body
+		// colour.
 		java.util.ArrayList<RenderedLine> lines = new java.util.ArrayList<>(entries.size() + 8);
 		Iterator<Entry> it = entries.iterator();
 		while(it.hasNext()) {
 			Entry e = it.next();
-			String full = e.prefix + e.body;
-			if(full.length() <= wrap) {
-				lines.add(new RenderedLine(full, e.color));
-			} else {
-				int pos = 0;
-				while(pos < full.length()) {
-					int end = Math.min(full.length(), pos + wrap);
-					lines.add(new RenderedLine(full.substring(pos, end), e.color));
-					pos = end;
-				}
+			int prefLen = e.prefix.length();
+			int bodyLen = e.body.length();
+
+			if(prefLen + bodyLen <= wrap) {
+				lines.add(new RenderedLine(e.prefix, e.prefixColor, e.body, e.bodyColor));
+				continue;
+			}
+
+			// First line: prefix + however much body fits alongside it.
+			int firstBodyEnd = Math.max(0, Math.min(bodyLen, wrap - prefLen));
+			lines.add(new RenderedLine(e.prefix, e.prefixColor,
+					e.body.substring(0, firstBodyEnd), e.bodyColor));
+
+			// Continuation lines: wrap the remainder of the body in the body colour only.
+			int pos = firstBodyEnd;
+			while(pos < bodyLen) {
+				int end = Math.min(pos + wrap, bodyLen);
+				lines.add(new RenderedLine("", e.bodyColor, e.body.substring(pos, end), e.bodyColor));
+				pos = end;
 			}
 		}
 
@@ -128,7 +147,14 @@ public class ChatLogSDL extends WidgetSDL {
 		int drawY = y + 2;
 		for(int i = startLine; i < endLine; i++) {
 			RenderedLine ln = lines.get(i);
-			NormalFontSDL.printFont(x + 4, drawY, NormalFontSDL.safeString(ln.text), ln.color);
+			if(ln.prefix.length() > 0) {
+				String prefSafe = NormalFontSDL.safeString(ln.prefix);
+				NormalFontSDL.printFont(x + 4, drawY, prefSafe, ln.prefixColor);
+				NormalFontSDL.printFont(x + 4 + prefSafe.length() * 16, drawY,
+						NormalFontSDL.safeString(ln.body), ln.bodyColor);
+			} else {
+				NormalFontSDL.printFont(x + 4, drawY, NormalFontSDL.safeString(ln.body), ln.bodyColor);
+			}
 			drawY += 16;
 		}
 
@@ -145,8 +171,13 @@ public class ChatLogSDL extends WidgetSDL {
 	}
 
 	private static final class RenderedLine {
-		final String text;
-		final int color;
-		RenderedLine(String text, int color) { this.text = text; this.color = color; }
+		final String prefix; final int prefixColor;
+		final String body;   final int bodyColor;
+		RenderedLine(String prefix, int prefixColor, String body, int bodyColor) {
+			this.prefix = prefix;
+			this.prefixColor = prefixColor;
+			this.body = body;
+			this.bodyColor = bodyColor;
+		}
 	}
 }
