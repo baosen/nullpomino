@@ -106,7 +106,9 @@ public class StateNetServerSelectSDL extends BaseStateSDL {
 		addCancelBtn = new ButtonSDL(504, 398, 120, 32, "CANCEL");
 
 		adding = false;
-		setFocus(nameInput);
+		// If the player hasn't set a name yet, focus the name field so they can type it
+		// immediately; otherwise focus the server list so arrow keys navigate by default.
+		setFocus(nameInput.getText().length() == 0 ? (WidgetSDL)nameInput : (WidgetSDL)serverTable);
 		statusLine = "";
 	}
 
@@ -166,13 +168,28 @@ public class StateNetServerSelectSDL extends BaseStateSDL {
 			if(backBtn.update(mx, my, clicked))    NullpoMinoSDL.endNetplay();
 		}
 
-		// Deliver typed text and key events to the focused widget.
+		// Deliver typed text and key events to the focused widget.  Vertical nav keys
+		// (UP/DOWN/PAGEUP/PAGEDOWN/HOME/END) always drive the server list — even if
+		// the user is typing in the name/team field — so arrow keys "just work".
 		String typed = NullpoMinoSDL.consumeTextInput();
 		if(focused != null && typed.length() > 0) focused.handleTextInput(typed);
 		for(NullpoMinoSDL.KeyEvent ev : NullpoMinoSDL.frameKeyEvents) {
 			handleGlobalKey(ev);
-			if(focused != null) focused.handleKey(ev);
+			if(!adding && isListNavKey(ev) && focused != serverTable) {
+				serverTable.handleKey(ev);
+			} else if(focused != null) {
+				focused.handleKey(ev);
+			}
 		}
+	}
+
+	private static boolean isListNavKey(NullpoMinoSDL.KeyEvent ev) {
+		return ev.scancode == SDLConstants.SDL_SCANCODE_UP
+				|| ev.scancode == SDLConstants.SDL_SCANCODE_DOWN
+				|| ev.scancode == SDLConstants.SDL_SCANCODE_PAGEUP
+				|| ev.scancode == SDLConstants.SDL_SCANCODE_PAGEDOWN
+				|| ev.scancode == SDLConstants.SDL_SCANCODE_HOME
+				|| ev.scancode == SDLConstants.SDL_SCANCODE_END;
 	}
 
 	private void handleGlobalKey(NullpoMinoSDL.KeyEvent ev) {

@@ -92,7 +92,9 @@ public class StateNetLobbySDL extends BaseStateSDL {
 		rulechangeBtn = new ButtonSDL(488, actY, 92, 28, "RULES");
 		disconnectBtn = new ButtonSDL(588, actY, 44, 28, "X");
 
-		setFocus(chatInput);
+		// Default focus goes on the room table so arrow keys navigate rooms
+		// immediately; pressing TAB or clicking the chat field switches to typing.
+		setFocus(roomTable);
 		statusLine = "";
 	}
 
@@ -149,12 +151,26 @@ public class StateNetLobbySDL extends BaseStateSDL {
 		if(rulechangeBtn.update(mx, my, clicked))    NullpoMinoSDL.enterState(NullpoMinoSDL.STATE_NET_RULECHANGE);
 		if(disconnectBtn.update(mx, my, clicked))    NullpoMinoSDL.endNetplay();
 
+		// Deliver typed text and key events.  UP/DOWN/HOME/END always drive the room
+		// table so users can navigate rooms even while chat has focus.  PAGEUP/PAGEDOWN
+		// stay with handleGlobalKey (chat log scroll).
 		String typed = NullpoMinoSDL.consumeTextInput();
 		if(focused != null && typed.length() > 0) focused.handleTextInput(typed);
 		for(NullpoMinoSDL.KeyEvent ev : NullpoMinoSDL.frameKeyEvents) {
 			handleGlobalKey(nl, ev);
-			if(focused != null) focused.handleKey(ev);
+			if(isRoomNavKey(ev) && focused != roomTable) {
+				roomTable.handleKey(ev);
+			} else if(focused != null) {
+				focused.handleKey(ev);
+			}
 		}
+	}
+
+	private static boolean isRoomNavKey(NullpoMinoSDL.KeyEvent ev) {
+		return ev.scancode == SDLConstants.SDL_SCANCODE_UP
+				|| ev.scancode == SDLConstants.SDL_SCANCODE_DOWN
+				|| ev.scancode == SDLConstants.SDL_SCANCODE_HOME
+				|| ev.scancode == SDLConstants.SDL_SCANCODE_END;
 	}
 
 	private void handleGlobalKey(NetLobbyFrame nl, NullpoMinoSDL.KeyEvent ev) {
