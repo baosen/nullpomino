@@ -28,6 +28,7 @@ public class StateNetRuleChangeSDL extends BaseStateSDL {
 	private TableSDL ruleTable;
 	private ButtonSDL okBtn;
 	private ButtonSDL cancelBtn;
+	private ButtonSDL tuningBtn;
 	private WidgetSDL focused;
 
 	/** Current per-style selection indices, restored on enter from propGlobal. */
@@ -52,6 +53,8 @@ public class StateNetRuleChangeSDL extends BaseStateSDL {
 		okBtn = new ButtonSDL(  8, 424, 124, 32, "OK",
 				new Runnable() { public void run() { apply(); } });
 		okBtn.primary = true;
+		tuningBtn = new ButtonSDL(140, 424, 160, 32, "TUNING...",
+				new Runnable() { public void run() { openTuning(); } });
 		cancelBtn = new ButtonSDL(508, 424, 124, 32, "CANCEL",
 				new Runnable() { public void run() { NullpoMinoSDL.enterState(NullpoMinoSDL.STATE_NET_LOBBY); } });
 
@@ -181,6 +184,7 @@ public class StateNetRuleChangeSDL extends BaseStateSDL {
 		if(ruleTable.update(mx, my, clicked)) setFocus(ruleTable);
 		if(ruleTable.activated) apply();
 		okBtn.update(mx, my, clicked);
+		tuningBtn.update(mx, my, clicked);
 		cancelBtn.update(mx, my, clicked);
 
 		for(NullpoMinoSDL.KeyEvent ev : NullpoMinoSDL.frameKeyEvents) {
@@ -215,13 +219,19 @@ public class StateNetRuleChangeSDL extends BaseStateSDL {
 	}
 
 	private WidgetSDL nextFocus(WidgetSDL cur, boolean back) {
-		WidgetSDL[] order = { ruleTable, okBtn, cancelBtn };
+		WidgetSDL[] order = { ruleTable, okBtn, tuningBtn, cancelBtn };
 		int idx = 0;
 		for(int i = 0; i < order.length; i++) if(order[i] == cur) { idx = i; break; }
 		int next = back ? idx - 1 : idx + 1;
 		if(next < 0) next = order.length - 1;
 		if(next >= order.length) next = 0;
 		return order[next];
+	}
+
+	/** Open the shared Game Tuning screen; tell it to bounce back here on exit. */
+	private void openTuning() {
+		StateConfigGameTuningSDL.returnToState = NullpoMinoSDL.STATE_NET_RULECHANGE;
+		NullpoMinoSDL.enterState(NullpoMinoSDL.STATE_CONFIG_GAMETUNING);
 	}
 
 	@Override
@@ -233,6 +243,7 @@ public class StateNetRuleChangeSDL extends BaseStateSDL {
 		tabStrip.render();
 		ruleTable.render();
 		okBtn.render();
+		tuningBtn.render();
 		cancelBtn.render();
 	}
 }

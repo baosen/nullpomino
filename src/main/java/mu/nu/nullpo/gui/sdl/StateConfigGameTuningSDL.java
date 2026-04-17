@@ -71,6 +71,13 @@ public class StateConfigGameTuningSDL extends BaseStateSDL {
 	/** Player number */
 	public int player;
 
+	/**
+	 * State ID to return to when the user accepts or cancels.  Defaults to the
+	 * main config menu; netplay's rule-change screen sets this to
+	 * {@code STATE_NET_RULECHANGE} before entering so Cancel/OK route home.
+	 */
+	public static int returnToState = NullpoMinoSDL.STATE_CONFIG_MAINMENU;
+
 	/** Preview flag */
 	protected boolean isPreview;
 
@@ -460,14 +467,18 @@ public class StateConfigGameTuningSDL extends BaseStateSDL {
 					saveConfig(NullpoMinoSDL.propGlobal);
 					NullpoMinoSDL.saveConfig();
 
-					NullpoMinoSDL.enterState(NullpoMinoSDL.STATE_CONFIG_MAINMENU);
+					int ret = returnToState;
+					returnToState = NullpoMinoSDL.STATE_CONFIG_MAINMENU;
+					NullpoMinoSDL.enterState(ret);
 				}
 			}
 
 			// Cancel button
 			if(GameKeySDL.gamekey[0].isPushKey(GameKeySDL.BUTTON_B)) {
 				loadConfig(NullpoMinoSDL.propGlobal);
-				NullpoMinoSDL.enterState(NullpoMinoSDL.STATE_CONFIG_MAINMENU);
+				int ret = returnToState;
+				returnToState = NullpoMinoSDL.STATE_CONFIG_MAINMENU;
+				NullpoMinoSDL.enterState(ret);
 			}
 		}
 	}
