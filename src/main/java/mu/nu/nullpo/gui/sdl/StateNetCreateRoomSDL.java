@@ -260,14 +260,15 @@ public class StateNetCreateRoomSDL extends BaseStateSDL {
 		tnet2Timer         = new CheckboxSDL(colR, rowY + rowH * 2, wFull, 22, "TNET2 TIMER",           src.autoStartTNET2);
 		disableAfterCancel = new CheckboxSDL(colR, rowY + rowH * 3, wFull, 22, "DISABLE AFTER CANCEL",  src.disableTimerAfterSomeoneCancelled);
 
-		// Bottom button row — OK (create) bottom-left, CANCEL bottom-right;
-		// JOIN / WATCH fill the middle in detail-view mode.
+		// Bottom button row — OK (create) aligned with the tab strip's left
+		// edge, CANCEL with its right edge; JOIN / WATCH fill the middle in
+		// detail-view mode.
 		int btnY = 424;
-		okBtn     = new ButtonSDL( 16, btnY, 124, 32, "OK",     new Runnable() { public void run() { submit(false, false); } });
+		okBtn     = new ButtonSDL(  8, btnY, 124, 32, "OK",     new Runnable() { public void run() { submit(false, false); } });
 		okBtn.primary = true;
-		joinBtn   = new ButtonSDL(148, btnY, 124, 32, "JOIN",   new Runnable() { public void run() { submit(true,  false); } });
+		joinBtn   = new ButtonSDL(140, btnY, 124, 32, "JOIN",   new Runnable() { public void run() { submit(true,  false); } });
 		joinBtn.primary = true;
-		watchBtn  = new ButtonSDL(280, btnY, 124, 32, "WATCH",  new Runnable() { public void run() { submit(true,  true); } });
+		watchBtn  = new ButtonSDL(272, btnY, 124, 32, "WATCH",  new Runnable() { public void run() { submit(true,  true); } });
 		cancelBtn = new ButtonSDL(508, btnY, 124, 32, "CANCEL", new Runnable() { public void run() { cancel(); } });
 
 		// Build the per-tab widget arrays in the order they appear on screen.

@@ -47,9 +47,9 @@ public class StateNetRuleChangeSDL extends BaseStateSDL {
 		};
 		ruleTable = new TableSDL(8, 76, 624, 336, cols);
 
-		// OK bottom-left, CANCEL bottom-right; same 124×32 at y=424 as the
-		// original RuleChange screen. CreateRoom matches this.
-		okBtn = new ButtonSDL( 16, 424, 124, 32, "OK",
+		// OK aligned with the tab strip's left edge (x=8), CANCEL with its
+		// right edge (ends at x=632). CreateRoom matches this.
+		okBtn = new ButtonSDL(  8, 424, 124, 32, "OK",
 				new Runnable() { public void run() { apply(); } });
 		okBtn.primary = true;
 		cancelBtn = new ButtonSDL(508, 424, 124, 32, "CANCEL",
