@@ -112,9 +112,11 @@ public class StateNetLobbySDL extends BaseStateSDL {
 		rulechangeBtn = new ButtonSDL(544, actY,  84, 28, "RULES",   new Runnable() { public void run() { NullpoMinoSDL.enterState(NullpoMinoSDL.STATE_NET_RULECHANGE); } });
 		rulechangeBtn.theme = ButtonSDL.THEME_VIOLET;
 		// Top-right corner: disconnect X. Team changes are available via the
-		// '/team <name>' chat command (see NetLobbyFrame.sendChat). The X's
-		// right edge matches the room table (x=632).
-		disconnectBtn = new ButtonSDL(604,    4,  28, 24, "X",       new Runnable() { public void run() { NullpoMinoSDL.endNetplay(); } });
+		// '/team <name>' chat command (see NetLobbyFrame.sendChat). Right edge
+		// matches the room table (x=632); bottom edge (y=24) matches the
+		// LOBBY header's baseline so the X has the same 4 px gap to the room
+		// list that the header does.
+		disconnectBtn = new ButtonSDL(604,    4,  28, 20, "X",       new Runnable() { public void run() { NullpoMinoSDL.endNetplay(); } });
 
 		// Default focus goes on the chat input so a user can type right away;
 		// UP arrow / click on a room switches to room navigation.
