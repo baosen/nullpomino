@@ -739,7 +739,7 @@ public class NetLobbyFrame implements NetMessageListener {
 			netPlayerClient.send("changeteam\t" + NetUtil.urlEncode(arg) + "\n");
 		} else if(lower.startsWith("/name ") || lower.equals("/name")) {
 			String arg = lower.equals("/name") ? "" : msg.substring("/name ".length()).trim();
-			sendChangeName(arg);
+			sendChangeName(arg, roomchat);
 		} else if(lower.equals("/help") || lower.equals("/?")) {
 			printHelp(roomchat);
 		} else if(roomchat) {
@@ -765,9 +765,10 @@ public class NetLobbyFrame implements NetMessageListener {
 	 * and broadcasts a playerupdate on success. The /name command entry point
 	 * lives in {@link #sendChat}.
 	 */
-	private void sendChangeName(String newName) {
+	private void sendChangeName(String newName, boolean roomchat) {
 		if(newName == null || newName.trim().length() == 0) {
-			chatLogLobby.appendSystem("USAGE: /NAME <NEW NICKNAME>", NormalFontSDL.COLOR_YELLOW);
+			ChatLogSDL log = roomchat ? chatLogRoom : chatLogLobby;
+			log.appendSystem("USAGE: /NAME <NEW NICKNAME>", NormalFontSDL.COLOR_YELLOW);
 			return;
 		}
 		if(netPlayerClient == null || !netPlayerClient.isConnected()) return;
