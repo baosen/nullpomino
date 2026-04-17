@@ -86,10 +86,12 @@ public class StateNetServerSelectSDL extends BaseStateSDL {
 		teamInput.setText(nl.propConfig.getProperty("serverselect.txtfldPlayerTeam.text", ""));
 
 		TableSDL.Column[] cols = { new TableSDL.Column("SERVER", 580) };
-		serverTable = new TableSDL(16, 160, 608, 224, cols);
+		serverTable = new TableSDL(16, 160, 608, 262, cols);
 		refreshServerTable();
 
-		int btnY = 398;
+		// Buttons pinned to the bottom (h=32, y=444 → ends at y=476, 4 px above
+		// the 480 px logical viewport floor).
+		int btnY = 444;
 		connectBtn = new ButtonSDL( 16, btnY, 128, 32, "CONNECT", new Runnable() { public void run() { attemptConnect(false); } });
 		connectBtn.primary = true;
 		observeBtn = new ButtonSDL(148, btnY, 128, 32, "OBSERVE", new Runnable() { public void run() { attemptConnect(true); } });
@@ -97,12 +99,12 @@ public class StateNetServerSelectSDL extends BaseStateSDL {
 		deleteBtn  = new ButtonSDL(348, btnY, 112, 32, "DELETE",  new Runnable() { public void run() { deleteSelectedServer(); } });
 		backBtn    = new ButtonSDL(556, btnY,  68, 32, "BACK",    new Runnable() { public void run() { NullpoMinoSDL.endNetplay(); } });
 
-		addServerInput = new TextInputSDL(16, 398, 400, 32);
+		addServerInput = new TextInputSDL(16, btnY, 400, 32);
 		addServerInput.placeholder = "host:port";
 		addServerInput.maxChars = 64;
-		addOkBtn     = new ButtonSDL(420, 398, 80, 32, "OK",     new Runnable() { public void run() { commitAddServer(); } });
+		addOkBtn     = new ButtonSDL(420, btnY,  80, 32, "OK",     new Runnable() { public void run() { commitAddServer(); } });
 		addOkBtn.primary = true;
-		addCancelBtn = new ButtonSDL(504, 398, 120, 32, "CANCEL", new Runnable() { public void run() { cancelAddServer(); } });
+		addCancelBtn = new ButtonSDL(504, btnY, 120, 32, "CANCEL", new Runnable() { public void run() { cancelAddServer(); } });
 
 		adding = false;
 		// If the player hasn't set a name yet, focus the name field so they can type it
@@ -391,7 +393,9 @@ public class StateNetServerSelectSDL extends BaseStateSDL {
 		}
 
 		if(statusLine.length() > 0) {
-			NormalFontSDL.printFont(16, 440, NormalFontSDL.safeString(statusLine), NormalFontSDL.COLOR_RED);
+			// Sits in the narrow band between the server table (y=160..422)
+			// and the bottom button row (y=444).
+			NormalFontSDL.printFont(16, 426, NormalFontSDL.safeString(statusLine), NormalFontSDL.COLOR_RED);
 		}
 	}
 }
