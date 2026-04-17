@@ -644,7 +644,11 @@ public class NetLobbyFrame implements NetMessageListener {
 			if(netPlayerClient != null && uid == netPlayerClient.getPlayerUID()) {
 				propConfig.setProperty("serverselect.txtfldPlayerName.text", newName);
 			}
-			chatLogLobby.appendSystem(String.format(getUIText("SysMsg_ChangeName"), oldName, newName), NormalFontSDL.COLOR_GREEN);
+			// Broadcast happens to everyone; post in both logs so it's visible
+			// whether the user is on the lobby screen or already in a room.
+			String renameMsg = String.format(getUIText("SysMsg_ChangeName"), oldName, newName);
+			chatLogLobby.appendSystem(renameMsg, NormalFontSDL.COLOR_GREEN);
+			chatLogRoom.appendSystem(renameMsg, NormalFontSDL.COLOR_GREEN);
 
 		} else if("changenamefail".equals(cmd)) {
 			String reason = message.length > 1 ? message[1] : "UNKNOWN";
@@ -653,7 +657,10 @@ public class NetLobbyFrame implements NetMessageListener {
 			else if("EMPTY".equals(reason)) hint = "NAME CANNOT BE EMPTY";
 			else if("PLAYING".equals(reason)) hint = "CANNOT RENAME WHILE PLAYING";
 			else hint = "RENAME FAILED: " + reason;
+			// The user could have typed /name from either the lobby or a room
+			// chat; post to both logs so whichever is active shows the error.
 			chatLogLobby.appendSystem(hint, NormalFontSDL.COLOR_RED);
+			chatLogRoom.appendSystem(hint, NormalFontSDL.COLOR_RED);
 
 		} else if("announce".equals(cmd) && message.length > 1) {
 			String strMessage = "<ADMIN>: " + NetUtil.urlDecode(message[1]);
