@@ -91,18 +91,25 @@ public class StateNetLobbySDL extends BaseStateSDL {
 		//   [JOIN VIEW] | [CREATE 1P RATED] | [RANKING RULES]
 		// Intra-group gap = 4 px, inter-group gap = 16 px.
 		int actY = 224;
-		// All action-row buttons share the same default styling so each
-		// group's buttons are consistent with one another; group boundaries
-		// are communicated by spacing + the separator lines drawn below.
+		// Each group gets its own colour theme so buttons inside a group
+		// match and adjacent groups don't. Themes: join = blue, create =
+		// green, other = violet.
 		joinBtn       = new ButtonSDL(  8, actY,  72, 28, "JOIN",    new Runnable() { public void run() { attemptJoinSelected(); } });
+		joinBtn.theme = ButtonSDL.THEME_BLUE;
 		viewBtn       = new ButtonSDL( 84, actY,  72, 28, "VIEW",    new Runnable() { public void run() { viewSelectedRoom(); } });
+		viewBtn.theme = ButtonSDL.THEME_BLUE;
 
 		createBtn     = new ButtonSDL(172, actY, 104, 28, "CREATE",  new Runnable() { public void run() { enterCreateRoom(false, false); } });
+		createBtn.theme = ButtonSDL.THEME_GREEN;
 		create1PBtn   = new ButtonSDL(280, actY,  40, 28, "1P",      new Runnable() { public void run() { enterCreateRoom(true,  false); } });
+		create1PBtn.theme = ButtonSDL.THEME_GREEN;
 		createRatedBtn= new ButtonSDL(324, actY,  84, 28, "RATED",   new Runnable() { public void run() { enterCreateRoom(false, true);  } });
+		createRatedBtn.theme = ButtonSDL.THEME_GREEN;
 
 		rankingBtn    = new ButtonSDL(424, actY, 116, 28, "RANKING", new Runnable() { public void run() { NullpoMinoSDL.enterState(NullpoMinoSDL.STATE_NET_RANKING); } });
+		rankingBtn.theme = ButtonSDL.THEME_VIOLET;
 		rulechangeBtn = new ButtonSDL(544, actY,  84, 28, "RULES",   new Runnable() { public void run() { NullpoMinoSDL.enterState(NullpoMinoSDL.STATE_NET_RULECHANGE); } });
+		rulechangeBtn.theme = ButtonSDL.THEME_VIOLET;
 		// Top-right corner: TEAM-change shortcut + disconnect X. TEAM prefills
 		// the chat with '/team ' and focuses it; the user types a name and
 		// hits Enter to submit. Disconnect's right edge matches the room

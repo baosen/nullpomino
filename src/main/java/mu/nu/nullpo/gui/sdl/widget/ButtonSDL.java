@@ -12,9 +12,17 @@ import mu.nu.nullpo.gui.sdl.binding.SDLConstants;
  * current frame so callers can also chain logic the old way.
  */
 public class ButtonSDL extends WidgetSDL {
+	/** Colour themes used to group related buttons visually. */
+	public static final int THEME_DEFAULT = 0;   // dark slate — generic
+	public static final int THEME_BLUE    = 1;   // blue — "interact with existing thing" (same as primary)
+	public static final int THEME_GREEN   = 2;   // green — "create / new"
+	public static final int THEME_VIOLET  = 3;   // violet — "info / secondary"
+
 	public String label;
-	/** If true, draw as a "primary" (filled blue) action — e.g. OK/Connect. */
+	/** Shortcut for {@link #theme} = {@link #THEME_BLUE}; preserved for legacy callers. */
 	public boolean primary = false;
+	/** Colour theme — picks the background/tint colours in {@link #render()}. */
+	public int theme = THEME_DEFAULT;
 	/** Activation callback. Fired on mouse click or Enter/Space keypress while focused. */
 	public Runnable action;
 
@@ -67,17 +75,43 @@ public class ButtonSDL extends WidgetSDL {
 		}
 	}
 
+	/** Per-theme background colours for the non-hover, non-pressed state.
+	 *  Order matches the THEME_* constants above. */
+	private static final int[][] THEME_BG = {
+		{ 32, 32, 48 },   // THEME_DEFAULT
+		{  0, 64, 160 },  // THEME_BLUE
+		{  0, 96,  48 },  // THEME_GREEN
+		{ 80, 40, 120 },  // THEME_VIOLET
+	};
+
+	/** Per-theme hover tint (slightly brighter / more saturated). */
+	private static final int[][] THEME_HOVER = {
+		{ 64, 64,  96 },   // THEME_DEFAULT
+		{ 32, 96, 200 },   // THEME_BLUE
+		{ 32,144,  80 },   // THEME_GREEN
+		{110, 64, 160 },   // THEME_VIOLET
+	};
+
 	@Override
 	public void render() {
 		if(!visible) return;
 
-		int bgR, bgG, bgB, bgA;
+		int effectiveTheme = (theme != THEME_DEFAULT) ? theme : (primary ? THEME_BLUE : THEME_DEFAULT);
+		if(effectiveTheme < 0 || effectiveTheme >= THEME_BG.length) effectiveTheme = THEME_DEFAULT;
+
 		boolean highlight = hovering || focused;
+		int bgR, bgG, bgB, bgA;
 		if(!enabled) { bgR = 32; bgG = 32; bgB = 32; bgA = 200; }
 		else if(pressing) { bgR = 0; bgG = 0; bgB = 128; bgA = 255; }
-		else if(primary) { bgR = 0; bgG = 64; bgB = 160; bgA = 220; }
-		else if(highlight) { bgR = 64; bgG = 64; bgB = 96; bgA = 220; }
-		else { bgR = 32; bgG = 32; bgB = 48; bgA = 200; }
+		else if(highlight) {
+			int[] t = THEME_HOVER[effectiveTheme];
+			bgR = t[0]; bgG = t[1]; bgB = t[2]; bgA = 230;
+		}
+		else {
+			int[] t = THEME_BG[effectiveTheme];
+			bgR = t[0]; bgG = t[1]; bgB = t[2];
+			bgA = (effectiveTheme == THEME_DEFAULT) ? 200 : 220;
+		}
 
 		fillRect(x, y, w, h, bgR, bgG, bgB, bgA);
 		int borderShade = enabled ? (highlight ? 255 : 180) : 96;
@@ -92,8 +126,9 @@ public class ButtonSDL extends WidgetSDL {
 			int textW = safe.length() * 16;
 			int tx = x + (w - textW) / 2;
 			int ty = y + (h - 16) / 2;
+			boolean themed = effectiveTheme != THEME_DEFAULT;
 			int color = enabled
-					? (highlight || primary ? NormalFontSDL.COLOR_YELLOW : NormalFontSDL.COLOR_WHITE)
+					? (highlight || themed ? NormalFontSDL.COLOR_YELLOW : NormalFontSDL.COLOR_WHITE)
 					: NormalFontSDL.COLOR_DARKBLUE;
 			NormalFontSDL.printFont(tx, ty, safe, color);
 		}
