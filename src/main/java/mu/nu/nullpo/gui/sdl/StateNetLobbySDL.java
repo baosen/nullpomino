@@ -65,15 +65,18 @@ public class StateNetLobbySDL extends BaseStateSDL {
 		NetLobbyFrame nl = NullpoMinoSDL.netLobby;
 		if(nl == null) { NullpoMinoSDL.enterState(NullpoMinoSDL.STATE_NET_SERVERSELECT); return; }
 
+		// Full-word headers where they fit in the bitmap font; three-letter
+		// abbreviations on the two narrow count columns so the header doesn't
+		// balloon the table width. "RT"/"STAT"/"P"/"S" were too cryptic.
 		TableSDL.Column[] cols = {
-			new TableSDL.Column("ID",    40),
-			new TableSDL.Column("NAME", 150),
-			new TableSDL.Column("RT",    32),
-			new TableSDL.Column("RULE",  96),
-			new TableSDL.Column("MODE",  96),
-			new TableSDL.Column("STAT",  64),
-			new TableSDL.Column("P",     40),
-			new TableSDL.Column("S",     40),
+			new TableSDL.Column("ID",     40),
+			new TableSDL.Column("NAME",  120),
+			new TableSDL.Column("RATED",  84),
+			new TableSDL.Column("RULE",   84),
+			new TableSDL.Column("MODE",   92),
+			new TableSDL.Column("STATUS",100),
+			new TableSDL.Column("PLY",    52),
+			new TableSDL.Column("SPC",    52),
 		};
 		roomTable = new TableSDL(8, 28, 624, 190, cols);
 
