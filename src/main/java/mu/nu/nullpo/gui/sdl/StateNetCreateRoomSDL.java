@@ -304,7 +304,7 @@ public class StateNetCreateRoomSDL extends BaseStateSDL {
 			// GARBAGE
 			{
 				new Field("GARBAGE %",    garbagePercent),
-				new Field("TARGET TIMER", targetTimer),
+				new Field("TGT TIMER",    targetTimer),
 				new Field("",             changePerAttack),
 				new Field("",             divideRate),
 				new Field("",             b2bChunk),
