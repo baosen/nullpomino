@@ -88,12 +88,13 @@ public class StateNetLobbySDL extends BaseStateSDL {
 		joinBtn       = new ButtonSDL(  4, actY,  80, 28, "JOIN",    new Runnable() { public void run() { attemptJoinSelected(false); } });
 		joinBtn.primary = true;
 		watchBtn      = new ButtonSDL( 88, actY,  80, 28, "WATCH",   new Runnable() { public void run() { attemptJoinSelected(true); } });
-		createBtn     = new ButtonSDL(172, actY,  96, 28, "CREATE",  new Runnable() { public void run() { enterCreateRoom(false, false); } });
-		create1PBtn   = new ButtonSDL(272, actY,  40, 28, "1P",      new Runnable() { public void run() { enterCreateRoom(true,  false); } });
-		createRatedBtn= new ButtonSDL(316, actY,  80, 28, "RATED",   new Runnable() { public void run() { enterCreateRoom(false, true);  } });
-		rankingBtn    = new ButtonSDL(400, actY, 112, 28, "RANKING", new Runnable() { public void run() { NullpoMinoSDL.enterState(NullpoMinoSDL.STATE_NET_RANKING); } });
-		rulechangeBtn = new ButtonSDL(516, actY,  80, 28, "RULES",   new Runnable() { public void run() { NullpoMinoSDL.enterState(NullpoMinoSDL.STATE_NET_RULECHANGE); } });
-		disconnectBtn = new ButtonSDL(600, actY,  32, 28, "X",       new Runnable() { public void run() { NullpoMinoSDL.endNetplay(); } });
+		createBtn     = new ButtonSDL(172, actY, 112, 28, "CREATE",  new Runnable() { public void run() { enterCreateRoom(false, false); } });
+		create1PBtn   = new ButtonSDL(288, actY,  40, 28, "1P",      new Runnable() { public void run() { enterCreateRoom(true,  false); } });
+		createRatedBtn= new ButtonSDL(332, actY,  80, 28, "RATED",   new Runnable() { public void run() { enterCreateRoom(false, true);  } });
+		rankingBtn    = new ButtonSDL(416, actY, 112, 28, "RANKING", new Runnable() { public void run() { NullpoMinoSDL.enterState(NullpoMinoSDL.STATE_NET_RANKING); } });
+		rulechangeBtn = new ButtonSDL(532, actY, 100, 28, "RULES",   new Runnable() { public void run() { NullpoMinoSDL.enterState(NullpoMinoSDL.STATE_NET_RULECHANGE); } });
+		// Disconnect lives in the top-right corner; reachable by mouse or ESC.
+		disconnectBtn = new ButtonSDL(608,    4,  28, 24, "X",       new Runnable() { public void run() { NullpoMinoSDL.endNetplay(); } });
 
 		// Default focus goes on the room table so arrow keys navigate rooms
 		// immediately; pressing TAB or clicking the chat field switches to typing.
@@ -187,10 +188,14 @@ public class StateNetLobbySDL extends BaseStateSDL {
 		}
 	}
 
-	/** Ordered action-button row used for keyboard navigation. */
+	/**
+	 * Ordered action-button row used for LEFT/RIGHT keyboard navigation.
+	 * The disconnect button (top-right corner) is intentionally excluded — it's
+	 * reached via mouse or by pressing ESC, which is the lobby's built-in quit.
+	 */
 	private ButtonSDL[] buttonRow() {
 		return new ButtonSDL[] { joinBtn, watchBtn, createBtn, create1PBtn, createRatedBtn,
-				rankingBtn, rulechangeBtn, disconnectBtn };
+				rankingBtn, rulechangeBtn };
 	}
 
 	/**
