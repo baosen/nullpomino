@@ -331,15 +331,27 @@ public class StateNetCreateRoomSDL extends BaseStateSDL {
 		watchBtn.visible = detailMode;
 	}
 
+	/**
+	 * Load mode names from {@code config/list/netlobby_{multi,single}mode.lst}.
+	 * The file groups modes under {@code :STYLE} section headers and each mode
+	 * line is {@code "modeName,isRace"}. Section markers are skipped and the
+	 * isRace suffix is stripped before returning.
+	 */
 	private String[] loadModeList() {
+		NetLobbyFrame nl = NullpoMinoSDL.netLobby;
+		String file = (nl != null && nl.createRoomSinglePlayer)
+				? "config/list/netlobby_singlemode.lst"
+				: "config/list/netlobby_multimode.lst";
 		List<String> list = new ArrayList<String>();
 		BufferedReader in = null;
 		try {
-			in = new BufferedReader(new FileReader("config/list/netlobby_multimode.lst"));
+			in = new BufferedReader(new FileReader(file));
 			String line;
 			while((line = in.readLine()) != null) {
 				line = line.trim();
-				if(line.length() > 0 && !line.startsWith("#")) list.add(line);
+				if(line.length() == 0 || line.startsWith("#") || line.startsWith(":")) continue;
+				int comma = line.indexOf(',');
+				list.add(comma == -1 ? line : line.substring(0, comma));
 			}
 		} catch(IOException ignore) {
 			// Fallback: just one default entry so users can create a vs-battle room.
@@ -351,16 +363,21 @@ public class StateNetCreateRoomSDL extends BaseStateSDL {
 		return list.toArray(new String[list.size()]);
 	}
 
+	/**
+	 * Find {@code item} in the dropdown's current contents and select it.  Falls
+	 * back to the first item if no match.  Walks a snapshot of the list instead
+	 * of mutating selection along the way (which would clamp past the last
+	 * index and never terminate the search).
+	 */
 	private static void setDropdownSelection(DropdownSDL d, String item) {
 		if(item == null || item.length() == 0) { d.setSelectedIndex(0); return; }
+		int saved = d.getSelectedIndex();
 		for(int i = 0; ; i++) {
-			if(i >= 256) break;  // safety; lists are short in practice
-			String opt = null;
-			try { d.setSelectedIndex(i); opt = d.getSelectedItem(); } catch(Throwable t) { break; }
-			if(opt == null || opt.length() == 0) break;
-			if(item.equals(opt)) return;
+			d.setSelectedIndex(i);
+			if(d.getSelectedIndex() != i) break;    // clamped — past the end
+			if(item.equals(d.getSelectedItem())) return;
 		}
-		d.setSelectedIndex(0);
+		d.setSelectedIndex(saved < 0 ? 0 : saved);
 	}
 
 	private void setFocus(WidgetSDL w) {
