@@ -351,7 +351,7 @@ public class StateNetLobbySDL extends BaseStateSDL {
 
 		// Online player list (right column) — narrower now that the chat panel
 		// grew. Names clipped to 5 chars to fit the 80 px column.
-		NormalFontSDL.printFont(552, 258, "ONLINE", NormalFontSDL.COLOR_YELLOW);
+		NormalFontSDL.printFont(552, 258, "USERS", NormalFontSDL.COLOR_YELLOW);
 		int py = 274;
 		if(nl.netPlayerClient != null) {
 			LinkedList<NetPlayerInfo> list = new LinkedList<NetPlayerInfo>(nl.netPlayerClient.getPlayerInfoList());
