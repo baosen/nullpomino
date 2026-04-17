@@ -54,6 +54,7 @@ public class StateNetLobbySDL extends BaseStateSDL {
 	private ButtonSDL createRatedBtn;
 	private ButtonSDL rankingBtn;
 	private ButtonSDL rulechangeBtn;
+	private ButtonSDL teamBtn;
 	private ButtonSDL disconnectBtn;
 
 	private WidgetSDL focused;
@@ -96,8 +97,11 @@ public class StateNetLobbySDL extends BaseStateSDL {
 		createRatedBtn= new ButtonSDL(336, actY,  80, 28, "RATED",   new Runnable() { public void run() { enterCreateRoom(false, true);  } });
 		rankingBtn    = new ButtonSDL(420, actY, 112, 28, "RANKING", new Runnable() { public void run() { NullpoMinoSDL.enterState(NullpoMinoSDL.STATE_NET_RANKING); } });
 		rulechangeBtn = new ButtonSDL(536, actY,  96, 28, "RULES",   new Runnable() { public void run() { NullpoMinoSDL.enterState(NullpoMinoSDL.STATE_NET_RULECHANGE); } });
-		// Disconnect lives in the top-right corner; right edge lines up with
-		// the room table's right edge (x=632). Reachable by mouse or ESC.
+		// Top-right corner: TEAM-change shortcut + disconnect X. TEAM prefills
+		// the chat with '/team ' and focuses it; the user types a name and
+		// hits Enter to submit. Disconnect's right edge matches the room
+		// table (x=632).
+		teamBtn       = new ButtonSDL(496,    4, 100, 24, "TEAM",    new Runnable() { public void run() { beginTeamChange(); } });
 		disconnectBtn = new ButtonSDL(604,    4,  28, 24, "X",       new Runnable() { public void run() { NullpoMinoSDL.endNetplay(); } });
 
 		// Default focus goes on the room table so arrow keys navigate rooms
@@ -160,6 +164,7 @@ public class StateNetLobbySDL extends BaseStateSDL {
 		createRatedBtn.update(mx, my, clicked);
 		rankingBtn.update(mx, my, clicked);
 		rulechangeBtn.update(mx, my, clicked);
+		teamBtn.update(mx, my, clicked);
 		disconnectBtn.update(mx, my, clicked);
 
 		// Deliver typed text and key events.  UP/DOWN navigate rows inside the room
@@ -319,6 +324,16 @@ public class StateNetLobbySDL extends BaseStateSDL {
 		chatInput.setText("");
 	}
 
+	/**
+	 * Prefill the chat input with '/team ' and focus it so the user can type
+	 * a new team name and hit Enter. sendChat() strips the prefix and routes
+	 * the value to the server via changeteam.
+	 */
+	private void beginTeamChange() {
+		chatInput.setText("/team ");
+		setFocus(chatInput);
+	}
+
 	@Override
 	public void render() {
 		NetLobbyFrame nl = NullpoMinoSDL.netLobby;
@@ -339,6 +354,7 @@ public class StateNetLobbySDL extends BaseStateSDL {
 		createRatedBtn.render();
 		rankingBtn.render();
 		rulechangeBtn.render();
+		teamBtn.render();
 		disconnectBtn.render();
 
 		// Chat log fills the main bottom-left panel, matched in width to the
