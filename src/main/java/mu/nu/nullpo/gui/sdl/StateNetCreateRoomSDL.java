@@ -141,7 +141,7 @@ public class StateNetCreateRoomSDL extends BaseStateSDL {
 			if(nl.netPlayerClient != null && nl.netPlayerClient.isConnected()) {
 				nl.netPlayerClient.send("getpresets\t" + nl.createRoomStyle + "\n");
 			}
-			presetDropdown = new DropdownSDL(200, 76 + 26 * 6, 416, 22);
+			presetDropdown = new DropdownSDL(216, 76 + 26 * 6, 400, 22);
 			refreshPresetDropdown();
 		}
 
@@ -205,9 +205,10 @@ public class StateNetCreateRoomSDL extends BaseStateSDL {
 
 	/** Construct all widgets and populate them from {@code src}. */
 	private void buildWidgets(NetLobbyFrame nl, NetRoomInfo src) {
-		// Layout: labels at x=16, widgets at x=200, each row 26px tall, first row y=76.
-		final int colL = 16, colR = 200, rowY = 76, rowH = 26;
-		final int wFull = 416, wShort = 180;
+		// Layout: labels at x=16, widgets at x=216 (12-char label + 8 px gap),
+		// each row 26 px tall, first row y=76.
+		final int colL = 16, colR = 216, rowY = 76, rowH = 26;
+		final int wFull = 400, wShort = 180;
 
 		// BASIC
 		roomName = new TextInputSDL(colR, rowY + rowH * 0, wFull, 22);
@@ -304,7 +305,7 @@ public class StateNetCreateRoomSDL extends BaseStateSDL {
 			// GARBAGE
 			{
 				new Field("GARBAGE %",    garbagePercent),
-				new Field("TGT TIMER",    targetTimer),
+				new Field("TARGET TIMER", targetTimer),
 				new Field("",             changePerAttack),
 				new Field("",             divideRate),
 				new Field("",             b2bChunk),
@@ -704,7 +705,7 @@ public class StateNetCreateRoomSDL extends BaseStateSDL {
 		if(ratedMode && tabStrip.getActiveTab() == 0 && presetDropdown != null) {
 			NormalFontSDL.printFont(16, 76 + 26 * 6 + 3, "PRESET", NormalFontSDL.COLOR_WHITE);
 			if(nl.presets.isEmpty()) {
-				NormalFontSDL.printFont(200, 76 + 26 * 6 + 3,
+				NormalFontSDL.printFont(216, 76 + 26 * 6 + 3,
 						"WAITING FOR PRESETS...", NormalFontSDL.COLOR_YELLOW);
 			} else {
 				presetDropdown.render();
