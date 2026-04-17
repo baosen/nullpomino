@@ -65,15 +65,14 @@ public class StateNetLobbySDL extends BaseStateSDL {
 		NetLobbyFrame nl = NullpoMinoSDL.netLobby;
 		if(nl == null) { NullpoMinoSDL.enterState(NullpoMinoSDL.STATE_NET_SERVERSELECT); return; }
 
-		// Full-word headers where they fit in the bitmap font; three-letter
-		// abbreviations on the two narrow count columns so the header doesn't
-		// balloon the table width. "RT"/"STAT"/"P"/"S" were too cryptic.
+		// ID dropped — the roomID isn't useful to a human browsing the list
+		// (the name + mode say more) and freeing its column gives NAME and
+		// MODE the room they need for realistic values.
 		TableSDL.Column[] cols = {
-			new TableSDL.Column("ID",     40),
-			new TableSDL.Column("NAME",  120),
+			new TableSDL.Column("NAME",  144),
 			new TableSDL.Column("RATED",  84),
 			new TableSDL.Column("RULE",   84),
-			new TableSDL.Column("MODE",   92),
+			new TableSDL.Column("MODE",  108),
 			new TableSDL.Column("STATUS",100),
 			new TableSDL.Column("PLY",    52),
 			new TableSDL.Column("SPC",    52),
@@ -293,27 +292,55 @@ public class StateNetLobbySDL extends BaseStateSDL {
 		}
 	}
 
+	/**
+	 * Translate the 8-column {@code createRoomListRowData} output (which still
+	 * includes the ID at index 0) into the 7-column schema the lobby table
+	 * displays.  ID is dropped and name becomes the first visible column.
+	 */
+	private static String[] rowFromRoom(NetLobbyFrame nl, NetRoomInfo r) {
+		String[] full = nl.createRoomListRowData(r);
+		return new String[] { full[1], full[2], full[3], full[4], full[5], full[6], full[7] };
+	}
+
 	private void refreshRoomTable(NetLobbyFrame nl) {
-		// Rebuild rows only when the size differs or IDs shifted — cheap since
-		// roomList is a LinkedList and row counts are typically small.
+		// If the visible rooms are identical in count + ID order, just refresh
+		// the data cells in place so scrollbar + selection don't flicker.
 		if(roomTable.getRowCount() == nl.roomList.size()) {
 			boolean same = true;
 			for(int i = 0; i < nl.roomList.size(); i++) {
-				String[] existing = roomTable.getRow(i);
-				if(existing == null || !existing[0].equals(Integer.toString(nl.roomList.get(i).roomID))) { same = false; break; }
+				if(rowRoomID(i) != nl.roomList.get(i).roomID) { same = false; break; }
 			}
 			if(same) {
-				// Still update mutable columns (player count, status) in place.
 				for(int i = 0; i < nl.roomList.size(); i++) {
-					roomTable.setRow(i, nl.createRoomListRowData(nl.roomList.get(i)));
+					roomTable.setRow(i, rowFromRoom(nl, nl.roomList.get(i)));
 				}
 				return;
 			}
 		}
+
+		// Rebuild from scratch but preserve selection by roomID so the
+		// highlight doesn't jump when rooms are added/removed.
+		int prevSel = roomTable.getSelectedIndex();
+		int selRoomID = (prevSel >= 0 && prevSel < rowRoomIDs.size()) ? rowRoomIDs.get(prevSel) : -1;
+
 		roomTable.clear();
+		rowRoomIDs.clear();
 		for(NetRoomInfo r : nl.roomList) {
-			roomTable.addRow(nl.createRoomListRowData(r));
+			roomTable.addRow(rowFromRoom(nl, r));
+			rowRoomIDs.add(r.roomID);
 		}
+		if(selRoomID != -1) {
+			for(int i = 0; i < rowRoomIDs.size(); i++) {
+				if(rowRoomIDs.get(i) == selRoomID) { roomTable.setSelectedIndex(i); break; }
+			}
+		}
+	}
+
+	/** Parallel array of roomIDs matching each row in {@link #roomTable}. */
+	private final java.util.ArrayList<Integer> rowRoomIDs = new java.util.ArrayList<Integer>();
+
+	private int rowRoomID(int i) {
+		return (i >= 0 && i < rowRoomIDs.size()) ? rowRoomIDs.get(i) : -1;
 	}
 
 	private void attemptJoinSelected() {
