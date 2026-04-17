@@ -83,7 +83,6 @@ public class StateNetServerSelectSDL extends BaseStateSDL {
 
 		teamInput = new TextInputSDL(16, 112, 608, 28);
 		teamInput.maxChars = 24;
-		teamInput.placeholder = "Team (optional)";
 		teamInput.setText(nl.propConfig.getProperty("serverselect.txtfldPlayerTeam.text", ""));
 
 		TableSDL.Column[] cols = { new TableSDL.Column("SERVER", 580) };
