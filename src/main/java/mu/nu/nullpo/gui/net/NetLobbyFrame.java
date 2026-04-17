@@ -650,6 +650,21 @@ public class NetLobbyFrame implements NetMessageListener {
 				mpRankingDirty = true;
 			}
 
+		} else if("changenamesuccess".equals(cmd) && message.length > 2) {
+			String oldName = NetUtil.urlDecode(message[1]);
+			String newName = NetUtil.urlDecode(message[2]);
+			propConfig.setProperty("serverselect.txtfldPlayerName.text", newName);
+			chatLogLobby.appendSystem("RENAMED " + oldName + " -> " + newName, NormalFontSDL.COLOR_GREEN);
+
+		} else if("changenamefail".equals(cmd)) {
+			String reason = message.length > 1 ? message[1] : "UNKNOWN";
+			String hint;
+			if("DUPLICATE".equals(reason)) hint = "NAME ALREADY IN USE";
+			else if("EMPTY".equals(reason)) hint = "NAME CANNOT BE EMPTY";
+			else if("PLAYING".equals(reason)) hint = "CANNOT RENAME WHILE PLAYING";
+			else hint = "RENAME FAILED: " + reason;
+			chatLogLobby.appendSystem(hint, NormalFontSDL.COLOR_RED);
+
 		} else if("announce".equals(cmd) && message.length > 1) {
 			String strMessage = "<ADMIN>: " + NetUtil.urlDecode(message[1]);
 			chatLogLobby.appendSystem(strMessage, NormalFontSDL.COLOR_RED);
@@ -730,7 +745,7 @@ public class NetLobbyFrame implements NetMessageListener {
 			msg = msg.replaceFirst("/team", "").trim();
 			netPlayerClient.send("changeteam\t" + NetUtil.urlEncode(msg) + "\n");
 		} else if(msg.startsWith("/name ") || msg.equals("/name")) {
-			renameAndReconnect(msg.equals("/name") ? "" : msg.substring("/name ".length()).trim());
+			sendChangeName(msg.equals("/name") ? "" : msg.substring("/name ".length()).trim());
 		} else if(roomchat) {
 			netPlayerClient.send("chat\t" + NetUtil.urlEncode(msg) + "\n");
 		} else {
@@ -739,37 +754,18 @@ public class NetLobbyFrame implements NetMessageListener {
 	}
 
 	/**
-	 * Apply a new nickname by disconnecting the current session, persisting the
-	 * new name in {@code propConfig}, and immediately reopening the connection
-	 * to the same server. The server has no on-the-fly rename opcode, so this
-	 * is the only reliable way. Callers should already be on the lobby screen.
+	 * Send a {@code changename} request to the server. The server handles
+	 * duplicate-name checking and "cannot rename while playing" validation,
+	 * and broadcasts a playerupdate on success. The /name command entry point
+	 * lives in {@link #sendChat}.
 	 */
-	private void renameAndReconnect(String newName) {
-		if(newName == null) newName = "";
-		newName = newName.trim();
-		if(newName.length() == 0) {
+	private void sendChangeName(String newName) {
+		if(newName == null || newName.trim().length() == 0) {
 			chatLogLobby.appendSystem("USAGE: /NAME <NEW NICKNAME>", NormalFontSDL.COLOR_YELLOW);
 			return;
 		}
-		if(netPlayerClient == null) return;
-
-		String host = netPlayerClient.getHost();
-		int port = netPlayerClient.getPort();
-		NetPlayerInfo me = netPlayerClient.getYourPlayerInfo();
-		String team = (me != null && me.strTeam != null) ? me.strTeam : "";
-
-		chatLogLobby.appendSystem("RENAMING TO " + newName + "...", NormalFontSDL.COLOR_YELLOW);
-
-		// Tear down the current connection.
-		if(netPlayerClient.isConnected()) netPlayerClient.send("disconnect\n");
-		netPlayerClient.threadRunning = false;
-		netPlayerClient.interrupt();
-
-		// connectToServer() updates propConfig, allocates a new NetPlayerClient,
-		// and stamps lastConnectAt so the lobby state tolerates the brief
-		// window where isConnected() returns false during the handshake.
-		connectToServer(newName, team, host, port);
-		lobbyMode = LOBBYMODE_DISCONNECTED;  // pump() will flip back to LOBBY on ruledatasuccess
+		if(netPlayerClient == null || !netPlayerClient.isConnected()) return;
+		netPlayerClient.send("changename\t" + NetUtil.urlEncode(newName.trim()) + "\n");
 	}
 
 	/**

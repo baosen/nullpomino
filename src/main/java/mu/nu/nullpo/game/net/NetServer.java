@@ -2388,6 +2388,39 @@ public class NetServer {
 				}
 			}
 		}
+		// Change nickname on the fly (no reconnect required)
+		if(message[0].equals("changename")) {
+			//changename\t[NEWNAME]
+			if(pInfo == null || pInfo.playing || message.length < 2) {
+				if(pInfo != null && pInfo.playing) send(client, "changenamefail\tPLAYING\n");
+				return;
+			}
+			String newName = NetUtil.urlDecode(message[1]).trim();
+			if(newName.length() == 0) { send(client, "changenamefail\tEMPTY\n"); return; }
+
+			// Preserve the tripcode portion: the name after the TripSeparator
+			// is effectively a password, not part of the nickname. If the caller
+			// had one, keep it appended so their identity doesn't silently change.
+			String separator = propServer.getProperty("netserver.tripcode.separator", "#");
+			String keptTrip = "";
+			int sep = pInfo.strName.indexOf(separator);
+			if(sep != -1) keptTrip = pInfo.strName.substring(sep);
+			if(newName.indexOf(separator) == -1) newName = newName + keptTrip;
+
+			if(newName.equals(pInfo.strName)) return;  // no-op
+
+			if(searchPlayerByName(newName) != null) {
+				send(client, "changenamefail\tDUPLICATE\n");
+				return;
+			}
+
+			String oldName = pInfo.strName;
+			pInfo.strName = newName;
+			send(client, "changenamesuccess\t" + NetUtil.urlEncode(oldName) + "\t" + NetUtil.urlEncode(newName) + "\n");
+			broadcastPlayerInfoUpdate(pInfo);
+			log.info("Player renamed: " + oldName + " -> " + newName);
+			return;
+		}
 		// Change Player/Spectator status
 		if(message[0].equals("changestatus")) {
 			//changestatus\t[WATCH]
