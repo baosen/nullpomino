@@ -86,19 +86,21 @@ public class StateNetLobbySDL extends BaseStateSDL {
 		sendBtn = new ButtonSDL(552, 448, 80, 28, "SEND", new Runnable() { public void run() { sendChat(nlf); } });
 		sendBtn.primary = true;
 
-		// Action row aligned with the room table (x=8, w=624). Seven buttons
-		// at 4 px gaps meet the table's right edge at x=632. WATCH isn't on
-		// the lobby row — the VIEW screen has its own WATCH button that
-		// joins a room as a spectator.
+		// Action row aligned with the room table (x=8, w=624). Buttons are
+		// visually grouped by purpose with extra spacing between groups:
+		//   [JOIN VIEW] | [CREATE 1P RATED] | [RANKING RULES]
+		// Intra-group gap = 4 px, inter-group gap = 16 px.
 		int actY = 224;
-		joinBtn       = new ButtonSDL(  8, actY,  80, 28, "JOIN",    new Runnable() { public void run() { attemptJoinSelected(); } });
+		joinBtn       = new ButtonSDL(  8, actY,  72, 28, "JOIN",    new Runnable() { public void run() { attemptJoinSelected(); } });
 		joinBtn.primary = true;
-		viewBtn       = new ButtonSDL( 92, actY,  80, 28, "VIEW",    new Runnable() { public void run() { viewSelectedRoom(); } });
-		createBtn     = new ButtonSDL(176, actY, 112, 28, "CREATE",  new Runnable() { public void run() { enterCreateRoom(false, false); } });
-		create1PBtn   = new ButtonSDL(292, actY,  40, 28, "1P",      new Runnable() { public void run() { enterCreateRoom(true,  false); } });
-		createRatedBtn= new ButtonSDL(336, actY,  80, 28, "RATED",   new Runnable() { public void run() { enterCreateRoom(false, true);  } });
-		rankingBtn    = new ButtonSDL(420, actY, 112, 28, "RANKING", new Runnable() { public void run() { NullpoMinoSDL.enterState(NullpoMinoSDL.STATE_NET_RANKING); } });
-		rulechangeBtn = new ButtonSDL(536, actY,  96, 28, "RULES",   new Runnable() { public void run() { NullpoMinoSDL.enterState(NullpoMinoSDL.STATE_NET_RULECHANGE); } });
+		viewBtn       = new ButtonSDL( 84, actY,  72, 28, "VIEW",    new Runnable() { public void run() { viewSelectedRoom(); } });
+
+		createBtn     = new ButtonSDL(172, actY, 104, 28, "CREATE",  new Runnable() { public void run() { enterCreateRoom(false, false); } });
+		create1PBtn   = new ButtonSDL(280, actY,  40, 28, "1P",      new Runnable() { public void run() { enterCreateRoom(true,  false); } });
+		createRatedBtn= new ButtonSDL(324, actY,  84, 28, "RATED",   new Runnable() { public void run() { enterCreateRoom(false, true);  } });
+
+		rankingBtn    = new ButtonSDL(424, actY, 116, 28, "RANKING", new Runnable() { public void run() { NullpoMinoSDL.enterState(NullpoMinoSDL.STATE_NET_RANKING); } });
+		rulechangeBtn = new ButtonSDL(544, actY,  84, 28, "RULES",   new Runnable() { public void run() { NullpoMinoSDL.enterState(NullpoMinoSDL.STATE_NET_RULECHANGE); } });
 		// Top-right corner: TEAM-change shortcut + disconnect X. TEAM prefills
 		// the chat with '/team ' and focuses it; the user types a name and
 		// hits Enter to submit. Disconnect's right edge matches the room
@@ -311,6 +313,16 @@ public class StateNetLobbySDL extends BaseStateSDL {
 		nl.joinRoom(r.roomID, false);
 	}
 
+	/** Draw a short dim vertical divider (2x2 dots stacked) between button groups. */
+	private static void drawGroupSeparator(int x, int y, int h) {
+		com.sun.jna.Pointer rnd = NullpoMinoSDL.renderer;
+		mu.nu.nullpo.gui.sdl.binding.SDL3.INSTANCE.SDL_SetRenderDrawBlendMode(rnd,
+				mu.nu.nullpo.gui.sdl.binding.SDLConstants.SDL_BLENDMODE_BLEND);
+		mu.nu.nullpo.gui.sdl.binding.SDL3.setDrawColor(rnd, 140, 140, 160, 160);
+		mu.nu.nullpo.gui.sdl.binding.SDL3.INSTANCE.SDL_RenderFillRect(rnd,
+				new mu.nu.nullpo.gui.sdl.binding.SDLStructs.SDL_FRect(x, y + 6, 2, h - 12));
+	}
+
 	/**
 	 * Open the currently selected room in the CreateRoom form in read-only
 	 * detail mode so the user can inspect its settings without joining.
@@ -374,6 +386,12 @@ public class StateNetLobbySDL extends BaseStateSDL {
 		rulechangeBtn.render();
 		teamBtn.render();
 		disconnectBtn.render();
+
+		// Thin dim separator line between each button group so the visual
+		// grouping reads at a glance. Placed in the middle of the inter-group
+		// gaps (x=164 between VIEW|CREATE, x=416 between RATED|RANKING).
+		drawGroupSeparator(164, 224, 28);
+		drawGroupSeparator(416, 224, 28);
 
 		// Chat log fills the main bottom-left panel, matched in width to the
 		// chat input directly below it.
