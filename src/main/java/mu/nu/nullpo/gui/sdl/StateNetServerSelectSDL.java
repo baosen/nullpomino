@@ -97,11 +97,11 @@ public class StateNetServerSelectSDL extends BaseStateSDL {
 		// Buttons pinned to the bottom (h=32, y=444 → ends at y=476, 4 px above
 		// the 480 px logical viewport floor).
 		int btnY = 444;
-		connectBtn = new ButtonSDL( 16, btnY, 128, 32, "CONNECT", new Runnable() { public void run() { attemptConnect(false); } });
+		connectBtn = new ButtonSDL( 16, btnY, 128, 32, "CONNECT", new Runnable() { public void run() { attemptConnect(); } });
 		connectBtn.primary = true;
-		observeBtn = new ButtonSDL(148, btnY, 128, 32, "OBSERVE", new Runnable() { public void run() { attemptConnect(true); } });
-		addBtn     = new ButtonSDL(280, btnY,  64, 32, "ADD",     new Runnable() { public void run() { openAddServer(); } });
-		deleteBtn  = new ButtonSDL(348, btnY, 112, 32, "DELETE",  new Runnable() { public void run() { deleteSelectedServer(); } });
+		observeBtn = new ButtonSDL(148, btnY, 148, 32, "OBSERVE", new Runnable() { public void run() { toggleObserver(); } });
+		addBtn     = new ButtonSDL(300, btnY,  64, 32, "ADD",     new Runnable() { public void run() { openAddServer(); } });
+		deleteBtn  = new ButtonSDL(368, btnY, 112, 32, "DELETE",  new Runnable() { public void run() { deleteSelectedServer(); } });
 		backBtn    = new ButtonSDL(556, btnY,  68, 32, "BACK",    new Runnable() { public void run() { NullpoMinoSDL.endNetplay(); } });
 
 		addServerInput = new TextInputSDL(16, btnY, 400, 32);
@@ -154,6 +154,12 @@ public class StateNetServerSelectSDL extends BaseStateSDL {
 		nl.pump();
 		MouseInputSDL.mouseInput.update();
 
+		// Reflect the observer-enabled flag in the OBSERVE button's label each
+		// frame so the toggle state is visible without re-rendering the screen.
+		boolean observerOn = nl.propObserver != null
+				&& nl.propObserver.getProperty("observer.enable", false);
+		observeBtn.label = observerOn ? "UNOBSERVE" : "OBSERVE";
+
 		int mx = MouseInputSDL.mouseInput.getMouseX();
 		int my = MouseInputSDL.mouseInput.getMouseY();
 		boolean clicked = MouseInputSDL.mouseInput.isMouseClicked();
@@ -166,7 +172,7 @@ public class StateNetServerSelectSDL extends BaseStateSDL {
 			if(nameInput.update(mx, my, clicked))   setFocus(nameInput);
 			if(teamInput.update(mx, my, clicked))   setFocus(teamInput);
 			if(serverTable.update(mx, my, clicked)) setFocus(serverTable);
-			if(serverTable.activated)               attemptConnect(false);
+			if(serverTable.activated)               attemptConnect();
 
 			// Button actions are wired in enter() and fire from ButtonSDL itself on click.
 			connectBtn.update(mx, my, clicked);
@@ -300,7 +306,7 @@ public class StateNetServerSelectSDL extends BaseStateSDL {
 		// Enter in the server table → connect. (Buttons handle Enter themselves via action.)
 		if(!adding && (ev.scancode == SDLConstants.SDL_SCANCODE_RETURN || ev.scancode == SDLConstants.SDL_SCANCODE_KP_ENTER)
 				&& !ev.repeat && focused == serverTable) {
-			attemptConnect(false);
+			attemptConnect();
 		}
 		if(!adding && ev.scancode == SDLConstants.SDL_SCANCODE_ESCAPE && !ev.repeat) {
 			NullpoMinoSDL.endNetplay();
@@ -310,7 +316,7 @@ public class StateNetServerSelectSDL extends BaseStateSDL {
 		}
 	}
 
-	private void attemptConnect(boolean observer) {
+	private void attemptConnect() {
 		NetLobbyFrame nl = NullpoMinoSDL.netLobby;
 		String name = nameInput.getText().trim();
 		if(name.length() == 0) { statusLine = "Enter a name first"; return; }
@@ -329,28 +335,62 @@ public class StateNetServerSelectSDL extends BaseStateSDL {
 
 		nl.propConfig.setProperty("serverselect.listboxServerList.value", server);
 
-		if(observer) {
-			// Observer mode: the NetObserverClient polls the title screen's
-			// observer.cfg and starts a read-only stream on re-entry to STATE_TITLE.
-			// Persist the server choice + enable flag, then bail back.
-			if(nl.propObserver == null) nl.propObserver = new mu.nu.nullpo.util.CustomProperties();
-			nl.propObserver.setProperty("observer.enable", true);
-			nl.propObserver.setProperty("observer.host", host);
-			nl.propObserver.setProperty("observer.port", port);
-			try {
-				java.io.FileOutputStream out = new java.io.FileOutputStream("config/setting/netobserver.cfg");
-				nl.propObserver.store(out, "NullpoMino Netplay Observer Config");
-				out.close();
-			} catch(java.io.IOException e) {
-				statusLine = "FAILED TO SAVE OBSERVER CONFIG";
-				return;
-			}
-			NullpoMinoSDL.endNetplay();  // Returns to the title; startObserverClient runs there.
+		nl.connectToServer(name, teamInput.getText(), host, port);
+		NullpoMinoSDL.enterState(NullpoMinoSDL.STATE_NET_LOBBY);
+	}
+
+	/**
+	 * Toggle the lobby-level observer client. When off → arm it with the
+	 * selected server and bounce to the title, where startObserverClient()
+	 * opens the read-only feed. When on → clear the flag and return to title
+	 * (the client stops automatically on next state change).
+	 */
+	private void toggleObserver() {
+		NetLobbyFrame nl = NullpoMinoSDL.netLobby;
+		if(nl == null) return;
+		if(nl.propObserver == null) nl.propObserver = new mu.nu.nullpo.util.CustomProperties();
+
+		boolean enabled = nl.propObserver.getProperty("observer.enable", false);
+
+		if(enabled) {
+			nl.propObserver.setProperty("observer.enable", false);
+			if(!writeObserverConfig(nl)) return;
+			NullpoMinoSDL.stopObserverClient();
+			NullpoMinoSDL.endNetplay();
 			return;
 		}
 
-		nl.connectToServer(name, teamInput.getText(), host, port);
-		NullpoMinoSDL.enterState(NullpoMinoSDL.STATE_NET_LOBBY);
+		// Enabling: need a server and a non-empty nickname.
+		int idx = serverTable.getSelectedIndex();
+		if(idx < 0 || idx >= nl.serverList.size()) { statusLine = "Select a server"; return; }
+		String server = nl.serverList.get(idx);
+		int portSplit = server.indexOf(':');
+		String host = portSplit == -1 ? server : server.substring(0, portSplit);
+		int port = mu.nu.nullpo.game.net.NetPlayerClient.DEFAULT_PORT;
+		if(portSplit != -1) {
+			try { port = Integer.parseInt(server.substring(portSplit + 1).trim()); }
+			catch(NumberFormatException e) { statusLine = "Bad port in " + server; return; }
+		}
+
+		nl.propObserver.setProperty("observer.enable", true);
+		nl.propObserver.setProperty("observer.host", host);
+		nl.propObserver.setProperty("observer.port", port);
+		if(!writeObserverConfig(nl)) return;
+		NullpoMinoSDL.endNetplay();
+	}
+
+	private boolean writeObserverConfig(NetLobbyFrame nl) {
+		java.io.FileOutputStream out = null;
+		try {
+			out = new java.io.FileOutputStream("config/setting/netobserver.cfg");
+			nl.propObserver.store(out, "NullpoMino Netplay Observer Config");
+			return true;
+		} catch(java.io.IOException e) {
+			statusLine = "FAILED TO SAVE OBSERVER CONFIG";
+			return false;
+		} finally {
+			if(out != null) try { out.close(); } catch(java.io.IOException ignore) {}
+		}
 	}
 
 	private void commitAddServer() {
