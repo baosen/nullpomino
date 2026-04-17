@@ -873,8 +873,13 @@ public class NetLobbyFrame implements NetMessageListener {
 	public String getPlayerNameWithTripCode(NetPlayerInfo pInfo) { return convTripCode(pInfo.strName); }
 
 	public String convTripCode(String s) {
-		if(propLang == null || !propLang.getProperty("TripSeparator_EnableConvert", false)) return s;
-		String strName = s;
+		// The server stores names with a space before the '!' hash marker
+		// ("Bob !ABCHASH") — login sanitises '!' in the nickname portion to
+		// '?' so this sequence can only ever be the tripcode separator. Strip
+		// the space for display so the nickname reads as "Bob!ABCHASH" with no
+		// visual gap.
+		String strName = (s == null) ? "" : s.replace(" !", "!");
+		if(propLang == null || !propLang.getProperty("TripSeparator_EnableConvert", false)) return strName;
 		strName = strName.replace(getUIText("TripSeparator_True"), getUIText("TripSeparator_False"));
 		strName = strName.replace("!", getUIText("TripSeparator_True"));
 		strName = strName.replace("?", getUIText("TripSeparator_False"));
