@@ -76,12 +76,13 @@ public class StateNetLobbySDL extends BaseStateSDL {
 		};
 		roomTable = new TableSDL(8, 40, 624, 178, cols);
 
-		// Chat input + buttons at bottom
-		chatInput = new TextInputSDL(8, 390, 496, 28);
+		// Chat input + buttons at the very bottom of the screen, so the chat log
+		// can fill the vertical space above them.
+		chatInput = new TextInputSDL(8, 448, 496, 28);
 		chatInput.maxChars = 255;
 		chatInput.placeholder = "Chat...";
 		final NetLobbyFrame nlf = nl;
-		sendBtn = new ButtonSDL(508, 390, 80, 28, "SEND", new Runnable() { public void run() { sendChat(nlf); } });
+		sendBtn = new ButtonSDL(508, 448, 80, 28, "SEND", new Runnable() { public void run() { sendChat(nlf); } });
 		sendBtn.primary = true;
 
 		int actY = 224;
@@ -338,8 +339,9 @@ public class StateNetLobbySDL extends BaseStateSDL {
 		disconnectBtn.render();
 
 		// Chat log occupies the centre-left strip; player list is a column on the right.
+		// Stretched down to just above the chat input so no black space is wasted.
 		nl.chatLogLobby.x = 8;  nl.chatLogLobby.y = 258;
-		nl.chatLogLobby.w = 480; nl.chatLogLobby.h = 124;
+		nl.chatLogLobby.w = 480; nl.chatLogLobby.h = 186;
 		nl.chatLogLobby.render();
 
 		chatInput.render();
@@ -352,7 +354,7 @@ public class StateNetLobbySDL extends BaseStateSDL {
 			LinkedList<NetPlayerInfo> list = new LinkedList<NetPlayerInfo>(nl.netPlayerClient.getPlayerInfoList());
 			int shown = 0;
 			for(NetPlayerInfo p : list) {
-				if(shown >= 7) break;
+				if(shown >= 10) break;
 				String name = NormalFontSDL.safeString(nl.getPlayerNameWithTripCode(p));
 				if(name.length() > 8) name = name.substring(0, 8);
 				NormalFontSDL.printFont(496, py, name, NormalFontSDL.COLOR_WHITE);
@@ -362,7 +364,8 @@ public class StateNetLobbySDL extends BaseStateSDL {
 		}
 
 		if(statusLine.length() > 0) {
-			NormalFontSDL.printFont(8, 424, NormalFontSDL.safeString(statusLine), NormalFontSDL.COLOR_RED);
+			// Show just under the title bar so it never collides with the chat area.
+			NormalFontSDL.printFont(8, 24, NormalFontSDL.safeString(statusLine), NormalFontSDL.COLOR_RED);
 		}
 	}
 }
