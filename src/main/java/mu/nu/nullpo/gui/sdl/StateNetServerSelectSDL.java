@@ -91,19 +91,19 @@ public class StateNetServerSelectSDL extends BaseStateSDL {
 		refreshServerTable();
 
 		int btnY = 398;
-		connectBtn = new ButtonSDL(16,  btnY, 108, 32, "CONNECT");
+		connectBtn = new ButtonSDL(16,  btnY, 108, 32, "CONNECT", new Runnable() { public void run() { attemptConnect(false); } });
 		connectBtn.primary = true;
-		observeBtn = new ButtonSDL(128, btnY, 108, 32, "OBSERVE");
-		addBtn     = new ButtonSDL(240, btnY,  80, 32, "ADD");
-		deleteBtn  = new ButtonSDL(324, btnY,  80, 32, "DELETE");
-		backBtn    = new ButtonSDL(540, btnY,  84, 32, "BACK");
+		observeBtn = new ButtonSDL(128, btnY, 108, 32, "OBSERVE", new Runnable() { public void run() { attemptConnect(true); } });
+		addBtn     = new ButtonSDL(240, btnY,  80, 32, "ADD",     new Runnable() { public void run() { openAddServer(); } });
+		deleteBtn  = new ButtonSDL(324, btnY,  80, 32, "DELETE",  new Runnable() { public void run() { deleteSelectedServer(); } });
+		backBtn    = new ButtonSDL(540, btnY,  84, 32, "BACK",    new Runnable() { public void run() { NullpoMinoSDL.endNetplay(); } });
 
 		addServerInput = new TextInputSDL(16, 398, 400, 32);
 		addServerInput.placeholder = "host:port";
 		addServerInput.maxChars = 64;
-		addOkBtn     = new ButtonSDL(420, 398, 80, 32, "OK");
+		addOkBtn     = new ButtonSDL(420, 398, 80, 32, "OK",     new Runnable() { public void run() { commitAddServer(); } });
 		addOkBtn.primary = true;
-		addCancelBtn = new ButtonSDL(504, 398, 120, 32, "CANCEL");
+		addCancelBtn = new ButtonSDL(504, 398, 120, 32, "CANCEL", new Runnable() { public void run() { cancelAddServer(); } });
 
 		adding = false;
 		// If the player hasn't set a name yet, focus the name field so they can type it
@@ -146,6 +146,7 @@ public class StateNetServerSelectSDL extends BaseStateSDL {
 		NetLobbyFrame nl = NullpoMinoSDL.netLobby;
 		if(nl == null) { NullpoMinoSDL.enterState(NullpoMinoSDL.STATE_TITLE); return; }
 		nl.pump();
+		MouseInputSDL.mouseInput.update();
 
 		int mx = MouseInputSDL.mouseInput.getMouseX();
 		int my = MouseInputSDL.mouseInput.getMouseY();
@@ -153,19 +154,20 @@ public class StateNetServerSelectSDL extends BaseStateSDL {
 
 		if(adding) {
 			if(addServerInput.update(mx, my, clicked)) setFocus(addServerInput);
-			if(addOkBtn.update(mx, my, clicked)) commitAddServer();
-			if(addCancelBtn.update(mx, my, clicked)) { adding = false; setFocus(serverTable); }
+			addOkBtn.update(mx, my, clicked);      // action runs on click
+			addCancelBtn.update(mx, my, clicked);  // action runs on click
 		} else {
 			if(nameInput.update(mx, my, clicked))   setFocus(nameInput);
 			if(teamInput.update(mx, my, clicked))   setFocus(teamInput);
 			if(serverTable.update(mx, my, clicked)) setFocus(serverTable);
 			if(serverTable.activated)               attemptConnect(false);
 
-			if(connectBtn.update(mx, my, clicked)) attemptConnect(false);
-			if(observeBtn.update(mx, my, clicked)) attemptConnect(true);
-			if(addBtn.update(mx, my, clicked))     { adding = true; addServerInput.setText(""); setFocus(addServerInput); }
-			if(deleteBtn.update(mx, my, clicked))  deleteSelectedServer();
-			if(backBtn.update(mx, my, clicked))    NullpoMinoSDL.endNetplay();
+			// Button actions are wired in enter() and fire from ButtonSDL itself on click.
+			connectBtn.update(mx, my, clicked);
+			observeBtn.update(mx, my, clicked);
+			addBtn.update(mx, my, clicked);
+			deleteBtn.update(mx, my, clicked);
+			backBtn.update(mx, my, clicked);
 		}
 
 		// Deliver typed text and key events to the focused widget.  UP/DOWN act as
@@ -185,11 +187,17 @@ public class StateNetServerSelectSDL extends BaseStateSDL {
 				serverTable.handleKey(ev);
 				continue;
 			}
-			boolean up   = ev.scancode == SDLConstants.SDL_SCANCODE_UP;
-			boolean down = ev.scancode == SDLConstants.SDL_SCANCODE_DOWN;
+			boolean up    = ev.scancode == SDLConstants.SDL_SCANCODE_UP;
+			boolean down  = ev.scancode == SDLConstants.SDL_SCANCODE_DOWN;
+			boolean left  = ev.scancode == SDLConstants.SDL_SCANCODE_LEFT;
+			boolean right = ev.scancode == SDLConstants.SDL_SCANCODE_RIGHT;
+
+			// LEFT/RIGHT cycle within the button row; text fields still get them for caret movement.
+			if((left || right) && !ev.repeat && tryButtonRowNav(left)) continue;
+
+			// UP/DOWN cycle widget rows (with boundary behaviour on the server table).
 			if((up || down) && !ev.repeat && tryWidgetNav(up)) continue;
 			if((up || down) && ev.repeat && focused == serverTable) {
-				// Held arrow on list: still scroll rows on repeat.
 				serverTable.handleKey(ev);
 				continue;
 			}
@@ -197,18 +205,38 @@ public class StateNetServerSelectSDL extends BaseStateSDL {
 		}
 	}
 
+	private void openAddServer() {
+		adding = true;
+		addServerInput.setText("");
+		setFocus(addServerInput);
+	}
+
+	private void cancelAddServer() {
+		adding = false;
+		setFocus(serverTable);
+	}
+
 	/**
-	 * Move focus to the previous/next widget in the nameInput → teamInput → serverTable
-	 * cycle.  When on the server table, only jumps when the current selection is at the
-	 * top (for UP) or bottom (for DOWN); otherwise returns false so the table gets the
-	 * key for row navigation.
+	 * Return the ordered button row (row 3) for navigation.  Built fresh each
+	 * call — cheap and keeps the order explicit.
+	 */
+	private ButtonSDL[] buttonRow() {
+		return new ButtonSDL[] { connectBtn, observeBtn, addBtn, deleteBtn, backBtn };
+	}
+
+	/**
+	 * Move focus to the previous/next widget in the
+	 * nameInput → teamInput → serverTable → [button row] → (wrap) cycle.
+	 * When on the server table, only jumps at the top/bottom row; otherwise
+	 * returns false so the table handles the key for row navigation.
 	 *
 	 * @param up true for UP, false for DOWN
 	 * @return true if focus moved (caller should skip normal dispatch)
 	 */
 	private boolean tryWidgetNav(boolean up) {
+		ButtonSDL[] row = buttonRow();
 		if(focused == nameInput) {
-			setFocus(up ? serverTable : teamInput);
+			setFocus(up ? row[row.length - 1] : teamInput);
 			return true;
 		}
 		if(focused == teamInput) {
@@ -219,8 +247,33 @@ public class StateNetServerSelectSDL extends BaseStateSDL {
 			int sel = serverTable.getSelectedIndex();
 			int rows = serverTable.getRowCount();
 			if(up && sel <= 0) { setFocus(teamInput); return true; }
-			if(!up && (rows == 0 || sel >= rows - 1)) { setFocus(nameInput); return true; }
+			if(!up && (rows == 0 || sel >= rows - 1)) { setFocus(row[0]); return true; }
 			return false;
+		}
+		for(ButtonSDL b : row) {
+			if(focused == b) {
+				setFocus(up ? serverTable : nameInput);
+				return true;
+			}
+		}
+		return false;
+	}
+
+	/**
+	 * LEFT/RIGHT navigation within the button row.  Returns true if handled;
+	 * otherwise (e.g. we're on a text field that uses LEFT/RIGHT for caret
+	 * movement) the caller falls back to normal dispatch.
+	 */
+	private boolean tryButtonRowNav(boolean left) {
+		ButtonSDL[] row = buttonRow();
+		for(int i = 0; i < row.length; i++) {
+			if(focused == row[i]) {
+				int next = left ? i - 1 : i + 1;
+				if(next < 0) next = row.length - 1;
+				if(next >= row.length) next = 0;
+				setFocus(row[next]);
+				return true;
+			}
 		}
 		return false;
 	}
@@ -233,13 +286,12 @@ public class StateNetServerSelectSDL extends BaseStateSDL {
 	}
 
 	private void handleGlobalKey(NullpoMinoSDL.KeyEvent ev) {
-		// Tab cycles focus between name → team → server table → back to name.
+		// TAB acts like DOWN — cycles focus forward through every widget row.
 		if(ev.scancode == SDLConstants.SDL_SCANCODE_TAB && !ev.repeat && !adding) {
-			if(focused == nameInput)       setFocus(teamInput);
-			else if(focused == teamInput)  setFocus(serverTable);
-			else                           setFocus(nameInput);
+			boolean shift = (ev.keymod & SDLConstants.SDL_KMOD_SHIFT) != 0;
+			tryWidgetNav(shift);
 		}
-		// Enter in the server table → connect.
+		// Enter in the server table → connect. (Buttons handle Enter themselves via action.)
 		if(!adding && (ev.scancode == SDLConstants.SDL_SCANCODE_RETURN || ev.scancode == SDLConstants.SDL_SCANCODE_KP_ENTER)
 				&& !ev.repeat && focused == serverTable) {
 			attemptConnect(false);
@@ -248,12 +300,7 @@ public class StateNetServerSelectSDL extends BaseStateSDL {
 			NullpoMinoSDL.endNetplay();
 		}
 		if(adding && ev.scancode == SDLConstants.SDL_SCANCODE_ESCAPE && !ev.repeat) {
-			adding = false;
-			setFocus(serverTable);
-		}
-		if(adding && (ev.scancode == SDLConstants.SDL_SCANCODE_RETURN || ev.scancode == SDLConstants.SDL_SCANCODE_KP_ENTER)
-				&& !ev.repeat) {
-			commitAddServer();
+			cancelAddServer();
 		}
 	}
 

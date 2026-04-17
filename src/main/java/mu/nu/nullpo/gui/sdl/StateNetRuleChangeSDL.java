@@ -26,6 +26,7 @@ public class StateNetRuleChangeSDL extends BaseStateSDL {
 	public void update() {
 		NetLobbyFrame nl = NullpoMinoSDL.netLobby;
 		if(nl != null) nl.pump();
+		MouseInputSDL.mouseInput.update();
 		int mx = MouseInputSDL.mouseInput.getMouseX();
 		int my = MouseInputSDL.mouseInput.getMouseY();
 		boolean clicked = MouseInputSDL.mouseInput.isMouseClicked();

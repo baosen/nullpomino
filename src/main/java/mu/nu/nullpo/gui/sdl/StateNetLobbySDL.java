@@ -79,18 +79,19 @@ public class StateNetLobbySDL extends BaseStateSDL {
 		chatInput = new TextInputSDL(8, 390, 496, 28);
 		chatInput.maxChars = 255;
 		chatInput.placeholder = "Chat...";
-		sendBtn = new ButtonSDL(508, 390, 80, 28, "SEND");
+		final NetLobbyFrame nlf = nl;
+		sendBtn = new ButtonSDL(508, 390, 80, 28, "SEND", new Runnable() { public void run() { sendChat(nlf); } });
 		sendBtn.primary = true;
 
 		int actY = 266;
-		joinBtn       = new ButtonSDL(  8, actY, 92, 28, "JOIN");
+		joinBtn       = new ButtonSDL(  8, actY, 92, 28, "JOIN",    new Runnable() { public void run() { attemptJoinSelected(false); } });
 		joinBtn.primary = true;
-		watchBtn      = new ButtonSDL(104, actY, 92, 28, "WATCH");
-		createBtn     = new ButtonSDL(200, actY, 92, 28, "CREATE");
-		create1PBtn   = new ButtonSDL(296, actY, 80, 28, "1P");
-		rankingBtn    = new ButtonSDL(380, actY, 104, 28, "RANKING");
-		rulechangeBtn = new ButtonSDL(488, actY, 92, 28, "RULES");
-		disconnectBtn = new ButtonSDL(588, actY, 44, 28, "X");
+		watchBtn      = new ButtonSDL(104, actY, 92, 28, "WATCH",   new Runnable() { public void run() { attemptJoinSelected(true); } });
+		createBtn     = new ButtonSDL(200, actY, 92, 28, "CREATE",  new Runnable() { public void run() { enterCreateRoom(false); } });
+		create1PBtn   = new ButtonSDL(296, actY, 80, 28, "1P",      new Runnable() { public void run() { enterCreateRoom(true); } });
+		rankingBtn    = new ButtonSDL(380, actY, 104, 28, "RANKING", new Runnable() { public void run() { NullpoMinoSDL.enterState(NullpoMinoSDL.STATE_NET_RANKING); } });
+		rulechangeBtn = new ButtonSDL(488, actY, 92, 28, "RULES",   new Runnable() { public void run() { NullpoMinoSDL.enterState(NullpoMinoSDL.STATE_NET_RULECHANGE); } });
+		disconnectBtn = new ButtonSDL(588, actY, 44, 28, "X",       new Runnable() { public void run() { NullpoMinoSDL.endNetplay(); } });
 
 		// Default focus goes on the room table so arrow keys navigate rooms
 		// immediately; pressing TAB or clicking the chat field switches to typing.
@@ -116,6 +117,7 @@ public class StateNetLobbySDL extends BaseStateSDL {
 		NetLobbyFrame nl = NullpoMinoSDL.netLobby;
 		if(nl == null) { NullpoMinoSDL.enterState(NullpoMinoSDL.STATE_TITLE); return; }
 		nl.pump();
+		MouseInputSDL.mouseInput.update();
 
 		// If the session has disconnected (pump may have set lobbyMode), bail back to server select.
 		if(nl.netPlayerClient == null || !nl.netPlayerClient.isConnected()) {
@@ -142,14 +144,15 @@ public class StateNetLobbySDL extends BaseStateSDL {
 		if(chatInput.update(mx, my, clicked)) setFocus(chatInput);
 		nl.chatLogLobby.update(mx, my, clicked);
 
-		if(sendBtn.update(mx, my, clicked))          sendChat(nl);
-		if(joinBtn.update(mx, my, clicked))          attemptJoinSelected(false);
-		if(watchBtn.update(mx, my, clicked))         attemptJoinSelected(true);
-		if(createBtn.update(mx, my, clicked))        enterCreateRoom(false);
-		if(create1PBtn.update(mx, my, clicked))      enterCreateRoom(true);
-		if(rankingBtn.update(mx, my, clicked))       NullpoMinoSDL.enterState(NullpoMinoSDL.STATE_NET_RANKING);
-		if(rulechangeBtn.update(mx, my, clicked))    NullpoMinoSDL.enterState(NullpoMinoSDL.STATE_NET_RULECHANGE);
-		if(disconnectBtn.update(mx, my, clicked))    NullpoMinoSDL.endNetplay();
+		// Button actions are wired in enter() and fire from ButtonSDL itself on click.
+		sendBtn.update(mx, my, clicked);
+		joinBtn.update(mx, my, clicked);
+		watchBtn.update(mx, my, clicked);
+		createBtn.update(mx, my, clicked);
+		create1PBtn.update(mx, my, clicked);
+		rankingBtn.update(mx, my, clicked);
+		rulechangeBtn.update(mx, my, clicked);
+		disconnectBtn.update(mx, my, clicked);
 
 		// Deliver typed text and key events.  UP/DOWN navigate rows inside the room
 		// table and jump to the chat input at the list boundary; from chat they move
@@ -163,8 +166,15 @@ public class StateNetLobbySDL extends BaseStateSDL {
 				roomTable.handleKey(ev);
 				continue;
 			}
-			boolean up   = ev.scancode == SDLConstants.SDL_SCANCODE_UP;
-			boolean down = ev.scancode == SDLConstants.SDL_SCANCODE_DOWN;
+			boolean up    = ev.scancode == SDLConstants.SDL_SCANCODE_UP;
+			boolean down  = ev.scancode == SDLConstants.SDL_SCANCODE_DOWN;
+			boolean left  = ev.scancode == SDLConstants.SDL_SCANCODE_LEFT;
+			boolean right = ev.scancode == SDLConstants.SDL_SCANCODE_RIGHT;
+
+			// LEFT/RIGHT cycle within the action-button row; text fields still get
+			// the caret-movement behaviour elsewhere.
+			if((left || right) && !ev.repeat && tryButtonRowNav(left)) continue;
+
 			if((up || down) && !ev.repeat && tryWidgetNav(up)) continue;
 			if((up || down) && ev.repeat && focused == roomTable) {
 				roomTable.handleKey(ev);
@@ -174,23 +184,48 @@ public class StateNetLobbySDL extends BaseStateSDL {
 		}
 	}
 
+	/** Ordered action-button row used for keyboard navigation. */
+	private ButtonSDL[] buttonRow() {
+		return new ButtonSDL[] { joinBtn, watchBtn, createBtn, create1PBtn, rankingBtn, rulechangeBtn, disconnectBtn };
+	}
+
 	/**
-	 * Boundary-aware widget navigation for the lobby: roomTable ↔ chatInput.
-	 * Inside the table, UP/DOWN scroll rows until the top/bottom is reached, at
-	 * which point focus jumps to the chat field.  From chat, UP/DOWN move focus
-	 * back to the table.
+	 * Vertical nav cycle: roomTable → button row → chatInput → wrap.  On the
+	 * room table, UP/DOWN scroll rows until the boundary, then jump out.
 	 */
 	private boolean tryWidgetNav(boolean up) {
-		if(focused == chatInput) {
-			setFocus(roomTable);
-			return true;
-		}
+		ButtonSDL[] row = buttonRow();
 		if(focused == roomTable) {
 			int sel = roomTable.getSelectedIndex();
 			int rows = roomTable.getRowCount();
 			if(up && sel <= 0) { setFocus(chatInput); return true; }
-			if(!up && (rows == 0 || sel >= rows - 1)) { setFocus(chatInput); return true; }
+			if(!up && (rows == 0 || sel >= rows - 1)) { setFocus(row[0]); return true; }
 			return false;
+		}
+		for(ButtonSDL b : row) {
+			if(focused == b) {
+				setFocus(up ? roomTable : chatInput);
+				return true;
+			}
+		}
+		if(focused == chatInput) {
+			setFocus(up ? row[0] : roomTable);
+			return true;
+		}
+		return false;
+	}
+
+	/** LEFT/RIGHT moves between buttons in the action row. */
+	private boolean tryButtonRowNav(boolean left) {
+		ButtonSDL[] row = buttonRow();
+		for(int i = 0; i < row.length; i++) {
+			if(focused == row[i]) {
+				int next = left ? i - 1 : i + 1;
+				if(next < 0) next = row.length - 1;
+				if(next >= row.length) next = 0;
+				setFocus(row[next]);
+				return true;
+			}
 		}
 		return false;
 	}
@@ -204,12 +239,16 @@ public class StateNetLobbySDL extends BaseStateSDL {
 				break;
 			case SDLConstants.SDL_SCANCODE_RETURN:
 			case SDLConstants.SDL_SCANCODE_KP_ENTER:
+				// Enter on text/table fires the default action; buttons handle their
+				// own activation via handleKey + action Runnable.
 				if(focused == chatInput) sendChat(nl);
 				else if(focused == roomTable) attemptJoinSelected(false);
 				break;
-			case SDLConstants.SDL_SCANCODE_TAB:
-				setFocus(focused == chatInput ? roomTable : chatInput);
+			case SDLConstants.SDL_SCANCODE_TAB: {
+				boolean shift = (ev.keymod & SDLConstants.SDL_KMOD_SHIFT) != 0;
+				tryWidgetNav(shift);
 				break;
+			}
 			case SDLConstants.SDL_SCANCODE_PAGEUP:
 				nl.chatLogLobby.pageUp();
 				break;

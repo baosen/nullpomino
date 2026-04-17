@@ -67,6 +67,7 @@ public class StateNetRoomSDL extends BaseStateSDL {
 		NetLobbyFrame nl = NullpoMinoSDL.netLobby;
 		if(nl == null) { NullpoMinoSDL.enterState(NullpoMinoSDL.STATE_TITLE); return; }
 		nl.pump();
+		MouseInputSDL.mouseInput.update();
 
 		if(nl.netPlayerClient == null || !nl.netPlayerClient.isConnected()) {
 			NullpoMinoSDL.enterState(NullpoMinoSDL.STATE_NET_SERVERSELECT);
