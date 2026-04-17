@@ -29,6 +29,8 @@ public class TableSDL extends WidgetSDL {
 	private final List<Integer> rowColors = new ArrayList<>();
 	public int rowHeight = 18;
 	public int headerHeight = 20;
+	/** When false, the header-row stripe + column labels are not drawn (row area expands to fill). */
+	public boolean showHeader = true;
 
 	private int selected = -1;
 	private int scroll = 0;
@@ -82,7 +84,8 @@ public class TableSDL extends WidgetSDL {
 	}
 
 	private int visibleRowCount() {
-		return Math.max(1, (h - headerHeight) / rowHeight);
+		int top = showHeader ? headerHeight : 0;
+		return Math.max(1, (h - top) / rowHeight);
 	}
 
 	private void ensureVisible(int idx) {
@@ -111,8 +114,9 @@ public class TableSDL extends WidgetSDL {
 			clampScroll();
 		}
 
-		if(leftJustPressed && containsPoint(mx, my) && my >= y + headerHeight) {
-			int rowIdx = scroll + (my - (y + headerHeight)) / rowHeight;
+		int top = showHeader ? headerHeight : 0;
+		if(leftJustPressed && containsPoint(mx, my) && my >= y + top) {
+			int rowIdx = scroll + (my - (y + top)) / rowHeight;
 			if(rowIdx >= 0 && rowIdx < rows.size()) {
 				long now = System.currentTimeMillis();
 				boolean doubleClicked = (rowIdx == lastClickRow && (now - lastClickAt) < 400);
@@ -169,24 +173,27 @@ public class TableSDL extends WidgetSDL {
 		// Background
 		fillRect(x, y, w, h, 0, 0, 0, 200);
 
-		// Header
-		fillRect(x, y, w, headerHeight, 32, 32, 64, 240);
-		int colX = x + 4;
-		for(Column c : columns) {
-			String s = NormalFontSDL.safeString(c.header == null ? "" : c.header);
-			int maxChars = Math.max(1, (c.widthPx - 4) / 16);
-			if(s.length() > maxChars) s = s.substring(0, maxChars);
-			NormalFontSDL.printFont(colX, y + (headerHeight - 16) / 2, s, NormalFontSDL.COLOR_YELLOW);
-			colX += c.widthPx;
+		int top = showHeader ? headerHeight : 0;
+		if(showHeader) {
+			// Header stripe + column labels
+			fillRect(x, y, w, headerHeight, 32, 32, 64, 240);
+			int colX = x + 4;
+			for(Column c : columns) {
+				String s = NormalFontSDL.safeString(c.header == null ? "" : c.header);
+				int maxChars = Math.max(1, (c.widthPx - 4) / 16);
+				if(s.length() > maxChars) s = s.substring(0, maxChars);
+				NormalFontSDL.printFont(colX, y + (headerHeight - 16) / 2, s, NormalFontSDL.COLOR_YELLOW);
+				colX += c.widthPx;
+			}
+			fillRect(x, y + headerHeight - 1, w, 1, 128, 128, 128, 255);
 		}
-		fillRect(x, y + headerHeight - 1, w, 1, 128, 128, 128, 255);
 
 		// Rows
 		int vis = visibleRowCount();
 		for(int i = 0; i < vis; i++) {
 			int rowIdx = scroll + i;
 			if(rowIdx >= rows.size()) break;
-			int ry = y + headerHeight + i * rowHeight;
+			int ry = y + top + i * rowHeight;
 			if(rowIdx == selected) {
 				fillRect(x + 1, ry, w - 2, rowHeight, 48, 48, 128, 220);
 			}
@@ -210,8 +217,8 @@ public class TableSDL extends WidgetSDL {
 		// Scrollbar (drawn on the right edge if rows overflow)
 		if(rows.size() > vis) {
 			int sbX = x + w - 4;
-			int sbY = y + headerHeight;
-			int sbH = h - headerHeight;
+			int sbY = y + top;
+			int sbH = h - top;
 			fillRect(sbX, sbY, 4, sbH, 32, 32, 48, 200);
 			int thumbH = Math.max(8, sbH * vis / rows.size());
 			int thumbY = sbY + (sbH - thumbH) * scroll / Math.max(1, rows.size() - vis);
