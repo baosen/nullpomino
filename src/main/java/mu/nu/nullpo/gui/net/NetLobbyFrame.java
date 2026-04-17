@@ -214,11 +214,6 @@ public class NetLobbyFrame implements NetMessageListener {
 	/** Player-list filter for players in the same room (refilled by {@link #updateSameRoomPlayerInfoList}). */
 	protected LinkedList<NetPlayerInfo> sameRoomPlayerInfoList = new LinkedList<NetPlayerInfo>();
 
-	// ---------------- Persistent log writers ----------------
-
-	protected PrintWriter writerLobbyLog;
-	protected PrintWriter writerRoomLog;
-
 	// ---------------- Message pump ----------------
 
 	protected final ConcurrentLinkedQueue<String[]> pendingMessages = new ConcurrentLinkedQueue<String[]>();
@@ -271,12 +266,9 @@ public class NetLobbyFrame implements NetMessageListener {
 		if(netDummyMode != null) netDummyMode.netlobbyOnInit(this);
 	}
 
-	/** Clean shutdown: save config, close log writers, disconnect, fire exit callbacks. */
+	/** Clean shutdown: save config, disconnect, fire exit callbacks. */
 	public void shutdown() {
 		saveConfig();
-
-		if(writerLobbyLog != null) { writerLobbyLog.flush(); writerLobbyLog.close(); writerLobbyLog = null; }
-		if(writerRoomLog  != null) { writerRoomLog.flush();  writerRoomLog.close();  writerRoomLog  = null; }
 
 		if(netPlayerClient != null) {
 			if(netPlayerClient.isConnected()) netPlayerClient.send("disconnect\n");
@@ -347,7 +339,6 @@ public class NetLobbyFrame implements NetMessageListener {
 		String cmd = message[0];
 
 		if("welcome".equals(cmd)) {
-			openLogFiles();
 			chatLogLobby.appendSystem(String.format(getUIText("SysMsg_ServerConnected"),
 					netPlayerClient.getHost(), netPlayerClient.getPort()), NormalFontSDL.COLOR_BLUE);
 			if(message.length > 1) chatLogLobby.appendSystem(getUIText("SysMsg_ServerVersion") + message[1], NormalFontSDL.COLOR_BLUE);
@@ -1012,27 +1003,6 @@ public class NetLobbyFrame implements NetMessageListener {
 	}
 
 	// ---------------- Internals ----------------
-
-	private void openLogFiles() {
-		try {
-			if(writerLobbyLog == null) {
-				writerLobbyLog = new PrintWriter(buildLogFilename("lobby"));
-			}
-			if(writerRoomLog == null) {
-				writerRoomLog = new PrintWriter(buildLogFilename("room"));
-			}
-		} catch(Exception e) {
-			log.warn("Failed to create lobby log files", e);
-		}
-	}
-
-	private static String buildLogFilename(String prefix) {
-		GregorianCalendar t = new GregorianCalendar();
-		int month = t.get(Calendar.MONTH) + 1;
-		return String.format("log/%s_%04d_%02d_%02d_%02d_%02d_%02d.txt", prefix,
-				t.get(Calendar.YEAR), month, t.get(Calendar.DATE),
-				t.get(Calendar.HOUR_OF_DAY), t.get(Calendar.MINUTE), t.get(Calendar.SECOND));
-	}
 
 	private static CustomProperties loadPropsOrEmpty(String path) {
 		CustomProperties prop = new CustomProperties();
