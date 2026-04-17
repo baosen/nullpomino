@@ -748,11 +748,15 @@ public class NetLobbyFrame implements NetMessageListener {
 	public void sendChat(boolean roomchat, String strMsg) {
 		if(strMsg == null || strMsg.length() == 0 || netPlayerClient == null) return;
 		String msg = strMsg;
-		if(msg.startsWith("/team")) {
-			msg = msg.replaceFirst("/team", "").trim();
-			netPlayerClient.send("changeteam\t" + NetUtil.urlEncode(msg) + "\n");
-		} else if(msg.startsWith("/name ") || msg.equals("/name")) {
-			sendChangeName(msg.equals("/name") ? "" : msg.substring("/name ".length()).trim());
+		// Command dispatch is case-insensitive so '/NAME', '/Name', '/name'
+		// all work identically. Argument text keeps its original case.
+		String lower = msg.toLowerCase();
+		if(lower.startsWith("/team")) {
+			String arg = msg.length() > 5 ? msg.substring(5).trim() : "";
+			netPlayerClient.send("changeteam\t" + NetUtil.urlEncode(arg) + "\n");
+		} else if(lower.startsWith("/name ") || lower.equals("/name")) {
+			String arg = lower.equals("/name") ? "" : msg.substring("/name ".length()).trim();
+			sendChangeName(arg);
 		} else if(roomchat) {
 			netPlayerClient.send("chat\t" + NetUtil.urlEncode(msg) + "\n");
 		} else {
