@@ -49,9 +49,10 @@ public class ChatLogSDL extends WidgetSDL {
 	}
 
 	public synchronized void appendUser(String user, Calendar time, String msg) {
-		// 'name: ' label in cyan, message body in plain white so the speaker
-		// stands out at a glance.
-		String prefix = user + ": ";
+		// 'name:' in cyan, message body in plain white so the speaker stands
+		// out at a glance. No trailing space in the prefix — render() inserts
+		// a half-char gap so the body doesn't butt up against the colon.
+		String prefix = user + ":";
 		push(new Entry(time.getTimeInMillis(), prefix, NormalFontSDL.COLOR_CYAN, msg, NormalFontSDL.COLOR_WHITE));
 	}
 
@@ -144,13 +145,17 @@ public class ChatLogSDL extends WidgetSDL {
 		int startLine = Math.max(0, totalLines - visible - scrollUpLines);
 		int endLine = Math.min(totalLines, startLine + visible);
 
+		// Half-char (8 px) gap between 'name:' and the message body — a full
+		// space felt like too much blank.
+		final int prefixGapPx = 8;
+
 		int drawY = y + 2;
 		for(int i = startLine; i < endLine; i++) {
 			RenderedLine ln = lines.get(i);
 			if(ln.prefix.length() > 0) {
 				String prefSafe = NormalFontSDL.safeString(ln.prefix);
 				NormalFontSDL.printFont(x + 4, drawY, prefSafe, ln.prefixColor);
-				NormalFontSDL.printFont(x + 4 + prefSafe.length() * 16, drawY,
+				NormalFontSDL.printFont(x + 4 + prefSafe.length() * 16 + prefixGapPx, drawY,
 						NormalFontSDL.safeString(ln.body), ln.bodyColor);
 			} else {
 				NormalFontSDL.printFont(x + 4, drawY, NormalFontSDL.safeString(ln.body), ln.bodyColor);
