@@ -202,6 +202,15 @@ public class NetLobbyFrame implements NetMessageListener {
 	/** Set to true when a {@code ratedpresets} message has been received and {@link #presets} is fresh. */
 	public volatile boolean presetsDirty;
 
+	/**
+	 * Wall-clock time of the most recent {@link #connectToServer} call.
+	 * States that guard on {@code netPlayerClient.isConnected()} honour a short
+	 * grace window after this timestamp so mid-flight reconnects (e.g. /name
+	 * command) don't bounce the user back to server-select while the socket
+	 * finishes its handshake.
+	 */
+	public volatile long lastConnectAt;
+
 	/** Legacy: ID of room being viewed (detail view vs create). Used by ratedpresets handshake. */
 	public int currentViewDetailRoomID = -1;
 
@@ -707,6 +716,7 @@ public class NetLobbyFrame implements NetMessageListener {
 		netPlayerClient.setDaemon(true);
 		netPlayerClient.addListener(this);
 		netPlayerClient.start();
+		lastConnectAt = System.currentTimeMillis();
 
 		chatLogLobby.clear();
 		roomList.clear();
@@ -719,11 +729,47 @@ public class NetLobbyFrame implements NetMessageListener {
 		if(msg.startsWith("/team")) {
 			msg = msg.replaceFirst("/team", "").trim();
 			netPlayerClient.send("changeteam\t" + NetUtil.urlEncode(msg) + "\n");
+		} else if(msg.startsWith("/name ") || msg.equals("/name")) {
+			renameAndReconnect(msg.equals("/name") ? "" : msg.substring("/name ".length()).trim());
 		} else if(roomchat) {
 			netPlayerClient.send("chat\t" + NetUtil.urlEncode(msg) + "\n");
 		} else {
 			netPlayerClient.send("lobbychat\t" + NetUtil.urlEncode(msg) + "\n");
 		}
+	}
+
+	/**
+	 * Apply a new nickname by disconnecting the current session, persisting the
+	 * new name in {@code propConfig}, and immediately reopening the connection
+	 * to the same server. The server has no on-the-fly rename opcode, so this
+	 * is the only reliable way. Callers should already be on the lobby screen.
+	 */
+	private void renameAndReconnect(String newName) {
+		if(newName == null) newName = "";
+		newName = newName.trim();
+		if(newName.length() == 0) {
+			chatLogLobby.appendSystem("USAGE: /NAME <NEW NICKNAME>", NormalFontSDL.COLOR_YELLOW);
+			return;
+		}
+		if(netPlayerClient == null) return;
+
+		String host = netPlayerClient.getHost();
+		int port = netPlayerClient.getPort();
+		NetPlayerInfo me = netPlayerClient.getYourPlayerInfo();
+		String team = (me != null && me.strTeam != null) ? me.strTeam : "";
+
+		chatLogLobby.appendSystem("RENAMING TO " + newName + "...", NormalFontSDL.COLOR_YELLOW);
+
+		// Tear down the current connection.
+		if(netPlayerClient.isConnected()) netPlayerClient.send("disconnect\n");
+		netPlayerClient.threadRunning = false;
+		netPlayerClient.interrupt();
+
+		// connectToServer() updates propConfig, allocates a new NetPlayerClient,
+		// and stamps lastConnectAt so the lobby state tolerates the brief
+		// window where isConnected() returns false during the handshake.
+		connectToServer(newName, team, host, port);
+		lobbyMode = LOBBYMODE_DISCONNECTED;  // pump() will flip back to LOBBY on ruledatasuccess
 	}
 
 	/**

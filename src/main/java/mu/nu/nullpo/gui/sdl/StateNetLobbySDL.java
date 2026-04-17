@@ -145,8 +145,12 @@ public class StateNetLobbySDL extends BaseStateSDL {
 		nl.pump();
 		MouseInputSDL.mouseInput.update();
 
-		// If the session has disconnected (pump may have set lobbyMode), bail back to server select.
-		if(nl.netPlayerClient == null || !nl.netPlayerClient.isConnected()) {
+		// If the session has disconnected (pump may have set lobbyMode), bail back
+		// to server-select — but give a short grace window after a /name-style
+		// reconnect so the handshake has time to complete without bouncing us out.
+		if(nl.netPlayerClient == null
+				|| (!nl.netPlayerClient.isConnected()
+					&& System.currentTimeMillis() - nl.lastConnectAt > 5000)) {
 			NullpoMinoSDL.enterState(NullpoMinoSDL.STATE_NET_SERVERSELECT);
 			return;
 		}
