@@ -86,13 +86,12 @@ public class NullpoMinoSDL {
 							STATE_SELECTMODEFOLDER = 18,
 							STATE_NET_SERVERSELECT = 19,
 							STATE_NET_LOBBY = 20,
-							STATE_NET_ROOM = 21,
-							STATE_NET_CREATEROOM = 22,
-							STATE_NET_RANKING = 23,
-							STATE_NET_RULECHANGE = 24;
+							STATE_NET_CREATEROOM = 21,
+							STATE_NET_RANKING = 22,
+							STATE_NET_RULECHANGE = 23;
 
 	/** State of the game count */
-	public static final int STATE_MAX = 25;
+	public static final int STATE_MAX = 24;
 
 	public static final int LOGICAL_WIDTH = 640;
 	public static final int LOGICAL_HEIGHT = 480;
@@ -425,7 +424,6 @@ public class NullpoMinoSDL {
 		gameStates[STATE_SELECTMODEFOLDER] = new StateSelectModeFolderSDL();
 		gameStates[STATE_NET_SERVERSELECT] = new StateNetServerSelectSDL();
 		gameStates[STATE_NET_LOBBY] = new StateNetLobbySDL();
-		gameStates[STATE_NET_ROOM] = new StateNetRoomSDL();
 		gameStates[STATE_NET_CREATEROOM] = new StateNetCreateRoomSDL();
 		gameStates[STATE_NET_RANKING] = new StateNetRankingSDL();
 		gameStates[STATE_NET_RULECHANGE] = new StateNetRuleChangeSDL();
