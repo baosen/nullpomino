@@ -2416,7 +2416,11 @@ public class NetServer {
 
 			String oldName = pInfo.strName;
 			pInfo.strName = newName;
-			send(client, "changenamesuccess\t" + NetUtil.urlEncode(oldName) + "\t" + NetUtil.urlEncode(newName) + "\n");
+			// Broadcast to every connected client — a rename is visible lobby-wide —
+			// in the same shape as changeteam so the outgoing client also sees its
+			// own rename through this broadcast instead of needing a dedicated
+			// success opcode.
+			broadcast("changename\t" + pInfo.uid + "\t" + NetUtil.urlEncode(oldName) + "\t" + NetUtil.urlEncode(newName) + "\n");
 			broadcastPlayerInfoUpdate(pInfo);
 			log.info("Player renamed: " + oldName + " -> " + newName);
 			return;

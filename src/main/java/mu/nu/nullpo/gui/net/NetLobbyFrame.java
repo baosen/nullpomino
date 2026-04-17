@@ -652,10 +652,15 @@ public class NetLobbyFrame implements NetMessageListener {
 				mpRankingDirty = true;
 			}
 
-		} else if("changenamesuccess".equals(cmd) && message.length > 2) {
-			String oldName = NetUtil.urlDecode(message[1]);
-			String newName = NetUtil.urlDecode(message[2]);
-			propConfig.setProperty("serverselect.txtfldPlayerName.text", newName);
+		} else if("changename".equals(cmd) && message.length > 3) {
+			// Server broadcast: "changename\t<uid>\t<oldname>\t<newname>"
+			int uid = Integer.parseInt(message[1]);
+			String oldName = NetUtil.urlDecode(message[2]);
+			String newName = NetUtil.urlDecode(message[3]);
+			// If the rename was our own, persist the new nickname for next session.
+			if(netPlayerClient != null && uid == netPlayerClient.getPlayerUID()) {
+				propConfig.setProperty("serverselect.txtfldPlayerName.text", newName);
+			}
 			chatLogLobby.appendSystem("CHANGED NAME " + oldName + " TO " + newName, NormalFontSDL.COLOR_GREEN);
 
 		} else if("changenamefail".equals(cmd)) {
