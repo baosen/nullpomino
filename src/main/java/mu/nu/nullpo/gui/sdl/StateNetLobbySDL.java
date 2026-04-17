@@ -119,9 +119,9 @@ public class StateNetLobbySDL extends BaseStateSDL {
 		teamBtn       = new ButtonSDL(496,    4, 100, 24, "TEAM",    new Runnable() { public void run() { beginTeamChange(); } });
 		disconnectBtn = new ButtonSDL(604,    4,  28, 24, "X",       new Runnable() { public void run() { NullpoMinoSDL.endNetplay(); } });
 
-		// Default focus goes on the room table so arrow keys navigate rooms
-		// immediately; pressing TAB or clicking the chat field switches to typing.
-		setFocus(roomTable);
+		// Default focus goes on the chat input so a user can type right away;
+		// UP arrow / click on a room switches to room navigation.
+		setFocus(chatInput);
 		statusLine = "";
 	}
 
