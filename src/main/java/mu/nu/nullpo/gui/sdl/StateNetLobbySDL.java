@@ -74,7 +74,7 @@ public class StateNetLobbySDL extends BaseStateSDL {
 			new TableSDL.Column("P",     40),
 			new TableSDL.Column("S",     40),
 		};
-		roomTable = new TableSDL(8, 40, 624, 178, cols);
+		roomTable = new TableSDL(8, 28, 624, 190, cols);
 
 		// Chat input along the bottom, aligned with the chat log's width. SEND
 		// sits flush with the screen's right edge (x=632 matches the room table).
@@ -368,8 +368,12 @@ public class StateNetLobbySDL extends BaseStateSDL {
 		}
 
 		if(statusLine.length() > 0) {
-			// Show just under the title bar so it never collides with the chat area.
-			NormalFontSDL.printFont(8, 24, NormalFontSDL.safeString(statusLine), NormalFontSDL.COLOR_RED);
+			// Right-aligned on the title row so it doesn't steal vertical space
+			// from the room list. Clamp so it can't slide under the LOBBY header.
+			String safe = NormalFontSDL.safeString(statusLine);
+			int tx = 600 - safe.length() * 16;   // leave room for the top-right X button (x=604)
+			if(tx < 192) tx = 192;                // clear 'LOBBY' + host:port on the left
+			NormalFontSDL.printFont(tx, 8, safe, NormalFontSDL.COLOR_RED);
 		}
 	}
 }
