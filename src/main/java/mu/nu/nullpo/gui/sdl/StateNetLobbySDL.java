@@ -96,8 +96,9 @@ public class StateNetLobbySDL extends BaseStateSDL {
 		createRatedBtn= new ButtonSDL(336, actY,  80, 28, "RATED",   new Runnable() { public void run() { enterCreateRoom(false, true);  } });
 		rankingBtn    = new ButtonSDL(420, actY, 112, 28, "RANKING", new Runnable() { public void run() { NullpoMinoSDL.enterState(NullpoMinoSDL.STATE_NET_RANKING); } });
 		rulechangeBtn = new ButtonSDL(536, actY,  96, 28, "RULES",   new Runnable() { public void run() { NullpoMinoSDL.enterState(NullpoMinoSDL.STATE_NET_RULECHANGE); } });
-		// Disconnect lives in the top-right corner; reachable by mouse or ESC.
-		disconnectBtn = new ButtonSDL(608,    4,  28, 24, "X",       new Runnable() { public void run() { NullpoMinoSDL.endNetplay(); } });
+		// Disconnect lives in the top-right corner; right edge lines up with
+		// the room table's right edge (x=632). Reachable by mouse or ESC.
+		disconnectBtn = new ButtonSDL(604,    4,  28, 24, "X",       new Runnable() { public void run() { NullpoMinoSDL.endNetplay(); } });
 
 		// Default focus goes on the room table so arrow keys navigate rooms
 		// immediately; pressing TAB or clicking the chat field switches to typing.
