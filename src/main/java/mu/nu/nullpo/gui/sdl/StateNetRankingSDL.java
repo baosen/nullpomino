@@ -5,6 +5,7 @@ package mu.nu.nullpo.gui.sdl;
 
 import mu.nu.nullpo.game.play.GameEngine;
 import mu.nu.nullpo.gui.net.NetLobbyFrame;
+import mu.nu.nullpo.gui.sdl.binding.SDL3;
 import mu.nu.nullpo.gui.sdl.binding.SDLConstants;
 import mu.nu.nullpo.gui.sdl.widget.ButtonSDL;
 import mu.nu.nullpo.gui.sdl.widget.TabStripSDL;
@@ -146,6 +147,11 @@ public class StateNetRankingSDL extends BaseStateSDL {
 	public void render() {
 		NetLobbyFrame nl = NullpoMinoSDL.netLobby;
 		if(nl == null) return;
+
+		// Share the menu.png background with Mode Select so the whole netplay
+		// flow sits on a consistent backdrop (in-game excluded — it renders its
+		// own field chrome).
+		SDL3.INSTANCE.SDL_RenderTexture(NullpoMinoSDL.renderer, ResourceHolderSDL.imgMenu, null, null);
 
 		NormalFontSDL.printFont(8, 8, "MULTIPLAYER RANKING", NormalFontSDL.COLOR_CYAN);
 		tabStrip.render();

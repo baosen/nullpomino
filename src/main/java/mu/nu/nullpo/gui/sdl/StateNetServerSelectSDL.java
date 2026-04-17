@@ -416,6 +416,11 @@ public class StateNetServerSelectSDL extends BaseStateSDL {
 		NetLobbyFrame nl = NullpoMinoSDL.netLobby;
 		if(nl == null) return;
 
+		// Share the menu.png background with Mode Select so the whole netplay
+		// flow sits on a consistent backdrop (in-game excluded — it renders its
+		// own field chrome).
+		SDL3.INSTANCE.SDL_RenderTexture(NullpoMinoSDL.renderer, ResourceHolderSDL.imgMenu, null, null);
+
 		// Header
 		NormalFontSDL.printFont(16, 16, NormalFontSDL.safeString(nl.getUIText("Title_NetLobby")), NormalFontSDL.COLOR_CYAN);
 		NormalFontSDL.printFont(16, 36, NormalFontSDL.safeString(nl.getUIText("ServerSelect_LabelName")), NormalFontSDL.COLOR_WHITE);

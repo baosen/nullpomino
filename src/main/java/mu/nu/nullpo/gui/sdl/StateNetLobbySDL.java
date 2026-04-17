@@ -33,6 +33,7 @@ import java.util.LinkedList;
 import mu.nu.nullpo.game.net.NetPlayerInfo;
 import mu.nu.nullpo.game.net.NetRoomInfo;
 import mu.nu.nullpo.gui.net.NetLobbyFrame;
+import mu.nu.nullpo.gui.sdl.binding.SDL3;
 import mu.nu.nullpo.gui.sdl.binding.SDLConstants;
 import mu.nu.nullpo.gui.sdl.widget.ButtonSDL;
 import mu.nu.nullpo.gui.sdl.widget.TableSDL;
@@ -357,10 +358,9 @@ public class StateNetLobbySDL extends BaseStateSDL {
 	/** Draw a short dim vertical divider (2x2 dots stacked) between button groups. */
 	private static void drawGroupSeparator(int x, int y, int h) {
 		com.sun.jna.Pointer rnd = NullpoMinoSDL.renderer;
-		mu.nu.nullpo.gui.sdl.binding.SDL3.INSTANCE.SDL_SetRenderDrawBlendMode(rnd,
-				mu.nu.nullpo.gui.sdl.binding.SDLConstants.SDL_BLENDMODE_BLEND);
-		mu.nu.nullpo.gui.sdl.binding.SDL3.setDrawColor(rnd, 140, 140, 160, 160);
-		mu.nu.nullpo.gui.sdl.binding.SDL3.INSTANCE.SDL_RenderFillRect(rnd,
+		SDL3.INSTANCE.SDL_SetRenderDrawBlendMode(rnd, SDLConstants.SDL_BLENDMODE_BLEND);
+		SDL3.setDrawColor(rnd, 140, 140, 160, 160);
+		SDL3.INSTANCE.SDL_RenderFillRect(rnd,
 				new mu.nu.nullpo.gui.sdl.binding.SDLStructs.SDL_FRect(x, y + 6, 2, h - 12));
 	}
 
@@ -399,6 +399,11 @@ public class StateNetLobbySDL extends BaseStateSDL {
 	public void render() {
 		NetLobbyFrame nl = NullpoMinoSDL.netLobby;
 		if(nl == null) return;
+
+		// Share the menu.png background with Mode Select so the whole netplay
+		// flow sits on a consistent backdrop (in-game excluded — it renders its
+		// own field chrome).
+		SDL3.INSTANCE.SDL_RenderTexture(NullpoMinoSDL.renderer, ResourceHolderSDL.imgMenu, null, null);
 
 		NormalFontSDL.printFont(8, 8, "LOBBY", NormalFontSDL.COLOR_CYAN);
 		if(nl.netPlayerClient != null) {
