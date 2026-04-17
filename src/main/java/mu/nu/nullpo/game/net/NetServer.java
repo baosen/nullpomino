@@ -2395,17 +2395,30 @@ public class NetServer {
 				if(pInfo != null && pInfo.playing) send(client, "changenamefail\tPLAYING\n");
 				return;
 			}
-			String newName = NetUtil.urlDecode(message[1]).trim();
-			if(newName.length() == 0) { send(client, "changenamefail\tEMPTY\n"); return; }
+			String rawNew = NetUtil.urlDecode(message[1]).trim();
+			if(rawNew.length() == 0) { send(client, "changenamefail\tEMPTY\n"); return; }
 
-			// Preserve the tripcode portion: the name after the TripSeparator
-			// is effectively a password, not part of the nickname. If the caller
-			// had one, keep it appended so their identity doesn't silently change.
-			String separator = propServer.getProperty("netserver.tripcode.separator", "#");
-			String keptTrip = "";
-			int sep = pInfo.strName.indexOf(separator);
-			if(sep != -1) keptTrip = pInfo.strName.substring(sep);
-			if(newName.indexOf(separator) == -1) newName = newName + keptTrip;
+			// Process tripcode the same way the login handler does. A '#'
+			// introduces a trip-key that gets hashed and appended as ' !<hash>',
+			// and '!' in the nickname portion is sanitised to '?' so attackers
+			// can't forge the display form. If the caller omits '#', keep any
+			// existing trip hash so their verified identity doesn't silently drop.
+			int sharpIndex = rawNew.indexOf('#');
+			String newName;
+			if(sharpIndex != -1) {
+				String strTripKey = rawNew.substring(sharpIndex + 1);
+				String strTripCode = NetUtil.createTripCode(strTripKey,
+						propServer.getProperty("netserver.tripcodemax", 10));
+				if(sharpIndex > 0) {
+					newName = rawNew.substring(0, sharpIndex).replace('!', '?') + " !" + strTripCode;
+				} else {
+					newName = "!" + strTripCode;
+				}
+			} else {
+				newName = rawNew.replace('!', '?');
+				int existingTripIdx = pInfo.strName.indexOf(" !");
+				if(existingTripIdx != -1) newName = newName + pInfo.strName.substring(existingTripIdx);
+			}
 
 			if(newName.equals(pInfo.strName)) return;  // no-op
 

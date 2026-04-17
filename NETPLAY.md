@@ -55,7 +55,7 @@ Typed into the lobby or room chat box. Command prefix is case-insensitive (`/NAM
 
 | Command | Effect |
 |---|---|
-| `/name <nickname>` | Rename on the fly without reconnecting. The server rejects duplicates or renames while a game is running and broadcasts a system message to everyone in the lobby on success. |
+| `/name <nickname>[#tripcode]` | Rename on the fly without reconnecting. Include `#<tripcode>` to set or rotate a tripcode; omit it to keep the existing one. The server rejects duplicates or renames while a game is running and broadcasts a system message to everyone in the lobby on success. |
 | `/team <team name>` | Change (or clear, with no argument) the player's team. Team appears in parentheses next to the nickname in player lists. |
 | `/help` (or `/?`) | Print the command list as a local-only system message. |
 

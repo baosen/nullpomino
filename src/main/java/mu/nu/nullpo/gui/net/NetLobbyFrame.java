@@ -723,7 +723,7 @@ public class NetLobbyFrame implements NetMessageListener {
 	 */
 	private void printHelp(boolean roomchat) {
 		ChatLogSDL log = roomchat ? chatLogRoom : chatLogLobby;
-		log.appendSystem("COMMANDS: /NAME <NICK>   /TEAM [<NAME>]   /HELP", NormalFontSDL.COLOR_YELLOW);
+		log.appendSystem("COMMANDS: /NAME <NICK>[#TRIP]   /TEAM [<NAME>]   /HELP", NormalFontSDL.COLOR_YELLOW);
 	}
 
 	/**
@@ -735,7 +735,7 @@ public class NetLobbyFrame implements NetMessageListener {
 	private void sendChangeName(String newName, boolean roomchat) {
 		if(newName == null || newName.trim().length() == 0) {
 			ChatLogSDL log = roomchat ? chatLogRoom : chatLogLobby;
-			log.appendSystem("USAGE: /NAME <NEW NICKNAME>", NormalFontSDL.COLOR_YELLOW);
+			log.appendSystem("USAGE: /NAME <NICKNAME>[#TRIPCODE]", NormalFontSDL.COLOR_YELLOW);
 			return;
 		}
 		if(netPlayerClient == null || !netPlayerClient.isConnected()) return;
