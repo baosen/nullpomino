@@ -1,4 +1,4 @@
 #!/bin/sh
-cd "$(dirname $0)/..";
+cd "$(dirname "$0")"
 export LD_LIBRARY_PATH="target/lib:$LD_LIBRARY_PATH"
 java -cp "target/nullpomino-7.6.0-SNAPSHOT.jar:target/lib/*" -Djava.library.path=target/lib -Djna.library.path=target/lib mu.nu.nullpo.gui.sdl.NullpoMinoSDL
