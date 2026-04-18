@@ -439,6 +439,11 @@ public class StateNetCreateRoomSDL extends BaseStateSDL {
 		for(Field[] tab : tabFields) for(Field f : tab) f.widget.enabled = editable;
 		// MAX PLAYERS is also disabled when SINGLE_PLAYER is selected (value coerced to 1).
 		if(editable && currentMode() == RoomCreateMode.SINGLE_PLAYER) maxPlayers.enabled = false;
+		// In rated mode the server picks the rule from the preset, so RULE LOCK
+		// has no effect — hide it so it doesn't visually collide with the
+		// PRESET dropdown that shares BASIC row 7.
+		ruleLock.visible = !ratedMode;
+		if(!ruleLock.visible) ruleLock.enabled = false;
 		okBtn.visible = editable;
 		joinBtn.visible = detailMode;
 		watchBtn.visible = detailMode;
