@@ -167,11 +167,12 @@ public class StateNetLobbySDL extends BaseStateSDL {
 		int my = MouseInputSDL.mouseInput.getMouseY();
 		boolean clicked = MouseInputSDL.mouseInput.isMouseClicked();
 
-		// Mouse back button aliases Escape — clear the chat input if focused,
-		// otherwise leave netplay.
+		// Mouse back button aliases Escape → always leave netplay, so the
+		// cancel gesture stays consistent whether the chat input has focus
+		// or not.
 		if(MouseInputSDL.mouseInput.isMouseBackClicked()) {
-			if(focused == chatInput) chatInput.setText("");
-			else { NullpoMinoSDL.endNetplay(); return; }
+			NullpoMinoSDL.endNetplay();
+			return;
 		}
 
 		if(roomTable.update(mx, my, clicked)) setFocus(roomTable);
@@ -274,8 +275,7 @@ public class StateNetLobbySDL extends BaseStateSDL {
 		if(ev.repeat) return;
 		switch(ev.scancode) {
 			case SDLConstants.SDL_SCANCODE_ESCAPE:
-				if(focused == chatInput) chatInput.setText("");
-				else NullpoMinoSDL.endNetplay();
+				NullpoMinoSDL.endNetplay();
 				break;
 			case SDLConstants.SDL_SCANCODE_RETURN:
 			case SDLConstants.SDL_SCANCODE_KP_ENTER:
