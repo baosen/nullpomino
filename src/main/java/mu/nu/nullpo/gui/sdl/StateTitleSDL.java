@@ -81,7 +81,9 @@ public class StateTitleSDL extends DummyMenuChooseStateSDL {
 
 	@Override
 	protected boolean onDecide() {
-		ResourceHolderSDL.soundManager.play("decide");
+		// Skip the decide sound when quitting so it doesn't get cut off mid-
+		// playback as the program tears down audio on its way out.
+		if(cursor != 4) ResourceHolderSDL.soundManager.play("decide");
 
 		switch(cursor) {
 		case 0:
