@@ -47,7 +47,7 @@ import org.apache.log4j.Logger;
 /**
  * Game Tuning menu state
  */
-public class StateConfigGameTuningSDL extends BaseStateSDL {
+public class StateConfigGameTuningSDL extends DummyMenuScrollStateSDL {
 	/** UI Text identifier Strings */
 	protected static final String[] UI_TEXT = {
 		"GameTuning_RotateButtonDefaultRight",
@@ -68,6 +68,9 @@ public class StateConfigGameTuningSDL extends BaseStateSDL {
 	/** Outline type names */
 	protected static final String[] OUTLINE_TYPE_NAMES = {"AUTO", "NONE", "NORMAL", "CONNECT", "SAMECOLOR"};
 
+	/** Cursor index for the [PREVIEW] menu entry */
+	private static final int CURSOR_PREVIEW = 9;
+
 	/** Player number */
 	public int player;
 
@@ -83,9 +86,6 @@ public class StateConfigGameTuningSDL extends BaseStateSDL {
 
 	/** Game Manager for preview */
 	protected GameManager gameManager;
-
-	/** Cursor position */
-	protected int cursor;
 
 	/** A button rotation -1=Auto 0=Always CCW 1=Always CW */
 	protected int owRotateButtonDefaultRight;
@@ -115,6 +115,8 @@ public class StateConfigGameTuningSDL extends BaseStateSDL {
 	 * Constructor
 	 */
 	public StateConfigGameTuningSDL() {
+		pageHeight = 10;
+		maxCursor = 9;
 		player = 0;
 		cursor = 0;
 	}
@@ -151,6 +153,18 @@ public class StateConfigGameTuningSDL extends BaseStateSDL {
 		prop.setProperty(player + ".tuning.owBlockShowOutlineOnly", owBlockShowOutlineOnly);
 	}
 
+	/**
+	 * Persist the in-memory tuning values to propGlobal and flush the config
+	 * file so every L/R nudge and mouse click sticks immediately — matches
+	 * the General Options auto-save behaviour. The runtime doesn't need any
+	 * of these values live; they're read again when the preview or a real
+	 * game starts.
+	 */
+	protected void applyAndSave() {
+		saveConfig(NullpoMinoSDL.propGlobal);
+		NullpoMinoSDL.saveConfig();
+	}
+
 	/*
 	 * Called when entering this state
 	 */
@@ -158,6 +172,7 @@ public class StateConfigGameTuningSDL extends BaseStateSDL {
 	public void enter() {
 		isPreview = false;
 		loadConfig(NullpoMinoSDL.propGlobal);
+		rebuildList();
 	}
 
 	/*
@@ -258,15 +273,46 @@ public class StateConfigGameTuningSDL extends BaseStateSDL {
 		}
 	}
 
+	/**
+	 * Rebuild {@link #list} with the current tuning values. Called each
+	 * frame from {@link #render()} so labels like "MIN DAS:12" track live
+	 * L/R edits without any per-case refresh code.
+	 */
+	protected void rebuildList() {
+		list = new String[] {
+			"A BUTTON ROTATE:" + rotateLabel(owRotateButtonDefaultRight),
+			"BLOCK SKIN:" + (owSkin == -1 ? "AUTO" : String.valueOf(owSkin)),
+			"MIN DAS:" + (owMinDAS == -1 ? "AUTO" : String.valueOf(owMinDAS)),
+			"MAX DAS:" + (owMaxDAS == -1 ? "AUTO" : String.valueOf(owMaxDAS)),
+			"DAS DELAY:" + (owDasDelay == -1 ? "AUTO" : String.valueOf(owDasDelay)),
+			"REVERSE UP/DOWN:" + GeneralUtil.getOorX(owReverseUpDown),
+			"DIAGONAL MOVE:" + triStateLabel(owMoveDiagonal),
+			"OUTLINE TYPE:" + OUTLINE_TYPE_NAMES[owBlockOutlineType + 1],
+			"SHOW OUTLINE ONLY:" + triStateLabel(owBlockShowOutlineOnly),
+			"[PREVIEW]",
+		};
+	}
+
+	private static String rotateLabel(int v) {
+		if(v == 0) return "LEFT";
+		if(v == 1) return "RIGHT";
+		return "AUTO";
+	}
+
+	/** -1 → AUTO, 0 → off glyph 'e' (X), 1 → on glyph 'c' (O). */
+	private static String triStateLabel(int v) {
+		if(v == 0) return "e";
+		if(v == 1) return "c";
+		return "AUTO";
+	}
+
 	/*
 	 * Draw the game screen
 	 */
 	@Override
 	public void render() {
-		SDL3.INSTANCE.SDL_RenderTexture(NullpoMinoSDL.renderer, ResourceHolderSDL.imgMenu, null, null);
-
 		if(isPreview) {
-			// Preview
+			SDL3.INSTANCE.SDL_RenderTexture(NullpoMinoSDL.renderer, ResourceHolderSDL.imgMenu, null, null);
 			try {
 				String strButtonF = gameManager.receiver.getKeyNameByButtonID(gameManager.engine[0], Controller.BUTTON_F);
 				int fontY = (gameManager.receiver.getNextDisplayType() == 2) ? 1 : 27;
@@ -276,55 +322,47 @@ public class StateConfigGameTuningSDL extends BaseStateSDL {
 			} catch (Exception e) {
 				log.error("Render fail", e);
 			}
-		} else {
-			// Menu
-			String strTemp = "";
+			return;
+		}
 
-			NormalFontSDL.printFontGrid(1, 1, "GAME TUNING (" + (player+1) + "P)", NormalFontSDL.COLOR_ORANGE);
-			NormalFontSDL.printFontGrid(1, 3 + cursor, "b", NormalFontSDL.COLOR_RED);
+		rebuildList();
+		super.render();
+	}
 
-			if(owRotateButtonDefaultRight == -1) strTemp = "AUTO";
-			if(owRotateButtonDefaultRight == 0) strTemp = "LEFT";
-			if(owRotateButtonDefaultRight == 1) strTemp = "RIGHT";
-			NormalFontSDL.printFontGrid(2, 3, "A BUTTON ROTATE:" + strTemp, (cursor == 0));
+	@Override
+	protected void drawRow(int row, int y) {
+		// Rows embed font-sprite characters (the 'c'/'e' O-X glyphs used by
+		// getOorX and triStateLabel), so the label must render verbatim —
+		// the base's default row renderer would toUpperCase them and break
+		// the sprite lookup.
+		NormalFontSDL.printFontGrid(2, 3 + y, list[row], (cursor == row));
+		if(cursor == row) NormalFontSDL.printFontGrid(1, 3 + y, "b", NormalFontSDL.COLOR_RED);
+	}
 
-			NormalFontSDL.printFontGrid(2, 4, "BLOCK SKIN:" + ((owSkin == -1) ? "AUTO": String.valueOf(owSkin)), (cursor == 1));
-			if((owSkin >= 0) && (owSkin < ResourceHolderSDL.imgNormalBlockList.size())) {
-				Pointer imgBlock = ResourceHolderSDL.imgNormalBlockList.get(owSkin);
+	@Override
+	protected void onRenderSuccess() {
+		NormalFontSDL.printFontGrid(1, 1, "GAME TUNING (" + (player + 1) + "P)", NormalFontSDL.COLOR_ORANGE);
 
-				if(ResourceHolderSDL.blockStickyFlagList.get(owSkin) == true) {
-					for(int j = 0; j < 9; j++) {
-						SDLStructs.SDL_FRect rectSkinSrc = new SDLStructs.SDL_FRect(0, j * 16, 16, 16);
-						SDLStructs.SDL_FRect rectSkinDst = new SDLStructs.SDL_FRect(256 + (j * 16), 64, 16, 16);
-						SDL3.INSTANCE.SDL_RenderTexture(NullpoMinoSDL.renderer, imgBlock, rectSkinSrc, rectSkinDst);
-					}
-				} else {
-					SDLStructs.SDL_FRect rectSkinSrc = new SDLStructs.SDL_FRect(0, 0, 144, 16);
-					SDLStructs.SDL_FRect rectSkinDst = new SDLStructs.SDL_FRect(256, 64, 144, 16);
+		// Preview sprite for the currently-selected block skin, positioned to
+		// the right of the BLOCK SKIN row (grid y=4, pixel y=64).
+		if((owSkin >= 0) && (owSkin < ResourceHolderSDL.imgNormalBlockList.size())) {
+			Pointer imgBlock = ResourceHolderSDL.imgNormalBlockList.get(owSkin);
+
+			if(ResourceHolderSDL.blockStickyFlagList.get(owSkin) == true) {
+				for(int j = 0; j < 9; j++) {
+					SDLStructs.SDL_FRect rectSkinSrc = new SDLStructs.SDL_FRect(0, j * 16, 16, 16);
+					SDLStructs.SDL_FRect rectSkinDst = new SDLStructs.SDL_FRect(256 + (j * 16), 64, 16, 16);
 					SDL3.INSTANCE.SDL_RenderTexture(NullpoMinoSDL.renderer, imgBlock, rectSkinSrc, rectSkinDst);
 				}
+			} else {
+				SDLStructs.SDL_FRect rectSkinSrc = new SDLStructs.SDL_FRect(0, 0, 144, 16);
+				SDLStructs.SDL_FRect rectSkinDst = new SDLStructs.SDL_FRect(256, 64, 144, 16);
+				SDL3.INSTANCE.SDL_RenderTexture(NullpoMinoSDL.renderer, imgBlock, rectSkinSrc, rectSkinDst);
 			}
+		}
 
-			NormalFontSDL.printFontGrid(2, 5, "MIN DAS:" + ((owMinDAS == -1) ? "AUTO" : String.valueOf(owMinDAS)), (cursor == 2));
-			NormalFontSDL.printFontGrid(2, 6, "MAX DAS:" + ((owMaxDAS == -1) ? "AUTO" : String.valueOf(owMaxDAS)), (cursor == 3));
-			NormalFontSDL.printFontGrid(2, 7, "DAS DELAY:" + ((owDasDelay == -1) ? "AUTO" : String.valueOf(owDasDelay)), (cursor == 4));
-			NormalFontSDL.printFontGrid(2, 8, "REVERSE UP/DOWN:" + GeneralUtil.getOorX(owReverseUpDown), (cursor == 5));
-
-			if(owMoveDiagonal == -1) strTemp = "AUTO";
-			if(owMoveDiagonal == 0) strTemp = "e";
-			if(owMoveDiagonal == 1) strTemp = "c";
-			NormalFontSDL.printFontGrid(2, 9, "DIAGONAL MOVE:" + strTemp, (cursor == 6));
-
-			NormalFontSDL.printFontGrid(2, 10, "OUTLINE TYPE:" + OUTLINE_TYPE_NAMES[owBlockOutlineType + 1], (cursor == 7));
-
-			if(owBlockShowOutlineOnly == -1) strTemp = "AUTO";
-			if(owBlockShowOutlineOnly == 0) strTemp = "e";
-			if(owBlockShowOutlineOnly == 1) strTemp = "c";
-			NormalFontSDL.printFontGrid(2, 11, "SHOW OUTLINE ONLY:" + strTemp, (cursor == 8));
-
-			NormalFontSDL.printFontGrid(2, 12, "[PREVIEW]", (cursor == 9));
-
-			if((cursor >= 0) && (cursor < UI_TEXT.length)) NormalFontSDL.printTTFFont(16, 432, NullpoMinoSDL.getUIText(UI_TEXT[cursor]));
+		if(cursor >= 0 && cursor < UI_TEXT.length) {
+			NormalFontSDL.printTTFFont(16, 432, NullpoMinoSDL.getUIText(UI_TEXT[cursor]));
 		}
 	}
 
@@ -333,13 +371,12 @@ public class StateConfigGameTuningSDL extends BaseStateSDL {
 	 */
 	@Override
 	public void update() {
-		// Always poll page nav so edge detection stays in sync during preview mode
-		int pageEvent = PageNavigationSDL.checkPageEvent();
-
 		if(isPreview) {
-			// Preview
+			// Keep Page Up/Down edge detection in sync while we skip the menu
+			// branch — PageNavigationSDL expects exactly one poll per frame.
+			PageNavigationSDL.checkPageEvent();
+
 			try {
-				// Update key input status
 				int joynum = NullpoMinoSDL.joyUseNumber[0];
 
 				boolean ingame = (gameManager != null) && (gameManager.engine.length > 0) &&
@@ -357,17 +394,14 @@ public class StateConfigGameTuningSDL extends BaseStateSDL {
 					GameKeySDL.gamekey[0].update(NullpoMinoSDL.keyPressedState, ingame);
 				}
 
-				// Execute game loops
 				GameKeySDL.gamekey[0].inputStatusUpdate(gameManager.engine[0].ctrl);
 				gameManager.updateAll();
 
-				// Retry button
 				if(GameKeySDL.gamekey[0].isMenuRepeatKey(GameKeySDL.BUTTON_RETRY)) {
 					gameManager.reset();
-					gameManager.backgroundStatus.bg = -1;	// Force no BG
+					gameManager.backgroundStatus.bg = -1;
 				}
 
-				// Exit
 				if(GameKeySDL.gamekey[0].isMenuRepeatKey(GameKeySDL.BUTTON_F) || GameKeySDL.gamekey[0].isMenuRepeatKey(GameKeySDL.BUTTON_GIVEUP) ||
 				   gameManager.getQuitFlag())
 				{
@@ -376,110 +410,113 @@ public class StateConfigGameTuningSDL extends BaseStateSDL {
 			} catch (Exception e) {
 				log.error("Update fail", e);
 			}
-		} else {
-			// Menu screen
-			// Cursor movement
-			if(GameKeySDL.gamekey[0].isMenuRepeatKey(GameKeySDL.BUTTON_UP)) {
-				cursor--;
-				if(cursor < 0) cursor = 9;
-				ResourceHolderSDL.soundManager.play("cursor");
-			}
-			if(GameKeySDL.gamekey[0].isMenuRepeatKey(GameKeySDL.BUTTON_DOWN)) {
-				cursor++;
-				if(cursor > 9) cursor = 0;
-				ResourceHolderSDL.soundManager.play("cursor");
-			}
+			return;
+		}
 
-			// Page Up / Page Down
-			cursor = PageNavigationSDL.jumpToEnd(pageEvent, cursor, 0, 9);
+		super.update();
+	}
 
-			// Configuration changes
-			int change = 0;
-			if(GameKeySDL.gamekey[0].isMenuRepeatKey(GameKeySDL.BUTTON_LEFT)) change = -1;
-			if(GameKeySDL.gamekey[0].isMenuRepeatKey(GameKeySDL.BUTTON_RIGHT)) change = 1;
-
-			if(change != 0) {
-				ResourceHolderSDL.soundManager.play("change");
-
-				switch(cursor) {
-				case 0:
-					owRotateButtonDefaultRight += change;
-					if(owRotateButtonDefaultRight < -1) owRotateButtonDefaultRight = 1;
-					if(owRotateButtonDefaultRight > 1) owRotateButtonDefaultRight = -1;
-					break;
-				case 1:
-					owSkin += change;
-					if(owSkin < -1) owSkin = ResourceHolderSDL.imgNormalBlockList.size() - 1;
-					if(owSkin > ResourceHolderSDL.imgNormalBlockList.size() - 1) owSkin = -1;
-					break;
-				case 2:
-					owMinDAS += change;
-					if(owMinDAS < -1) owMinDAS = 99;
-					if(owMinDAS > 99) owMinDAS = -1;
-					break;
-				case 3:
-					owMaxDAS += change;
-					if(owMaxDAS < -1) owMaxDAS = 99;
-					if(owMaxDAS > 99) owMaxDAS = -1;
-					break;
-				case 4:
-					owDasDelay += change;
-					if(owDasDelay < -1) owDasDelay = 99;
-					if(owDasDelay > 99) owDasDelay = -1;
-					break;
-				case 5:
-					owReverseUpDown ^= true;
-					break;
-				case 6:
-					owMoveDiagonal += change;
-					if(owMoveDiagonal < -1) owMoveDiagonal = 1;
-					if(owMoveDiagonal > 1) owMoveDiagonal = -1;
-					break;
-				case 7:
-					owBlockOutlineType += change;
-					if(owBlockOutlineType < -1) owBlockOutlineType = 3;
-					if(owBlockOutlineType > 3) owBlockOutlineType = -1;
-					break;
-				case 8:
-					owBlockShowOutlineOnly += change;
-					if(owBlockShowOutlineOnly < -1) owBlockShowOutlineOnly = 1;
-					if(owBlockShowOutlineOnly > 1) owBlockShowOutlineOnly = -1;
-					break;
-				}
-			}
-
-			// Preview by D button
-			if(GameKeySDL.gamekey[0].isPushKey(GameKeySDL.BUTTON_D)) {
+	@Override
+	public boolean updateMouseInput() {
+		// Inherit scroll-bar drag / wheel / page clicks, but reinterpret the
+		// row-click return value: clicks on [PREVIEW] launch the preview
+		// immediately (same as BUTTON_A on that row), clicks elsewhere route
+		// through onChange(+1) so the value bumps one step the way RIGHT
+		// does. Always return false so BUTTON_A keeps sole ownership of the
+		// save-and-exit path.
+		if(super.updateMouseInput()) {
+			if(cursor == CURSOR_PREVIEW) {
 				ResourceHolderSDL.soundManager.play("decide");
 				startPreviewGame();
-				return;
-			}
-
-			// Confirm button
-			if(GameKeySDL.gamekey[0].isPushKey(GameKeySDL.BUTTON_A)) {
-				ResourceHolderSDL.soundManager.play("decide");
-
-				if(cursor == 9) {
-					// Preview
-					startPreviewGame();
-					return;
-				} else {
-					saveConfig(NullpoMinoSDL.propGlobal);
-					NullpoMinoSDL.saveConfig();
-
-					int ret = returnToState;
-					returnToState = NullpoMinoSDL.STATE_CONFIG_MAINMENU;
-					NullpoMinoSDL.enterState(ret);
-				}
-			}
-
-			// Cancel button
-			if(GameKeySDL.gamekey[0].isPushKey(GameKeySDL.BUTTON_B)) {
-				loadConfig(NullpoMinoSDL.propGlobal);
-				int ret = returnToState;
-				returnToState = NullpoMinoSDL.STATE_CONFIG_MAINMENU;
-				NullpoMinoSDL.enterState(ret);
+			} else {
+				onChange(1);
 			}
 		}
+		return false;
+	}
+
+	@Override
+	protected void onChange(int change) {
+		ResourceHolderSDL.soundManager.play("change");
+
+		switch(cursor) {
+		case 0:
+			owRotateButtonDefaultRight += change;
+			if(owRotateButtonDefaultRight < -1) owRotateButtonDefaultRight = 1;
+			if(owRotateButtonDefaultRight > 1) owRotateButtonDefaultRight = -1;
+			break;
+		case 1:
+			owSkin += change;
+			if(owSkin < -1) owSkin = ResourceHolderSDL.imgNormalBlockList.size() - 1;
+			if(owSkin > ResourceHolderSDL.imgNormalBlockList.size() - 1) owSkin = -1;
+			break;
+		case 2:
+			owMinDAS += change;
+			if(owMinDAS < -1) owMinDAS = 99;
+			if(owMinDAS > 99) owMinDAS = -1;
+			break;
+		case 3:
+			owMaxDAS += change;
+			if(owMaxDAS < -1) owMaxDAS = 99;
+			if(owMaxDAS > 99) owMaxDAS = -1;
+			break;
+		case 4:
+			owDasDelay += change;
+			if(owDasDelay < -1) owDasDelay = 99;
+			if(owDasDelay > 99) owDasDelay = -1;
+			break;
+		case 5:
+			owReverseUpDown ^= true;
+			break;
+		case 6:
+			owMoveDiagonal += change;
+			if(owMoveDiagonal < -1) owMoveDiagonal = 1;
+			if(owMoveDiagonal > 1) owMoveDiagonal = -1;
+			break;
+		case 7:
+			owBlockOutlineType += change;
+			if(owBlockOutlineType < -1) owBlockOutlineType = 3;
+			if(owBlockOutlineType > 3) owBlockOutlineType = -1;
+			break;
+		case 8:
+			owBlockShowOutlineOnly += change;
+			if(owBlockShowOutlineOnly < -1) owBlockShowOutlineOnly = 1;
+			if(owBlockShowOutlineOnly > 1) owBlockShowOutlineOnly = -1;
+			break;
+		}
+
+		applyAndSave();
+	}
+
+	@Override
+	protected boolean onDecide() {
+		ResourceHolderSDL.soundManager.play("decide");
+
+		if(cursor == CURSOR_PREVIEW) {
+			startPreviewGame();
+			return true;
+		}
+
+		returnToPreviousState();
+		return true;
+	}
+
+	@Override
+	protected boolean onCancel() {
+		returnToPreviousState();
+		return true;
+	}
+
+	@Override
+	protected boolean onPushButtonD() {
+		ResourceHolderSDL.soundManager.play("decide");
+		startPreviewGame();
+		return true;
+	}
+
+	private void returnToPreviousState() {
+		int ret = returnToState;
+		returnToState = NullpoMinoSDL.STATE_CONFIG_MAINMENU;
+		NullpoMinoSDL.enterState(ret);
 	}
 }
