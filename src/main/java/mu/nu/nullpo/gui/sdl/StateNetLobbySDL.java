@@ -84,7 +84,7 @@ public class StateNetLobbySDL extends BaseStateSDL {
 		// list to extend further down.
 		chatInput = new TextInputSDL(8, 448, 540, 28);
 		chatInput.maxChars = 255;
-		chatInput.placeholder = "Type here and press Enter to chat...";
+		chatInput.placeholder = "Type and press Enter to chat...";
 
 		// Action row aligned with the room table (x=8, w=624). Buttons are
 		// visually grouped by purpose with extra spacing between groups:
