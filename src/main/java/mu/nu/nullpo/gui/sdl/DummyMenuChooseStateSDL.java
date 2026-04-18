@@ -109,10 +109,7 @@ public abstract class DummyMenuChooseStateSDL extends BaseStateSDL {
 			int newCursor = y - minChoiceY;
 			if (newCursor >= 0 && newCursor <= maxCursor)
 			{
-				if (newCursor != cursor) {
-					ResourceHolderSDL.soundManager.play("cursor");
-					cursor = newCursor;
-				}
+				cursor = newCursor;
 				return true;
 			}
 		}
