@@ -1,6 +1,6 @@
 {
   "lockFileVersion": 6,
-  "moduleFileHash": "27d53f2817d2bb1f08142ed7ec12e1f9bf46358ff889de6da925fa5e3d8ad7ab",
+  "moduleFileHash": "755446da07a9ef436c41f3c1e47fab2d05057e983886fe4a4c8eaacc591ebee2",
   "flags": {
     "cmdRegistries": [
       "https://bcr.bazel.build/"
@@ -42,6 +42,7 @@
               "tagName": "install",
               "attributeValues": {
                 "artifacts": [
+                  "ch.qos.reload4j:reload4j:1.2.25",
                   "net.java.dev.jna:jna:5.16.0"
                 ],
                 "lock_file": "//:maven_install.json"
@@ -1618,7 +1619,7 @@
         "bzlTransitiveDigest": "zVuJoW6sZ5KaQSp6QvyXMxDQKo/Eo50uuF9LHuznV8Q=",
         "recordedFileInputs": {
           "@@rules_jvm_external~//rules_jvm_external_deps_install.json": "cafb5d2d8119391eb2b322ce3840d3352ea82d496bdb8cbd4b6779ec4d044dda",
-          "@@//maven_install.json": "4d33c8ab8f0fbe6efcebcd0f6200033acddb091cd51b0cd40778d8c91ea02e84"
+          "@@//maven_install.json": "bbe5c499329f43190af6eb578769dbc195364ed44633e29a25541a2ce35250f6"
         },
         "recordedDirentsInputs": {},
         "envVariables": {},
@@ -2094,6 +2095,7 @@
                 "{ \"repo_url\": \"https://repo1.maven.org/maven2\" }"
               ],
               "artifacts": [
+                "{ \"group\": \"ch.qos.reload4j\", \"artifact\": \"reload4j\", \"version\": \"1.2.25\" }",
                 "{ \"group\": \"net.java.dev.jna\", \"artifact\": \"jna\", \"version\": \"5.16.0\" }",
                 "{ \"group\": \"com.google.code.findbugs\", \"artifact\": \"jsr305\", \"version\": \"3.0.2\" }",
                 "{ \"group\": \"com.google.code.gson\", \"artifact\": \"gson\", \"version\": \"2.8.9\" }",
@@ -2265,6 +2267,17 @@
                 "https://repo1.maven.org/maven2/software/amazon/awssdk/third-party-jackson-core/2.20.128/third-party-jackson-core-2.20.128.jar"
               ],
               "downloaded_file_path": "v1/software/amazon/awssdk/third-party-jackson-core/2.20.128/third-party-jackson-core-2.20.128.jar"
+            }
+          },
+          "ch_qos_reload4j_reload4j_1_2_25": {
+            "bzlFile": "@@bazel_tools//tools/build_defs/repo:http.bzl",
+            "ruleClassName": "http_file",
+            "attributes": {
+              "sha256": "e71115175c4b080cf51dd72097165ea001ff9fafdc4f79d88049d0b1ecca979c",
+              "urls": [
+                "https://repo1.maven.org/maven2/ch/qos/reload4j/reload4j/1.2.25/reload4j-1.2.25.jar"
+              ],
+              "downloaded_file_path": "v1/ch/qos/reload4j/reload4j/1.2.25/reload4j-1.2.25.jar"
             }
           },
           "com_google_guava_listenablefuture_9999_0_empty_to_avoid_conflict_with_guava": {
@@ -2709,6 +2722,7 @@
                 "{ \"repo_url\": \"https://repo1.maven.org/maven2\" }"
               ],
               "artifacts": [
+                "{ \"group\": \"ch.qos.reload4j\", \"artifact\": \"reload4j\", \"version\": \"1.2.25\" }",
                 "{ \"group\": \"net.java.dev.jna\", \"artifact\": \"jna\", \"version\": \"5.16.0\" }",
                 "{ \"group\": \"com.google.code.findbugs\", \"artifact\": \"jsr305\", \"version\": \"3.0.2\" }",
                 "{ \"group\": \"com.google.code.gson\", \"artifact\": \"gson\", \"version\": \"2.8.9\" }",

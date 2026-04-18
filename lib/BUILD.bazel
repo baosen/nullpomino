@@ -1,12 +1,6 @@
 load("@rules_java//java:defs.bzl", "java_import")
 
 java_import(
-    name = "log4j",
-    jars = ["log4j-1.2.15.jar"],
-    visibility = ["//visibility:public"],
-)
-
-java_import(
     name = "swing_worker",
     jars = ["swing-worker-1.2.jar"],
     visibility = ["//visibility:public"],
