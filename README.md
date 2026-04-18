@@ -21,7 +21,7 @@ This produces:
 #### Run
 
 ```bash
-./run_sdl.sh
+./NullpoMino
 ```
 
 The SDL frontend uses JNA to load `SDL3`, `SDL3_image`, `SDL3_mixer`, and
@@ -30,12 +30,12 @@ first, then launches the game.
 
 #### Standalone tools
 
-Swing-based utility programs live under `scripts/` and
-`src/main/java/mu/nu/nullpo/tool/`:
+Swing-based utility programs live at the repo root alongside the
+Java sources under `src/main/java/mu/nu/nullpo/tool/`:
 
-- `scripts/ruleeditor` — edit game rulesets
-- `scripts/sequencer` — inspect replay piece sequences (by Zircean)
-- `scripts/musiclisteditor` — configure BGM files
-- `scripts/netserver` — run a netplay server
-- `scripts/netadmin` — manage a running NetServer
-- `scripts/airankstool` — generate a Ranks AI data file
+- `./ruleeditor` — edit game rulesets
+- `./sequencer` — inspect replay piece sequences (by Zircean)
+- `./musiclisteditor` — configure BGM files
+- `./netserver` — run a netplay server
+- `./netadmin` — manage a running NetServer
+- `./airankstool` — generate a Ranks AI data file
