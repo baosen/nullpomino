@@ -47,7 +47,6 @@ import mu.nu.nullpo.gui.sdl.widget.WidgetSDL;
 public class StateNetLobbySDL extends BaseStateSDL {
 	private TableSDL roomTable;
 	private TextInputSDL chatInput;
-	private ButtonSDL sendBtn;
 	private ButtonSDL joinBtn;
 	private ButtonSDL viewBtn;
 	private ButtonSDL createBtn;
@@ -79,14 +78,13 @@ public class StateNetLobbySDL extends BaseStateSDL {
 		};
 		roomTable = new TableSDL(8, 28, 624, 190, cols);
 
-		// Chat input along the bottom, aligned with the chat log's width. SEND
-		// sits flush with the screen's right edge (x=632 matches the room table).
+		// Chat input along the bottom, aligned with the chat log's width.
+		// Enter sends the message (handled in handleGlobalKey), so no explicit
+		// SEND button — that frees the right column at y=448 for the USERS
+		// list to extend further down.
 		chatInput = new TextInputSDL(8, 448, 540, 28);
 		chatInput.maxChars = 255;
 		chatInput.placeholder = "Chat...";
-		final NetLobbyFrame nlf = nl;
-		sendBtn = new ButtonSDL(552, 448, 80, 28, "SEND", new Runnable() { public void run() { sendChat(nlf); } });
-		sendBtn.primary = true;
 
 		// Action row aligned with the room table (x=8, w=624). Buttons are
 		// visually grouped by purpose with extra spacing between groups:
@@ -182,7 +180,6 @@ public class StateNetLobbySDL extends BaseStateSDL {
 		nl.chatLogLobby.update(mx, my, clicked);
 
 		// Button actions are wired in enter() and fire from ButtonSDL itself on click.
-		sendBtn.update(mx, my, clicked);
 		joinBtn.update(mx, my, clicked);
 		viewBtn.update(mx, my, clicked);
 		createBtn.update(mx, my, clicked);
@@ -442,17 +439,18 @@ public class StateNetLobbySDL extends BaseStateSDL {
 		nl.chatLogLobby.render();
 
 		chatInput.render();
-		sendBtn.render();
 
-		// Online player list (right column) — narrower now that the chat panel
-		// grew. Names clipped to 5 chars to fit the 80 px column.
+		// Online player list (right column). The SEND button used to cap the
+		// bottom at y=448; with it gone the column extends down through the
+		// chat-input row (which only occupies x=8..548) to y=476, fitting 13
+		// rows of 5-char names in the 80 px column.
 		NormalFontSDL.printFont(552, 258, "USERS", NormalFontSDL.COLOR_YELLOW);
 		int py = 274;
 		if(nl.netPlayerClient != null) {
 			LinkedList<NetPlayerInfo> list = new LinkedList<NetPlayerInfo>(nl.netPlayerClient.getPlayerInfoList());
 			int shown = 0;
 			for(NetPlayerInfo p : list) {
-				if(shown >= 10) break;
+				if(shown >= 13) break;
 				String name = NormalFontSDL.safeString(nl.getPlayerNameWithTripCode(p));
 				if(name.length() > 5) name = name.substring(0, 5);
 				NormalFontSDL.printFont(552, py, name, NormalFontSDL.COLOR_WHITE);
