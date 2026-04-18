@@ -1,4 +1,5 @@
 #!/bin/sh
+cd "$(dirname "$0")"
 mvn package || exit $?
 
 resolve_app_jar() {
