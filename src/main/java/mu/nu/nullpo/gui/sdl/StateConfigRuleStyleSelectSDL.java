@@ -52,7 +52,7 @@ public class StateConfigRuleStyleSelectSDL extends DummyMenuChooseStateSDL {
 	 */
 	@Override
 	protected boolean onCancel() {
-		NullpoMinoSDL.enterState(NullpoMinoSDL.STATE_CONFIG_MAINMENU);
+		NullpoMinoSDL.goBack();
 		return false;
 	}
 }

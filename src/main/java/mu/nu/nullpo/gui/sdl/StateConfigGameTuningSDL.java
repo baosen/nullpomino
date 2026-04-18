@@ -74,13 +74,6 @@ public class StateConfigGameTuningSDL extends DummyMenuScrollStateSDL {
 	/** Player number */
 	public int player;
 
-	/**
-	 * State ID to return to when the user accepts or cancels.  Defaults to the
-	 * main config menu; netplay's rule-change screen sets this to
-	 * {@code STATE_NET_RULECHANGE} before entering so Cancel/OK route home.
-	 */
-	public static int returnToState = NullpoMinoSDL.STATE_CONFIG_MAINMENU;
-
 	/** Preview flag */
 	protected boolean isPreview;
 
@@ -497,13 +490,13 @@ public class StateConfigGameTuningSDL extends DummyMenuScrollStateSDL {
 			return true;
 		}
 
-		returnToPreviousState();
+		NullpoMinoSDL.goBack();
 		return true;
 	}
 
 	@Override
 	protected boolean onCancel() {
-		returnToPreviousState();
+		NullpoMinoSDL.goBack();
 		return true;
 	}
 
@@ -512,11 +505,5 @@ public class StateConfigGameTuningSDL extends DummyMenuScrollStateSDL {
 		ResourceHolderSDL.soundManager.play("decide");
 		startPreviewGame();
 		return true;
-	}
-
-	private void returnToPreviousState() {
-		int ret = returnToState;
-		returnToState = NullpoMinoSDL.STATE_CONFIG_MAINMENU;
-		NullpoMinoSDL.enterState(ret);
 	}
 }

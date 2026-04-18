@@ -46,7 +46,7 @@ public class StateConfigKeyboardResetSDL extends DummyMenuChooseStateSDL {
 		GameKeySDL.gamekey[player].loadDefaultKeymap(cursor);
 		GameKeySDL.gamekey[player].saveConfig(NullpoMinoSDL.propConfig);
 		NullpoMinoSDL.saveConfig();
-		NullpoMinoSDL.enterState(NullpoMinoSDL.STATE_CONFIG_MAINMENU);
+		NullpoMinoSDL.goBack();
 		return false;
 	}
 
@@ -55,7 +55,7 @@ public class StateConfigKeyboardResetSDL extends DummyMenuChooseStateSDL {
 	 */
 	@Override
 	protected boolean onCancel() {
-		NullpoMinoSDL.enterState(NullpoMinoSDL.STATE_CONFIG_MAINMENU);
+		NullpoMinoSDL.goBack();
 		return false;
 	}
 }

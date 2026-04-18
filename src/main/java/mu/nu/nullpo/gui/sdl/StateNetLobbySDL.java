@@ -62,7 +62,7 @@ public class StateNetLobbySDL extends BaseStateSDL {
 	@Override
 	public void enter() {
 		NetLobbyFrame nl = NullpoMinoSDL.netLobby;
-		if(nl == null) { NullpoMinoSDL.enterState(NullpoMinoSDL.STATE_NET_SERVERSELECT); return; }
+		if(nl == null) { NullpoMinoSDL.enterStateClear(NullpoMinoSDL.STATE_NET_SERVERSELECT); return; }
 
 		// ID dropped — the roomID isn't useful to a human browsing the list
 		// (the name + mode say more) and freeing its column gives NAME and
@@ -139,7 +139,7 @@ public class StateNetLobbySDL extends BaseStateSDL {
 	@Override
 	public void update() {
 		NetLobbyFrame nl = NullpoMinoSDL.netLobby;
-		if(nl == null) { NullpoMinoSDL.enterState(NullpoMinoSDL.STATE_TITLE); return; }
+		if(nl == null) { NullpoMinoSDL.enterStateClear(NullpoMinoSDL.STATE_TITLE); return; }
 		nl.pump();
 		MouseInputSDL.mouseInput.update();
 
@@ -149,7 +149,7 @@ public class StateNetLobbySDL extends BaseStateSDL {
 		if(nl.netPlayerClient == null
 				|| (!nl.netPlayerClient.isConnected()
 					&& System.currentTimeMillis() - nl.lastConnectAt > 5000)) {
-			NullpoMinoSDL.enterState(NullpoMinoSDL.STATE_NET_SERVERSELECT);
+			NullpoMinoSDL.enterStateClear(NullpoMinoSDL.STATE_NET_SERVERSELECT);
 			return;
 		}
 

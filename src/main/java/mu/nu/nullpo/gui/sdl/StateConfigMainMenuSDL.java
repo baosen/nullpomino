@@ -135,7 +135,7 @@ public class StateConfigMainMenuSDL extends DummyMenuChooseStateSDL {
 
 	@Override
 	protected boolean onCancel() {
-		NullpoMinoSDL.enterState(NullpoMinoSDL.STATE_TITLE);
+		NullpoMinoSDL.goBack();
 		return false;
 	}
 }

@@ -176,7 +176,7 @@ public class StateReplaySelectSDL extends DummyMenuScrollStateSDL {
 
 	@Override
 	protected boolean onCancel() {
-		NullpoMinoSDL.enterState(NullpoMinoSDL.STATE_TITLE);
+		NullpoMinoSDL.goBack();
 		return false;
 	}
 }

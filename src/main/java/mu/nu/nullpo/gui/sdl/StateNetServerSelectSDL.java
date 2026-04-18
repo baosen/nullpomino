@@ -150,7 +150,7 @@ public class StateNetServerSelectSDL extends BaseStateSDL {
 	@Override
 	public void update() {
 		NetLobbyFrame nl = NullpoMinoSDL.netLobby;
-		if(nl == null) { NullpoMinoSDL.enterState(NullpoMinoSDL.STATE_TITLE); return; }
+		if(nl == null) { NullpoMinoSDL.enterStateClear(NullpoMinoSDL.STATE_TITLE); return; }
 		nl.pump();
 		MouseInputSDL.mouseInput.update();
 

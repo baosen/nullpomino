@@ -216,7 +216,7 @@ public class StateConfigRuleSelectSDL extends DummyMenuScrollStateSDL {
 			NullpoMinoSDL.propGlobal.setProperty(player + ".rulename." + style, entry.rulename);
 		}
 		NullpoMinoSDL.saveConfig();
-		NullpoMinoSDL.enterState(NullpoMinoSDL.STATE_CONFIG_RULESTYLESELECT);
+		NullpoMinoSDL.goBack();
 		return true;
 	}
 
@@ -225,7 +225,7 @@ public class StateConfigRuleSelectSDL extends DummyMenuScrollStateSDL {
 	 */
 	@Override
 	protected boolean onCancel() {
-		NullpoMinoSDL.enterState(NullpoMinoSDL.STATE_CONFIG_RULESTYLESELECT);
+		NullpoMinoSDL.goBack();
 		return true;
 	}
 

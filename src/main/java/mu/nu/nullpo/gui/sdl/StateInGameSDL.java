@@ -404,7 +404,7 @@ public class StateInGameSDL extends BaseStateSDL {
 				} else if(cursor == 2) {
 					// End
 					ResourceHolderSDL.bgmStop();
-					NullpoMinoSDL.enterState(NullpoMinoSDL.STATE_TITLE);
+					NullpoMinoSDL.enterStateClear(NullpoMinoSDL.STATE_TITLE);
 					return;
 				} else if(cursor == 3) {
 					// Replay re-record
@@ -502,7 +502,7 @@ public class StateInGameSDL extends BaseStateSDL {
 			   GameKeySDL.gamekey[1].isPushKey(GameKeySDL.BUTTON_GIVEUP))
 			{
 				ResourceHolderSDL.bgmStop();
-				NullpoMinoSDL.enterState(NullpoMinoSDL.STATE_TITLE);
+				NullpoMinoSDL.enterStateClear(NullpoMinoSDL.STATE_TITLE);
 				return;
 			}
 		}

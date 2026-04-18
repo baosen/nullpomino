@@ -224,7 +224,7 @@ public class StateConfigKeyboardSDL extends BaseStateSDL {
 						}
 						GameKeySDL.gamekey[player].saveConfig(NullpoMinoSDL.propConfig);
 						NullpoMinoSDL.saveConfig();
-						NullpoMinoSDL.enterState(NullpoMinoSDL.STATE_CONFIG_MAINMENU);
+						NullpoMinoSDL.goBack();
 					} else {
 						// Set Key
 						frame = 0;
@@ -243,10 +243,7 @@ public class StateConfigKeyboardSDL extends BaseStateSDL {
 
 				// Backspace
 				if(NullpoMinoSDL.keyPressedState[SDLConstants.SDL_SCANCODE_BACKSPACE]) {
-					if(isNavSetting)
-						NullpoMinoSDL.enterState(NullpoMinoSDL.STATE_CONFIG_KEYBOARD_NAVI);
-					else
-						NullpoMinoSDL.enterState(NullpoMinoSDL.STATE_CONFIG_MAINMENU);
+					NullpoMinoSDL.goBack();
 					return;
 				}
 			}

@@ -137,7 +137,7 @@ public class StateNetCreateRoomSDL extends BaseStateSDL {
 	@Override
 	public void enter() {
 		NetLobbyFrame nl = NullpoMinoSDL.netLobby;
-		if(nl == null) { NullpoMinoSDL.enterState(NullpoMinoSDL.STATE_TITLE); return; }
+		if(nl == null) { NullpoMinoSDL.enterStateClear(NullpoMinoSDL.STATE_TITLE); return; }
 
 		detailMode = nl.currentViewDetailRoomID != -1;
 		ratedMode  = !detailMode && nl.createRoomRated;
@@ -479,7 +479,7 @@ public class StateNetCreateRoomSDL extends BaseStateSDL {
 	@Override
 	public void update() {
 		NetLobbyFrame nl = NullpoMinoSDL.netLobby;
-		if(nl == null) { NullpoMinoSDL.enterState(NullpoMinoSDL.STATE_TITLE); return; }
+		if(nl == null) { NullpoMinoSDL.enterStateClear(NullpoMinoSDL.STATE_TITLE); return; }
 		nl.pump();
 		MouseInputSDL.mouseInput.update();
 
@@ -624,7 +624,7 @@ public class StateNetCreateRoomSDL extends BaseStateSDL {
 			if(nl.currentViewDetailRoomID != -1) {
 				nl.joinRoom(nl.currentViewDetailRoomID, watch);
 			}
-			NullpoMinoSDL.enterState(NullpoMinoSDL.STATE_NET_LOBBY);
+			NullpoMinoSDL.goBack();
 			return;
 		}
 
@@ -664,7 +664,7 @@ public class StateNetCreateRoomSDL extends BaseStateSDL {
 		nl.netPlayerClient.send(msg);
 		nl.createRoomSinglePlayer = false;
 		nl.createRoomRated = false;
-		NullpoMinoSDL.enterState(NullpoMinoSDL.STATE_NET_LOBBY);
+		NullpoMinoSDL.goBack();
 	}
 
 	private void collectFormInto(NetRoomInfo r) {
@@ -822,7 +822,7 @@ public class StateNetCreateRoomSDL extends BaseStateSDL {
 			nl.createRoomSinglePlayer = false;
 			nl.createRoomRated = false;
 		}
-		NullpoMinoSDL.enterState(NullpoMinoSDL.STATE_NET_LOBBY);
+		NullpoMinoSDL.goBack();
 	}
 
 	// ---------------- Preset slots ----------------

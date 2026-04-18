@@ -479,13 +479,13 @@ public class StateConfigGeneralSDL extends DummyMenuScrollStateSDL {
 	@Override
 	protected boolean onDecide() {
 		ResourceHolderSDL.soundManager.play("decide");
-		NullpoMinoSDL.enterState(NullpoMinoSDL.STATE_CONFIG_MAINMENU);
+		NullpoMinoSDL.goBack();
 		return true;
 	}
 
 	@Override
 	protected boolean onCancel() {
-		NullpoMinoSDL.enterState(NullpoMinoSDL.STATE_CONFIG_MAINMENU);
+		NullpoMinoSDL.goBack();
 		return true;
 	}
 }

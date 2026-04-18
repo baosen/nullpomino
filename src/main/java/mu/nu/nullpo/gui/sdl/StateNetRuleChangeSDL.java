@@ -47,7 +47,7 @@ public class StateNetRuleChangeSDL extends BaseStateSDL {
 	@Override
 	public void enter() {
 		NetLobbyFrame nl = NullpoMinoSDL.netLobby;
-		if(nl == null) { NullpoMinoSDL.enterState(NullpoMinoSDL.STATE_TITLE); return; }
+		if(nl == null) { NullpoMinoSDL.enterStateClear(NullpoMinoSDL.STATE_TITLE); return; }
 
 		if(returningFromTuning) {
 			returningFromTuning = false;
@@ -72,7 +72,7 @@ public class StateNetRuleChangeSDL extends BaseStateSDL {
 		tuningBtn = new ButtonSDL(140, 424, 160, 32, "TUNING...",
 				new Runnable() { public void run() { openTuning(); } });
 		cancelBtn = new ButtonSDL(508, 424, 124, 32, "CANCEL",
-				new Runnable() { public void run() { NullpoMinoSDL.enterState(NullpoMinoSDL.STATE_NET_LOBBY); } });
+				new Runnable() { public void run() { NullpoMinoSDL.goBack(); } });
 
 		selectedIndex = new int[GameEngine.MAX_GAMESTYLE];
 		for(int i = 0; i < selectedIndex.length; i++) selectedIndex[i] = findCurrentRuleIndex(nl, i);
@@ -159,7 +159,7 @@ public class StateNetRuleChangeSDL extends BaseStateSDL {
 
 		nl.saveGlobalConfig();
 		if(nl.netPlayerClient != null && nl.netPlayerClient.isConnected()) nl.sendMyRuleDataToServer();
-		NullpoMinoSDL.enterState(NullpoMinoSDL.STATE_NET_LOBBY);
+		NullpoMinoSDL.goBack();
 	}
 
 	private static RuleOptions loadRule(String filepath) {
@@ -181,7 +181,7 @@ public class StateNetRuleChangeSDL extends BaseStateSDL {
 	@Override
 	public void update() {
 		NetLobbyFrame nl = NullpoMinoSDL.netLobby;
-		if(nl == null) { NullpoMinoSDL.enterState(NullpoMinoSDL.STATE_TITLE); return; }
+		if(nl == null) { NullpoMinoSDL.enterStateClear(NullpoMinoSDL.STATE_TITLE); return; }
 		nl.pump();
 		MouseInputSDL.mouseInput.update();
 
@@ -191,7 +191,7 @@ public class StateNetRuleChangeSDL extends BaseStateSDL {
 
 		// Mouse back button aliases Escape → return to the lobby.
 		if(MouseInputSDL.mouseInput.isMouseBackClicked()) {
-			NullpoMinoSDL.enterState(NullpoMinoSDL.STATE_NET_LOBBY);
+			NullpoMinoSDL.goBack();
 			return;
 		}
 
@@ -211,7 +211,7 @@ public class StateNetRuleChangeSDL extends BaseStateSDL {
 
 		for(NullpoMinoSDL.KeyEvent ev : NullpoMinoSDL.frameKeyEvents) {
 			if(ev.scancode == SDLConstants.SDL_SCANCODE_ESCAPE && !ev.repeat) {
-				NullpoMinoSDL.enterState(NullpoMinoSDL.STATE_NET_LOBBY);
+				NullpoMinoSDL.goBack();
 				return;
 			}
 			if(!ev.repeat
@@ -250,10 +250,9 @@ public class StateNetRuleChangeSDL extends BaseStateSDL {
 		return order[next];
 	}
 
-	/** Open the shared Game Tuning screen; tell it to bounce back here on exit. */
+	/** Open the shared Game Tuning screen; the back stack bounces us home on exit. */
 	private void openTuning() {
 		returningFromTuning = true;
-		StateConfigGameTuningSDL.returnToState = NullpoMinoSDL.STATE_NET_RULECHANGE;
 		NullpoMinoSDL.enterState(NullpoMinoSDL.STATE_CONFIG_GAMETUNING);
 	}
 

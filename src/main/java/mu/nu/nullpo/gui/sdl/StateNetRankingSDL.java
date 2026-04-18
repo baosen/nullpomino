@@ -27,7 +27,7 @@ public class StateNetRankingSDL extends BaseStateSDL {
 	@Override
 	public void enter() {
 		NetLobbyFrame nl = NullpoMinoSDL.netLobby;
-		if(nl == null) { NullpoMinoSDL.enterState(NullpoMinoSDL.STATE_TITLE); return; }
+		if(nl == null) { NullpoMinoSDL.enterStateClear(NullpoMinoSDL.STATE_TITLE); return; }
 
 		tabStrip = new TabStripSDL(8, 40, 624, 28, GameEngine.GAMESTYLE_NAMES);
 		tabStrip.setActiveTab(0);
@@ -42,7 +42,7 @@ public class StateNetRankingSDL extends BaseStateSDL {
 		rankingTable = new TableSDL(8, 76, 624, 336, cols);
 
 		backBtn = new ButtonSDL(508, 424, 124, 32, "BACK",
-				new Runnable() { public void run() { NullpoMinoSDL.enterState(NullpoMinoSDL.STATE_NET_LOBBY); } });
+				new Runnable() { public void run() { NullpoMinoSDL.goBack(); } });
 		backBtn.primary = true;
 
 		setFocus(rankingTable);
@@ -87,7 +87,7 @@ public class StateNetRankingSDL extends BaseStateSDL {
 	@Override
 	public void update() {
 		NetLobbyFrame nl = NullpoMinoSDL.netLobby;
-		if(nl == null) { NullpoMinoSDL.enterState(NullpoMinoSDL.STATE_TITLE); return; }
+		if(nl == null) { NullpoMinoSDL.enterStateClear(NullpoMinoSDL.STATE_TITLE); return; }
 		nl.pump();
 		MouseInputSDL.mouseInput.update();
 
@@ -102,7 +102,7 @@ public class StateNetRankingSDL extends BaseStateSDL {
 
 		// Mouse back button aliases Escape → return to the lobby.
 		if(MouseInputSDL.mouseInput.isMouseBackClicked()) {
-			NullpoMinoSDL.enterState(NullpoMinoSDL.STATE_NET_LOBBY);
+			NullpoMinoSDL.goBack();
 			return;
 		}
 
@@ -118,7 +118,7 @@ public class StateNetRankingSDL extends BaseStateSDL {
 
 		for(NullpoMinoSDL.KeyEvent ev : NullpoMinoSDL.frameKeyEvents) {
 			if(ev.scancode == SDLConstants.SDL_SCANCODE_ESCAPE && !ev.repeat) {
-				NullpoMinoSDL.enterState(NullpoMinoSDL.STATE_NET_LOBBY);
+				NullpoMinoSDL.goBack();
 				return;
 			}
 			if(!ev.repeat

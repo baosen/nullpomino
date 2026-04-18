@@ -182,11 +182,9 @@ public class StateSelectModeSDL extends DummyMenuScrollStateSDL {
 	 */
 	@Override
 	protected boolean onCancel() {
-		if(isTopLevel) {
-			NullpoMinoSDL.enterState(NullpoMinoSDL.STATE_TITLE);
-		} else {
-			NullpoMinoSDL.enterState(NullpoMinoSDL.STATE_SELECTMODEFOLDER);
-		}
+		// Whichever screen pushed us onto the stack — title (top-level) or
+		// the folder picker — is exactly where goBack will return us.
+		NullpoMinoSDL.goBack();
 		return false;
 	}
 }

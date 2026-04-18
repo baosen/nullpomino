@@ -95,7 +95,7 @@ public class StateNetGameSDL extends BaseStateSDL implements NetLobbyListener {
 			NullpoMinoSDL.isInGame = false;
 			NullpoMinoSDL.allowQuit = true;
 			NullpoMinoSDL.disableAutoInputUpdate = false;
-			NullpoMinoSDL.enterState(NullpoMinoSDL.STATE_TITLE);
+			NullpoMinoSDL.enterStateClear(NullpoMinoSDL.STATE_TITLE);
 			return;
 		}
 		netLobby.addListener(this);
@@ -161,7 +161,7 @@ public class StateNetGameSDL extends BaseStateSDL implements NetLobbyListener {
 				if(nl != null && nl.netPlayerClient != null && nl.netPlayerClient.isConnected()) {
 					nl.netPlayerClient.send("roomjoin\t-1\tfalse\n");
 				} else {
-					NullpoMinoSDL.enterState(NullpoMinoSDL.STATE_NET_LOBBY);
+					NullpoMinoSDL.goBack();
 					return;
 				}
 				break;
@@ -215,7 +215,7 @@ public class StateNetGameSDL extends BaseStateSDL implements NetLobbyListener {
 
 				if(gameManager.getQuitFlag()) {
 					// Quit flag can be set by a retry/exit-mode action; return to the room view.
-					NullpoMinoSDL.enterState(NullpoMinoSDL.STATE_NET_LOBBY);
+					NullpoMinoSDL.goBack();
 					return;
 				}
 
@@ -228,7 +228,7 @@ public class StateNetGameSDL extends BaseStateSDL implements NetLobbyListener {
 			if(strModeToEnter == null) {
 				// netlobbyOnDisconnect / RoomLeave set this to null — bail to room view.
 				strModeToEnter = "";
-				NullpoMinoSDL.enterState(NullpoMinoSDL.STATE_NET_LOBBY);
+				NullpoMinoSDL.goBack();
 				return;
 			} else if(strModeToEnter.length() > 0) {
 				enterNewMode(strModeToEnter);
@@ -236,13 +236,13 @@ public class StateNetGameSDL extends BaseStateSDL implements NetLobbyListener {
 			}
 		} catch(NullPointerException e) {
 			if(gameManager != null && gameManager.getQuitFlag()) {
-				NullpoMinoSDL.enterState(NullpoMinoSDL.STATE_NET_LOBBY);
+				NullpoMinoSDL.goBack();
 				return;
 			}
 			log.error("update NPE", e);
 		} catch(Exception e) {
 			if(gameManager != null && gameManager.getQuitFlag()) {
-				NullpoMinoSDL.enterState(NullpoMinoSDL.STATE_NET_LOBBY);
+				NullpoMinoSDL.goBack();
 				return;
 			}
 			log.error("update fail", e);

@@ -265,13 +265,13 @@ public class StateConfigAISelectSDL extends BaseStateSDL {
 			NullpoMinoSDL.propGlobal.setProperty(player + ".aiShowState",aiShowState);
 			NullpoMinoSDL.saveConfig();
 
-			NullpoMinoSDL.enterState(NullpoMinoSDL.STATE_CONFIG_MAINMENU);
+			NullpoMinoSDL.goBack();
 			return;
 		}
 
 		// Cancel button
 		if(GameKeySDL.gamekey[0].isPushKey(GameKeySDL.BUTTON_B)) {
-			NullpoMinoSDL.enterState(NullpoMinoSDL.STATE_CONFIG_MAINMENU);
+			NullpoMinoSDL.goBack();
 			return;
 		}
 	}

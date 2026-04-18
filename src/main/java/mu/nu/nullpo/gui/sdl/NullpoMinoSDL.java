@@ -37,7 +37,9 @@ import java.io.IOException;
 import java.text.DateFormat;
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
+import java.util.ArrayDeque;
 import java.util.Calendar;
+import java.util.Deque;
 import java.util.Locale;
 
 import com.sun.jna.Pointer;
@@ -819,14 +821,66 @@ public class NullpoMinoSDL {
 			catch(Throwable t) { log.warn("netLobby shutdown failed", t); }
 			netLobby = null;
 		}
-		enterState(STATE_TITLE);
+		enterStateClear(STATE_TITLE);
 	}
 
 	/**
-	 * Switch state
-	 * @param id Destination state ID (-1 to end)
+	 * Navigation history. Every forward transition via {@link #enterState(int)}
+	 * pushes the outgoing state onto this deque, so {@link #goBack()} can
+	 * unwind the navigation the way a browser back button does. Cleared by
+	 * {@link #enterStateClear(int)} for transitions that represent a reset
+	 * (endNetplay, quit-to-title from gameplay, nl == null error bailouts).
+	 */
+	private static Deque<Integer> backStack = new ArrayDeque<Integer>();
+
+	/**
+	 * Switch state, pushing the outgoing state onto the back stack so
+	 * {@link #goBack()} can return here later.
+	 * @param id Destination state ID (-1 to end the program)
 	 */
 	public static void enterState(int id) {
+		if(id == -1) {
+			quit = true;
+			return;
+		}
+		if((currentState >= 0) && (currentState < STATE_MAX)) {
+			backStack.push(currentState);
+		}
+		doTransition(id);
+	}
+
+	/**
+	 * Pop the back stack and transition to the revealed state, or quit the
+	 * program if the stack is empty (the title screen's cancel path lands
+	 * here). Does not push the current state onto the stack — this is the
+	 * inverse of {@link #enterState(int)}.
+	 */
+	public static void goBack() {
+		if(backStack.isEmpty()) {
+			quit = true;
+			return;
+		}
+		doTransition(backStack.pop());
+	}
+
+	/**
+	 * Switch state, clearing the back stack first. Use this for transitions
+	 * that reset the navigation (endNetplay, quit-to-title from an in-game
+	 * menu, error bailouts when netLobby has gone null): there's no sensible
+	 * "previous screen" to return to from the destination.
+	 * @param id Destination state ID
+	 */
+	public static void enterStateClear(int id) {
+		backStack.clear();
+		doTransition(id);
+	}
+
+	/**
+	 * Shared state-transition body. Runs {@code leave()} on the outgoing
+	 * state and {@code enter()} on the incoming one. Does not touch
+	 * {@link #backStack} — callers are responsible for push/pop/clear.
+	 */
+	private static void doTransition(int id) {
 		if((currentState >= 0) && (currentState < STATE_MAX) && (gameStates[currentState] != null)) {
 			gameStates[currentState].leave();
 		}

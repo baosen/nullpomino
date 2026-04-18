@@ -160,8 +160,11 @@ public class StateSelectModeFolderSDL extends DummyMenuScrollStateSDL {
 	 */
 	@Override
 	protected boolean onCancel() {
+		// If the back stack pops us to SELECTMODE, it should render as the
+		// top-level mode list rather than whatever folder's contents were
+		// last shown there — the user is walking back out of the folder.
 		StateSelectModeSDL.isTopLevel = true;
-		NullpoMinoSDL.enterState(NullpoMinoSDL.STATE_SELECTMODE);
+		NullpoMinoSDL.goBack();
 		return false;
 	}
 }

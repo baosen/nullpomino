@@ -132,7 +132,7 @@ public class StateConfigJoystickTestSDL extends BaseStateSDL {
 		if(frame >= KEYACCEPTFRAME) {
 			// Backspace & Enter/Return
 			if(NullpoMinoSDL.keyPressedState[SDLConstants.SDL_SCANCODE_BACKSPACE] || NullpoMinoSDL.keyPressedState[SDLConstants.SDL_SCANCODE_RETURN]) {
-				NullpoMinoSDL.enterState(NullpoMinoSDL.STATE_CONFIG_JOYSTICK_MAIN);
+				NullpoMinoSDL.goBack();
 				return;
 			}
 			// Joystick input

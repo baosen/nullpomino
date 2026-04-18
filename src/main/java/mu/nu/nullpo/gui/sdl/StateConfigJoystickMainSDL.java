@@ -188,14 +188,14 @@ public class StateConfigJoystickMainSDL extends BaseStateSDL {
 				stateT.player = player;
 				NullpoMinoSDL.enterState(NullpoMinoSDL.STATE_CONFIG_JOYSTICK_TEST);
 			} else {
-				NullpoMinoSDL.enterState(NullpoMinoSDL.STATE_CONFIG_MAINMENU);
+				NullpoMinoSDL.goBack();
 			}
 		}
 
 		// Cancel button
 		if(GameKeySDL.gamekey[0].isPushKey(GameKeySDL.BUTTON_B)) {
 			loadConfig(NullpoMinoSDL.propConfig);
-			NullpoMinoSDL.enterState(NullpoMinoSDL.STATE_CONFIG_MAINMENU);
+			NullpoMinoSDL.goBack();
 		}
 	}
 }

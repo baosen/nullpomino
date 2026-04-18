@@ -162,7 +162,7 @@ public class StateConfigJoystickButtonSDL extends BaseStateSDL {
 			}
 			// Backspace
 			else if(NullpoMinoSDL.keyPressedState[SDLConstants.SDL_SCANCODE_BACKSPACE]) {
-				NullpoMinoSDL.enterState(NullpoMinoSDL.STATE_CONFIG_JOYSTICK_MAIN);
+				NullpoMinoSDL.goBack();
 				return;
 			}
 			// Enter/Return
@@ -175,7 +175,7 @@ public class StateConfigJoystickButtonSDL extends BaseStateSDL {
 				GameKeySDL.gamekey[player].saveConfig(NullpoMinoSDL.propConfig);
 				NullpoMinoSDL.saveConfig();
 
-				NullpoMinoSDL.enterState(NullpoMinoSDL.STATE_CONFIG_JOYSTICK_MAIN);
+				NullpoMinoSDL.goBack();
 				return;
 			}
 			// Joystick input

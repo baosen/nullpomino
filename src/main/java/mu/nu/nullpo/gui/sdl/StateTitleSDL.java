@@ -108,10 +108,11 @@ public class StateTitleSDL extends DummyMenuChooseStateSDL {
 
 	@Override
 	protected boolean onCancel() {
-		// The title is the top-level screen, so the cancel button (Escape,
-		// BUTTON_B, right-click, mouse X1) has nowhere to back out to —
-		// treat it as an alias for the EXIT menu choice.
-		NullpoMinoSDL.enterState(-1);
+		// The title is the root screen, so the back stack is normally empty
+		// here — goBack() falls through to enterState(-1) and quits. If the
+		// stack ever does contain a prior screen (e.g. the user tabbed back
+		// via the main menu), it still does the right thing.
+		NullpoMinoSDL.goBack();
 		return true;
 	}
 }

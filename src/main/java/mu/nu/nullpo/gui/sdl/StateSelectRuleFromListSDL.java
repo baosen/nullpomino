@@ -174,7 +174,7 @@ public class StateSelectRuleFromListSDL extends DummyMenuScrollStateSDL {
 	 */
 	@Override
 	protected boolean onCancel() {
-		NullpoMinoSDL.enterState(NullpoMinoSDL.STATE_SELECTMODE);
+		NullpoMinoSDL.goBack();
 		return false;
 	}
 
