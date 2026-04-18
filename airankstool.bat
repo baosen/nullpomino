@@ -1,3 +1,5 @@
 @echo off
 cd /d "%~dp0"
-start javaw -Xmx512m -cp "target\nullpomino-7.6.0-SNAPSHOT.jar;target\lib\*" -Djava.library.path=target\lib mu.nu.nullpo.tool.airankstool.AIRanksTool
+bazel build //:AIRanksTool_deploy.jar
+if errorlevel 1 exit /b %ERRORLEVEL%
+start javaw -Xmx512m -jar bazel-bin\AIRanksTool_deploy.jar %*

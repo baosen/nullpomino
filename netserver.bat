@@ -1,3 +1,5 @@
 @echo off
 cd /d "%~dp0"
-start java -cp "target\nullpomino-7.6.0-SNAPSHOT.jar;target\lib\*" mu.nu.nullpo.game.net.NetServer %1
+bazel build //:NetServer_deploy.jar
+if errorlevel 1 exit /b %ERRORLEVEL%
+start java -jar bazel-bin\NetServer_deploy.jar %*

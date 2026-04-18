@@ -36,6 +36,11 @@ config/setting/*
 log/
 replay/
 
+# Bazel convenience symlinks (contents live under ~/.cache/bazel)
+/bazel-*
+# Per-user Bazel overrides (MODULE.bazel.lock and maven_install.json are tracked)
+.bazelrc.user
+
 # Agent directories
 .claude
 .codex

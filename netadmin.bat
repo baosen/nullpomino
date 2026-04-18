@@ -1,3 +1,5 @@
 @echo off
 cd /d "%~dp0"
-start javaw -cp "target\nullpomino-7.6.0-SNAPSHOT.jar;target\lib\*" mu.nu.nullpo.tool.netadmin.NetAdmin
+bazel build //:NetAdmin_deploy.jar
+if errorlevel 1 exit /b %ERRORLEVEL%
+start javaw -jar bazel-bin\NetAdmin_deploy.jar %*

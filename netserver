@@ -1,3 +1,4 @@
 #!/bin/sh
 cd "$(dirname "$0")"
-java -cp "target/nullpomino-7.6.0-SNAPSHOT.jar:target/lib/*" mu.nu.nullpo.game.net.NetServer $1
+bazel build //:NetServer_deploy.jar || exit $?
+java -jar bazel-bin/NetServer_deploy.jar "$@"

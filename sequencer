@@ -1,3 +1,4 @@
 #!/bin/sh
 cd "$(dirname "$0")"
-java -cp "target/nullpomino-7.6.0-SNAPSHOT.jar:target/lib/*" mu.nu.nullpo.tool.sequencer.Sequencer
+bazel build //:Sequencer_deploy.jar || exit $?
+java -jar bazel-bin/Sequencer_deploy.jar "$@"

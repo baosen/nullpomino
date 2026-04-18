@@ -1,0 +1,14 @@
+load("@rules_java//java:defs.bzl", "java_library")
+
+java_library(
+    name = "nullpomino",
+    srcs = glob(["**/*.java"]),
+    javacopts = ["-encoding", "UTF-8"],
+    visibility = ["//visibility:public"],
+    deps = [
+        "//lib:log4j",
+        "//lib:swing_layout",
+        "//lib:swing_worker",
+        "@maven//:net_java_dev_jna_jna",
+    ],
+)

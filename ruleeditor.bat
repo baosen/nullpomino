@@ -1,3 +1,5 @@
 @echo off
 cd /d "%~dp0"
-start javaw -cp "target\nullpomino-7.6.0-SNAPSHOT.jar;target\lib\*" mu.nu.nullpo.tool.ruleeditor.RuleEditor
+bazel build //:RuleEditor_deploy.jar
+if errorlevel 1 exit /b %ERRORLEVEL%
+start javaw -jar bazel-bin\RuleEditor_deploy.jar %*
