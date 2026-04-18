@@ -402,9 +402,11 @@ public class StateInGameSDL extends BaseStateSDL {
 					pause = false;
 					gameManager.reset();
 				} else if(cursor == 2) {
-					// End
+					// End — walk back through the menus that launched the
+					// game (rule select, mode select, title) via the shared
+					// back stack instead of jumping straight to title.
 					ResourceHolderSDL.bgmStop();
-					NullpoMinoSDL.enterStateClear(NullpoMinoSDL.STATE_TITLE);
+					NullpoMinoSDL.goBack();
 					return;
 				} else if(cursor == 3) {
 					// Replay re-record
@@ -502,7 +504,7 @@ public class StateInGameSDL extends BaseStateSDL {
 			   GameKeySDL.gamekey[1].isPushKey(GameKeySDL.BUTTON_GIVEUP))
 			{
 				ResourceHolderSDL.bgmStop();
-				NullpoMinoSDL.enterStateClear(NullpoMinoSDL.STATE_TITLE);
+				NullpoMinoSDL.goBack();
 				return;
 			}
 		}

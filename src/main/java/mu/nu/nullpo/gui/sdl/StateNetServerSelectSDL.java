@@ -165,10 +165,11 @@ public class StateNetServerSelectSDL extends BaseStateSDL {
 		boolean clicked = MouseInputSDL.mouseInput.isMouseClicked();
 
 		// Mouse back button aliases Escape — exit the add-server dialog if
-		// it's open, otherwise drop out of netplay entirely.
+		// it's open, otherwise walk back to the title via the shared back
+		// stack. The BACK button remains the explicit endNetplay trigger.
 		if(MouseInputSDL.mouseInput.isMouseBackClicked()) {
 			if(adding) cancelAddServer();
-			else { NullpoMinoSDL.endNetplay(); return; }
+			else { NullpoMinoSDL.goBack(); return; }
 		}
 
 		if(adding) {
@@ -316,7 +317,7 @@ public class StateNetServerSelectSDL extends BaseStateSDL {
 			attemptConnect();
 		}
 		if(!adding && ev.scancode == SDLConstants.SDL_SCANCODE_ESCAPE && !ev.repeat) {
-			NullpoMinoSDL.endNetplay();
+			NullpoMinoSDL.goBack();
 		}
 		if(adding && ev.scancode == SDLConstants.SDL_SCANCODE_ESCAPE && !ev.repeat) {
 			cancelAddServer();

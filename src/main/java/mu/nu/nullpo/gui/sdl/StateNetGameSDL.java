@@ -152,19 +152,25 @@ public class StateNetGameSDL extends BaseStateSDL implements NetLobbyListener {
 		NetLobbyFrame nl = NullpoMinoSDL.netLobby;
 		if(nl != null) nl.pump();
 
-		// ESC leaves the room and returns to the lobby. The server acknowledges the
-		// 'roomjoin -1' with roomjoinsuccess, which drives netlobbyOnRoomLeave and
-		// the strModeToEnter==null branch below — so we don't enterState manually
-		// here; just send the request.
+		// ESC / mouse back leave the room and return to the lobby. The server
+		// acknowledges the 'roomjoin -1' with roomjoinsuccess, which drives
+		// netlobbyOnRoomLeave and the strModeToEnter==null branch below — so
+		// we don't enterState manually here; just send the request.
+		boolean leaveRoom = false;
 		for(NullpoMinoSDL.KeyEvent ev : NullpoMinoSDL.frameKeyEvents) {
 			if(ev.scancode == mu.nu.nullpo.gui.sdl.binding.SDLConstants.SDL_SCANCODE_ESCAPE && !ev.repeat) {
-				if(nl != null && nl.netPlayerClient != null && nl.netPlayerClient.isConnected()) {
-					nl.netPlayerClient.send("roomjoin\t-1\tfalse\n");
-				} else {
-					NullpoMinoSDL.goBack();
-					return;
-				}
+				leaveRoom = true;
 				break;
+			}
+		}
+		MouseInputSDL.mouseInput.update();
+		if(MouseInputSDL.mouseInput.isMouseBackClicked()) leaveRoom = true;
+		if(leaveRoom) {
+			if(nl != null && nl.netPlayerClient != null && nl.netPlayerClient.isConnected()) {
+				nl.netPlayerClient.send("roomjoin\t-1\tfalse\n");
+			} else {
+				NullpoMinoSDL.goBack();
+				return;
 			}
 		}
 

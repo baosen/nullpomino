@@ -167,11 +167,11 @@ public class StateNetLobbySDL extends BaseStateSDL {
 		int my = MouseInputSDL.mouseInput.getMouseY();
 		boolean clicked = MouseInputSDL.mouseInput.isMouseClicked();
 
-		// Mouse back button aliases Escape → always leave netplay, so the
-		// cancel gesture stays consistent whether the chat input has focus
-		// or not.
+		// Mouse back button aliases Escape → goBack walks to server-select
+		// (where we came from), same as every other screen's cancel gesture.
+		// The top-right X button remains the explicit "disconnect" action.
 		if(MouseInputSDL.mouseInput.isMouseBackClicked()) {
-			NullpoMinoSDL.endNetplay();
+			NullpoMinoSDL.goBack();
 			return;
 		}
 
@@ -275,7 +275,7 @@ public class StateNetLobbySDL extends BaseStateSDL {
 		if(ev.repeat) return;
 		switch(ev.scancode) {
 			case SDLConstants.SDL_SCANCODE_ESCAPE:
-				NullpoMinoSDL.endNetplay();
+				NullpoMinoSDL.goBack();
 				break;
 			case SDLConstants.SDL_SCANCODE_RETURN:
 			case SDLConstants.SDL_SCANCODE_KP_ENTER:

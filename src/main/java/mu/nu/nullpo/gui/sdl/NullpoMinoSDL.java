@@ -864,14 +864,18 @@ public class NullpoMinoSDL {
 	}
 
 	/**
-	 * Switch state, clearing the back stack first. Use this for transitions
-	 * that reset the navigation (endNetplay, quit-to-title from an in-game
-	 * menu, error bailouts when netLobby has gone null): there's no sensible
-	 * "previous screen" to return to from the destination.
+	 * Switch state, clearing the back stack first and re-seeding it with
+	 * the title screen when the destination isn't already title. Use this
+	 * for transitions that reset the navigation (endNetplay, quit-to-title
+	 * from an in-game menu, error bailouts when netLobby has gone null):
+	 * the prior stack is stale, and the user should still be able to
+	 * escape back to the title from wherever we've landed them rather than
+	 * immediately quitting the game on the next cancel press.
 	 * @param id Destination state ID
 	 */
 	public static void enterStateClear(int id) {
 		backStack.clear();
+		if(id != STATE_TITLE) backStack.push(STATE_TITLE);
 		doTransition(id);
 	}
 
