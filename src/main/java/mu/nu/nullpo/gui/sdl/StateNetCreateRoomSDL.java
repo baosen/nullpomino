@@ -152,11 +152,12 @@ public class StateNetCreateRoomSDL extends BaseStateSDL {
 		NetRoomInfo source = resolveSource(nl);
 
 		// Seed the create-room mode: detail view derives from the room we're
-		// looking at; a fresh create-room entry always starts on MULTIPLAYER.
+		// looking at; a fresh create-room entry uses the user's last-picked
+		// mode from config (falling back to MULTIPLAYER).
 		if(detailMode) {
 			nl.createRoomMode = modeFromRoomInfo(source);
 		} else {
-			nl.createRoomMode = RoomCreateMode.MULTIPLAYER;
+			nl.createRoomMode = readLastModeFromConfig(nl);
 		}
 		ratedMode = !detailMode && nl.createRoomMode == RoomCreateMode.RATED;
 
@@ -188,6 +189,13 @@ public class StateNetCreateRoomSDL extends BaseStateSDL {
 		if(r.rated && !r.customRated) return RoomCreateMode.RATED;
 		if(r.singleplayer) return RoomCreateMode.SINGLE_PLAYER;
 		return RoomCreateMode.MULTIPLAYER;
+	}
+
+	/** Read the last-used create-room mode so the selector can pre-pick it next session. */
+	private static RoomCreateMode readLastModeFromConfig(NetLobbyFrame nl) {
+		String name = nl.propConfig.getProperty("createroom.lastMode", RoomCreateMode.MULTIPLAYER.name());
+		try { return RoomCreateMode.valueOf(name); }
+		catch(IllegalArgumentException e) { return RoomCreateMode.MULTIPLAYER; }
 	}
 
 	/** Current mode driven by the selector; falls back to the session value during construction. */
@@ -796,6 +804,7 @@ public class StateNetCreateRoomSDL extends BaseStateSDL {
 		r.maxPlayers = savedMax;
 		saveMapSetIDDefault(nl);
 		savePreviousMode(nl);
+		nl.propConfig.setProperty("createroom.lastMode", mode.name());
 		nl.saveConfig();
 		nl.netPlayerClient.send(msg);
 		nl.createRoomMode = RoomCreateMode.MULTIPLAYER;
