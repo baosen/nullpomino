@@ -109,10 +109,11 @@ public abstract class DummyMenuChooseStateSDL extends BaseStateSDL {
 			int newCursor = y - minChoiceY;
 			if (newCursor >= 0 && newCursor <= maxCursor)
 			{
-				if (newCursor == cursor)
-					return true;
-				ResourceHolderSDL.soundManager.play("cursor");
-				cursor = newCursor;
+				if (newCursor != cursor) {
+					ResourceHolderSDL.soundManager.play("cursor");
+					cursor = newCursor;
+				}
+				return true;
 			}
 		}
 		return false;
@@ -137,7 +138,7 @@ public abstract class DummyMenuChooseStateSDL extends BaseStateSDL {
 	}
 
 	/**
-	 * Called on a decide operation (left click on highlighted entry or select button).
+	 * Called on a decide operation (left click on an entry or select button).
 	 * @return True to skip all further update processing, false otherwise.
 	 */
 	protected boolean onDecide() {
