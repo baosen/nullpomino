@@ -28,14 +28,13 @@
 */
 package mu.nu.nullpo.gui.sdl;
 
-import mu.nu.nullpo.gui.sdl.binding.SDL3;
 import mu.nu.nullpo.util.CustomProperties;
 import mu.nu.nullpo.util.GeneralUtil;
 
 /**
  * State of the general settings screen
  */
-public class StateConfigGeneralSDL extends BaseStateSDL {
+public class StateConfigGeneralSDL extends DummyMenuScrollStateSDL {
 	/** UI Text identifier Strings */
 	protected static final String[] UI_TEXT = {
 		"ConfigGeneral_SE",
@@ -68,11 +67,8 @@ public class StateConfigGeneralSDL extends BaseStateSDL {
 	/** Piece preview type options */
 	protected static final String[] NEXTTYPE_OPTIONS = {"TOP", "SIDE(SMALL)", "SIDE(BIG)"};
 
-	/** Page boundary cursor positions */
+	/** Cursor positions to jump between on Page Up / Page Down */
 	protected static final int[] PAGE_BOUNDARIES = {0, 17, 23};
-
-	/** Cursor position */
-	protected int cursor;
 
 	/** Full screen flag */
 	protected boolean fullscreen;
@@ -156,14 +152,18 @@ public class StateConfigGeneralSDL extends BaseStateSDL {
 	 * Constructor
 	 */
 	public StateConfigGeneralSDL() {
+		pageHeight = 17;
+		maxCursor = 24;
 		cursor = 0;
 		loadConfig(NullpoMinoSDL.propConfig);
+		rebuildList();
 	}
 
 	@Override
 	public void enter() {
 		loadConfig(NullpoMinoSDL.propConfig);
 		syncRuntimeFullscreen(true);
+		rebuildList();
 	}
 
 	/**
@@ -247,236 +247,232 @@ public class StateConfigGeneralSDL extends BaseStateSDL {
 		prop.setProperty("option.bigsidenext", nexttype >= 2);
 	}
 
-	/*
-	 * Draw the game screen
+	/**
+	 * Rebuild {@link #list} with the current option values. Called each frame
+	 * from {@link #render()} so the on-screen labels track live edits made via
+	 * onChange without any per-case refresh code.
 	 */
-	@Override
-	public void render() {
-		// Background
-		SDL3.INSTANCE.SDL_RenderTexture(NullpoMinoSDL.renderer, ResourceHolderSDL.imgMenu, null, null);
-
-		// Basic Options
-		if(cursor < 17) {
-			NormalFontSDL.printFontGrid(1, 1, "GENERAL OPTIONS: BASIC (1/3)", NormalFontSDL.COLOR_ORANGE);
-			NormalFontSDL.printFontGrid(1, 3 + cursor, "b", NormalFontSDL.COLOR_RED);
-
-			NormalFontSDL.printFontGrid(2,  3, "SE:" + GeneralUtil.getOorX(se), (cursor == 0));
-			NormalFontSDL.printFontGrid(2,  4, "BGM:" + GeneralUtil.getOorX(bgm), (cursor == 1));
-			NormalFontSDL.printFontGrid(2,  5, "BGM PRELOAD:" + GeneralUtil.getOorX(bgmpreload), (cursor == 2));
-			NormalFontSDL.printFontGrid(2,  6, "SE VOLUME:" + sevolume + "(" + (sevolume * 100 / 128) + "%)", (cursor == 3));
-			NormalFontSDL.printFontGrid(2,  7, "BGM VOLUME:" + bgmvolume + "(" + (bgmvolume * 100 / 128) + "%)", (cursor == 4));
-			NormalFontSDL.printFontGrid(2,  8, "SHOW BACKGROUND:" + GeneralUtil.getOorX(showbg), (cursor == 5));
-			NormalFontSDL.printFontGrid(2,  9, "USE BACKGROUND FADE:" + GeneralUtil.getOorX(heavyeffect), (cursor == 6));
-			NormalFontSDL.printFontGrid(2, 10, "SHOW LINE EFFECT:" + GeneralUtil.getOorX(showlineeffect), (cursor == 7));
-			NormalFontSDL.printFontGrid(2, 11, "LINE EFFECT SPEED:" + "X " + (lineeffectspeed+1), (cursor == 8));
-			NormalFontSDL.printFontGrid(2, 12, "SHOW METER:" + GeneralUtil.getOorX(showmeter), (cursor == 9));
-			NormalFontSDL.printFontGrid(2, 13, "DARK NEXT AREA:" + GeneralUtil.getOorX(darknextarea), (cursor == 10));
-			NormalFontSDL.printFontGrid(2, 14, "SHOW NEXT ABOVE SHADOW:" + GeneralUtil.getOorX(nextshadow), (cursor == 11));
-			NormalFontSDL.printFontGrid(2, 15, "NEXT DISPLAY TYPE:" + NEXTTYPE_OPTIONS[nexttype], (cursor == 12));
-			NormalFontSDL.printFontGrid(2, 16, "OUTLINE GHOST PIECE:" + GeneralUtil.getOorX(outlineghost), (cursor == 13));
-			NormalFontSDL.printFontGrid(2, 17, "FIELD BG BRIGHT:" + fieldbgbright + "(" + (fieldbgbright * 100 / 255) + "%)", (cursor == 14));
-			NormalFontSDL.printFontGrid(2, 18, "SHOW FIELD BG GRID:" + GeneralUtil.getOorX(showfieldbggrid), (cursor == 15));
-			NormalFontSDL.printFontGrid(2, 19, "SHOW CONTROLLER INPUT:" + GeneralUtil.getOorX(showInput), (cursor == 16));
-		}
-		// Advanced Options
-		else if(cursor < 23) {
-			NormalFontSDL.printFontGrid(1, 1, "GENERAL OPTIONS: ADVANCED (2/3)", NormalFontSDL.COLOR_ORANGE);
-			NormalFontSDL.printFontGrid(1, 3 + (cursor - 17), "b", NormalFontSDL.COLOR_RED);
-
-			NormalFontSDL.printFontGrid(2,  3, "FULLSCREEN:" + GeneralUtil.getOorX(fullscreen), (cursor == 17));
-			NormalFontSDL.printFontGrid(2,  4, "SHOW FPS:" + GeneralUtil.getOorX(showfps), (cursor == 18));
-			NormalFontSDL.printFontGrid(2,  5, "MAX FPS:" + maxfps, (cursor == 19));
-			NormalFontSDL.printFontGrid(2,  6, "FRAME STEP:" + GeneralUtil.getOorX(enableframestep), (cursor == 20));
-			NormalFontSDL.printFontGrid(2,  7, "FPS PERFECT MODE:" + GeneralUtil.getOorX(perfectFPSMode), (cursor == 21));
-			NormalFontSDL.printFontGrid(2,  8, "FPS PERFECT YIELD:" + GeneralUtil.getOorX(perfectYield), (cursor == 22));
-		}
-		// SDL Options
-		else {
-			NormalFontSDL.printFontGrid(1, 1, "GENERAL OPTIONS: SDL (3/3)", NormalFontSDL.COLOR_ORANGE);
-			NormalFontSDL.printFontGrid(1, 3 + (cursor - 23), "b", NormalFontSDL.COLOR_RED);
-
-			NormalFontSDL.printFontGrid(2,  3, "SOUND BUFFER SIZE:" + soundbuffer, (cursor == 23));
-			NormalFontSDL.printFontGrid(2,  4, "MAX SOUND CHANNELS:" + soundChannels, (cursor == 24));
-		}
-
-		if((cursor >= 0) && (cursor < UI_TEXT.length)) NormalFontSDL.printTTFFont(16, 432, NullpoMinoSDL.getUIText(UI_TEXT[cursor]));
+	protected void rebuildList() {
+		list = new String[] {
+			"SE:" + GeneralUtil.getOorX(se),
+			"BGM:" + GeneralUtil.getOorX(bgm),
+			"BGM PRELOAD:" + GeneralUtil.getOorX(bgmpreload),
+			"SE VOLUME:" + sevolume + "(" + (sevolume * 100 / 128) + "%)",
+			"BGM VOLUME:" + bgmvolume + "(" + (bgmvolume * 100 / 128) + "%)",
+			"SHOW BACKGROUND:" + GeneralUtil.getOorX(showbg),
+			"USE BACKGROUND FADE:" + GeneralUtil.getOorX(heavyeffect),
+			"SHOW LINE EFFECT:" + GeneralUtil.getOorX(showlineeffect),
+			"LINE EFFECT SPEED:X " + (lineeffectspeed + 1),
+			"SHOW METER:" + GeneralUtil.getOorX(showmeter),
+			"DARK NEXT AREA:" + GeneralUtil.getOorX(darknextarea),
+			"SHOW NEXT ABOVE SHADOW:" + GeneralUtil.getOorX(nextshadow),
+			"NEXT DISPLAY TYPE:" + NEXTTYPE_OPTIONS[nexttype],
+			"OUTLINE GHOST PIECE:" + GeneralUtil.getOorX(outlineghost),
+			"FIELD BG BRIGHT:" + fieldbgbright + "(" + (fieldbgbright * 100 / 255) + "%)",
+			"SHOW FIELD BG GRID:" + GeneralUtil.getOorX(showfieldbggrid),
+			"SHOW CONTROLLER INPUT:" + GeneralUtil.getOorX(showInput),
+			"FULLSCREEN:" + GeneralUtil.getOorX(fullscreen),
+			"SHOW FPS:" + GeneralUtil.getOorX(showfps),
+			"MAX FPS:" + maxfps,
+			"FRAME STEP:" + GeneralUtil.getOorX(enableframestep),
+			"FPS PERFECT MODE:" + GeneralUtil.getOorX(perfectFPSMode),
+			"FPS PERFECT YIELD:" + GeneralUtil.getOorX(perfectYield),
+			"SOUND BUFFER SIZE:" + soundbuffer,
+			"MAX SOUND CHANNELS:" + soundChannels,
+		};
 	}
 
-	/*
-	 * Update game state
-	 */
+	@Override
+	public void render() {
+		rebuildList();
+		super.render();
+	}
+
+	@Override
+	protected void drawRow(int row, int y) {
+		// Rows embed font-sprite characters (getOorX returns 'c'/'e' glyphs
+		// that render as O/X symbols), so we must not upper-case the label.
+		NormalFontSDL.printFontGrid(2, 3 + y, list[row], (cursor == row));
+		if(cursor == row) NormalFontSDL.printFontGrid(1, 3 + y, "b", NormalFontSDL.COLOR_RED);
+	}
+
+	@Override
+	protected void onRenderSuccess() {
+		NormalFontSDL.printFontGrid(1, 1, "GENERAL OPTIONS (" + (cursor + 1) + "/" + list.length + ")", NormalFontSDL.COLOR_ORANGE);
+		if(cursor >= 0 && cursor < UI_TEXT.length) {
+			NormalFontSDL.printTTFFont(16, 432, NullpoMinoSDL.getUIText(UI_TEXT[cursor]));
+		}
+	}
+
 	@Override
 	public void update() {
 		syncRuntimeFullscreen(false);
+		super.update();
+	}
 
-		// Cursor movement
-		if(GameKeySDL.gamekey[0].isMenuRepeatKey(GameKeySDL.BUTTON_UP)) {
-			cursor--;
-			if(cursor < 0) cursor = 24;
-			ResourceHolderSDL.soundManager.play("cursor");
-		}
-		if(GameKeySDL.gamekey[0].isMenuRepeatKey(GameKeySDL.BUTTON_DOWN)) {
-			cursor++;
-			if(cursor > 24) cursor = 0;
-			ResourceHolderSDL.soundManager.play("cursor");
-		}
+	@Override
+	public boolean updateMouseInput() {
+		// Inherit cursor clicks, scroll-bar drag, wheel, page-clicks, but
+		// drop the "click a row to confirm" semantics — BUTTON_A saves and
+		// exits, so a stray click must not commit every pending change.
+		super.updateMouseInput();
+		return false;
+	}
 
-		// Page Up / Page Down to jump between page boundaries
-		int pageEvent = PageNavigationSDL.checkPageEvent();
-		if(pageEvent == 1) {
+	@Override
+	protected void onChange(int change) {
+		ResourceHolderSDL.soundManager.play("change");
+
+		switch(cursor) {
+		case 0:
+			se = !se;
+			break;
+		case 1:
+			bgm = !bgm;
+			break;
+		case 2:
+			bgmpreload = !bgmpreload;
+			break;
+		case 3:
+			sevolume += change;
+			if(sevolume < 0) sevolume = 128;
+			if(sevolume > 128) sevolume = 0;
+			break;
+		case 4:
+			bgmvolume += change;
+			if(bgmvolume < 0) bgmvolume = 128;
+			if(bgmvolume > 128) bgmvolume = 0;
+			break;
+		case 5:
+			showbg = !showbg;
+			break;
+		case 6:
+			heavyeffect = !heavyeffect;
+			break;
+		case 7:
+			showlineeffect = !showlineeffect;
+			break;
+		case 8:
+			lineeffectspeed += change;
+			if(lineeffectspeed < 0) lineeffectspeed = 9;
+			if(lineeffectspeed > 9) lineeffectspeed = 0;
+			break;
+		case 9:
+			showmeter = !showmeter;
+			break;
+		case 10:
+			darknextarea = !darknextarea;
+			break;
+		case 11:
+			nextshadow = !nextshadow;
+			break;
+		case 12:
+			nexttype += change;
+			if(nexttype < 0) nexttype = 2;
+			if(nexttype > 2) nexttype = 0;
+			break;
+		case 13:
+			outlineghost = !outlineghost;
+			break;
+		case 14:
+			fieldbgbright += change;
+			if(fieldbgbright < 0) fieldbgbright = 255;
+			if(fieldbgbright > 255) fieldbgbright = 0;
+			break;
+		case 15:
+			showfieldbggrid = !showfieldbggrid;
+			break;
+		case 16:
+			showInput = !showInput;
+			break;
+		case 17:
+			fullscreen = !fullscreen;
+			break;
+		case 18:
+			showfps = !showfps;
+			break;
+		case 19:
+			maxfps += change;
+			if(maxfps < 0) maxfps = 99;
+			if(maxfps > 99) maxfps = 0;
+			break;
+		case 20:
+			enableframestep = !enableframestep;
+			break;
+		case 21:
+			perfectFPSMode = !perfectFPSMode;
+			break;
+		case 22:
+			perfectYield = !perfectYield;
+			break;
+		case 23:
+			soundbuffer += change * 256;
+			if(soundbuffer < 0) soundbuffer = 65535;
+			if(soundbuffer > 65535) soundbuffer = 0;
+			break;
+		case 24:
+			soundChannels += change;
+			if(soundChannels < 0) soundChannels = 50;
+			if(soundChannels > 50) soundChannels = 0;
+			break;
+		}
+	}
+
+	@Override
+	protected void onPageEvent(int direction) {
+		if(direction == 1) {
 			for(int i = 0; i < PAGE_BOUNDARIES.length; i++) {
 				if(PAGE_BOUNDARIES[i] > cursor) {
 					cursor = PAGE_BOUNDARIES[i];
 					ResourceHolderSDL.soundManager.play("cursor");
-					break;
+					return;
 				}
 			}
-		} else if(pageEvent == -1) {
+		} else if(direction == -1) {
 			for(int i = PAGE_BOUNDARIES.length - 1; i >= 0; i--) {
 				if(PAGE_BOUNDARIES[i] < cursor) {
 					cursor = PAGE_BOUNDARIES[i];
 					ResourceHolderSDL.soundManager.play("cursor");
-					break;
+					return;
 				}
 			}
 		}
+	}
 
-		// Configuration changes
-		int change = 0;
-		if(GameKeySDL.gamekey[0].isMenuRepeatKey(GameKeySDL.BUTTON_LEFT)) change = -1;
-		if(GameKeySDL.gamekey[0].isMenuRepeatKey(GameKeySDL.BUTTON_RIGHT)) change = 1;
+	@Override
+	protected boolean onDecide() {
+		ResourceHolderSDL.soundManager.play("decide");
 
-		if(change != 0) {
-			ResourceHolderSDL.soundManager.play("change");
+		// Snapshot settings that need change detection before saving
+		boolean prevShowLineEffect = NullpoMinoSDL.propConfig.getProperty("option.showlineeffect", true);
+		boolean prevShowBg = NullpoMinoSDL.propConfig.getProperty("option.showbg", true);
 
-			switch(cursor) {
-			case 0:
-				se = !se;
-				break;
-			case 1:
-				bgm = !bgm;
-				break;
-			case 2:
-				bgmpreload = !bgmpreload;
-				break;
-			case 3:
-				sevolume += change;
-				if(sevolume < 0) sevolume = 128;
-				if(sevolume > 128) sevolume = 0;
-				break;
-			case 4:
-				bgmvolume += change;
-				if(bgmvolume < 0) bgmvolume = 128;
-				if(bgmvolume > 128) bgmvolume = 0;
-				break;
-			case 5:
-				showbg = !showbg;
-				break;
-			case 6:
-				heavyeffect = !heavyeffect;
-				break;
-			case 7:
-				showlineeffect = !showlineeffect;
-				break;
-			case 8:
-				lineeffectspeed += change;
-				if(lineeffectspeed < 0) lineeffectspeed = 9;
-				if(lineeffectspeed > 9) lineeffectspeed = 0;
-				break;
-			case 9:
-				showmeter = !showmeter;
-				break;
-			case 10:
-				darknextarea = !darknextarea;
-				break;
-			case 11:
-				nextshadow = !nextshadow;
-				break;
-			case 12:
-				nexttype += change;
-				if(nexttype < 0) nexttype = 2;
-				if(nexttype > 2) nexttype = 0;
-				break;
-			case 13:
-				outlineghost = !outlineghost;
-				break;
-			case 14:
-				fieldbgbright += change;
-				if(fieldbgbright < 0) fieldbgbright = 255;
-				if(fieldbgbright > 255) fieldbgbright = 0;
-				break;
-			case 15:
-				showfieldbggrid = !showfieldbggrid;
-				break;
-			case 16:
-				showInput = !showInput;
-				break;
-			case 17:
-				fullscreen = !fullscreen;
-				break;
-			case 18:
-				showfps = !showfps;
-				break;
-			case 19:
-				maxfps += change;
-				if(maxfps < 0) maxfps = 99;
-				if(maxfps > 99) maxfps = 0;
-				break;
-			case 20:
-				enableframestep = !enableframestep;
-				break;
-			case 21:
-				perfectFPSMode = !perfectFPSMode;
-				break;
-			case 22:
-				perfectYield = !perfectYield;
-				break;
-			case 23:
-				soundbuffer += change * 256;
-				if(soundbuffer < 0) soundbuffer = 65535;
-				if(soundbuffer > 65535) soundbuffer = 0;
-				break;
-			case 24:
-				soundChannels += change;
-				if(soundChannels < 0) soundChannels = 50;
-				if(soundChannels > 50) soundChannels = 0;
-				break;
-			}
+		saveConfig(NullpoMinoSDL.propConfig);
+		NullpoMinoSDL.saveConfig();
+
+		NullpoMinoSDL.showfps = showfps;
+		NullpoMinoSDL.maxFPS = maxfps;
+		NullpoMinoSDL.perfectFPSMode = perfectFPSMode;
+		NullpoMinoSDL.perfectYield = perfectYield;
+
+		// Apply fullscreen change at runtime
+		if(fullscreen != NullpoMinoSDL.fullscreen) {
+			NullpoMinoSDL.toggleFullscreen();
+			lastRuntimeFullscreen = NullpoMinoSDL.fullscreen;
 		}
 
-		// Confirm button
-		if(GameKeySDL.gamekey[0].isPushKey(GameKeySDL.BUTTON_A)) {
-			ResourceHolderSDL.soundManager.play("decide");
+		ResourceHolderSDL.soundManager.changeVolume(sevolume);
+		if(showlineeffect && !prevShowLineEffect) ResourceHolderSDL.loadLineClearEffectImages();
+		if(showbg && !prevShowBg) ResourceHolderSDL.loadBackgroundImages();
 
-			// Snapshot settings that need change detection before saving
-			boolean prevShowLineEffect = NullpoMinoSDL.propConfig.getProperty("option.showlineeffect", true);
-			boolean prevShowBg = NullpoMinoSDL.propConfig.getProperty("option.showbg", true);
+		NullpoMinoSDL.enterState(NullpoMinoSDL.STATE_CONFIG_MAINMENU);
+		return true;
+	}
 
-			saveConfig(NullpoMinoSDL.propConfig);
-			NullpoMinoSDL.saveConfig();
-
-			NullpoMinoSDL.showfps = showfps;
-			NullpoMinoSDL.maxFPS = maxfps;
-			NullpoMinoSDL.perfectFPSMode = perfectFPSMode;
-			NullpoMinoSDL.perfectYield = perfectYield;
-
-			// Apply fullscreen change at runtime
-			if(fullscreen != NullpoMinoSDL.fullscreen) {
-				NullpoMinoSDL.toggleFullscreen();
-				lastRuntimeFullscreen = NullpoMinoSDL.fullscreen;
-			}
-
-			ResourceHolderSDL.soundManager.changeVolume(sevolume);
-			if(showlineeffect && !prevShowLineEffect) ResourceHolderSDL.loadLineClearEffectImages();
-			if(showbg && !prevShowBg) ResourceHolderSDL.loadBackgroundImages();
-
-			NullpoMinoSDL.enterState(NullpoMinoSDL.STATE_CONFIG_MAINMENU);
-		}
-
-		// Cancel button
-		if(GameKeySDL.gamekey[0].isPushKey(GameKeySDL.BUTTON_B)) {
-			loadConfig(NullpoMinoSDL.propConfig);
-			NullpoMinoSDL.enterState(NullpoMinoSDL.STATE_CONFIG_MAINMENU);
-		}
+	@Override
+	protected boolean onCancel() {
+		loadConfig(NullpoMinoSDL.propConfig);
+		NullpoMinoSDL.enterState(NullpoMinoSDL.STATE_CONFIG_MAINMENU);
+		return true;
 	}
 }
