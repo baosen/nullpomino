@@ -86,26 +86,27 @@ public class StateNetLobbySDL extends BaseStateSDL {
 
 		// Action row aligned with the room table (x=8, w=624). Buttons are
 		// visually grouped by purpose with extra spacing between groups:
-		//   [JOIN VIEW] | [CREATE ROOM] | [RANKING RULES]
-		// Intra-group gap = 4 px, inter-group gap = 16 px. The create-room
-		// mode (multiplayer / 1P / rated) now lives inside the form itself
-		// as a MODE TYPE selector, so one button opens the form for all
-		// three flavours.
+		//   [JOIN ROOM | VIEW DETAILS] || [CREATE] || [RANK | RULES]
+		// Intra-group gap = 2 px, inter-group gap = 10 px — tight because
+		// the two left-hand labels spell out the action they take on the
+		// selected room. The create-room flavour (multiplayer / 1P / rated)
+		// now lives inside the form itself as a MODE TYPE selector, so the
+		// centre button just needs to carry the verb.
 		int actY = 224;
 		// Each group gets its own colour theme so buttons inside a group
 		// match and adjacent groups don't. Themes: join = blue, create =
 		// green, other = violet.
-		joinBtn       = new ButtonSDL(  8, actY,  72, 28, "JOIN",    new Runnable() { public void run() { attemptJoinSelected(); } });
+		joinBtn       = new ButtonSDL(  8, actY, 148, 28, "JOIN ROOM",    new Runnable() { public void run() { attemptJoinSelected(); } });
 		joinBtn.theme = ButtonSDL.THEME_BLUE;
-		viewBtn       = new ButtonSDL( 84, actY,  72, 28, "VIEW",    new Runnable() { public void run() { viewSelectedRoom(); } });
+		viewBtn       = new ButtonSDL(158, actY, 196, 28, "VIEW DETAILS", new Runnable() { public void run() { viewSelectedRoom(); } });
 		viewBtn.theme = ButtonSDL.THEME_BLUE;
 
-		createBtn     = new ButtonSDL(172, actY, 236, 28, "CREATE ROOM", new Runnable() { public void run() { enterCreateRoom(); } });
+		createBtn     = new ButtonSDL(364, actY, 100, 28, "CREATE",       new Runnable() { public void run() { enterCreateRoom(); } });
 		createBtn.theme = ButtonSDL.THEME_GREEN;
 
-		rankingBtn    = new ButtonSDL(424, actY, 116, 28, "RANKING", new Runnable() { public void run() { NullpoMinoSDL.enterState(NullpoMinoSDL.STATE_NET_RANKING); } });
+		rankingBtn    = new ButtonSDL(474, actY,  68, 28, "RANK",         new Runnable() { public void run() { NullpoMinoSDL.enterState(NullpoMinoSDL.STATE_NET_RANKING); } });
 		rankingBtn.theme = ButtonSDL.THEME_VIOLET;
-		rulechangeBtn = new ButtonSDL(544, actY,  84, 28, "RULES",   new Runnable() { public void run() { NullpoMinoSDL.enterState(NullpoMinoSDL.STATE_NET_RULECHANGE); } });
+		rulechangeBtn = new ButtonSDL(544, actY,  84, 28, "RULES",        new Runnable() { public void run() { NullpoMinoSDL.enterState(NullpoMinoSDL.STATE_NET_RULECHANGE); } });
 		rulechangeBtn.theme = ButtonSDL.THEME_VIOLET;
 		// Top-right corner: disconnect X. Team changes are available via the
 		// '/team <name>' chat command (see NetLobbyFrame.sendChat). Right edge
@@ -415,10 +416,11 @@ public class StateNetLobbySDL extends BaseStateSDL {
 		disconnectBtn.render();
 
 		// Thin dim separator line between each button group so the visual
-		// grouping reads at a glance. Placed in the middle of the inter-group
-		// gaps (x=164 between VIEW|CREATE ROOM, x=416 between CREATE ROOM|RANKING).
-		drawGroupSeparator(164, 224, 28);
-		drawGroupSeparator(416, 224, 28);
+		// grouping reads at a glance. Placed in the middle of the 10-px
+		// inter-group gaps (x=359 between VIEW DETAILS|CREATE, x=469
+		// between CREATE|RANK).
+		drawGroupSeparator(359, 224, 28);
+		drawGroupSeparator(469, 224, 28);
 
 		// Chat log fills the main bottom-left panel, matched in width to the
 		// chat input directly below it.
