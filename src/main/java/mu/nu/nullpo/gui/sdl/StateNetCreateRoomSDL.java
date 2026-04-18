@@ -964,7 +964,29 @@ public class StateNetCreateRoomSDL extends BaseStateSDL {
 
 	private void cancel() {
 		NetLobbyFrame nl = NullpoMinoSDL.netLobby;
-		if(nl != null) nl.createRoomMode = RoomCreateMode.MULTIPLAYER;
+		if(nl != null) {
+			// Preserve the in-progress form state on the session's backup
+			// so the next create-room entry restores whatever the user
+			// typed. Mirrors submit()'s persistence path minus the network
+			// send and the mode reset below. Skipped in detail mode —
+			// there's no editable state to save there.
+			if(!detailMode && nl.backupRoomInfo != null) {
+				NetRoomInfo r = nl.backupRoomInfo;
+				collectFormInto(r);
+				// In 1P the MAX PLAYERS spinner is locked to 1; swap in
+				// the pre-lock value before saving so flipping back to
+				// MULTIPLAYER next time starts from the right default.
+				int savedMax = r.maxPlayers;
+				if(currentMode() == RoomCreateMode.SINGLE_PLAYER) r.maxPlayers = preOnePlayerMaxPlayers;
+				saveDefaultsToConfig(nl, r);
+				r.maxPlayers = savedMax;
+				saveMapSetIDDefault(nl);
+				savePreviousMode(nl);
+				nl.propConfig.setProperty("createroom.lastMode", currentMode().name());
+				nl.saveConfig();
+			}
+			nl.createRoomMode = RoomCreateMode.MULTIPLAYER;
+		}
 		NullpoMinoSDL.goBack();
 	}
 
