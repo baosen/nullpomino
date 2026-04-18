@@ -6,17 +6,7 @@
 
 #### Prerequisites
 - Java 8 (JDK 1.8) or later
-- Maven
-
-#### Compile
-
-```bash
-mvn package
-```
-
-This produces:
-- `target/nullpomino-7.6.0-SNAPSHOT.jar` -- the application JAR
-- `target/lib/` -- dependency JARs and native libraries
+- [Bazel](https://bazel.build/) (see `.bazelversion`)
 
 #### Run
 
@@ -24,9 +14,10 @@ This produces:
 ./NullpoMino
 ```
 
-The SDL frontend uses JNA to load `SDL3`, `SDL3_image`, `SDL3_mixer`, and
-`SDL3_ttf` from your system library path. The script builds the project
-first, then launches the game.
+The launcher invokes `bazel build` on first run to produce
+`bazel-bin/NullpoMinoSDL_deploy.jar`, then launches the game. The SDL
+frontend uses JNA to load `SDL3`, `SDL3_image`, `SDL3_mixer`, and
+`SDL3_ttf` from your system library path.
 
 #### Standalone tools
 

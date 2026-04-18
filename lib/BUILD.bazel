@@ -2,18 +2,18 @@ load("@rules_java//java:defs.bzl", "java_import")
 
 java_import(
     name = "log4j",
-    jars = ["mu/nu/nullpo/local/log4j-1.2.15/LOCAL/log4j-1.2.15-LOCAL.jar"],
+    jars = ["log4j-1.2.15.jar"],
     visibility = ["//visibility:public"],
 )
 
 java_import(
     name = "swing_worker",
-    jars = ["mu/nu/nullpo/local/swing-worker-1.2/LOCAL/swing-worker-1.2-LOCAL.jar"],
+    jars = ["swing-worker-1.2.jar"],
     visibility = ["//visibility:public"],
 )
 
 java_import(
     name = "swing_layout",
-    jars = ["mu/nu/nullpo/local/swing-layout-1.0.4/LOCAL/swing-layout-1.0.4-LOCAL.jar"],
+    jars = ["swing-layout-1.0.4.jar"],
     visibility = ["//visibility:public"],
 )
