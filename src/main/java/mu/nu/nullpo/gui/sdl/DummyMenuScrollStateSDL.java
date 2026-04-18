@@ -131,10 +131,7 @@ public abstract class DummyMenuScrollStateSDL extends DummyMenuChooseStateSDL {
 		{
 			int newCursor = y - 3 + minentry;
 			if (newCursor >= list.length) return false;
-			if (newCursor != cursor) {
-				ResourceHolderSDL.soundManager.play("cursor");
-				cursor = newCursor;
-			}
+			cursor = newCursor;
 			return true;
 		}
 		return false;
