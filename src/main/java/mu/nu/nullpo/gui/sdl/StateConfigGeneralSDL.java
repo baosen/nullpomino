@@ -152,7 +152,7 @@ public class StateConfigGeneralSDL extends DummyMenuScrollStateSDL {
 	 * Constructor
 	 */
 	public StateConfigGeneralSDL() {
-		pageHeight = 24;
+		pageHeight = 23;
 		maxCursor = 24;
 		cursor = 0;
 		loadConfig(NullpoMinoSDL.propConfig);
