@@ -312,10 +312,15 @@ public class StateConfigGeneralSDL extends DummyMenuScrollStateSDL {
 
 	@Override
 	public boolean updateMouseInput() {
-		// Inherit cursor clicks, scroll-bar drag, wheel, page-clicks, but
-		// drop the "click a row to confirm" semantics — BUTTON_A saves and
-		// exits, so a stray click must not commit every pending change.
-		super.updateMouseInput();
+		// Inherit cursor clicks, scroll-bar drag, wheel, page-clicks. A row
+		// click forwards to onChange(+1) — same as pressing RIGHT — so a
+		// click toggles booleans and bumps integers on the clicked row.
+		// Always return false so BUTTON_A keeps exclusive ownership of the
+		// save-and-exit path, preventing a stray click from committing
+		// every pending edit.
+		if (super.updateMouseInput()) {
+			onChange(1);
+		}
 		return false;
 	}
 
