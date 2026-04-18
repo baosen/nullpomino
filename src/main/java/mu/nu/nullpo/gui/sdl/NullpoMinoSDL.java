@@ -44,6 +44,7 @@ import com.sun.jna.Pointer;
 import com.sun.jna.ptr.FloatByReference;
 
 import mu.nu.nullpo.game.net.NetObserverClient;
+import mu.nu.nullpo.gui.GameKeyDummy;
 import mu.nu.nullpo.gui.net.NetLobbyFrame;
 import mu.nu.nullpo.game.play.GameEngine;
 import mu.nu.nullpo.gui.sdl.binding.SDL3;
@@ -996,12 +997,36 @@ public class NullpoMinoSDL {
 
 	/**
 	 * Disable SDL text input. Called by text-input widgets on focus loss.
+	 *
+	 * Also pre-charges {@link GameKeySDL#gamekey}'s inputstate for any
+	 * nav-mapped scancode currently held down. While textInputActive was
+	 * true the main loop fed GameKeySDL an empty keyboard array, so
+	 * inputstate sat at 0; the next unmasked update would otherwise step
+	 * from 0→1 on held keys and register as a fresh {@code isPushKey}
+	 * press in whichever state we've transitioned into. For instance:
+	 * Escape-to-leave the netplay lobby while chat has focus would then
+	 * trigger the title screen's cancel-to-exit path on the very next
+	 * frame, quitting the game on one keypress. Seeding inputstate to 2
+	 * means the follow-up update increments to 3 and isPushKey stays
+	 * false until the user physically releases and presses again.
 	 */
 	public static void stopTextInput() {
 		textInputActive = false;
 		imeComposition = "";
 		imeCompositionStart = 0;
 		imeCompositionLength = 0;
+
+		for(int p = 0; p < GameKeySDL.gamekey.length; p++) {
+			GameKeySDL gk = GameKeySDL.gamekey[p];
+			if(gk == null) continue;
+			for(int b = 0; b < GameKeyDummy.MAX_BUTTON; b++) {
+				int sc = gk.keymapNav[b];
+				if(sc >= 0 && sc < keyPressedState.length && keyPressedState[sc]) {
+					gk.setInputState(b, 2);
+				}
+			}
+		}
+
 		if(window == null) return;
 		SDL3.INSTANCE.SDL_StopTextInput(window);
 	}
