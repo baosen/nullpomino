@@ -18,6 +18,7 @@ import mu.nu.nullpo.game.net.NetPlayerInfo;
 import mu.nu.nullpo.game.net.NetRoomInfo;
 import mu.nu.nullpo.game.net.NetUtil;
 import mu.nu.nullpo.gui.net.NetLobbyFrame;
+import mu.nu.nullpo.gui.net.NetLobbyFrame.RoomCreateMode;
 import mu.nu.nullpo.gui.sdl.binding.SDL3;
 import mu.nu.nullpo.gui.sdl.binding.SDLConstants;
 import mu.nu.nullpo.gui.sdl.widget.ButtonSDL;
@@ -53,10 +54,13 @@ public class StateNetCreateRoomSDL extends BaseStateSDL {
 
 	private static final String[] TSPIN_TYPE_LABELS   = { "DISABLE", "T-ONLY", "ALL SPIN" };
 	private static final String[] SPIN_CHECK_LABELS   = { "4-POINT", "IMMOBILE" };
+	/** Labels on the MODE TYPE selector; indices match {@link RoomCreateMode#ordinal()}. */
+	private static final String[] MODE_TYPE_LABELS    = { "MULTIPLAYER", "SINGLE PLAYER", "RATED" };
 
 	private TabStripSDL tabStrip;
 
 	// BASIC
+	private DropdownSDL modeSelector;
 	private TextInputSDL roomName;
 	private DropdownSDL modeDropdown;
 	private SpinnerSDL maxPlayers;
@@ -134,19 +138,34 @@ public class StateNetCreateRoomSDL extends BaseStateSDL {
 	/** Preset dropdown used in rated mode; shown only on the BASIC tab when rated. */
 	private DropdownSDL presetDropdown;
 
+	/** Last observed mode selector index — drives the {@link #onModeChanged()} edge detector. */
+	private int lastModeIndex;
+	/** MAX PLAYERS value before SINGLE_PLAYER coerced it to 1; restored when leaving 1P. */
+	private int preOnePlayerMaxPlayers = 6;
+
 	@Override
 	public void enter() {
 		NetLobbyFrame nl = NullpoMinoSDL.netLobby;
 		if(nl == null) { NullpoMinoSDL.enterStateClear(NullpoMinoSDL.STATE_TITLE); return; }
 
 		detailMode = nl.currentViewDetailRoomID != -1;
-		ratedMode  = !detailMode && nl.createRoomRated;
 		NetRoomInfo source = resolveSource(nl);
+
+		// Seed the create-room mode: detail view derives from the room we're
+		// looking at; a fresh create-room entry uses the user's last-picked
+		// mode from config (falling back to MULTIPLAYER).
+		if(detailMode) {
+			nl.createRoomMode = modeFromRoomInfo(source);
+		} else {
+			nl.createRoomMode = readLastModeFromConfig(nl);
+		}
+		ratedMode = !detailMode && nl.createRoomMode == RoomCreateMode.RATED;
 
 		tabStrip = new TabStripSDL(8, 32, 624, 28, TAB_LABELS);
 		tabStrip.setActiveTab(0);
 
 		buildWidgets(nl, source);
+		lastModeIndex = modeSelector.getSelectedIndex();
 		applyDetailModeEnabled();
 
 		if(ratedMode) {
@@ -157,11 +176,37 @@ public class StateNetCreateRoomSDL extends BaseStateSDL {
 			if(nl.netPlayerClient != null && nl.netPlayerClient.isConnected()) {
 				nl.netPlayerClient.send("getpresets\t" + nl.createRoomStyle + "\n");
 			}
-			presetDropdown = new DropdownSDL(216, 76 + 26 * 6, 400, 22);
+			presetDropdown = new DropdownSDL(216, 76 + 26 * 7, 400, 22);
 			refreshPresetDropdown();
 		}
 
-		setFocus(detailMode ? (WidgetSDL)joinBtn : (WidgetSDL)roomName);
+		setFocus(detailMode ? (WidgetSDL)joinBtn : (WidgetSDL)modeSelector);
+	}
+
+	/** Derive the mode a detail-view room was created under from its flags. */
+	private static RoomCreateMode modeFromRoomInfo(NetRoomInfo r) {
+		if(r == null) return RoomCreateMode.MULTIPLAYER;
+		if(r.rated && !r.customRated) return RoomCreateMode.RATED;
+		if(r.singleplayer) return RoomCreateMode.SINGLE_PLAYER;
+		return RoomCreateMode.MULTIPLAYER;
+	}
+
+	/** Read the last-used create-room mode so the selector can pre-pick it next session. */
+	private static RoomCreateMode readLastModeFromConfig(NetLobbyFrame nl) {
+		String name = nl.propConfig.getProperty("createroom.lastMode", RoomCreateMode.MULTIPLAYER.name());
+		try { return RoomCreateMode.valueOf(name); }
+		catch(IllegalArgumentException e) { return RoomCreateMode.MULTIPLAYER; }
+	}
+
+	/** Current mode driven by the selector; falls back to the session value during construction. */
+	private RoomCreateMode currentMode() {
+		if(modeSelector == null) {
+			NetLobbyFrame nl = NullpoMinoSDL.netLobby;
+			return (nl != null) ? nl.createRoomMode : RoomCreateMode.MULTIPLAYER;
+		}
+		int idx = modeSelector.getSelectedIndex();
+		if(idx < 0 || idx >= RoomCreateMode.values().length) return RoomCreateMode.MULTIPLAYER;
+		return RoomCreateMode.values()[idx];
 	}
 
 	@Override
@@ -226,26 +271,37 @@ public class StateNetCreateRoomSDL extends BaseStateSDL {
 		final int colL = 16, colR = 216, rowY = 76, rowH = 26;
 		final int wFull = 400, wShort = 180;
 
-		// BASIC
-		roomName = new TextInputSDL(colR, rowY + rowH * 0, wFull, 22);
+		// BASIC — MODE TYPE at row 0 selects multiplayer/1P/rated; the other
+		// rows shift down one. The MODE list just below is rebuilt by
+		// onModeChanged() when MODE TYPE changes.
+		modeSelector = new DropdownSDL(colR, rowY + rowH * 0, wFull, 22, MODE_TYPE_LABELS);
+		modeSelector.setSelectedIndex(nl.createRoomMode.ordinal());
+
+		roomName = new TextInputSDL(colR, rowY + rowH * 1, wFull, 22);
 		roomName.maxChars = 64;
 		roomName.setText(src.strName);
 
-		modeDropdown = new DropdownSDL(colR, rowY + rowH * 1, wFull, 22, loadModeList());
+		modeDropdown = new DropdownSDL(colR, rowY + rowH * 2, wFull, 22, loadModeList(nl.createRoomMode));
 		// Prefer the room's own strMode (set when viewing an existing room);
 		// otherwise fall back to the last-saved default for this mode type.
 		String defaultMode = (src.strMode != null && src.strMode.length() > 0) ? src.strMode
 				: nl.propConfig.getProperty(
-						nl.createRoomSinglePlayer ? "createroom1p.strMode" : "createroom.strMode",
+						nl.createRoomMode == RoomCreateMode.SINGLE_PLAYER
+								? "createroom1p.strMode" : "createroom.strMode",
 						"");
 		setDropdownSelection(modeDropdown, defaultMode);
 
-		maxPlayers       = new SpinnerSDL(colR, rowY + rowH * 2, wShort, 22, 1, 6, 1, src.maxPlayers);
-		autoStartSeconds = new SpinnerSDL(colR, rowY + rowH * 3, wShort, 22, 0, 600, 1, src.autoStartSeconds);
-		useMap    = new CheckboxSDL(colR, rowY + rowH * 4, wFull, 22, "USE MAP",   src.useMap);
-		mapSetID  = new SpinnerSDL (colR, rowY + rowH * 5, wShort, 22, 0, 99, 1,
+		int initialMaxPlayers = (nl.createRoomMode == RoomCreateMode.SINGLE_PLAYER) ? 1 : src.maxPlayers;
+		int maxMaxPlayers     = (nl.createRoomMode == RoomCreateMode.SINGLE_PLAYER) ? 1 : 6;
+		maxPlayers       = new SpinnerSDL(colR, rowY + rowH * 3, wShort, 22, 1, maxMaxPlayers, 1, initialMaxPlayers);
+		maxPlayers.enabled = nl.createRoomMode != RoomCreateMode.SINGLE_PLAYER;
+		preOnePlayerMaxPlayers = (nl.createRoomMode == RoomCreateMode.SINGLE_PLAYER) ? Math.max(1, src.maxPlayers) : src.maxPlayers;
+
+		autoStartSeconds = new SpinnerSDL(colR, rowY + rowH * 4, wShort, 22, 0, 600, 1, src.autoStartSeconds);
+		useMap    = new CheckboxSDL(colR, rowY + rowH * 5, wFull, 22, "USE MAP",   src.useMap);
+		mapSetID  = new SpinnerSDL (colR, rowY + rowH * 6, wShort, 22, 0, 99, 1,
 				nl.propConfig.getProperty("createroom.defaultMapSetID", 0));
-		ruleLock  = new CheckboxSDL(colR, rowY + rowH * 6, wFull, 22, "RULE LOCK", src.ruleLock);
+		ruleLock  = new CheckboxSDL(colR, rowY + rowH * 7, wFull, 22, "RULE LOCK", src.ruleLock);
 
 		// SPEED
 		gravity     = new SpinnerSDL(colR, rowY + rowH * 0, wShort, 22, 0, 99, 1, src.gravity);
@@ -317,6 +373,7 @@ public class StateNetCreateRoomSDL extends BaseStateSDL {
 		tabFields = new Field[][] {
 			// BASIC
 			{
+				new Field("MODE TYPE",    modeSelector),
 				new Field("ROOM NAME",    roomName),
 				new Field("MODE",         modeDropdown),
 				new Field("MAX PLAYERS",  maxPlayers),
@@ -380,6 +437,8 @@ public class StateNetCreateRoomSDL extends BaseStateSDL {
 	private void applyDetailModeEnabled() {
 		boolean editable = !detailMode;
 		for(Field[] tab : tabFields) for(Field f : tab) f.widget.enabled = editable;
+		// MAX PLAYERS is also disabled when SINGLE_PLAYER is selected (value coerced to 1).
+		if(editable && currentMode() == RoomCreateMode.SINGLE_PLAYER) maxPlayers.enabled = false;
 		okBtn.visible = editable;
 		joinBtn.visible = detailMode;
 		watchBtn.visible = detailMode;
@@ -398,10 +457,67 @@ public class StateNetCreateRoomSDL extends BaseStateSDL {
 			int idx = Math.max(0, presetDropdown.getSelectedIndex());
 			if(idx < nl.presets.size()) applyRoomInfoToForm(nl.presets.get(idx));
 		}
-		nl.createRoomRated = false;
-		ratedMode = false;
-		presetDropdown = null;
+		modeSelector.setSelectedIndex(RoomCreateMode.MULTIPLAYER.ordinal());
+		onModeChanged();
+	}
+
+	/**
+	 * React to a MODE TYPE selection change: rebuild the MODE dropdown from
+	 * the appropriate mode-list file, toggle MAX PLAYERS lock, wire up or
+	 * tear down the preset dropdown, and refresh button visibility. Called
+	 * after any write to {@link #modeSelector}.
+	 */
+	private void onModeChanged() {
+		NetLobbyFrame nl = NullpoMinoSDL.netLobby;
+		if(nl == null) return;
+		RoomCreateMode mode = currentMode();
+		RoomCreateMode prevMode = (lastModeIndex >= 0 && lastModeIndex < RoomCreateMode.values().length)
+				? RoomCreateMode.values()[lastModeIndex] : RoomCreateMode.MULTIPLAYER;
+		nl.createRoomMode = mode;
+		ratedMode = mode == RoomCreateMode.RATED;
+
+		// Rebuild the MODE dropdown against the right list file, preserving
+		// the user's current selection when the list still contains it.
+		String prevModeName = modeDropdown.getSelectedItem();
+		modeDropdown.setItems(loadModeList(mode));
+		setDropdownSelection(modeDropdown, prevModeName);
+
+		// MAX PLAYERS: coerce to 1 in SINGLE_PLAYER, otherwise unlock to 1..6.
+		// Only touch the value on transitions into/out of SINGLE_PLAYER — MULTI
+		// ↔ RATED swaps leave the spinner alone so values set by the preset
+		// (via applyRoomInfoToForm on the CUSTOMIZE path) survive.
+		if(mode == RoomCreateMode.SINGLE_PLAYER) {
+			if(prevMode != RoomCreateMode.SINGLE_PLAYER) preOnePlayerMaxPlayers = maxPlayers.getValue();
+			maxPlayers.min = 1;
+			maxPlayers.max = 1;
+			maxPlayers.setValue(1);
+			maxPlayers.enabled = false;
+		} else {
+			maxPlayers.min = 1;
+			maxPlayers.max = 6;
+			if(prevMode == RoomCreateMode.SINGLE_PLAYER) maxPlayers.setValue(preOnePlayerMaxPlayers);
+			maxPlayers.enabled = true;
+		}
+
+		// Preset dropdown lifecycle: request + show on entering RATED, discard on leaving.
+		if(mode == RoomCreateMode.RATED) {
+			if(presetDropdown == null) {
+				presetDropdown = new DropdownSDL(216, 76 + 26 * 7, 400, 22);
+			}
+			nl.presets.clear();
+			nl.presetsDirty = false;
+			if(nl.netPlayerClient != null && nl.netPlayerClient.isConnected()) {
+				nl.netPlayerClient.send("getpresets\t" + nl.createRoomStyle + "\n");
+			}
+			refreshPresetDropdown();
+		} else {
+			nl.presets.clear();
+			nl.presetsDirty = false;
+			presetDropdown = null;
+		}
+
 		applyDetailModeEnabled();
+		lastModeIndex = modeSelector.getSelectedIndex();
 	}
 
 	/**
@@ -410,9 +526,8 @@ public class StateNetCreateRoomSDL extends BaseStateSDL {
 	 * line is {@code "modeName,isRace"}. Section markers are skipped and the
 	 * isRace suffix is stripped before returning.
 	 */
-	private String[] loadModeList() {
-		NetLobbyFrame nl = NullpoMinoSDL.netLobby;
-		String file = (nl != null && nl.createRoomSinglePlayer)
+	private String[] loadModeList(RoomCreateMode mode) {
+		String file = (mode == RoomCreateMode.SINGLE_PLAYER)
 				? "config/list/netlobby_singlemode.lst"
 				: "config/list/netlobby_multimode.lst";
 		List<String> list = new ArrayList<String>();
@@ -505,6 +620,12 @@ public class StateNetCreateRoomSDL extends BaseStateSDL {
 		// Update all widgets on the active tab so their hover states stay live.
 		for(Field f : activeTab()) {
 			if(f.widget.update(mx, my, clicked)) setFocus(f.widget);
+		}
+		// Mode-selector edge detector: when BASIC tab's first dropdown flips,
+		// rewire the form for the new mode (list source, MAX PLAYERS lock,
+		// preset visibility).
+		if(!detailMode && modeSelector.getSelectedIndex() != lastModeIndex) {
+			onModeChanged();
 		}
 		// Rated mode: the preset dropdown lives on the BASIC tab below the form.
 		if(ratedMode && presetDropdown != null && tabStrip.getActiveTab() == 0) {
@@ -636,34 +757,47 @@ public class StateNetCreateRoomSDL extends BaseStateSDL {
 		if(me != null) r.style = 0;  // NullpoMino's default style for multiplayer
 
 		String msg;
-		if(ratedMode) {
-			// ratedroomcreate\t<name>\t<maxPlayers>\t<presetIndex>\t<mode>
-			if(r.strName == null || r.strName.trim().length() == 0) { statusLine = "ROOM NAME REQUIRED"; return; }
-			if(presetDropdown == null || nl.presets.isEmpty()) { statusLine = "NO PRESETS AVAILABLE"; return; }
-			int presetIdx = Math.max(0, presetDropdown.getSelectedIndex());
-			String name = NetUtil.urlEncode(r.strName);
-			String mode = NetUtil.urlEncode(r.strMode == null ? "" : r.strMode);
-			msg = "ratedroomcreate\t" + name + "\t" + r.maxPlayers + "\t" + presetIdx + "\t" + mode + "\n";
-		} else if(nl.createRoomSinglePlayer) {
-			// singleroomcreate\t<name>\t<mode> — server fills the rest from the player's rule.
-			if(r.strName == null || r.strName.trim().length() == 0) { statusLine = "ROOM NAME REQUIRED"; return; }
-			String name = NetUtil.urlEncode(r.strName);
-			String mode = NetUtil.urlEncode(r.strMode == null ? "" : r.strMode);
-			msg = "singleroomcreate\t" + name + "\t" + mode + "\n";
-		} else {
-			msg = buildRoomCreateMessage(r, mapSetID.getValue());
-			if(msg == null) { statusLine = "ROOM NAME REQUIRED"; return; }
+		RoomCreateMode mode = currentMode();
+		switch(mode) {
+			case RATED: {
+				// ratedroomcreate\t<name>\t<maxPlayers>\t<presetIndex>\t<mode>
+				if(r.strName == null || r.strName.trim().length() == 0) { statusLine = "ROOM NAME REQUIRED"; return; }
+				if(presetDropdown == null || nl.presets.isEmpty()) { statusLine = "NO PRESETS AVAILABLE"; return; }
+				int presetIdx = Math.max(0, presetDropdown.getSelectedIndex());
+				String name = NetUtil.urlEncode(r.strName);
+				String modeName = NetUtil.urlEncode(r.strMode == null ? "" : r.strMode);
+				msg = "ratedroomcreate\t" + name + "\t" + r.maxPlayers + "\t" + presetIdx + "\t" + modeName + "\n";
+				break;
+			}
+			case SINGLE_PLAYER: {
+				// singleroomcreate\t<name>\t<mode> — server fills the rest from the player's rule.
+				if(r.strName == null || r.strName.trim().length() == 0) { statusLine = "ROOM NAME REQUIRED"; return; }
+				String name = NetUtil.urlEncode(r.strName);
+				String modeName = NetUtil.urlEncode(r.strMode == null ? "" : r.strMode);
+				msg = "singleroomcreate\t" + name + "\t" + modeName + "\n";
+				break;
+			}
+			default: {
+				msg = buildRoomCreateMessage(r, mapSetID.getValue());
+				if(msg == null) { statusLine = "ROOM NAME REQUIRED"; return; }
+				break;
+			}
 		}
 
 		nl.backupRoomInfo = r;
 		// Persist the defaults so the user's tuning survives reconnects.
+		// For 1P mode, restore the pre-lock MAX PLAYERS value before saving so
+		// the forced "1" doesn't clobber the user's multiplayer default.
+		int savedMax = r.maxPlayers;
+		if(mode == RoomCreateMode.SINGLE_PLAYER) r.maxPlayers = preOnePlayerMaxPlayers;
 		saveDefaultsToConfig(nl, r);
+		r.maxPlayers = savedMax;
 		saveMapSetIDDefault(nl);
 		savePreviousMode(nl);
+		nl.propConfig.setProperty("createroom.lastMode", mode.name());
 		nl.saveConfig();
 		nl.netPlayerClient.send(msg);
-		nl.createRoomSinglePlayer = false;
-		nl.createRoomRated = false;
+		nl.createRoomMode = RoomCreateMode.MULTIPLAYER;
 		NullpoMinoSDL.goBack();
 	}
 
@@ -810,18 +944,17 @@ public class StateNetCreateRoomSDL extends BaseStateSDL {
 	 * mode is effectively always the rated rule's mode.
 	 */
 	private void savePreviousMode(NetLobbyFrame nl) {
+		if(currentMode() == RoomCreateMode.RATED) return;
 		String mode = modeDropdown.getSelectedItem();
 		if(mode == null) mode = "";
-		String key = nl.createRoomSinglePlayer ? "createroom1p.strMode" : "createroom.strMode";
+		String key = (currentMode() == RoomCreateMode.SINGLE_PLAYER)
+				? "createroom1p.strMode" : "createroom.strMode";
 		nl.propConfig.setProperty(key, mode);
 	}
 
 	private void cancel() {
 		NetLobbyFrame nl = NullpoMinoSDL.netLobby;
-		if(nl != null) {
-			nl.createRoomSinglePlayer = false;
-			nl.createRoomRated = false;
-		}
+		if(nl != null) nl.createRoomMode = RoomCreateMode.MULTIPLAYER;
 		NullpoMinoSDL.goBack();
 	}
 
@@ -939,9 +1072,11 @@ public class StateNetCreateRoomSDL extends BaseStateSDL {
 
 		String title;
 		if(detailMode) title = "ROOM DETAIL";
-		else if(ratedMode) title = "CREATE RATED ROOM";
-		else if(nl.createRoomSinglePlayer) title = "CREATE 1P ROOM";
-		else title = "CREATE ROOM";
+		else switch(currentMode()) {
+			case RATED:        title = "CREATE RATED ROOM"; break;
+			case SINGLE_PLAYER: title = "CREATE 1P ROOM";   break;
+			default:           title = "CREATE ROOM";       break;
+		}
 		NormalFontSDL.printFont(16, 8, title, NormalFontSDL.COLOR_CYAN);
 		tabStrip.render();
 
@@ -958,9 +1093,9 @@ public class StateNetCreateRoomSDL extends BaseStateSDL {
 
 		// Rated mode: show the preset dropdown + loading status on the BASIC tab.
 		if(ratedMode && tabStrip.getActiveTab() == 0 && presetDropdown != null) {
-			NormalFontSDL.printFont(16, 76 + 26 * 6 + 3, "PRESET", NormalFontSDL.COLOR_WHITE);
+			NormalFontSDL.printFont(16, 76 + 26 * 7 + 3, "PRESET", NormalFontSDL.COLOR_WHITE);
 			if(nl.presets.isEmpty()) {
-				NormalFontSDL.printFont(216, 76 + 26 * 6 + 3,
+				NormalFontSDL.printFont(216, 76 + 26 * 7 + 3,
 						"WAITING FOR PRESETS...", NormalFontSDL.COLOR_YELLOW);
 			} else {
 				presetDropdown.render();

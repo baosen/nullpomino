@@ -50,8 +50,6 @@ public class StateNetLobbySDL extends BaseStateSDL {
 	private ButtonSDL joinBtn;
 	private ButtonSDL viewBtn;
 	private ButtonSDL createBtn;
-	private ButtonSDL create1PBtn;
-	private ButtonSDL createRatedBtn;
 	private ButtonSDL rankingBtn;
 	private ButtonSDL rulechangeBtn;
 	private ButtonSDL disconnectBtn;
@@ -88,8 +86,11 @@ public class StateNetLobbySDL extends BaseStateSDL {
 
 		// Action row aligned with the room table (x=8, w=624). Buttons are
 		// visually grouped by purpose with extra spacing between groups:
-		//   [JOIN VIEW] | [CREATE 1P RATED] | [RANKING RULES]
-		// Intra-group gap = 4 px, inter-group gap = 16 px.
+		//   [JOIN VIEW] | [CREATE ROOM] | [RANKING RULES]
+		// Intra-group gap = 4 px, inter-group gap = 16 px. The create-room
+		// mode (multiplayer / 1P / rated) now lives inside the form itself
+		// as a MODE TYPE selector, so one button opens the form for all
+		// three flavours.
 		int actY = 224;
 		// Each group gets its own colour theme so buttons inside a group
 		// match and adjacent groups don't. Themes: join = blue, create =
@@ -99,12 +100,8 @@ public class StateNetLobbySDL extends BaseStateSDL {
 		viewBtn       = new ButtonSDL( 84, actY,  72, 28, "VIEW",    new Runnable() { public void run() { viewSelectedRoom(); } });
 		viewBtn.theme = ButtonSDL.THEME_BLUE;
 
-		createBtn     = new ButtonSDL(172, actY, 104, 28, "CREATE",  new Runnable() { public void run() { enterCreateRoom(false, false); } });
+		createBtn     = new ButtonSDL(172, actY, 236, 28, "CREATE ROOM", new Runnable() { public void run() { enterCreateRoom(); } });
 		createBtn.theme = ButtonSDL.THEME_GREEN;
-		create1PBtn   = new ButtonSDL(280, actY,  40, 28, "1P",      new Runnable() { public void run() { enterCreateRoom(true,  false); } });
-		create1PBtn.theme = ButtonSDL.THEME_GREEN;
-		createRatedBtn= new ButtonSDL(324, actY,  84, 28, "RATED",   new Runnable() { public void run() { enterCreateRoom(false, true);  } });
-		createRatedBtn.theme = ButtonSDL.THEME_GREEN;
 
 		rankingBtn    = new ButtonSDL(424, actY, 116, 28, "RANKING", new Runnable() { public void run() { NullpoMinoSDL.enterState(NullpoMinoSDL.STATE_NET_RANKING); } });
 		rankingBtn.theme = ButtonSDL.THEME_VIOLET;
@@ -184,8 +181,6 @@ public class StateNetLobbySDL extends BaseStateSDL {
 		joinBtn.update(mx, my, clicked);
 		viewBtn.update(mx, my, clicked);
 		createBtn.update(mx, my, clicked);
-		create1PBtn.update(mx, my, clicked);
-		createRatedBtn.update(mx, my, clicked);
 		rankingBtn.update(mx, my, clicked);
 		rulechangeBtn.update(mx, my, clicked);
 		disconnectBtn.update(mx, my, clicked);
@@ -226,8 +221,7 @@ public class StateNetLobbySDL extends BaseStateSDL {
 	 * reached via mouse or by pressing ESC, which is the lobby's built-in quit.
 	 */
 	private ButtonSDL[] buttonRow() {
-		return new ButtonSDL[] { joinBtn, viewBtn, createBtn, create1PBtn, createRatedBtn,
-				rankingBtn, rulechangeBtn };
+		return new ButtonSDL[] { joinBtn, viewBtn, createBtn, rankingBtn, rulechangeBtn };
 	}
 
 	/**
@@ -378,16 +372,12 @@ public class StateNetLobbySDL extends BaseStateSDL {
 		if(idx < 0 || idx >= nl.roomList.size()) { statusLine = "Select a room"; return; }
 		NetRoomInfo r = nl.roomList.get(idx);
 		nl.currentViewDetailRoomID = r.roomID;
-		nl.createRoomSinglePlayer = false;
-		nl.createRoomRated = false;
 		NullpoMinoSDL.enterState(NullpoMinoSDL.STATE_NET_CREATEROOM);
 	}
 
-	private void enterCreateRoom(boolean onePlayer, boolean rated) {
+	private void enterCreateRoom() {
 		NetLobbyFrame nl = NullpoMinoSDL.netLobby;
 		nl.currentViewDetailRoomID = -1;
-		nl.createRoomSinglePlayer = onePlayer;
-		nl.createRoomRated = rated;
 		nl.createRoomStyle = 0;
 		NullpoMinoSDL.enterState(NullpoMinoSDL.STATE_NET_CREATEROOM);
 	}
@@ -420,15 +410,13 @@ public class StateNetLobbySDL extends BaseStateSDL {
 		joinBtn.render();
 		viewBtn.render();
 		createBtn.render();
-		create1PBtn.render();
-		createRatedBtn.render();
 		rankingBtn.render();
 		rulechangeBtn.render();
 		disconnectBtn.render();
 
 		// Thin dim separator line between each button group so the visual
 		// grouping reads at a glance. Placed in the middle of the inter-group
-		// gaps (x=164 between VIEW|CREATE, x=416 between RATED|RANKING).
+		// gaps (x=164 between VIEW|CREATE ROOM, x=416 between CREATE ROOM|RANKING).
 		drawGroupSeparator(164, 224, 28);
 		drawGroupSeparator(416, 224, 28);
 

@@ -145,14 +145,11 @@ public class NetLobbyFrame implements NetMessageListener {
 	/** Create Room form state — persisted across invocations. {@code null} until first open. */
 	public NetRoomInfo backupRoomInfo;
 
-	/** Create Room 1P form state. */
-	public NetRoomInfo backupRoomInfo1P;
+	/** Which flavour of room the create-room form will build on OK. */
+	public enum RoomCreateMode { MULTIPLAYER, SINGLE_PLAYER, RATED }
 
-	/** When true, {@code StateNetCreateRoomSDL} builds a single-player room on OK. */
-	public boolean createRoomSinglePlayer;
-
-	/** When true, {@code StateNetCreateRoomSDL} enters rated-room mode on entry. */
-	public boolean createRoomRated;
+	/** Current selection in the create-room form's MODE TYPE dropdown. */
+	public RoomCreateMode createRoomMode = RoomCreateMode.MULTIPLAYER;
 
 	/** Game style for the active rated-room form (0-3). */
 	public int createRoomStyle;
