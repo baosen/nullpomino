@@ -95,17 +95,17 @@ public class StateNetLobbySDL extends BaseStateSDL {
 		// Each group gets its own colour theme so buttons inside a group
 		// match and adjacent groups don't. Themes: join = blue, create =
 		// green, other = violet.
-		joinBtn       = new ButtonSDL(  8, actY,  72, 28, "JOIN",    new Runnable() { public void run() { attemptJoinSelected(); } });
+		joinBtn       = new ButtonSDL(  8, actY,  80, 28, "JOIN",    new Runnable() { public void run() { attemptJoinSelected(); } });
 		joinBtn.theme = ButtonSDL.THEME_BLUE;
-		viewBtn       = new ButtonSDL( 84, actY,  72, 28, "VIEW",    new Runnable() { public void run() { viewSelectedRoom(); } });
+		viewBtn       = new ButtonSDL( 92, actY,  80, 28, "VIEW",    new Runnable() { public void run() { viewSelectedRoom(); } });
 		viewBtn.theme = ButtonSDL.THEME_BLUE;
 
-		createBtn     = new ButtonSDL(172, actY, 236, 28, "CREATE",  new Runnable() { public void run() { enterCreateRoom(); } });
+		createBtn     = new ButtonSDL(188, actY, 196, 28, "CREATE",  new Runnable() { public void run() { enterCreateRoom(); } });
 		createBtn.theme = ButtonSDL.THEME_GREEN;
 
-		rulechangeBtn = new ButtonSDL(424, actY,  84, 28, "RULES",   new Runnable() { public void run() { NullpoMinoSDL.enterState(NullpoMinoSDL.STATE_NET_RULECHANGE); } });
+		rulechangeBtn = new ButtonSDL(400, actY,  96, 28, "RULES",   new Runnable() { public void run() { NullpoMinoSDL.enterState(NullpoMinoSDL.STATE_NET_RULECHANGE); } });
 		rulechangeBtn.theme = ButtonSDL.THEME_VIOLET;
-		rankingBtn    = new ButtonSDL(512, actY, 116, 28, "RANKING", new Runnable() { public void run() { NullpoMinoSDL.enterState(NullpoMinoSDL.STATE_NET_RANKING); } });
+		rankingBtn    = new ButtonSDL(500, actY, 128, 28, "RANKING", new Runnable() { public void run() { NullpoMinoSDL.enterState(NullpoMinoSDL.STATE_NET_RANKING); } });
 		rankingBtn.theme = ButtonSDL.THEME_VIOLET;
 		// Top-right corner: disconnect X. Team changes are available via the
 		// '/team <name>' chat command (see NetLobbyFrame.sendChat). Right edge
@@ -416,9 +416,9 @@ public class StateNetLobbySDL extends BaseStateSDL {
 
 		// Thin dim separator line between each button group so the visual
 		// grouping reads at a glance. Placed in the middle of the inter-group
-		// gaps (x=164 between VIEW|CREATE, x=416 between CREATE|RULES).
-		drawGroupSeparator(164, 224, 28);
-		drawGroupSeparator(416, 224, 28);
+		// gaps (x=180 between VIEW|CREATE, x=392 between CREATE|RULES).
+		drawGroupSeparator(180, 224, 28);
+		drawGroupSeparator(392, 224, 28);
 
 		// Chat log fills the main bottom-left panel, matched in width to the
 		// chat input directly below it.
