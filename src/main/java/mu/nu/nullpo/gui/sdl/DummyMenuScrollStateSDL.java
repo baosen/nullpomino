@@ -103,6 +103,19 @@ public abstract class DummyMenuScrollStateSDL extends DummyMenuChooseStateSDL {
 	protected void onRenderSuccess() {
 	}
 
+	/**
+	 * Render a single row of the menu list. The default draws the uppercased
+	 * list entry at column 2 with the cursor marker alongside it; subclasses
+	 * override when they need custom formatting (e.g. rows that embed sprite
+	 * characters which must not be uppercased).
+	 * @param row Index into {@link #list}
+	 * @param y Zero-based screen offset from the first visible row
+	 */
+	protected void drawRow(int row, int y) {
+		NormalFontSDL.printFontGrid(2, 3 + y, list[row].toUpperCase(), (cursor == row));
+		if(cursor == row) NormalFontSDL.printFontGrid(1, 3 + y, "b", NormalFontSDL.COLOR_RED);
+	}
+
 	@Override
 	public boolean updateMouseInput () {
 		// Mouse
@@ -191,8 +204,7 @@ public abstract class DummyMenuScrollStateSDL extends DummyMenuChooseStateSDL {
 			maxentry = list.length-1;
 
 		for(int i = minentry, y = 0; i <= maxentry; i++, y++) {
-			NormalFontSDL.printFontGrid(2, 3 + y, list[i].toUpperCase(), (cursor == i));
-			if(cursor == i) NormalFontSDL.printFontGrid(1, 3 + y, "b", NormalFontSDL.COLOR_RED);
+			drawRow(i, y);
 		}
 
 		//Draw scroll bar
