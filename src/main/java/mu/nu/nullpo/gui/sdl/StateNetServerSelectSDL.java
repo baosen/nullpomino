@@ -164,6 +164,13 @@ public class StateNetServerSelectSDL extends BaseStateSDL {
 		int my = MouseInputSDL.mouseInput.getMouseY();
 		boolean clicked = MouseInputSDL.mouseInput.isMouseClicked();
 
+		// Mouse back button aliases Escape — exit the add-server dialog if
+		// it's open, otherwise drop out of netplay entirely.
+		if(MouseInputSDL.mouseInput.isMouseBackClicked()) {
+			if(adding) cancelAddServer();
+			else { NullpoMinoSDL.endNetplay(); return; }
+		}
+
 		if(adding) {
 			if(addServerInput.update(mx, my, clicked)) setFocus(addServerInput);
 			addOkBtn.update(mx, my, clicked);      // action runs on click

@@ -493,6 +493,12 @@ public class StateNetCreateRoomSDL extends BaseStateSDL {
 		int my = MouseInputSDL.mouseInput.getMouseY();
 		boolean clicked = MouseInputSDL.mouseInput.isMouseClicked();
 
+		// Mouse back button aliases Escape → abort the create-room form.
+		if(MouseInputSDL.mouseInput.isMouseBackClicked()) {
+			cancel();
+			return;
+		}
+
 		// Tab switching — click on strip, or auto-handled by tab label below.
 		if(tabStrip.update(mx, my, clicked)) setFocus(activeTab()[0].widget);
 

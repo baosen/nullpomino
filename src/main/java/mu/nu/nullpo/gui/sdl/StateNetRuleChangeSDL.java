@@ -174,6 +174,12 @@ public class StateNetRuleChangeSDL extends BaseStateSDL {
 		int my = MouseInputSDL.mouseInput.getMouseY();
 		boolean clicked = MouseInputSDL.mouseInput.isMouseClicked();
 
+		// Mouse back button aliases Escape → return to the lobby.
+		if(MouseInputSDL.mouseInput.isMouseBackClicked()) {
+			NullpoMinoSDL.enterState(NullpoMinoSDL.STATE_NET_LOBBY);
+			return;
+		}
+
 		int prevTab = tabStrip.getActiveTab();
 		tabStrip.update(mx, my, clicked);
 		if(tabStrip.getActiveTab() != prevTab) {
