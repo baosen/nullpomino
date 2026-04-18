@@ -36,6 +36,15 @@ public abstract class DummyMenuScrollStateSDL extends DummyMenuChooseStateSDL {
 	/** Y-coordinates of dark sections of scroll bar */
 	protected int pUpMinY, pUpMaxY, pDownMinY, pDownMaxY;
 
+	/** Pixels the scroll bar thumb's top edge can travel (insideHeight - fillHeight). */
+	protected int sbUsableTravel;
+
+	/** True while the user is dragging the scroll bar thumb with the mouse. */
+	protected boolean sbDragging;
+
+	/** Pixel offset between the mouse and the thumb's top edge when the drag began. */
+	protected int sbDragOffset;
+
 	public DummyMenuScrollStateSDL () {
 		minentry = 0;
 		nullError = "";
@@ -44,6 +53,9 @@ public abstract class DummyMenuScrollStateSDL extends DummyMenuChooseStateSDL {
 		pDownMaxY = 0;
 		pUpMinY = 0;
 		pUpMaxY = 0;
+		sbUsableTravel = 0;
+		sbDragging = false;
+		sbDragOffset = 0;
 	}
 
 	@Override
@@ -96,8 +108,20 @@ public abstract class DummyMenuScrollStateSDL extends DummyMenuChooseStateSDL {
 		// Mouse
 		MouseInputSDL.mouseInput.update();
 		boolean clicked = MouseInputSDL.mouseInput.isMouseClicked();
+		boolean pressed = MouseInputSDL.mouseInput.isMousePressed();
 		int x = MouseInputSDL.mouseInput.getMouseX() >> 4;
 		int y = MouseInputSDL.mouseInput.getMouseY() >> 4;
+		int pixelY = MouseInputSDL.mouseInput.getMouseY();
+
+		// Keep dragging the scroll bar thumb even when the mouse strays off the bar.
+		if (sbDragging) {
+			if (pressed) {
+				updateScrollbarDrag(pixelY);
+				return false;
+			}
+			sbDragging = false;
+		}
+
 		if (x == SB_TEXT_X && (clicked || MouseInputSDL.mouseInput.isMenuRepeatLeft()) && y >= 3 && y <= 2 + pageHeight)
 		{
 			int maxentry = minentry + pageHeight - 1;
@@ -120,8 +144,12 @@ public abstract class DummyMenuScrollStateSDL extends DummyMenuChooseStateSDL {
 			}
 			else if (y > 3 && y < 2 + pageHeight)
 			{
-				int pixelY = MouseInputSDL.mouseInput.getMouseY();
-				if (pixelY >= pUpMinY && pixelY < pUpMaxY)
+				if (clicked && pixelY >= pUpMaxY && pixelY < pDownMinY)
+				{
+					sbDragging = true;
+					sbDragOffset = pixelY - pUpMaxY;
+				}
+				else if (pixelY >= pUpMinY && pixelY < pUpMaxY)
 					pageUp();
 				else if (pixelY >= pDownMinY && pixelY < pDownMaxY)
 					pageDown();
@@ -135,6 +163,25 @@ public abstract class DummyMenuScrollStateSDL extends DummyMenuChooseStateSDL {
 			return true;
 		}
 		return false;
+	}
+
+	private void updateScrollbarDrag(int pixelY) {
+		int offset = pixelY - sbDragOffset - pUpMinY;
+		if (offset < 0) offset = 0;
+		if (offset > sbUsableTravel) offset = sbUsableTravel;
+		int maxMinentry = Math.max(0, list.length - pageHeight);
+		int newMin = sbUsableTravel > 0
+			? (int) ((long) offset * maxMinentry / sbUsableTravel)
+			: 0;
+		if (newMin < 0) newMin = 0;
+		if (newMin > maxMinentry) newMin = maxMinentry;
+		if (newMin != minentry) {
+			ResourceHolderSDL.soundManager.play("cursor");
+			minentry = newMin;
+		}
+		if (cursor < minentry) cursor = minentry;
+		int maxentry = minentry + pageHeight - 1;
+		if (cursor > maxentry) cursor = maxentry;
 	}
 
 	public void drawMenuList()
@@ -176,6 +223,7 @@ public abstract class DummyMenuScrollStateSDL extends DummyMenuChooseStateSDL {
 		pUpMaxY = pUpMinY+fillMinY;
 		pDownMinY = pUpMaxY+fillHeight;
 		pDownMaxY = SB_MIN_Y+LINE_WIDTH+insideHeight;
+		sbUsableTravel = insideHeight - fillHeight;
 	}
 
 	/**
