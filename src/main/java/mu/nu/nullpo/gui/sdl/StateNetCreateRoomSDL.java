@@ -614,12 +614,17 @@ public class StateNetCreateRoomSDL extends BaseStateSDL {
 			return;
 		}
 
-		// Tab switching — click on strip, or auto-handled by tab label below.
-		if(tabStrip.update(mx, my, clicked)) setFocus(activeTab()[0].widget);
+		// A click can only land on one widget — once a widget consumes it
+		// (returns true from update), clear the flag so later widgets in
+		// this frame only see hover updates. Without this, selecting an
+		// item in the MODE TYPE dropdown would bleed through to the MODE
+		// dropdown on the next row (its drop-list items visually overlap
+		// the row below).
+		if(tabStrip.update(mx, my, clicked)) { setFocus(activeTab()[0].widget); clicked = false; }
 
 		// Update all widgets on the active tab so their hover states stay live.
 		for(Field f : activeTab()) {
-			if(f.widget.update(mx, my, clicked)) setFocus(f.widget);
+			if(f.widget.update(mx, my, clicked)) { setFocus(f.widget); clicked = false; }
 		}
 		// Mode-selector edge detector: when BASIC tab's first dropdown flips,
 		// rewire the form for the new mode (list source, MAX PLAYERS lock,
@@ -629,14 +634,14 @@ public class StateNetCreateRoomSDL extends BaseStateSDL {
 		}
 		// Rated mode: the preset dropdown lives on the BASIC tab below the form.
 		if(ratedMode && presetDropdown != null && tabStrip.getActiveTab() == 0) {
-			if(presetDropdown.update(mx, my, clicked)) setFocus(presetDropdown);
+			if(presetDropdown.update(mx, my, clicked)) { setFocus(presetDropdown); clicked = false; }
 		}
 
-		// Button row always visible
-		okBtn.update(mx, my, clicked);
-		joinBtn.update(mx, my, clicked);
-		watchBtn.update(mx, my, clicked);
-		customRatedBtn.update(mx, my, clicked);
+		// Button row always visible.
+		if(okBtn.update(mx, my, clicked))            clicked = false;
+		if(joinBtn.update(mx, my, clicked))          clicked = false;
+		if(watchBtn.update(mx, my, clicked))         clicked = false;
+		if(customRatedBtn.update(mx, my, clicked))   clicked = false;
 		cancelBtn.update(mx, my, clicked);
 
 		// Render-overlay step for any open dropdown happens in render().
