@@ -364,6 +364,49 @@ public class StateInGameSDL extends BaseStateSDL {
 		}
 		// Pause menu
 		else if(pause && !enableframestep && !pauseMessageHide) {
+			int maxPauseCursor = (gameManager.replayMode && !gameManager.replayRerecord) ? 3 : 2;
+
+			// Mouse wheel and clicks track the same cursor the keyboard does.
+			// Polling every pause frame keeps MouseInputSDL's hold counters
+			// fresh so a click registers on the 0→1 transition.
+			MouseInputSDL.mouseInput.update();
+			boolean mouseConfirm = false;
+			boolean mouseCancel = MouseInputSDL.mouseInput.isMouseBackClicked()
+					|| MouseInputSDL.mouseInput.isMouseRightClicked();
+
+			int wheel = (int) NullpoMinoSDL.mouseWheelDelta;
+			if(wheel != 0) {
+				int cycle = maxPauseCursor + 1;
+				cursor = ((cursor - wheel) % cycle + cycle) % cycle;
+				ResourceHolderSDL.soundManager.play("cursor");
+			}
+
+			// Click on a menu row: match the x range of the rendered labels
+			// (cursor marker at offsetX+12, text at offsetX+28, widest item
+			// is 8 chars wide → 144 px covers everything). Rows are 16 px
+			// tall starting at offsetY+188.
+			if(MouseInputSDL.mouseInput.isMouseClicked()) {
+				int mx = MouseInputSDL.mouseInput.getMouseX();
+				int my = MouseInputSDL.mouseInput.getMouseY();
+				int offsetX = 0, offsetY = 0;
+				if(gameManager != null && gameManager.engine.length > 0 && gameManager.engine[0] != null) {
+					offsetX = gameManager.receiver.getFieldDisplayPositionX(gameManager.engine[0], 0);
+					offsetY = gameManager.receiver.getFieldDisplayPositionY(gameManager.engine[0], 0);
+				}
+				int menuLeft = offsetX + 12;
+				int menuTop = offsetY + 188;
+				int menuRight = menuLeft + 144;
+				int menuBottom = menuTop + (maxPauseCursor + 1) * 16;
+				if(mx >= menuLeft && mx < menuRight && my >= menuTop && my < menuBottom) {
+					int row = (my - menuTop) / 16;
+					if(row >= 0 && row <= maxPauseCursor) {
+						if(row != cursor) ResourceHolderSDL.soundManager.play("cursor");
+						cursor = row;
+						mouseConfirm = true;
+					}
+				}
+			}
+
 			// Cursor movement
 			if(GameKeySDL.gamekey[0].isMenuRepeatKey(GameKeySDL.BUTTON_UP)) {
 				cursor--;
@@ -388,7 +431,7 @@ public class StateInGameSDL extends BaseStateSDL {
 			}
 
 			// Confirm
-			if(GameKeySDL.gamekey[0].isPushKey(GameKeySDL.BUTTON_A)) {
+			if(GameKeySDL.gamekey[0].isPushKey(GameKeySDL.BUTTON_A) || mouseConfirm) {
 				ResourceHolderSDL.soundManager.play("decide");
 				if(cursor == 0) {
 					// Resumption
@@ -416,8 +459,8 @@ public class StateInGameSDL extends BaseStateSDL {
 				}
 				updateTitleBarCaption();
 			}
-			// Unpause by cancel key
-			else if(GameKeySDL.gamekey[0].isPushKey(GameKeySDL.BUTTON_B) && (pauseFrame <= 0)) {
+			// Unpause by cancel key or mouse back / right-click
+			else if((GameKeySDL.gamekey[0].isPushKey(GameKeySDL.BUTTON_B) || mouseCancel) && (pauseFrame <= 0)) {
 				ResourceHolderSDL.soundManager.play("pause");
 				pause = false;
 				pauseFrame = 5;
