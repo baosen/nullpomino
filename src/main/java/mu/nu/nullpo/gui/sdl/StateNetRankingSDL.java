@@ -33,7 +33,7 @@ public class StateNetRankingSDL extends BaseStateSDL {
 		tabStrip.setActiveTab(0);
 
 		TableSDL.Column[] cols = {
-			new TableSDL.Column("RANK",   64),
+			new TableSDL.Column("RANK",   68),
 			new TableSDL.Column("NAME",  260),
 			new TableSDL.Column("RATE",   96),
 			new TableSDL.Column("PLAYS",  96),
