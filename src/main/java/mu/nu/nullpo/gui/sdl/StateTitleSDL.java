@@ -103,4 +103,13 @@ public class StateTitleSDL extends DummyMenuChooseStateSDL {
 		}
 		return false;
 	}
+
+	@Override
+	protected boolean onCancel() {
+		// The title is the top-level screen, so the cancel button (Escape,
+		// BUTTON_B, right-click, mouse X1) has nowhere to back out to —
+		// treat it as an alias for the EXIT menu choice.
+		NullpoMinoSDL.enterState(-1);
+		return true;
+	}
 }
