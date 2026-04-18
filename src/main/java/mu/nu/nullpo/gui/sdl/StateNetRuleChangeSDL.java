@@ -35,10 +35,25 @@ public class StateNetRuleChangeSDL extends BaseStateSDL {
 	/** Current per-style selection indices, restored on enter from propGlobal. */
 	private int[] selectedIndex;
 
+	/**
+	 * Set by {@link #openTuning()} so the very next {@link #enter()} — which
+	 * fires when the tuning screen bounces us back here — skips the widget
+	 * and selectedIndex re-init. The existing widgets already hold the
+	 * user's in-flight rule selection, and re-initialising from propGlobal
+	 * would clobber it.
+	 */
+	private boolean returningFromTuning;
+
 	@Override
 	public void enter() {
 		NetLobbyFrame nl = NullpoMinoSDL.netLobby;
 		if(nl == null) { NullpoMinoSDL.enterState(NullpoMinoSDL.STATE_TITLE); return; }
+
+		if(returningFromTuning) {
+			returningFromTuning = false;
+			setFocus(ruleTable);
+			return;
+		}
 
 		tabStrip = new TabStripSDL(8, 40, 624, 28, GameEngine.GAMESTYLE_NAMES);
 		tabStrip.setActiveTab(0);
@@ -237,6 +252,7 @@ public class StateNetRuleChangeSDL extends BaseStateSDL {
 
 	/** Open the shared Game Tuning screen; tell it to bounce back here on exit. */
 	private void openTuning() {
+		returningFromTuning = true;
 		StateConfigGameTuningSDL.returnToState = NullpoMinoSDL.STATE_NET_RULECHANGE;
 		NullpoMinoSDL.enterState(NullpoMinoSDL.STATE_CONFIG_GAMETUNING);
 	}
