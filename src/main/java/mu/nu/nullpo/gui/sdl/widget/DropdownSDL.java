@@ -181,7 +181,7 @@ public class DropdownSDL extends WidgetSDL {
 			int iy = dropY + i * itemH;
 			boolean hover = mx >= dropX && mx < dropX + w && my >= iy && my < iy + itemH;
 			if(hover) fillRect(dropX + 1, iy + 1, w - 2, itemH - 2, 64, 64, 96, 255);
-			if(idx == selected) drawRect(dropX + 2, iy + 2, w - 4, itemH - 4, 255, 255, 0, 255);
+			if(idx == selected) drawRect(dropX, iy, w, itemH, 255, 255, 0, 255);
 			String s = NormalFontSDL.safeString(items.get(idx));
 			int maxChars = Math.max(1, (w - 8) / 16);
 			if(s.length() > maxChars) s = s.substring(0, maxChars);
