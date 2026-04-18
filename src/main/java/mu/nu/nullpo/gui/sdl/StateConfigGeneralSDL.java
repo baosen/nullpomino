@@ -324,6 +324,36 @@ public class StateConfigGeneralSDL extends DummyMenuScrollStateSDL {
 		return false;
 	}
 
+	/**
+	 * Persist the current in-memory option values to propConfig (and disk)
+	 * and propagate them to the runtime fields so each edit takes effect the
+	 * moment it happens — no BUTTON_A commit required. Called from onChange
+	 * after mutating a single option.
+	 */
+	protected void applyAndSave() {
+		// Snapshot settings that need change detection before saving
+		boolean prevShowLineEffect = NullpoMinoSDL.propConfig.getProperty("option.showlineeffect", true);
+		boolean prevShowBg = NullpoMinoSDL.propConfig.getProperty("option.showbg", true);
+
+		saveConfig(NullpoMinoSDL.propConfig);
+		NullpoMinoSDL.saveConfig();
+
+		NullpoMinoSDL.showfps = showfps;
+		NullpoMinoSDL.maxFPS = maxfps;
+		NullpoMinoSDL.perfectFPSMode = perfectFPSMode;
+		NullpoMinoSDL.perfectYield = perfectYield;
+
+		// Apply fullscreen change at runtime
+		if(fullscreen != NullpoMinoSDL.fullscreen) {
+			NullpoMinoSDL.toggleFullscreen();
+			lastRuntimeFullscreen = NullpoMinoSDL.fullscreen;
+		}
+
+		ResourceHolderSDL.soundManager.changeVolume(sevolume);
+		if(showlineeffect && !prevShowLineEffect) ResourceHolderSDL.loadLineClearEffectImages();
+		if(showbg && !prevShowBg) ResourceHolderSDL.loadBackgroundImages();
+	}
+
 	@Override
 	protected void onChange(int change) {
 		ResourceHolderSDL.soundManager.play("change");
@@ -421,6 +451,8 @@ public class StateConfigGeneralSDL extends DummyMenuScrollStateSDL {
 			if(soundChannels > 50) soundChannels = 0;
 			break;
 		}
+
+		applyAndSave();
 	}
 
 	@Override
@@ -447,36 +479,12 @@ public class StateConfigGeneralSDL extends DummyMenuScrollStateSDL {
 	@Override
 	protected boolean onDecide() {
 		ResourceHolderSDL.soundManager.play("decide");
-
-		// Snapshot settings that need change detection before saving
-		boolean prevShowLineEffect = NullpoMinoSDL.propConfig.getProperty("option.showlineeffect", true);
-		boolean prevShowBg = NullpoMinoSDL.propConfig.getProperty("option.showbg", true);
-
-		saveConfig(NullpoMinoSDL.propConfig);
-		NullpoMinoSDL.saveConfig();
-
-		NullpoMinoSDL.showfps = showfps;
-		NullpoMinoSDL.maxFPS = maxfps;
-		NullpoMinoSDL.perfectFPSMode = perfectFPSMode;
-		NullpoMinoSDL.perfectYield = perfectYield;
-
-		// Apply fullscreen change at runtime
-		if(fullscreen != NullpoMinoSDL.fullscreen) {
-			NullpoMinoSDL.toggleFullscreen();
-			lastRuntimeFullscreen = NullpoMinoSDL.fullscreen;
-		}
-
-		ResourceHolderSDL.soundManager.changeVolume(sevolume);
-		if(showlineeffect && !prevShowLineEffect) ResourceHolderSDL.loadLineClearEffectImages();
-		if(showbg && !prevShowBg) ResourceHolderSDL.loadBackgroundImages();
-
 		NullpoMinoSDL.enterState(NullpoMinoSDL.STATE_CONFIG_MAINMENU);
 		return true;
 	}
 
 	@Override
 	protected boolean onCancel() {
-		loadConfig(NullpoMinoSDL.propConfig);
 		NullpoMinoSDL.enterState(NullpoMinoSDL.STATE_CONFIG_MAINMENU);
 		return true;
 	}
