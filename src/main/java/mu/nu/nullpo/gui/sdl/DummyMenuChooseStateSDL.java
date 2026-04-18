@@ -103,7 +103,7 @@ public abstract class DummyMenuChooseStateSDL extends BaseStateSDL {
 		}
 
 		// Cancel button
-		if(GameKeySDL.gamekey[0].isPushKey(GameKeySDL.BUTTON_B) || MouseInputSDL.mouseInput.isMouseRightClicked()) {
+		if(GameKeySDL.gamekey[0].isPushKey(GameKeySDL.BUTTON_B) || MouseInputSDL.mouseInput.isMouseRightClicked() || MouseInputSDL.mouseInput.isMouseBackClicked()) {
 			if (onCancel()) return;
 		}
 	}

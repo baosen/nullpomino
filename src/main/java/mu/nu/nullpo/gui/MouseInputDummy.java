@@ -4,9 +4,11 @@ public abstract class MouseInputDummy {
 	protected int mouseX;
 	protected int mouseY;
 	protected int[] mousePressed;
+	protected int mouseBackPressed;
 
 	protected MouseInputDummy() {
 		mousePressed = new int[3];
+		mouseBackPressed = 0;
 	}
 
 	public boolean isMouseClicked() {
@@ -19,6 +21,10 @@ public abstract class MouseInputDummy {
 
 	public boolean isMouseRightClicked() {
 		return (mousePressed[2] == 1);
+	}
+
+	public boolean isMouseBackClicked() {
+		return (mouseBackPressed == 1);
 	}
 
 	public boolean isMousePressed() {
