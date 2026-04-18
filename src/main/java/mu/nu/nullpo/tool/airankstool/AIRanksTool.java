@@ -27,8 +27,8 @@ import javax.swing.JTabbedPane;
 import javax.swing.JTextField;
 import javax.swing.SpinnerNumberModel;
 import org.apache.log4j.Logger;
-import org.jdesktop.layout.GroupLayout;
-import org.jdesktop.layout.GroupLayout.ParallelGroup;
+import javax.swing.GroupLayout;
+import javax.swing.GroupLayout.ParallelGroup;
 
 import mu.nu.nullpo.util.CustomProperties;
 
@@ -292,33 +292,33 @@ public class AIRanksTool extends JFrame implements ActionListener {
 		JPanel formPane=new JPanel();
 		GroupLayout layout=new GroupLayout(formPane);
 		formPane.setLayout(layout);
-		layout.setAutocreateGaps(true);
-		layout.setAutocreateContainerGaps(true);
+		layout.setAutoCreateGaps(true);
+		layout.setAutoCreateContainerGaps(true);
 		   GroupLayout.SequentialGroup hGroup = layout.createSequentialGroup();
 
 		   ParallelGroup labelsPg=layout.createParallelGroup();
-		   labelsPg.add(inputFileLabel);
-		   labelsPg.add(outputFileLabel);
-		   labelsPg.add(numIterationsLabel);
-		   hGroup.add(labelsPg);
+		   labelsPg.addComponent(inputFileLabel);
+		   labelsPg.addComponent(outputFileLabel);
+		   labelsPg.addComponent(numIterationsLabel);
+		   hGroup.addGroup(labelsPg);
 
 		   ParallelGroup fieldsPg=layout.createParallelGroup();
-			fieldsPg.add(inputFileComboBox);
-			fieldsPg.add(outputFileField);
-			fieldsPg.add(numIterationsSpinner);
-		   hGroup.add(fieldsPg);
+			fieldsPg.addComponent(inputFileComboBox);
+			fieldsPg.addComponent(outputFileField);
+			fieldsPg.addComponent(numIterationsSpinner);
+		   hGroup.addGroup(fieldsPg);
 
 		   layout.setHorizontalGroup(hGroup);
 
 
 		   GroupLayout.SequentialGroup vGroup = layout.createSequentialGroup();
 
-		   vGroup.add(layout.createParallelGroup(GroupLayout.BASELINE).
-		            add(inputFileLabel).add(inputFileComboBox));
-		   vGroup.add(layout.createParallelGroup(GroupLayout.BASELINE).
-		            add(outputFileLabel).add(outputFileField));
-		   vGroup.add(layout.createParallelGroup(GroupLayout.BASELINE).
-		            add(numIterationsLabel).add(numIterationsSpinner));
+		   vGroup.addGroup(layout.createParallelGroup(GroupLayout.Alignment.BASELINE).
+		            addComponent(inputFileLabel).addComponent(inputFileComboBox));
+		   vGroup.addGroup(layout.createParallelGroup(GroupLayout.Alignment.BASELINE).
+		            addComponent(outputFileLabel).addComponent(outputFileField));
+		   vGroup.addGroup(layout.createParallelGroup(GroupLayout.Alignment.BASELINE).
+		            addComponent(numIterationsLabel).addComponent(numIterationsSpinner));
 
 		   layout.setVerticalGroup(vGroup);
 
@@ -338,37 +338,37 @@ public class AIRanksTool extends JFrame implements ActionListener {
 		JPanel formPane2=new JPanel();
 		GroupLayout layout2=new GroupLayout(formPane2);
 		formPane2.setLayout(layout2);
-		layout2.setAutocreateGaps(true);
-		layout2.setAutocreateContainerGaps(true);
+		layout2.setAutoCreateGaps(true);
+		layout2.setAutoCreateContainerGaps(true);
 		   GroupLayout.SequentialGroup hGroup2 = layout2.createSequentialGroup();
 
 		   ParallelGroup labelsPg2=layout2.createParallelGroup();
-		   labelsPg2.add(ranksFileUsedLabel);
-		   labelsPg2.add(numPreviewsLabel);
-		   labelsPg2.add(allowHoldLabel);
-		   labelsPg2.add(speedLimitLabel);
-		   hGroup2.add(labelsPg2);
+		   labelsPg2.addComponent(ranksFileUsedLabel);
+		   labelsPg2.addComponent(numPreviewsLabel);
+		   labelsPg2.addComponent(allowHoldLabel);
+		   labelsPg2.addComponent(speedLimitLabel);
+		   hGroup2.addGroup(labelsPg2);
 
 		   ParallelGroup fieldsPg2=layout2.createParallelGroup();
-		   fieldsPg2.add(ranksFileUsedComboBox);
-		   fieldsPg2.add(numPreviewsSpinner);
-		   fieldsPg2.add(allowHoldCheckBox);
-		   fieldsPg2.add(speedLimitField);
-		   hGroup2.add(fieldsPg2);
+		   fieldsPg2.addComponent(ranksFileUsedComboBox);
+		   fieldsPg2.addComponent(numPreviewsSpinner);
+		   fieldsPg2.addComponent(allowHoldCheckBox);
+		   fieldsPg2.addComponent(speedLimitField);
+		   hGroup2.addGroup(fieldsPg2);
 
 		   layout2.setHorizontalGroup(hGroup2);
 
 
 		   GroupLayout.SequentialGroup vGroup2 = layout2.createSequentialGroup();
 
-		   vGroup2.add(layout2.createParallelGroup(GroupLayout.BASELINE).
-		            add(ranksFileUsedLabel).add(ranksFileUsedComboBox));
-		   vGroup2.add(layout2.createParallelGroup(GroupLayout.BASELINE).
-		            add(numPreviewsLabel).add(numPreviewsSpinner));
-		   vGroup2.add(layout2.createParallelGroup(GroupLayout.BASELINE).
-		            add(allowHoldLabel).add(allowHoldCheckBox));
-		   vGroup2.add(layout2.createParallelGroup(GroupLayout.BASELINE).
-		            add(speedLimitLabel).add(speedLimitField));
+		   vGroup2.addGroup(layout2.createParallelGroup(GroupLayout.Alignment.BASELINE).
+		            addComponent(ranksFileUsedLabel).addComponent(ranksFileUsedComboBox));
+		   vGroup2.addGroup(layout2.createParallelGroup(GroupLayout.Alignment.BASELINE).
+		            addComponent(numPreviewsLabel).addComponent(numPreviewsSpinner));
+		   vGroup2.addGroup(layout2.createParallelGroup(GroupLayout.Alignment.BASELINE).
+		            addComponent(allowHoldLabel).addComponent(allowHoldCheckBox));
+		   vGroup2.addGroup(layout2.createParallelGroup(GroupLayout.Alignment.BASELINE).
+		            addComponent(speedLimitLabel).addComponent(speedLimitField));
 		   layout2.setVerticalGroup(vGroup2);
 
 
