@@ -17,6 +17,8 @@ maven.install(
     artifacts = [
         "ch.qos.reload4j:reload4j:1.2.25",
         "net.java.dev.jna:jna:5.16.0",
+        "org.junit.jupiter:junit-jupiter:5.10.2",
+        "org.junit.platform:junit-platform-console:1.10.2",
     ],
     lock_file = "//:maven_install.json",
 )
