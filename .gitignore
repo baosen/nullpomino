@@ -34,7 +34,7 @@ target/
 config/setting/*
 !config/setting/.gitkeep
 log/
-replay/
+/replay/
 
 # Bazel convenience symlinks (contents live under ~/.cache/bazel)
 /bazel-*
