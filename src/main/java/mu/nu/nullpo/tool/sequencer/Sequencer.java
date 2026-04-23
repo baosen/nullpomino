@@ -69,6 +69,7 @@ import org.apache.log4j.PropertyConfigurator;
 
 import mu.nu.nullpo.game.component.Piece;
 import mu.nu.nullpo.util.CustomProperties;
+import mu.nu.nullpo.util.LegacyClassNames;
 import net.omegaboshi.nullpomino.game.subsystem.randomizer.Randomizer;
 
 /**
@@ -425,7 +426,7 @@ public class Sequencer extends JFrame implements ActionListener {
 		String name = vectorRandomizer.get(comboboxRandomizer.getSelectedIndex());
 
 		try {
-			randomizerClass = Class.forName(name);
+			randomizerClass = Class.forName(LegacyClassNames.translate(name));
 			randomizerObject = (Randomizer) randomizerClass.newInstance();
 			randomizerObject.setState(nextPieceEnable, getLongTextField(txtfldSeed));
 			sequence = new int[getIntTextField(txtfldSeqLength)];
