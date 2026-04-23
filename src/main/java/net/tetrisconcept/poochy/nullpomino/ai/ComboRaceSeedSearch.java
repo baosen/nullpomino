@@ -88,7 +88,6 @@ public class ComboRaceSeedSearch extends DummyAI {
 				{
 					System.out.println("Endless loop found! Seed = " + Long.toString(seed, 16));
 			    	//long end = System.currentTimeMillis();
-					//System.out.println("Runtime: " + (end - start) + "ms");
 			    	break;
 				}
 			}
@@ -153,7 +152,6 @@ public class ComboRaceSeedSearch extends DummyAI {
 		}
 
 
-		//System.out.println("X:" + bestX + " Y:" + bestY + " R:" + bestRt + " H:" + bestHold + " Pts:" + bestPts);
 	}
 
 	/**
