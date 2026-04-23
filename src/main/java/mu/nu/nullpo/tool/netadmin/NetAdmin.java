@@ -21,6 +21,7 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.util.Base64;
 import java.util.Calendar;
 import java.util.Locale;
 import javax.swing.AbstractAction;
@@ -65,7 +66,6 @@ import net.clarenceho.crypto.RC4;
 
 import org.apache.log4j.Logger;
 import org.apache.log4j.PropertyConfigurator;
-import biz.source_code.base64Coder.Base64Coder;
 
 /**
  * NetAdmin - NetServer admin tool
@@ -1096,9 +1096,9 @@ public class NetAdmin extends JFrame implements ActionListener, NetMessageListen
 
 			RC4 rc4 = new RC4(passfldPassword.getPassword());
 			byte[] ePassword = rc4.rc4(NetUtil.stringToBytes(strUsername));
-			char[] b64Password = Base64Coder.encode(ePassword);
+			String b64Password = Base64.getEncoder().encodeToString(ePassword);
 
-			String strLogin = "adminlogin\t" + clientMajorVer + "\t" + strUsername + "\t" + new String(b64Password) + "\t" + clientBuildType + "\n";
+			String strLogin = "adminlogin\t" + clientMajorVer + "\t" + strUsername + "\t" + b64Password + "\t" + clientBuildType + "\n";
 			log.debug("Send login message:" + strLogin);
 			client.send(strLogin);
 		}

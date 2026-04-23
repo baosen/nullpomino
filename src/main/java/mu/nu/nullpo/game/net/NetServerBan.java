@@ -4,14 +4,13 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.util.Base64;
 import java.util.Calendar;
 import java.util.TimeZone;
 
 import mu.nu.nullpo.util.GeneralUtil;
 
 import org.apache.log4j.Logger;
-
-import biz.source_code.base64Coder.Base64Coder;
 
 public class NetServerBan {
 	static Logger log = Logger.getLogger(NetServerBan.class);
@@ -97,8 +96,7 @@ public class NetServerBan {
 			ObjectOutputStream oos = new ObjectOutputStream(bout);
 			oos.writeObject(startDate);
 			byte[] bTemp = NetUtil.compressByteArray(bout.toByteArray());
-			char[] cTemp = Base64Coder.encode(bTemp);
-			return new String(cTemp);
+			return Base64.getEncoder().encodeToString(bTemp);
 		} catch (Exception e) {
 			log.error("Failed to export startDate", e);
 		}
@@ -121,7 +119,7 @@ public class NetServerBan {
 				}
 			} else {
 				// Object Stream
-				byte[] bTemp = Base64Coder.decode(strInput);
+				byte[] bTemp = Base64.getDecoder().decode(strInput);
 				byte[] bTemp2 = NetUtil.decompressByteArray(bTemp);
 				ByteArrayInputStream bin = new ByteArrayInputStream(bTemp2);
 				ObjectInputStream oin = new ObjectInputStream(bin);

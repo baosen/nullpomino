@@ -32,13 +32,12 @@ import java.io.ByteArrayOutputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.net.URLEncoder;
+import java.util.Base64;
 import java.util.zip.DataFormatException;
 import java.util.zip.Deflater;
 import java.util.zip.Inflater;
 
 import org.cacas.java.gnu.tools.Crypt;
-
-import biz.source_code.base64Coder.Base64Coder;
 
 /**
  * Network utils
@@ -257,8 +256,7 @@ public class NetUtil {
 	 */
 	public static String compressString(String input, int level) {
 		byte[] bCompressed = compressByteArray(stringToBytes(input), level);
-		char[] cCompressed = Base64Coder.encode(bCompressed);
-		return new String(cCompressed);
+		return Base64.getEncoder().encodeToString(bCompressed);
 	}
 
 	/**
@@ -267,7 +265,7 @@ public class NetUtil {
 	 * @return Raw String
 	 */
 	public static String decompressString(String input) {
-		byte[] bCompressed = Base64Coder.decode(input);
+		byte[] bCompressed = Base64.getDecoder().decode(input);
 		byte[] bDecompressed = decompressByteArray(bCompressed);
 		return bytesToString(bDecompressed);
 	}
