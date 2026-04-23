@@ -54,7 +54,6 @@ public class DropdownSDL extends WidgetSDL {
 		selected = (i < 0) ? -1 : (i >= items.size() ? items.size() - 1 : i);
 	}
 
-	public boolean isOpen() { return open; }
 	public void close() { open = false; }
 
 	@Override
