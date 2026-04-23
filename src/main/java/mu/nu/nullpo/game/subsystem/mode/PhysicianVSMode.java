@@ -744,10 +744,6 @@ public class PhysicianVSMode extends AbstractMode {
 	 * @param engine GameEngine
 	 */
 	public void setSpeed(GameEngine engine) {
-		/*
-		engine.speed.gravity = BASE_SPEEDS[speed[playerID]]*(10+(engine.statistics.totalPieceLocked/10));
-		engine.speed.denominator = 3600;
-		*/
 	}
 
 	public boolean lineClearEnd(GameEngine engine, int playerID) {
@@ -901,12 +897,6 @@ public class PhysicianVSMode extends AbstractMode {
 
 		drawResultStats(engine, playerID, receiver, 3, EventReceiver.COLOR_ORANGE,
 				Statistic.LINES, Statistic.PIECE, Statistic.LPM, Statistic.PPS, Statistic.TIME);
-		/*
-		float apm = (float)(garbageSent[playerID] * 3600) / (float)(engine.statistics.time);
-		drawResult(engine, playerID, receiver, 3, EventReceiver.COLOR_ORANGE,
-				"ATTACK", String.format("%10d", garbageSent[playerID]),
-				"ATTACK/MIN", String.format("%10g", apm));
-		*/
 	}
 
 	/*
