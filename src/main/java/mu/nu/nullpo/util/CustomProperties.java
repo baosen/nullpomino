@@ -44,130 +44,26 @@ public class CustomProperties extends Properties {
 	 */
 	private static final long serialVersionUID = 2L;
 
-	/**
-	 * byteSet the properties of the type
-	 * @param key Key
-	 * @param value keyVariable that corresponds to thecount
-	 * @return The previous value of the specified key in the property list. If you do not have it null
-	 */
-	public synchronized Object setProperty(String key, byte value) {
-		return setProperty(key, String.valueOf(value));
-	}
-
-	/**
-	 * shortSet the properties of the type
-	 * @param key Key
-	 * @param value keyVariable that corresponds to thecount
-	 * @return The previous value of the specified key in the property list. If you do not have it null
-	 */
-	public synchronized Object setProperty(String key, short value) {
-		return setProperty(key, String.valueOf(value));
-	}
-
-	/**
-	 * intSet the properties of the type
-	 * @param key Key
-	 * @param value keyVariable that corresponds to thecount
-	 * @return The previous value of the specified key in the property list. If you do not have it null
-	 */
 	public synchronized Object setProperty(String key, int value) {
 		return setProperty(key, String.valueOf(value));
 	}
 
-	/**
-	 * longSet the properties of the type
-	 * @param key Key
-	 * @param value keyVariable that corresponds to thecount
-	 * @return The previous value of the specified key in the property list. If you do not have it null
-	 */
 	public synchronized Object setProperty(String key, long value) {
 		return setProperty(key, String.valueOf(value));
 	}
 
-	/**
-	 * floatSet the properties of the type
-	 * @param key Key
-	 * @param value keyVariable that corresponds to thecount
-	 * @return The previous value of the specified key in the property list. If you do not have it null
-	 */
 	public synchronized Object setProperty(String key, float value) {
 		return setProperty(key, String.valueOf(value));
 	}
 
-	/**
-	 * doubleSet the properties of the type
-	 * @param key Key
-	 * @param value keyVariable that corresponds to thecount
-	 * @return The previous value of the specified key in the property list. If you do not have it null
-	 */
 	public synchronized Object setProperty(String key, double value) {
 		return setProperty(key, String.valueOf(value));
 	}
 
-	/**
-	 * charSet the properties of the type
-	 * @param key Key
-	 * @param value keyVariable that corresponds to thecount
-	 * @return The previous value of the specified key in the property list. If you do not have it null
-	 */
-	public synchronized Object setProperty(String key, char value) {
-		return setProperty(key, String.valueOf(value));
-	}
-
-	/**
-	 * booleanSet the properties of the type
-	 * @param key Key
-	 * @param value keyVariable that corresponds to thecount
-	 * @return The previous value of the specified key in the property list. If you do not have it null
-	 */
 	public synchronized Object setProperty(String key, boolean value) {
 		return setProperty(key, String.valueOf(value));
 	}
 
-	/**
-	 * byteGets a property of type
-	 * @param key Key
-	 * @param defaultValue keyStrange that I return if it can not find thecount
-	 * @return Integer that corresponds to the specified keycount (Not founddefaultValue)
-	 */
-	public byte getProperty(String key, byte defaultValue) {
-		String str = getProperty(key, String.valueOf(defaultValue));
-
-		byte result;
-		try {
-			result = Byte.parseByte(str);
-		} catch(NumberFormatException e) {
-			result = defaultValue;
-		}
-
-		return result;
-	}
-
-	/**
-	 * shortGets a property of type
-	 * @param key Key
-	 * @param defaultValue keyStrange that I return if it can not find thecount
-	 * @return Integer that corresponds to the specified keycount (Not founddefaultValue)
-	 */
-	public short getProperty(String key, short defaultValue) {
-		String str = getProperty(key, String.valueOf(defaultValue));
-
-		short result;
-		try {
-			result = Short.parseShort(str);
-		} catch(NumberFormatException e) {
-			result = defaultValue;
-		}
-
-		return result;
-	}
-
-	/**
-	 * intGets a property of type
-	 * @param key Key
-	 * @param defaultValue keyStrange that I return if it can not find thecount
-	 * @return Integer that corresponds to the specified keycount (Not founddefaultValue)
-	 */
 	public int getProperty(String key, int defaultValue) {
 		String str = getProperty(key, String.valueOf(defaultValue));
 
@@ -219,12 +115,6 @@ public class CustomProperties extends Properties {
 		return result;
 	}
 
-	/**
-	 * doubleGets a property of type
-	 * @param key Key
-	 * @param defaultValue keyStrange that I return if it can not find thecount
-	 * @return Integer that corresponds to the specified keycount (Not founddefaultValue)
-	 */
 	public double getProperty(String key, double defaultValue) {
 		String str = getProperty(key, String.valueOf(defaultValue));
 
@@ -238,31 +128,6 @@ public class CustomProperties extends Properties {
 		return result;
 	}
 
-	/**
-	 * charGets a property of type
-	 * @param key Key
-	 * @param defaultValue keyStrange that I return if it can not find thecount
-	 * @return Integer that corresponds to the specified keycount (Not founddefaultValue)
-	 */
-	public char getProperty(String key, char defaultValue) {
-		String str = getProperty(key, String.valueOf(defaultValue));
-
-		char result;
-		try {
-			result = str.charAt(0);
-		} catch(Exception e) {
-			result = defaultValue;
-		}
-
-		return result;
-	}
-
-	/**
-	 * booleanGets a property of type
-	 * @param key Key
-	 * @param defaultValue keyStrange that I return if it can not find thecount
-	 * @return Corresponding to the specified keybooleanType variablecount (Not founddefaultValue)
-	 */
 	public boolean getProperty(String key, boolean defaultValue) {
 		String str = getProperty(key, Boolean.toString(defaultValue));
 		return Boolean.valueOf(str);
