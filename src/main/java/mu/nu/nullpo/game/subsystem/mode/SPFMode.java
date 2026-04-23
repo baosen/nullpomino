@@ -1217,8 +1217,6 @@ public class SPFMode extends AbstractMode {
 			return;
 		lastSquareCheck[playerID] = engine.statistics.time;
 
-		//log.debug("Checking squares.");
-
 		int width = engine.field.getWidth();
 		int height = engine.field.getHeight();
 		int hiddenHeight = engine.field.getHiddenHeight();

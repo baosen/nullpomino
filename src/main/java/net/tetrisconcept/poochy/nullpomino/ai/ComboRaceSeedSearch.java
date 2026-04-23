@@ -350,8 +350,6 @@ public class ComboRaceSeedSearch extends DummyAI {
 				}
 			}
 		}
-		//log.debug("Transition table created. Total entries: " + count);
-		//TODO: PageRank scores for each state
 	}
 
 	/**
