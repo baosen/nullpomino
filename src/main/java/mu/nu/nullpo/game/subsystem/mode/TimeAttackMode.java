@@ -443,15 +443,6 @@ public class TimeAttackMode extends NetDummyMode {
 			engine.blockHidden = tableHellXFade[fadelv];
 		}
 
-		// for test
-		/*
-		engine.speed.are = 25;
-		engine.speed.areLine = 25;
-		engine.speed.lineDelay = 10;
-		engine.speed.lockDelay = 30;
-		engine.speed.das = 12;
-		levelTimerMax = levelTimer = 3600 * 3;
-		*/
 	}
 
 	/**

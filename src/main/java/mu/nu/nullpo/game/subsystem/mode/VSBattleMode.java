@@ -1044,25 +1044,6 @@ public class VSBattleMode extends AbstractMode {
 
 			lastpiece[playerID] = engine.nowPieceObject.id;
 
-			/*
-			if(pts > 0) {
-				garbageSent[playerID] += pts;
-
-				if(garbage[playerID] > 0) {
-					// Offset
-					garbage[playerID] -= pts;
-					if(garbage[playerID] < 0) {
-						// Ojama return
-						garbage[enemyID] += Math.abs(garbage[playerID]);
-						garbage[playerID] = 0;
-					}
-				} else {
-					//  Attack
-					garbage[enemyID] += pts;
-				}
-			}
-			*/
-
 			// Attack lines count
 			garbageSent[playerID] += pts;
 			if(b2bType[playerID] == 2) garbageSent[playerID] += ptsB2B;
