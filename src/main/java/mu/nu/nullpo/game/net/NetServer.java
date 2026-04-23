@@ -3665,26 +3665,6 @@ public class NetServer {
 	}
 
 	/**
-	 * Get rated-game rule index
-	 * @param style Style ID
-	 * @param name Rule Name
-	 * @return Index (-1 if not found)
-	 */
-	/*
-	private int getRatedRuleIndex(int style, String name) {
-		for(int i = 0; i < ruleList[style].size(); i++) {
-			RuleOptions rule = (RuleOptions)ruleList[style].get(i);
-
-			if(name.equals(rule.strRuleName)) {
-				return i;
-			}
-		}
-
-		return -1;
-	}
-	*/
-
-	/**
 	 * Get new rating
 	 * @param playedGames Number of games played by the player
 	 * @param myRank Player's rating
