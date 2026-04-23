@@ -176,31 +176,6 @@ public class Controller implements Serializable {
 	}
 
 	/**
-	 *  buttonThe Press and hold the
-	 * @param key Button number
-	 */
-	public void setButtonPressed(int key) {
-		if((key >= 0) && (key < buttonPress.length)) buttonPress[key] = true;
-	}
-
-	/**
-	 *  buttonThe state did not press
-	 * @param key Button number
-	 */
-	public void setButtonUnpressed(int key) {
-		if((key >= 0) && (key < buttonPress.length)) buttonPress[key] = false;
-	}
-
-	/**
-	 *  buttonSets the status by pressing the
-	 * @param key Button number
-	 * @param pressed When true,Press, falseIf I do not press
-	 */
-	public void setButtonState(int key, boolean pressed) {
-		if((key >= 0) && (key < buttonPress.length)) buttonPress[key] = pressed;
-	}
-
-	/**
 	 *  button inputBit state flagReturns
 	 * @return  button inputBit of state flag
 	 */
@@ -250,12 +225,4 @@ public class Controller implements Serializable {
 		}
 	}
 
-	/**
-	 *  button inputResets the state
-	 */
-	public void clearButtonTime() {
-		for(int i = 0; i < BUTTON_COUNT; i++) {
-			buttonTime[i] = 0;
-		}
-	}
 }
