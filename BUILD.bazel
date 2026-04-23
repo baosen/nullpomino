@@ -2,6 +2,12 @@ load("@rules_java//java:defs.bzl", "java_binary")
 
 _LIB = "//src/main/java:nullpomino"
 
+filegroup(
+    name = "config_files",
+    srcs = glob(["config/**/*"]),
+    visibility = ["//visibility:public"],
+)
+
 java_binary(
     name = "NullpoMinoSDL",
     main_class = "mu.nu.nullpo.gui.sdl.NullpoMinoSDL",
