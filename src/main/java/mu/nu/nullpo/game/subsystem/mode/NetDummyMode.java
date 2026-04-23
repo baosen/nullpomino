@@ -813,7 +813,6 @@ public class NetDummyMode extends AbstractMode implements NetLobbyListener {
 			engine.nowPieceObject.setSkin(pieceSkin);
 			engine.nowPieceX = pieceX;
 			engine.nowPieceY = pieceY;
-			//engine.nowPieceBottomY = pieceBottomY;
 			engine.nowPieceObject.big = pieceBig;
 			engine.nowPieceObject.updateConnectData();
 			engine.nowPieceBottomY =

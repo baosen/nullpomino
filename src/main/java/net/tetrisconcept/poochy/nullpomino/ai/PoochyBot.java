@@ -260,7 +260,6 @@ public class PoochyBot extends DummyAI implements Runnable {
 			}
 			if (DEBUG_ALL) log.debug("Currently in ARE. Next piece type = " +
 					Piece.PIECE_NAMES[nextPiece.id] + ", IRS = " + input);
-			//engine.ctrl.setButtonBit(input);
 			inputARE = input;
 		}
 	}

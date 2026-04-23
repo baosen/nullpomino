@@ -593,7 +593,6 @@ public class ScoreAttackMode extends AbstractMode {
 				engine.timerActive = false;
 				engine.ending = 2;
 			} else if(engine.statistics.level >= nextseclv) {
-				//receiver.playSE("levelup");
 				//nextseclv += 100;
 			}
 

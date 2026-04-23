@@ -924,10 +924,8 @@ public class SPFMode extends AbstractMode {
 	public void startGame(GameEngine engine, int playerID) {
 		engine.b2bEnable = false;
 		engine.comboType = GameEngine.COMBO_TYPE_DISABLE;
-		//engine.big = big[playerID];
 		engine.enableSE = enableSE[playerID];
 		if(playerID == 1) owner.bgmStatus.bgm = bgmno;
-		//engine.colorClearSize = big[playerID] ? 8 : 2;
 		engine.colorClearSize = 2;
 		engine.ignoreHidden = false;
 
@@ -968,7 +966,6 @@ public class SPFMode extends AbstractMode {
 		} else if(engine.gameStarted) {
 			receiver.drawDirectFont(engine, playerID, fldPosX - 28, fldPosY + 264, String.format("%8d", score[playerID]), playerColor);
 		}
-		//receiver.drawDirectFont(engine, playerID, fldPosX + 209, fldPosY + 456, String.valueOf(score[playerID]), playerColor);
 
 		// Countdown Blocks
 		Block b;
@@ -1103,7 +1100,6 @@ public class SPFMode extends AbstractMode {
 			pts *= 0.8;
 		//TODO: Add diamond glitch
 		//Clear blocks
-		//engine.field.gemColorCheck(engine.colorClearSize, true, engine.garbageColorClear, engine.ignoreHidden);
 		for (int y = (-1*hiddenHeight); y < height; y++)
 		{
 			multiplier = getRowValue(y);
@@ -1466,7 +1462,6 @@ public class SPFMode extends AbstractMode {
 				return false;
 			int drop = Math.min(ojama[playerID], width * dropRows);
 			ojama[playerID] -= drop;
-			//engine.field.garbageDrop(engine, drop, big[playerID], ojamaHard[playerID], 3);
 			engine.field.garbageDrop(engine, drop, false, 0, ojamaCountdown[playerID], 3);
 			engine.field.setAllSkin(engine.getSkin());
 			int patternCol = 0;
