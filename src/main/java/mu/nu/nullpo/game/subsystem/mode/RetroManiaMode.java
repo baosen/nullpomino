@@ -332,8 +332,6 @@ public class RetroManiaMode extends AbstractMode {
 			receiver.drawScoreFont(engine, playerID, 0, 12, "TIME", EventReceiver.COLOR_BLUE);
 			receiver.drawScoreFont(engine, playerID, 0, 13, GeneralUtil.getTime(engine.statistics.time));
 
-			//receiver.drawScoreFont(engine, playerID, 0, 15, String.valueOf(linesAfterLastLevelUp));
-			//receiver.drawScoreFont(engine, playerID, 0, 16, GeneralUtil.getTime(levelTime[Math.min(engine.statistics.level,15)] - levelTimer));
 		}
 	}
 

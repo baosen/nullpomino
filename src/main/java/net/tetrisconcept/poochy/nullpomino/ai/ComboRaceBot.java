@@ -196,7 +196,6 @@ public class ComboRaceBot extends DummyAI implements Runnable {
 				delay = 0;
 			}
 			if (DEBUG_ALL) log.debug("Currently in ARE. Next piece type = " + nextPiece.id + ", IRS = " + input);
-			//engine.ctrl.setButtonBit(input);
 			inputARE = input;
 		}
 	}

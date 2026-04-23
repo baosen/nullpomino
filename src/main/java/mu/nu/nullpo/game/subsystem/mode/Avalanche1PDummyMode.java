@@ -335,7 +335,6 @@ public abstract class Avalanche1PDummyMode extends AbstractMode {
 				engine.playSE("bravo");
 				zenKeshi = true;
 				zenKeshiCount++;
-				//engine.statistics.score += 2100;
 			}
 			else
 				zenKeshi = false;

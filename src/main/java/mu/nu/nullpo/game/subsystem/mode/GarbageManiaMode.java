@@ -526,8 +526,6 @@ public class GarbageManiaMode extends AbstractMode {
 				}
 			}
 		} else {
-			//receiver.drawScoreFont(engine, playerID, 0, 2, "GARBAGE", EventReceiver.COLOR_BLUE);
-			//receiver.drawScoreFont(engine, playerID, 0, 3, "" + garbageCount + ":" + garbagePos);
 
 			// Score
 			receiver.drawScoreFont(engine, playerID, 0, 5, "SCORE", EventReceiver.COLOR_BLUE);
