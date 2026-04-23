@@ -45,6 +45,7 @@ import java.nio.channels.ServerSocketChannel;
 import java.nio.channels.SocketChannel;
 import java.nio.channels.spi.SelectorProvider;
 import java.util.ArrayList;
+import java.util.Base64;
 import java.util.Calendar;
 import java.util.ConcurrentModificationException;
 import java.util.HashMap;
@@ -66,8 +67,6 @@ import net.clarenceho.crypto.RC4;
 import org.apache.log4j.Logger;
 import org.apache.log4j.PropertyConfigurator;
 import org.cacas.java.gnu.tools.Crypt;
-
-import biz.source_code.base64Coder.Base64Coder;
 
 /**
  * NullpoMino NetServer<br>
@@ -2860,7 +2859,7 @@ public class NetServer {
 			}
 
 			RC4 rc4 = new RC4(strServerPassword);
-			byte[] bPass = Base64Coder.decode(message[3]);
+			byte[] bPass = Base64.getDecoder().decode(message[3]);
 			byte[] bPass2 = rc4.rc4(bPass);
 			String strClientPasswordCheckData = NetUtil.bytesToString(bPass2);
 			if(!strClientPasswordCheckData.equals(strServerUsername)) {
