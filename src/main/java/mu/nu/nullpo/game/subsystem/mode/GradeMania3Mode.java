@@ -42,7 +42,7 @@ import org.apache.log4j.Logger;
 /**
  * GRADE MANIA 3 Mode
  */
-public class GradeMania3Mode extends AbstractMode {
+public class GradeMania3Mode extends AbstractGradeMode {
 	/** Log */
 	static final Logger log = Logger.getLogger(GradeMania3Mode.class);
 
@@ -147,9 +147,6 @@ public class GradeMania3Mode extends AbstractMode {
 	/** LV999 roll time */
 	private static final int ROLLTIMELIMIT = 3238;
 
-	/** Number of entries in rankings */
-	private static final int RANKING_MAX = 10;
-
 	/** Number of ranking types */
 	private static final int RANKING_TYPE = 2;
 
@@ -159,29 +156,11 @@ public class GradeMania3Mode extends AbstractMode {
 	/** Probability of occurrence of a certification exam dan(EXAM_CHANCEMinutes1Probability of occurrence) */
 	private static final int EXAM_CHANCE = 3;
 
-	/** Number of sections */
-	private static final int SECTION_MAX = 10;
-
-	/** Default section time */
-	private static final int DEFAULT_SECTION_TIME = 5400;
-
-	/** Current Speed ​​of fall number (tableGravityChangeLevelOf levelAt each of1Increase one) */
-	private int gravityindex;
-
-	/** Next Section Of level (This-1At levelStop) */
-	private int nextseclv;
-
 	/** Internal level */
 	private int internalLevel;
 
 	/** Internal level at start */
 	private int internalStartLevel;
-
-	/** LevelHas increased flag */
-	private boolean lvupflag;
-
-	/** The actual gear position display, such as the final result */
-	private int grade;
 
 	/** Dan the main */
 	private int gradeBasicReal;
@@ -194,21 +173,6 @@ public class GradeMania3Mode extends AbstractMode {
 
 	/** Dan dan the main internal pointThe1Reduce one time */
 	private int gradeBasicDecay;
-
-	/** Dan went up at the end time */
-	private int lastGradeTime;
-
-	/** Hard dropStage wascount */
-	private int harddropBonus;
-
-	/** Combo bonus */
-	private int comboValue;
-
-	/** Most recent increase in score */
-	private int lastscore;
-
-	/** AcquisitionRender scoreIs remaining to be time */
-	private int scgettime;
 
 	/** ThisSection InCOOLWhen I put outtrue */
 	private boolean cool;
@@ -243,62 +207,11 @@ public class GradeMania3Mode extends AbstractMode {
 	/** Section time display color-code type */
 	private int stcolor;
 
-	/** Roll Course time */
-	private int rolltime;
-
-	/** Roll completely cleared flag */
-	private int rollclear;
-
-	/** Roll started flag */
-	private boolean rollstarted;
-
-	/** Dan back */
-	private int secretGrade;
-
-	/** Current BGM */
-	private int bgmlv;
-
-	/** Illuminate the display remaining dan frame count */
-	private int gradeflash;
-
-	/** Section Time */
-	private int[] sectiontime;
-
-	/** New record came outSection Thetrue */
-	private boolean[] sectionIsNewRecord;
-
-	/** Cleared Section count */
-	private int sectionscomp;
-
-	/** Average Section Time */
-	private int sectionavgtime;
-
-	/** PreviousSection Time */
-	private int sectionlasttime;
-
-	/** VanishRoll started flag */
-	private boolean mrollFlag;
-
 	/** Roll I earned during the point (Rise for dan) */
 	private float rollPoints;
 
 	/** Roll I earned during the point (Total) */
 	private float rollPointsTotal;
-
-	/** AC medal State */
-	private int medalAC;
-
-	/** ST medal State */
-	private int medalST;
-
-	/** SK medal State */
-	private int medalSK;
-
-	/** CO medal State */
-	private int medalCO;
-
-	/** Section TimeShowing record iftrue */
-	private boolean isShowBestSectionTime;
 
 	/** Level at start */
 	private int startlevel;
@@ -326,12 +239,6 @@ public class GradeMania3Mode extends AbstractMode {
 
 	/** Promotion, demotion test is enabled */
 	private boolean enableexam;
-
-	/** Version */
-	private int version;
-
-	/** Current round's ranking rank */
-	private int rankingRank;
 
 	/** Rankings' Dan */
 	private int[][] rankingGrade;
