@@ -123,8 +123,6 @@ public class PoochyBotDefensive extends PoochyBot {
 
 		// Place the piece
 		if(!piece.placeToField(x, y, rt, fld)) {
-			if (DEBUG_ALL) log.debug("End of thinkMain(" + x + ", " + y + ", " + rt + ", " + rtOld +
-					", fld, piece " + piece.id + ", " + depth + "). pts = 0 (Cannot place piece)");
 			return Integer.MIN_VALUE;
 		}
 
@@ -162,8 +160,6 @@ public class PoochyBotDefensive extends PoochyBot {
 		if (xMax == 0)
 			valleyBonus *= 2;
 		if (valley > 0)
-			if (DEBUG_ALL) log.debug("I piece xMax = " + xMax + ", valley depth = " + valley +
-					", valley bonus = " + valleyBonus);
 		pts += valleyBonus;
 
 		//Points for line clears
@@ -325,8 +321,6 @@ public class PoochyBotDefensive extends PoochyBot {
 					pts -= 2000000 * (heightBefore - heightAfter);
 			}
 		}
-		if (DEBUG_ALL) log.debug("End of thinkMain(" + x + ", " + y + ", " + rt + ", " + rtOld +
-				", fld, piece " + piece.id + ", " + depth + "). pts = " + pts);
 		return pts;
 	}
 }

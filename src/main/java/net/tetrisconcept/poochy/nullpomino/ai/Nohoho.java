@@ -67,8 +67,6 @@ public class Nohoho extends DummyAI implements Runnable {
 	protected int inputARE;
 	/** MaximumCompromise level */
 	protected static final int MAX_THINK_DEPTH = 2;
-	/** Set to true to print debug information */
-	protected static final boolean DEBUG_ALL = false;
 	/** Did the thinking thread finish successfully? */
 	protected boolean thinkComplete;
 	/** Did the thinking thread find a possible position? */
@@ -150,7 +148,6 @@ public class Nohoho extends DummyAI implements Runnable {
 				engine.stat == GameEngine.Status.READY;
 			if ((newInARE && !inARE) || (!thinking && !thinkSuccess))
 			{
-				if (DEBUG_ALL) log.debug("Begin pre-think of next piece.");
 				thinkComplete = false;
 				thinkRequest.newRequest();
 			}
@@ -197,7 +194,6 @@ public class Nohoho extends DummyAI implements Runnable {
 			{
 				thinkRequest.newRequest();
 				thinkComplete = false;
-				if (DEBUG_ALL) log.debug("Needs rethink - piece is stuck!");
 			}
 			if (nowX == lastX && nowY == lastY && rt == lastRt && lastInput != 0)
 			{
@@ -206,14 +202,12 @@ public class Nohoho extends DummyAI implements Runnable {
 				{
 					thinkRequest.newRequest();
 					thinkComplete = false;
-					if (DEBUG_ALL) log.debug("Needs rethink - piece is stuck, last inputs had no effect!");
 				}
 			}
 			if (engine.nowPieceRotateCount >= 8)
 			{
 				thinkRequest.newRequest();
 				thinkComplete = false;
-				if (DEBUG_ALL) log.debug("Needs rethink - piece is stuck, too many rotations!");
 			}
 			else
 				sameStatusTime = 0;
@@ -221,17 +215,12 @@ public class Nohoho extends DummyAI implements Runnable {
 				// Hold
 				input |= Controller.BUTTON_BIT_D;
 			} else {
-				if (DEBUG_ALL) log.debug("bestX = " + bestX + ", nowX = " + nowX +
-						", bestY = " + bestY + ", nowY = " + nowY +
-						", bestRt = " + bestRt + ", rt = " + rt +
-						", bestXSub = " + bestXSub + ", bestYSub = " + bestYSub + ", bestRtSub = " + bestRtSub);
 				// Rotation
 				boolean best180 = Math.abs(rt - bestRt) == 2;
 				if(rt != bestRt)
 				{
 					int lrot = engine.getRotateDirection(-1);
 					int rrot = engine.getRotateDirection(1);
-					if (DEBUG_ALL) log.debug("lrot = " + lrot + ", rrot = " + rrot);
 
 					if(best180 && (engine.ruleopt.rotateButtonAllowDouble) && !ctrl.isPress(Controller.BUTTON_E))
 						input |= Controller.BUTTON_BIT_E;
@@ -260,7 +249,6 @@ public class Nohoho extends DummyAI implements Runnable {
 					thinkRequest.newRequest();
 					thinkComplete = false;
 					//thinkCurrentPieceNo++;
-					if (DEBUG_ALL) log.debug("Needs rethink - cannot reach desired position");
 				} else {
 					// If you are able to reach
 					if((nowX == bestX) && (pieceTouchGround)) {
@@ -341,8 +329,6 @@ public class Nohoho extends DummyAI implements Runnable {
 			lastY = nowY;
 			lastRt = rt;
 
-			if (DEBUG_ALL) log.debug ("Input = " + input + ", moveDir = " + moveDir  + ", rotateDir = " + rotateDir +
-					 ", sync = " + sync  + ", drop = " + drop  + ", setDAS = " + setDAS);
 
 			delay = 0;
 			ctrl.setButtonBit(input);
@@ -360,7 +346,6 @@ public class Nohoho extends DummyAI implements Runnable {
 	 * @param playerID Player ID
 	 */
 	public void thinkBestPosition(GameEngine engine, int playerID) {
-		if (DEBUG_ALL) log.debug("thinkBestPosition called, inARE = " + inARE + ", piece: ");
 		bestHold = false;
 		bestX = 0;
 		bestY = 0;
@@ -433,7 +418,6 @@ public class Nohoho extends DummyAI implements Runnable {
 						bestYSub = y;
 						bestRtSub = -1;
 						bestPts = pts;
-						if (DEBUG_ALL)
 							logBest(1);
 						thinkSuccess = true;
 					}
@@ -455,7 +439,6 @@ public class Nohoho extends DummyAI implements Runnable {
 							bestYSub = y;
 							bestRtSub = -1;
 							bestPts = pts;
-							if (DEBUG_ALL)
 								logBest(2);
 							thinkSuccess = true;
 						}
@@ -484,7 +467,6 @@ public class Nohoho extends DummyAI implements Runnable {
 							bestYSub = y;
 							bestRtSub = -1;
 							bestPts = pts;
-							if (DEBUG_ALL)
 								logBest(3);
 							thinkSuccess = true;
 						}
@@ -515,7 +497,6 @@ public class Nohoho extends DummyAI implements Runnable {
 								bestYSub = y;
 								bestRtSub = -1;
 								bestPts = pts;
-								if (DEBUG_ALL)
 									logBest(4);
 								thinkSuccess = true;
 							}
@@ -548,7 +529,6 @@ public class Nohoho extends DummyAI implements Runnable {
 		
 		// Place the piece
 		if(!piece.placeToField(x, y, rt, fld)) {
-			if (DEBUG_ALL)
 				log.debug("End of thinkMain(" + x + ", " + y + ", " + rt + ", " + rtOld +
 					", fld, piece " + piece.id + ", " + defcon + "). pts = MIN_VALUE (Cannot place piece)");
 			return Integer.MIN_VALUE;
@@ -560,7 +540,6 @@ public class Nohoho extends DummyAI implements Runnable {
 		{
 			int maxX = piece.getMaximumBlockX()+x;
 			if(maxX < 2) {
-				if (DEBUG_ALL)
 					log.debug("End of thinkMain(" + x + ", " + y + ", " + rt + ", " + rtOld + ", fld, piece "
 							+ piece.id + ", " + defcon + "). pts = MIN_VALUE (Invalid location/defcon combination)");
 				return Integer.MIN_VALUE;
@@ -618,7 +597,6 @@ public class Nohoho extends DummyAI implements Runnable {
 		boolean allclear = fld.isEmpty();
 		if(allclear) pts += 1000;
 
-		if (DEBUG_ALL)
 			log.debug("End of thinkMain(" + x + ", " + y + ", " + rt + ", " + rtOld +
 					", fld, piece " + piece.id + ", " + defcon + "). pts = " + pts);
 		return pts;

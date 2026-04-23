@@ -82,8 +82,6 @@ public class ComboRaceBot extends DummyAI implements Runnable {
 	protected int inputARE;
 	/** Number of pieces to think ahead */
 	protected static final int MAX_THINK_DEPTH = 6;
-	/** Set to true to print debug information */
-	protected static final boolean DEBUG_ALL = false;
 	/** Did the thinking thread finish successfully? */
 	protected boolean thinkComplete;
 	/** Did the thinking thread find a possible position? */
@@ -163,7 +161,6 @@ public class ComboRaceBot extends DummyAI implements Runnable {
 		if ((engine.aiPrethink && engine.getARE() > 0 && engine.getARELine() > 0)
 				&& ((newInARE && !inARE) || (!thinking && !thinkSuccess)))
 		{
-			if (DEBUG_ALL) log.debug("Begin pre-think of next piece.");
 			thinkComplete = false;
 			thinkRequest.newRequest();
 		}
@@ -195,7 +192,6 @@ public class ComboRaceBot extends DummyAI implements Runnable {
 				}
 				delay = 0;
 			}
-			if (DEBUG_ALL) log.debug("Currently in ARE. Next piece type = " + nextPiece.id + ", IRS = " + input);
 			inputARE = input;
 		}
 	}
@@ -236,10 +232,6 @@ public class ComboRaceBot extends DummyAI implements Runnable {
 				// Hold
 				input |= Controller.BUTTON_BIT_D;
 			} else {
-				if (DEBUG_ALL) log.debug("bestX = " + bestX + ", nowX = " + nowX +
-						", bestY = " + bestY + ", nowY = " + nowY +
-						", bestRt = " + bestRt + ", rt = " + rt +
-						", bestRtSub = " + bestRtSub);
 				printPieceAndDirection(nowType, rt);
 				// Rotation
 				if (rt != bestRt)
@@ -248,7 +240,6 @@ public class ComboRaceBot extends DummyAI implements Runnable {
 
 					int lrot = engine.getRotateDirection(-1);
 					int rrot = engine.getRotateDirection(1);
-					if (DEBUG_ALL) log.debug("lrot = " + lrot + ", rrot = " + rrot);
 
 					if(best180 && (engine.ruleopt.rotateButtonAllowDouble) && !ctrl.isPress(Controller.BUTTON_E))
 						rotateDir = 2;
@@ -277,7 +268,6 @@ public class ComboRaceBot extends DummyAI implements Runnable {
 					//thinkBestPosition(engine, playerID);
 					thinkComplete = false;
 					//thinkCurrentPieceNo++;
-					if (DEBUG_ALL) log.debug("Needs rethink - cannot reach desired position");
 					thinkRequest.newRequest();
 				} else {
 					// If you are able to reach
@@ -350,8 +340,6 @@ public class ComboRaceBot extends DummyAI implements Runnable {
 					input |= Controller.BUTTON_BIT_A;
 			}
 
-			if (DEBUG_ALL) log.debug ("Input = " + input + ", moveDir = " + moveDir  + ", rotateDir = " + rotateDir +
-					 ", drop = " + drop);
 
 			delay = 0;
 			ctrl.setButtonBit(input);
@@ -388,7 +376,6 @@ public class ComboRaceBot extends DummyAI implements Runnable {
 			case Piece.DIRECTION_UP:    result = result + "up";    break;
 			case Piece.DIRECTION_RIGHT: result = result + "right"; break;
 		}
-		if (DEBUG_ALL) log.debug(result);
 	}
 
 	/**
@@ -397,7 +384,6 @@ public class ComboRaceBot extends DummyAI implements Runnable {
 	 * @param playerID Player ID
 	 */
 	public void thinkBestPosition(GameEngine engine, int playerID) {
-		if (DEBUG_ALL) log.debug("thinkBestPosition called, inARE = " + inARE + ", piece: ");
 		bestHold = false;
 		bestX = 0;
 		bestY = 0;
@@ -933,7 +919,6 @@ public class ComboRaceBot extends DummyAI implements Runnable {
 
 					int lrot = engine.getRotateDirection(-1);
 					int rrot = engine.getRotateDirection(1);
-					if (DEBUG_ALL) log.debug("lrot = " + lrot + ", rrot = " + rrot);
 
 					if(best180 && (engine.ruleopt.rotateButtonAllowDouble))
 						rotateDir = 2;
@@ -970,7 +955,6 @@ public class ComboRaceBot extends DummyAI implements Runnable {
 
 					int lrot = engine.getRotateDirection(-1);
 					int rrot = engine.getRotateDirection(1);
-					if (DEBUG_ALL) log.debug("lrot = " + lrot + ", rrot = " + rrot);
 
 					if(best180 && (engine.ruleopt.rotateButtonAllowDouble))
 						rotateDir = 2;
@@ -1006,7 +990,6 @@ public class ComboRaceBot extends DummyAI implements Runnable {
 					//thinkBestPosition(engine, playerID);
 					thinkComplete = false;
 					//thinkCurrentPieceNo++;
-					if (DEBUG_ALL) log.debug("Needs rethink - cannot reach desired position");
 					thinkRequest.newRequest();
 				} else {
 					if((nowX == bestXSub || movestate > 0) && (rt == bestRtSub)) {
