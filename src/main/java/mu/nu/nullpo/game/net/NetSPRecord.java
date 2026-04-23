@@ -245,17 +245,6 @@ public class NetSPRecord implements Serializable {
 	}
 
 	/**
-	 * Get replay data as CustomProperties
-	 * @return CustomProperties that contains replay data
-	 */
-	public CustomProperties getReplayProp() {
-		String strEncode = NetUtil.decompressString(strReplayProp);
-		CustomProperties p = new CustomProperties();
-		p.decode(strEncode);
-		return p;
-	}
-
-	/**
 	 * Export to a String Array
 	 * @return String Array (String[9])
 	 */
@@ -323,24 +312,6 @@ public class NetSPRecord implements Serializable {
 	 */
 	public boolean compare(int type, NetSPRecord r2) {
 		return compareRecords(type, this, r2);
-	}
-
-	/**
-	 * Set String value of specific custom stat
-	 * @param name Custom stat name
-	 * @param value Value
-	 */
-	public void setCustomStat(String name, String value) {
-		for(int i = 0; i < listCustomStats.size(); i++) {
-			String strTemp = listCustomStats.get(i);
-			String[] strArray = strTemp.split(";");
-
-			if(strArray[0].equals(name)) {
-				listCustomStats.set(i, name + ";" + value);
-				return;
-			}
-		}
-		listCustomStats.add(name + ";" + value);
 	}
 
 	/**

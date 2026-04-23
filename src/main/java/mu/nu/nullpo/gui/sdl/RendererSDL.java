@@ -256,14 +256,6 @@ public class RendererSDL extends EventReceiver {
 	}
 
 	/*
-	 * TTFAvailable
-	 */
-	@Override
-	public boolean isTTFSupport() {
-		return (ResourceHolderSDL.ttfFont != null);
-	}
-
-	/*
 	 * Get key name by button ID
 	 */
 	@Override
@@ -316,14 +308,6 @@ public class RendererSDL extends EventReceiver {
 		if(owner.mode.isNetplayMode()) return;
 
 		saveReplay(owner, prop, NullpoMinoSDL.propGlobal.getProperty("custom.replay.directory", "replay"));
-	}
-
-	/*
-	 * 1MassBlockDraw a
-	 */
-	@Override
-	public void drawSingleBlock(GameEngine engine, int playerID, int x, int y, int color, int skin, boolean bone, float darkness, float alpha, float scale) {
-		drawBlock(x, y, color, skin, bone, darkness, alpha, scale);
 	}
 
 	/**

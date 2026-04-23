@@ -105,10 +105,6 @@ public class NetObserverClient extends NetBaseClient {
 		super.processPacket(fullMessage);
 	}
 
-	public float getServerVersion() {
-		return serverVersion;
-	}
-
 	public int getPlayerCount() {
 		return playerCount;
 	}
