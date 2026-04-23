@@ -247,13 +247,6 @@ public class PoochyBotDefensive extends PoochyBot {
 				pts += (holeBefore - holeAfter) * 400 + 10000;
 			}
 
-			/*
-			if(lidAfter < lidBefore) {
-				// Add points for reduction in number blocks above holes
-				pts += (lidAfter - lidBefore) * 500;
-			}
-			*/
-
 			if((tspin) && (lines >= 1)) {
 				// T-Spin Bonus - retained from Basic AI, but should never actually trigger
 				pts += 100000 * lines;
