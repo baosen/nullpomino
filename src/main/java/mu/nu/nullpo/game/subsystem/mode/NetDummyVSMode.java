@@ -1460,7 +1460,6 @@ public class NetDummyVSMode extends NetDummyMode {
 		}
 		// Game messages
 		if(message[0].equals("game")) {
-			//int uid = Integer.parseInt(message[1]);
 			int seatID = Integer.parseInt(message[2]);
 			int playerID = netvsGetPlayerIDbySeatID(seatID);
 			GameEngine engine = owner.engine[playerID];

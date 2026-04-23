@@ -33,19 +33,16 @@ public class PoochyBotDefensive extends PoochyBot {
 		if(piece.checkCollision(x, y - 1, fld)) pts += 1000;
 
 		int width = fld.getWidth();
-		//int height = fld.getHeight();
 
 		int xMin = piece.getMinimumBlockX()+x;
 		int xMax = piece.getMaximumBlockX()+x;
 
 		// Number of holes and valleys needing an I piece (before placement)
 		int holeBefore = fld.getHowManyHoles();
-		//int lidBefore = fld.getHowManyLidAboveHoles();
 
 		//Fetch depths.
 		int[] depthsBefore = getColumnDepths(fld);
 		int deepestY = -1;
-		//int deepestX = -1;
 		for (int i = 0; i < width-1; i++)
 			if (depthsBefore[i] > deepestY)
 			{
@@ -148,7 +145,6 @@ public class PoochyBotDefensive extends PoochyBot {
 		int[] depthsAfter = getColumnDepths(fld);
 
 		// Danger flag
-		//boolean danger = (heightBefore <= 8);
 		//Flag for really dangerously high stacks
 		boolean peril = (heightBefore <= 4);
 
@@ -186,7 +182,6 @@ public class PoochyBotDefensive extends PoochyBot {
 
 		if( (lines < 4) && (!allclear) ) {
 			// Number of holes and valleys needing an I piece (after placement)
-			//int lidAfter = fld.getHowManyLidAboveHoles();
 
 			//Find valleys that need an I, J, or L.
 			int needIValleyAfter = 0, needJValleyAfter = 0, needLValleyAfter = 0;
