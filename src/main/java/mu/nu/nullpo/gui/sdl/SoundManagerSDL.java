@@ -210,16 +210,6 @@ public class SoundManagerSDL {
 	}
 
 	/**
-	 * Stop a sound (stops whichever track last played it — best effort).
-	 * @param name Registered name
-	 */
-	public void stop(String name) {
-		// With pooled tracks, we can't reliably identify which track
-		// is playing a specific sound. This is consistent with the old
-		// fire-and-forget behavior.
-	}
-
-	/**
 	 * Change sound effect volume.
 	 * @param volume Volume (0–128 for compatibility, mapped to 0.0–1.0 gain)
 	 */
