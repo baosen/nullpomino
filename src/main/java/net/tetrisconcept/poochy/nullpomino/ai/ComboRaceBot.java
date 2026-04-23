@@ -249,19 +249,6 @@ public class ComboRaceBot extends DummyAI implements Runnable {
 						", bestRtSub = " + bestRtSub);
 				printPieceAndDirection(nowType, rt);
 				// Rotation
-				/*
-				//Rotate iff near destination or stuck
-				int xDiff = Math.abs(nowX - bestX);
-				if (bestX < nowX && nowType == Piece.PIECE_I &&
-						rt == Piece.DIRECTION_DOWN && bestRt != rt)
-					xDiff--;
-				if((rt != bestRt && ((xDiff <= 1) ||
-						(bestX == 0 && nowX == 2 && nowType == Piece.PIECE_I) ||
-						(((nowX < bestX && pieceNow.checkCollision(nowX+1, nowY, rt, fld)) ||
-						(nowX > bestX && pieceNow.checkCollision(nowX-1, nowY, rt, fld))) &&
-						!(pieceNow.getMaximumBlockX()+nowX == width-2 && (rt&1) == 1) &&
-						!(pieceNow.getMinimumBlockY()+nowY == 2 && pieceTouchGround && (rt&1) == 0 && nowType != Piece.PIECE_I)))))
-				*/
 				if (rt != bestRt)
 				{
 					boolean best180 = Math.abs(rt - bestRt) == 2;

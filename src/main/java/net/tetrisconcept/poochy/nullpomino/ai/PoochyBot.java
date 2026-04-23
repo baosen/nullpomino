@@ -300,27 +300,6 @@ public class PoochyBot extends DummyAI implements Runnable {
 			boolean canFloorKick = engine.nowUpwardWallkickCount < engine.ruleopt.rotateMaxUpwardWallkick
 				|| engine.ruleopt.rotateMaxUpwardWallkick < 0;
 
-			//If stuck, rethink.
-			/*
-			if ((nowX < bestX && pieceNow.checkCollision(nowX+1, nowY, rt, fld)) ||
-					(nowX > bestX && pieceNow.checkCollision(nowX-1, nowY, rt, fld)))
-			{
-				thinkRequest = true;
-				if (DEBUG_ALL) log.debug("Needs rethink - piece is stuck!");
-			}
-			*/
-			/*
-			if (rt == Piece.DIRECTION_DOWN &&
-					((nowType == Piece.PIECE_L && bestX > nowX) || (nowType == Piece.PIECE_J && bestX < nowX)))
-				{
-					if (DEBUG_ALL) log.debug("Checking for stuck L or J piece.");
-					if (DEBUG_ALL) log.debug("Coordinates of piece: x = " + nowX + ", y = " + nowY);
-					if (DEBUG_ALL) log.debug("Coordinates of block to check: x = " + (pieceNow.getMaximumBlockX()+nowX-1) +
-							", y = " + (pieceNow.getMaximumBlockY()+nowY));
-					for (int xCheck = 0; xCheck < fld.getWidth(); xCheck++)
-						if (DEBUG_ALL) log.debug("fld.getHighestBlockY(" + xCheck + ") = " + fld.getHighestBlockY(xCheck));
-				}
-			*/
 			if ((rt == Piece.DIRECTION_DOWN &&
 					((nowType == Piece.PIECE_L && bestX > nowX) || (nowType == Piece.PIECE_J && bestX < nowX))
 					&& !fld.getBlockEmpty(pieceNow.getMaximumBlockX()+nowX-1, pieceNow.getMaximumBlockY()+nowY)))
@@ -536,17 +515,6 @@ public class PoochyBot extends DummyAI implements Runnable {
 							bestX++;
 						}
 					}
-					/*
-					//Move left if need to move left, or if at rightmost position and can move left.
-					if (pieceTouchGround && pieceNow.id != Piece.PIECE_I &&
-							nowX+pieceNow.getMaximumBlockX() == width-1 &&
-							!pieceNow.checkCollision(nowX-1, nowY, fld))
-					{
-						if(!ctrl.isPress(Controller.BUTTON_LEFT) && (engine.aiMoveDelay >= 0))
-							input |= Controller.BUTTON_BIT_LEFT;
-						bestX = nowX - 1;
-					}
-					*/
 					if (nowX > bestX)
 						moveDir = -1;
 					else if(nowX < bestX)
@@ -590,16 +558,6 @@ public class PoochyBot extends DummyAI implements Runnable {
 				}
 				else if (bestX > nowX)
 				{
-					/*
-					if (minBlockXDepth == fld.getHighestBlockY(minBlockX-1))
-					{
-						if (DEBUG_ALL) log.debug("Delaying rotation on L piece to avoid getting stuck. (Case 2)");
-						sync = false;
-						rotateDir = 0;
-						moveDir = -1;
-					}
-					else
-					*/
 					if (DEBUG_ALL) log.debug("Attempting synchro move on L piece to avoid getting stuck.");
 					sync = true;
 					rotateDir = -1;
@@ -620,16 +578,6 @@ public class PoochyBot extends DummyAI implements Runnable {
 				}
 				else if (bestX < nowX)
 				{
-					/*
-					if (maxBlockXDepth == fld.getHighestBlockY(maxBlockX+1))
-					{
-						if (DEBUG_ALL) log.debug("Delaying rotation on J piece to avoid getting stuck. (Case 2)");
-						sync = false;
-						rotateDir = 0;
-						moveDir = 1;
-					}
-					else
-					*/
 					if (DEBUG_ALL) log.debug("Attempting synchro move on J piece to avoid getting stuck.");
 					sync = true;
 					rotateDir = 1;
@@ -662,55 +610,12 @@ public class PoochyBot extends DummyAI implements Runnable {
 						input |= Controller.BUTTON_BIT_D;
 				}
 			}
-			/*
-			//Catch bug where it fails to rotate J piece
-			if (moveDir == 0 && rotateDir == 0 & drop == 0)
-			{
-				if ((rt+1)%4 == bestRt)
-					rotateDir = 1;
-				else if ((rt+3)%4 == bestRt)
-					rotateDir = -1;
-				else if ((rt+2)%4 == bestRt)
-				{
-					if(engine.ruleopt.rotateButtonAllowDouble)
-						rotateDir = 2;
-					else if (rt == 3)
-						rotateDir = -1;
-					else
-						rotateDir = -1;
-				}
-				else if (bestX < nowX)
-					moveDir = -1;
-				else if (bestX > nowX)
-					moveDir = 1;
-				else
-					if (DEBUG_ALL) log.debug("Movement error: Nothing to do!");
-			}
-			if (rotateDir == 0 && Math.abs(rt - bestRt) == 2)
-				rotateDir = 1;
-			*/
 			//Convert parameters to input
 			boolean useDAS = engine.dasCount >= engine.getDAS() && moveDir == setDAS;
 			if(moveDir == -1 && (!ctrl.isPress(Controller.BUTTON_LEFT) || useDAS))
 				input |= Controller.BUTTON_BIT_LEFT;
 			else if(moveDir == 1 && (!ctrl.isPress(Controller.BUTTON_RIGHT) || useDAS))
 				input |= Controller.BUTTON_BIT_RIGHT;
-			/*
-			if(drop == 1 && !ctrl.isPress(Controller.BUTTON_UP))
-			{
-				if (DELAY_DROP_ON && lowSpeed && dropDelay < (DROP_DELAY >> 1))
-					dropDelay++;
-				else
-					input |= Controller.BUTTON_BIT_UP;
-			}
-			else if(drop == -1)
-			{
-				if (DELAY_DROP_ON && lowSpeed && dropDelay < DROP_DELAY)
-					dropDelay++;
-				else
-					input |= Controller.BUTTON_BIT_DOWN;
-			}
-			*/
 			if(drop == 1 && !ctrl.isPress(Controller.BUTTON_UP))
 				input |= Controller.BUTTON_BIT_UP;
 			else if(drop == -1)
@@ -833,10 +738,6 @@ public class PoochyBot extends DummyAI implements Runnable {
 			else
 				return Controller.BUTTON_BIT_B;
 		}
-		/*
-		else if (nextType == Piece.PIECE_I)
-			return Controller.BUTTON_BIT_A;
-		*/
 		return 0;
 	}
 

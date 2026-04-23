@@ -244,25 +244,8 @@ public void scaleRanks(){
 
 		newValue=Math.max(Math.min(newValue,Integer.MAX_VALUE-rankMin),0);
 		newValue=newValue+rankMin;
-		/*if (newValue/pas==0){
-			n1++;
-
-		}
-		if (newValue/pas==1){
-			n2++;
-
-		}
-		if (newValue/pas==2){
-			n3++;
-
-		}
-		if (newValue/pas==3){
-			n4++;
-
-		}*/
 		ranks[i]=(int)newValue;
 	}
-	//System.out.println("n1 = "+n1+" n2 = "+n2+" n3 = "+n3+" n4 = "+n4);
 }
 public void decode(int surfaceNum,int []surface ){
 
