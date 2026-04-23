@@ -40,7 +40,7 @@ import mu.nu.nullpo.util.GeneralUtil;
 /**
  * GRADE MANIA 2 Mode
  */
-public class GradeMania2Mode extends AbstractMode {
+public class GradeMania2Mode extends AbstractGradeMode {
 	/** Current version */
 	private static final int CURRENT_VERSION = 2;
 
@@ -129,27 +129,6 @@ public class GradeMania2Mode extends AbstractMode {
 	/** VanishRoll It is necessary toLV999When reaching theTime */
 	private static final int M_ROLL_TIME_REQUIRE = 31500;
 
-	/** Number of entries in rankings */
-	private static final int RANKING_MAX = 10;
-
-	/** Number of sections */
-	private static final int SECTION_MAX = 10;
-
-	/** Default section time */
-	private static final int DEFAULT_SECTION_TIME = 5400;
-
-	/** Current Speed ​​of fall number (tableGravityChangeLevelOf levelAt each of1Increase one) */
-	private int gravityindex;
-
-	/** Next Section Of level (This-1At levelStop) */
-	private int nextseclv;
-
-	/** LevelHas increased flag */
-	private boolean lvupflag;
-
-	/** The actual gear position is displayed on the screen */
-	private int grade;
-
 	/** Internal dan */
 	private int gradeInternal;
 
@@ -158,54 +137,6 @@ public class GradeMania2Mode extends AbstractMode {
 
 	/** Dan pointThe1Reduce one time */
 	private int gradeDecay;
-
-	/** Dan went up at the end time */
-	private int lastGradeTime;
-
-	/** Hard dropStage wascount */
-	private int harddropBonus;
-
-	/** Combo bonus */
-	private int comboValue;
-
-	/** Most recent increase in score */
-	private int lastscore;
-
-	/** AcquisitionRender scoreIs remaining to be time */
-	private int scgettime;
-
-	/** Roll Course time */
-	private int rolltime;
-
-	/** Roll completely cleared flag */
-	private int rollclear;
-
-	/** Roll started flag */
-	private boolean rollstarted;
-
-	/** Dan back */
-	private int secretGrade;
-
-	/** Current BGM */
-	private int bgmlv;
-
-	/** Illuminate the display remaining dan frame count */
-	private int gradeflash;
-
-	/** Section Time */
-	private int[] sectiontime;
-
-	/** New record came outSection Thetrue */
-	private boolean[] sectionIsNewRecord;
-
-	/** Cleared Section count */
-	private int sectionscomp;
-
-	/** Average Section Time */
-	private int sectionavgtime;
-
-	/** PreviousSection Time */
-	private int sectionlasttime;
 
 	/** Section In4-line clearWas count */
 	private int[] sectionfourline;
@@ -216,20 +147,8 @@ public class GradeMania2Mode extends AbstractMode {
 	/** VanishRoll  flagTwo (4-line clear) */
 	private boolean mrollFourline;
 
-	/** VanishRoll started flag */
-	private boolean mrollFlag;
-
 	/** VanishRoll I turned off during theline count */
 	private int mrollLines;
-
-	/** AC medal State */
-	private int medalAC;
-
-	/** ST medal State */
-	private int medalST;
-
-	/** SK medal State */
-	private int medalSK;
 
 	/** RE medal State */
 	private int medalRE;
@@ -237,17 +156,11 @@ public class GradeMania2Mode extends AbstractMode {
 	/** RO medal State */
 	private int medalRO;
 
-	/** CO medal State */
-	private int medalCO;
-
 	/** 150More thanBlockIf there is atrue, 70I will reduce up tofalseBecome */
 	private boolean recoveryFlag;
 
 	/** rotationOf total count (Maximum4Incremented by one) */
 	private int rotateCount;
-
-	/** Section TimeShowing record iftrue */
-	private boolean isShowBestSectionTime;
 
 	/** Level at start */
 	private IntegerMenuItem startlevel;
@@ -266,12 +179,6 @@ public class GradeMania2Mode extends AbstractMode {
 
 	/** When true, section time display is enabled */
 	private OnOffMenuItem showsectiontime;
-
-	/** Version */
-	private int version;
-
-	/** Current round's ranking rank */
-	private int rankingRank;
 
 	/** Rankings' Dan */
 	private int[] rankingGrade;
