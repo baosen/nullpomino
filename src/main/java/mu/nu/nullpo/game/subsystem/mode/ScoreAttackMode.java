@@ -540,10 +540,6 @@ public class ScoreAttackMode extends AbstractMode {
 			nextseclv += 100;
 			receiver.playSE("levelup");
 
-			//owner.backgroundStatus.fadesw = true;
-			//owner.backgroundStatus.fadecount = 0;
-			//owner.backgroundStatus.fadebg = nextseclv / 100;
-
 			sectionscomp++;
 			setAverageSectionTime();
 			stNewRecordCheck(sectionscomp - 1);
@@ -579,9 +575,6 @@ public class ScoreAttackMode extends AbstractMode {
 
 			if(engine.statistics.level >= 300) {
 				if(engine.timerActive) {
-					//sectionscomp++;
-					//setAverageSectionTime();
-					//stNewRecordCheck(sectionscomp - 1);
 					engine.statistics.score += 1253*Math.ceil(Math.max(18000-engine.statistics.time,0)/60D);
 				}
 
