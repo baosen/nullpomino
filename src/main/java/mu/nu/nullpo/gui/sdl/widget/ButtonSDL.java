@@ -58,13 +58,6 @@ public class ButtonSDL extends WidgetSDL {
 		return false;
 	}
 
-	/** Trigger the button programmatically. Used for "default" button shortcuts. */
-	public boolean trigger() {
-		if(!visible || !enabled) return false;
-		keyboardFire = true;
-		return true;
-	}
-
 	@Override
 	public void handleKey(NullpoMinoSDL.KeyEvent ev) {
 		if(!enabled || !focused || ev.repeat) return;

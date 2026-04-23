@@ -78,11 +78,6 @@ public class TableSDL extends WidgetSDL {
 		rows.set(i, row);
 	}
 
-	public void setRowColor(int i, int fontColor) {
-		if(i < 0 || i >= rows.size()) return;
-		rowColors.set(i, fontColor);
-	}
-
 	private int visibleRowCount() {
 		int top = showHeader ? headerHeight : 0;
 		return Math.max(1, (h - top) / rowHeight);

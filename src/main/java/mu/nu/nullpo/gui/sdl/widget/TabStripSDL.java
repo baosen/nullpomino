@@ -31,12 +31,6 @@ public class TabStripSDL extends WidgetSDL {
 		active = i;
 	}
 
-	public void setLabels(String[] labels) {
-		this.labels = (labels == null) ? new String[0] : labels;
-		if(active >= this.labels.length) active = Math.max(0, this.labels.length - 1);
-		computeLayout();
-	}
-
 	/**
 	 * Compute per-tab widths: each tab gets its minimum label width
 	 * ({@code 16 * chars + 4} per the NormalFontSDL render contract) plus an
