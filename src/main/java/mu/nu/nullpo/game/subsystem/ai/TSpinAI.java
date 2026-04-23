@@ -62,10 +62,7 @@ public class TSpinAI extends BasicAI {
 			tspin = true;
 		}
 		// T-SpinHolecount (before placement)
-		int tslotBefore = 0;
-		//if( (nextpiece.id == Piece.PIECE_T) || ((holdpiece != null) && (holdpiece.id == Piece.PIECE_T)) ) {
-			tslotBefore = fld.getTSlotLineClearAll(false);
-		//}
+		int tslotBefore = fld.getTSlotLineClearAll(false);
 
 		// Place the piece
 		if(!piece.placeToField(x, y, rt, fld)) {
@@ -117,10 +114,7 @@ public class TSpinAI extends BasicAI {
 			int lidAfter = fld.getHowManyLidAboveHoles();
 			int needIValleyAfter = fld.getTotalValleyNeedIPiece();
 			// T-SpinHolecount (after placement)
-			int tslotAfter = 0;
-			//if( (nextpiece.id == Piece.PIECE_T) || ((holdpiece != null) && (holdpiece.id == Piece.PIECE_T)) ) {
-				tslotAfter = fld.getTSlotLineClearAll(false);
-			//}
+			int tslotAfter = fld.getTSlotLineClearAll(false);
 			boolean newtslot = false;
 
 			if((!danger) && (tslotAfter > tslotBefore) && (tslotAfter == 1) && (holeAfter == holeBefore + 1)) {
