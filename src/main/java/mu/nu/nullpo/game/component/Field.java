@@ -977,46 +977,6 @@ public class Field implements Serializable {
 	}
 
 	/**
-	 * T-SpinFind out what pieces I can have holes
-	 * @param big BigIf it&#39;s the casetrue
-	 * @return T-SpinOf holes I cancount
-	 */
-	public int getHowManyTSlot(boolean big) {
-		int result = 0;
-
-		for(int j = 0; j < width; j++) {
-			for(int i = 0; i < getHeightWithoutHurryupFloor() - 2; i++) {
-				if(getLineFlag(i) == false) {
-					if(isTSlot(j, i, big)) {
-						result++;
-					}
-				}
-			}
-		}
-
-		return result;
-	}
-
-	public int getHowManyBlocksCovered() {
-		int blocksCovered = 0;
-
-		for(int j = 0; j < width; j++) {
-
-            int highestBlockY=getHighestBlockY(j);
-			for(int i = highestBlockY; i < getHeightWithoutHurryupFloor(); i++) {
-				if(getLineFlag(i) == false) {
-
-					if( getBlockEmpty(j, i)) {
-					blocksCovered++;
-					}
-
-				}
-			}
-		}
-
-		return blocksCovered;
-	}
-	/**
 	 * T-SpinI disappearLinescountReturns
 	 * @param x X-coordinate
 	 * @param y Y-coordinate
@@ -1181,23 +1141,6 @@ public class Field implements Serializable {
 		for(int i = (hidden_height * -1); i < getHeightWithoutHurryupFloor(); i++) {
 			if(getLineFlag(i) == false) {
 				if(!getBlockEmpty(x, i)) return i;
-			}
-		}
-
-		return height;
-	}
-
-	/**
-	 * garbage blockFirst occurrence of theY-coordinateGet the
-	 * @return garbage blockFirst occurrence of theY-coordinate
-	 */
-	public int getHighestGarbageBlockY() {
-		for(int i = (hidden_height * -1); i < getHeightWithoutHurryupFloor(); i++) {
-			if(getLineFlag(i) == false) {
-				for(int j = 0; j < width; j++) {
-					if(!getBlockEmpty(j, i) && getBlock(j, i).getAttribute(Block.BLOCK_ATTRIBUTE_GARBAGE))
-						return i;
-				}
 			}
 		}
 
@@ -3205,114 +3148,4 @@ public class Field implements Serializable {
 		return result;
 	}
 
-	public void delEven() {
-		for (int y = getHighestBlockY(); y < height; y++)
-			if ((y&1) == 0)
-				delLine(y);
-	}
-
-	public void delLower() {
-		int rows = (height - getHighestBlockY() + 1) >> 1;
-		for (int i = 1; i <= rows; i++)
-			delLine(height-i);
-	}
-
-	public void delUpper() {
-		int maxY = (height - getHighestBlockY()) >> 1;
-		//TODO: Check if this should round up or down.
-		for (int y = getHighestBlockY(); y <= maxY; y++)
-			delLine(y);
-	}
-
-	public void delLine(int y) {
-		for (int x = 0; x < width; x++)
-		{
-			Block b = getBlock(x, y);
-			if (b != null)
-				b.hard = 0;
-		}
-		setLineFlag(y, true);
-	}
-
-	public void moveLeft() {
-		int x1, x2;
-		for (int y = getHighestBlockY(); y < height; y++)
-		{
-			x1 = 0;
-			while (!getBlockEmpty(x1, y))
-				x1++;
-			x2 = x1;
-			while (x2 < width)
-			{
-				while (getBlockEmpty(x2, y) && x2 < width)
-					x2++;
-				setBlock(x1, y, getBlock(x2, y));
-				setBlock(x2, y, new Block());
-				x1++;
-				x2++;
-			}
-		}
-	}
-
-	public void moveRight() {
-		int x1, x2;
-		for (int y = getHighestBlockY(); y < height; y++)
-		{
-			x1 = width-1;
-			while (!getBlockEmpty(x1, y))
-				x1--;
-			x2 = x1;
-			while (x2 >= 0)
-			{
-				while (getBlockEmpty(x2, y) && x2 >= 0)
-					x2--;
-				setBlock(x1, y, getBlock(x2, y));
-				setBlock(x2, y, new Block());
-				x1--;
-				x2--;
-			}
-		}
-	}
-
-	public void negaField() {
-		for (int y = getHighestBlockY(); y < height; y++)
-			for (int x = 0; x < width; x++)
-			{
-				if (getBlockEmpty(x, y))
-					garbageDropPlace(x, y, false, 0); //TODO: Set color
-				else
-					setBlockColor(x, y, Block.BLOCK_COLOR_NONE);
-			}
-	}
-
-	public void flipVertical() {
-		Block[] temp;
-		for (int yMin = getHighestBlockY(), yMax = height-1; yMin < yMax; yMin++, yMax--)
-		{
-			if (yMin < 0)
-			{
-				temp = block_hidden[(yMin * -1) - 1];
-				block_hidden[(yMin * -1) - 1] = block_field[yMax];
-				block_field[yMax] = temp;
-			}
-			else
-			{
-				temp = block_field[yMin];
-				block_field[yMin] = block_field[yMax];
-				block_field[yMax] = temp;
-			}
-		}
-	}
-
-	public void mirror() {
-		Block temp;
-
-		for (int y = getHighestBlockY(); y < height; y++)
-			for (int xMin = 0, xMax = width-1; xMin < xMax; xMin++, xMax--)
-			{
-				temp = getBlock(xMin, y);
-				setBlock(xMin, y, getBlock(xMax, y));
-				setBlock(xMax, y, temp);
-			}
-	}
 }
