@@ -114,7 +114,6 @@ public class PoochyBotDefensive extends PoochyBot {
 		if(piece.id == Piece.PIECE_I) {
 			if (xMin == xMax && 0 <= xMin && xMin < width)
 			{
-				//if (DEBUG_ALL) log.debug("actualX = " + xMin);
 				int xDepth = depthsBefore[xMin];
 				int sideDepth = -1;
 				if (xMin > 0)
@@ -122,7 +121,6 @@ public class PoochyBotDefensive extends PoochyBot {
 				if (xMin < width-1)
 					sideDepth = Math.max(sideDepth, depthsBefore[xMin+1]);
 				valley = xDepth - sideDepth;
-				//if (DEBUG_ALL) log.debug("valley = " + valley);
 			}
 		}
 

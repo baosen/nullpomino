@@ -430,7 +430,6 @@ public class PoochyBot extends DummyAI implements Runnable {
 						!(pieceNow.getMaximumBlockX()+nowX == width-2 && (rt&1) == 1) &&
 						!(pieceNow.getMinimumBlockY()+nowY == 2 && pieceTouchGround && (rt&1) == 0 && nowType != Piece.PIECE_I)))))
 				{
-					//if (DEBUG_ALL) log.debug("Case 1 rotation");
 
 					int lrot = engine.getRotateDirection(-1);
 					int rrot = engine.getRotateDirection(1);
@@ -456,7 +455,6 @@ public class PoochyBot extends DummyAI implements Runnable {
 				else if (((rt != Piece.DIRECTION_UP && xDiff > 1 && engine.ruleopt.rotateButtonAllowReverse) /*|| best180*/) &&
 						(nowType == Piece.PIECE_L || nowType == Piece.PIECE_J || nowType == Piece.PIECE_T))
 				{
-					//if (DEBUG_ALL) log.debug("Case 2 rotation");
 
 					if (rt == Piece.DIRECTION_DOWN)
 					{
@@ -1308,7 +1306,6 @@ public class PoochyBot extends DummyAI implements Runnable {
 		if(piece.id == Piece.PIECE_I) {
 			if (xMin == xMax && 0 <= xMin && xMin < width)
 			{
-				//if (DEBUG_ALL) log.debug("actualX = " + xMin);
 				int xDepth = depthsBefore[xMin];
 				int sideDepth = -1;
 				if (xMin >= move)
@@ -1316,7 +1313,6 @@ public class PoochyBot extends DummyAI implements Runnable {
 				if (xMin < width-move)
 					sideDepth = Math.max(sideDepth, depthsBefore[xMin+move]);
 				valley = xDepth - sideDepth;
-				//if (DEBUG_ALL) log.debug("valley = " + valley);
 			}
 		}
 
