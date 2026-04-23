@@ -1,10 +1,5 @@
 package mu.nu.nullpo.game.net;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
-import java.util.Base64;
 import java.util.Calendar;
 import java.util.TimeZone;
 
@@ -87,71 +82,27 @@ public class NetServerBan {
 	}
 
 	/**
-	 * Export startDate to String
-	 * @return String (null if fails)
-	 */
-	public String exportStartDate() {
-		try {
-			ByteArrayOutputStream bout = new ByteArrayOutputStream();
-			ObjectOutputStream oos = new ObjectOutputStream(bout);
-			oos.writeObject(startDate);
-			byte[] bTemp = NetUtil.compressByteArray(bout.toByteArray());
-			return Base64.getEncoder().encodeToString(bTemp);
-		} catch (Exception e) {
-			log.error("Failed to export startDate", e);
-		}
-		return null;
-	}
-
-	/**
-	 * Import startDate from String
-	 * @param strInput String
-	 * @return true if success
-	 */
-	public boolean importStartDate(String strInput) {
-		try {
-			if(strInput.startsWith("GMT")) {
-				// GMT String
-				Calendar c = GeneralUtil.importCalendarString(strInput.substring(3));
-				if(c != null) {
-					startDate = c;
-					return true;
-				}
-			} else {
-				// Object Stream
-				byte[] bTemp = Base64.getDecoder().decode(strInput);
-				byte[] bTemp2 = NetUtil.decompressByteArray(bTemp);
-				ByteArrayInputStream bin = new ByteArrayInputStream(bTemp2);
-				ObjectInputStream oin = new ObjectInputStream(bin);
-				startDate = (Calendar)oin.readObject();
-				return true;
-			}
-		} catch (Exception e) {
-			log.error("Failed to import startDate", e);
-		}
-		return false;
-	}
-
-	/**
-	 * Export to String
+	 * Export to String. Format is addr;banLength;GMT<calendar>.
 	 * @return String
 	 */
 	public String exportString() {
-		//String strStartDate = exportStartDate();
 		String strTemp = GeneralUtil.exportCalendarString(startDate);
-		String strStartDate = "";
-		if(strTemp != null) strStartDate = "GMT" + strTemp;
+		String strStartDate = (strTemp != null) ? ("GMT" + strTemp) : "";
 		return addr + ";" + banLength + ";" + strStartDate;
 	}
 
 	/**
-	 * Import from String
+	 * Import from String produced by {@link #exportString()}.
 	 * @param strInput String
 	 */
 	public void importString(String strInput) {
 		String[] strArray = strInput.split(";");
 		addr = strArray[0];
 		banLength = Integer.parseInt(strArray[1]);
-		importStartDate(strArray[2]);
+		String dateField = strArray[2];
+		if (dateField.startsWith("GMT")) {
+			Calendar c = GeneralUtil.importCalendarString(dateField.substring(3));
+			if (c != null) startDate = c;
+		}
 	}
 }
