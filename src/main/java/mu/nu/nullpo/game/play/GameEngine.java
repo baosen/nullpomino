@@ -1793,12 +1793,6 @@ public class GameEngine {
 		if(gameActive && timerActive) {
 			statistics.time++;
 		}
-
-		/*
-		if(startTime > 0 && endTime == 0) {
-			statistics.gamerate = (float)(replayTimer / (0.00000006*(System.nanoTime() - startTime)));
-		}
-		*/
 	}
 
 	/**

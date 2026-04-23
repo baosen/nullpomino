@@ -2123,12 +2123,6 @@ public class Field implements Serializable {
 		setAllAttribute(Block.BLOCK_ATTRIBUTE_TEMP_MARK, false);
 		setAllAttribute(Block.BLOCK_ATTRIBUTE_CASCADE_FALL, false);
 
-		/*
-		for(int i = (hidden_height * -1); i < getHeightWithoutHurryupFloor(); i++) {
-			setLineFlag(i, false);
-		}
-		*/
-
 		return result;
 	}
 
