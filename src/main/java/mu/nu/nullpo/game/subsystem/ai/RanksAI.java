@@ -49,43 +49,17 @@ public class RanksAI extends DummyAI implements Runnable {
 
 	static Logger log = Logger.getLogger(RanksAI.class);
 
-
-	//public boolean bestHold;
-
-
-	//public int bestX;
-
-	//public int bestY;
-
-	//public int bestRt;
-
 	public int bestXSub;
-
 	public int bestYSub;
-
 	public int bestRtSub;
-
 	public int bestPts;
 
-
-	//public boolean forceHold;
-
 	public int delay;
-
 	public GameEngine gEngine;
-
 	public GameManager gManager;
-
 	public boolean thinkRequest;
-
 	public boolean thinking;
-
 	public int thinkDelay;
-
-	//public int thinkCurrentPieceNo;
-
-	//public int thinkLastPieceNo;
-
 	public volatile boolean threadRunning;
 
 	public Thread thread;
