@@ -115,50 +115,6 @@ public class GeneralUtil {
 	}
 
 	/**
-	 * Get date from a Calendar
-	 * @param c Calendar
-	 * @return Date String
-	 */
-	public static String getCalendarStringDate(Calendar c) {
-		DateFormat dfm = new SimpleDateFormat("yyyy-MM-dd");
-		return dfm.format(c.getTime());
-	}
-
-	/**
-	 * Get date from a Calendar with specific TimeZone
-	 * @param c Calendar
-	 * @param z TimeZone
-	 * @return Date String
-	 */
-	public static String getCalendarStringDate(Calendar c, TimeZone z) {
-		DateFormat dfm = new SimpleDateFormat("yyyy-MM-dd");
-		dfm.setTimeZone(z);
-		return dfm.format(c.getTime());
-	}
-
-	/**
-	 * Get time from a Calendar
-	 * @param c Calendar
-	 * @return Time String
-	 */
-	public static String getCalendarStringTime(Calendar c) {
-		DateFormat dfm = new SimpleDateFormat("HH:mm:ss");
-		return dfm.format(c.getTime());
-	}
-
-	/**
-	 * Get time from a Calendar with specific TimeZone
-	 * @param c Calendar
-	 * @param z TimeZone
-	 * @return Time String
-	 */
-	public static String getCalendarStringTime(Calendar c, TimeZone z) {
-		DateFormat dfm = new SimpleDateFormat("HH:mm:ss");
-		dfm.setTimeZone(z);
-		return dfm.format(c.getTime());
-	}
-
-	/**
 	 * Export a Calendar to a String for saving/sending. TimeZone is always GMT. Time is based on current time.
 	 * @return Calendar String (Each field is separated with a hyphen '-')
 	 */
@@ -197,23 +153,6 @@ public class GeneralUtil {
 		}
 
 		return c;
-	}
-
-	/**
-	 * Get the number of piece types can appear
-	 * @param pieceEnable Piece enable flags
-	 * @return Number of piece types can appear (In the normal Tetromino games, it returns 7)
-	 */
-	public static int getNumberOfPiecesCanAppear(boolean[] pieceEnable) {
-		if(pieceEnable == null) return Piece.PIECE_COUNT;
-
-		int count = 0;
-
-		for(int i = 0; i < pieceEnable.length; i++) {
-			if(pieceEnable[i]) count++;
-		}
-
-		return count;
 	}
 
 	/**
