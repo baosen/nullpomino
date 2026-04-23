@@ -40,7 +40,7 @@ import mu.nu.nullpo.util.GeneralUtil;
 /**
  * MARATHON Mode
  */
-public class MarathonMode extends NetDummyMode {
+public class MarathonMode extends AbstractMarathonMode {
 	/** Current version */
 	private static final int CURRENT_VERSION = 2;
 
@@ -56,95 +56,21 @@ public class MarathonMode extends NetDummyMode {
 	/** Line counts when game ending occurs */
 	private static final int tableGameClearLines[] = {150, 200, -1};
 
-	/** Number of entries in rankings */
-	private static final int RANKING_MAX = 10;
-
-	/** Number of ranking types */
-	private static final int RANKING_TYPE = 3;
-
 	/** Number of game types */
 	private static final int GAMETYPE_MAX = 3;
-
-	/** Most recent scoring event type constants */
-	private static final int EVENT_NONE = 0,
-							 EVENT_SINGLE = 1,
-							 EVENT_DOUBLE = 2,
-							 EVENT_TRIPLE = 3,
-							 EVENT_FOUR = 4,
-							 EVENT_TSPIN_ZERO_MINI = 5,
-							 EVENT_TSPIN_ZERO = 6,
-							 EVENT_TSPIN_SINGLE_MINI = 7,
-							 EVENT_TSPIN_SINGLE = 8,
-							 EVENT_TSPIN_DOUBLE_MINI = 9,
-							 EVENT_TSPIN_DOUBLE = 10,
-							 EVENT_TSPIN_TRIPLE = 11,
-							 EVENT_TSPIN_EZ = 12;
-
-	/** Most recent increase in score */
-	private int lastscore;
-
-	/** Time to display the most recent increase in score */
-	private int scgettime;
-
-	/** Most recent scoring event type */
-	private int lastevent;
-
-	/** True if most recent scoring event is a B2B */
-	private boolean lastb2b;
-
-	/** Combo count for most recent scoring event */
-	private int lastcombo;
-
-	/** Piece ID for most recent scoring event */
-	private int lastpiece;
-
-	/** Current BGM */
-	private int bgmlv;
-
-	/** Level at start time */
-	private int startlevel;
-
-	/** Flag for types of T-Spins allowed (0=none, 1=normal, 2=all spin) */
-	private int tspinEnableType;
-
-	/** Old flag for allowing T-Spins */
-	private boolean enableTSpin;
-
-	/** Flag for enabling wallkick T-Spins */
-	private boolean enableTSpinKick;
-
-	/** Spin check type (4Point or Immobile) */
-	private int spinCheckType;
-
-	/** Immobile EZ spin */
-	private boolean tspinEnableEZ;
-
-	/** Flag for enabling B2B */
-	private boolean enableB2B;
-
-	/** Flag for enabling combos */
-	private boolean enableCombo;
 
 	/** Game type */
 	private int goaltype;
 
-	/** Big */
-	private boolean big;
+	@Override
+	protected String getPropertyPrefix() {
+		return "marathon";
+	}
 
-	/** Version */
-	private int version;
-
-	/** Current round's ranking rank */
-	private int rankingRank;
-
-	/** Rankings' scores */
-	private int[][] rankingScore;
-
-	/** Rankings' line counts */
-	private int[][] rankingLines;
-
-	/** Rankings' times */
-	private int[][] rankingTime;
+	@Override
+	protected int getGameTypeCount() {
+		return GAMETYPE_MAX;
+	}
 
 	/*
 	 * Mode name
@@ -170,9 +96,7 @@ public class MarathonMode extends NetDummyMode {
 		bgmlv = 0;
 
 		rankingRank = -1;
-		rankingScore = new int[RANKING_TYPE][RANKING_MAX];
-		rankingLines = new int[RANKING_TYPE][RANKING_MAX];
-		rankingTime = new int[RANKING_TYPE][RANKING_MAX];
+		allocateRankingArrays();
 
 		netPlayerInit(engine, playerID);
 
@@ -667,21 +591,6 @@ public class MarathonMode extends NetDummyMode {
 	/*
 	 * Soft drop
 	 */
-	@Override
-	public void afterSoftDropFall(GameEngine engine, int playerID, int fall) {
-		engine.statistics.scoreFromSoftDrop += fall;
-		engine.statistics.score += fall;
-	}
-
-	/*
-	 * Hard drop
-	 */
-	@Override
-	public void afterHardDropFall(GameEngine engine, int playerID, int fall) {
-		engine.statistics.scoreFromHardDrop += fall * 2;
-		engine.statistics.score += fall * 2;
-	}
-
 	/*
 	 * Render results screen
 	 */
@@ -728,115 +637,21 @@ public class MarathonMode extends NetDummyMode {
 	}
 
 	/**
-	 * Load settings from property file
-	 * @param prop Property file
+	 * Load settings from property file. Delegates the shared keys to
+	 * AbstractMarathonMode.loadCoreSettings; reads the marathon-only
+	 * {@code gametype} alongside.
 	 */
 	protected void loadSetting(CustomProperties prop) {
-		startlevel = prop.getProperty("marathon.startlevel", 0);
-		tspinEnableType = prop.getProperty("marathon.tspinEnableType", 1);
-		enableTSpin = prop.getProperty("marathon.enableTSpin", true);
-		enableTSpinKick = prop.getProperty("marathon.enableTSpinKick", true);
-		spinCheckType = prop.getProperty("marathon.spinCheckType", 0);
-		tspinEnableEZ = prop.getProperty("marathon.tspinEnableEZ", false);
-		enableB2B = prop.getProperty("marathon.enableB2B", true);
-		enableCombo = prop.getProperty("marathon.enableCombo", true);
+		loadCoreSettings(prop);
 		goaltype = prop.getProperty("marathon.gametype", 0);
-		big = prop.getProperty("marathon.big", false);
-		version = prop.getProperty("marathon.version", 0);
 	}
 
 	/**
-	 * Save settings to property file
-	 * @param prop Property file
+	 * Save settings to property file. Mirror of {@link #loadSetting}.
 	 */
 	protected void saveSetting(CustomProperties prop) {
-		prop.setProperty("marathon.startlevel", startlevel);
-		prop.setProperty("marathon.tspinEnableType", tspinEnableType);
-		prop.setProperty("marathon.enableTSpin", enableTSpin);
-		prop.setProperty("marathon.enableTSpinKick", enableTSpinKick);
-		prop.setProperty("marathon.spinCheckType", spinCheckType);
-		prop.setProperty("marathon.tspinEnableEZ", tspinEnableEZ);
-		prop.setProperty("marathon.enableB2B", enableB2B);
-		prop.setProperty("marathon.enableCombo", enableCombo);
+		saveCoreSettings(prop);
 		prop.setProperty("marathon.gametype", goaltype);
-		prop.setProperty("marathon.big", big);
-		prop.setProperty("marathon.version", version);
-	}
-
-	/**
-	 * Read rankings from property file
-	 * @param prop Property file
-	 * @param ruleName Rule name
-	 */
-	@Override
-	protected void loadRanking(CustomProperties prop, String ruleName) {
-		for(int i = 0; i < RANKING_MAX; i++) {
-			for(int j = 0; j < GAMETYPE_MAX; j++) {
-				rankingScore[j][i] = prop.getProperty("marathon.ranking." + ruleName + "." + j + ".score." + i, 0);
-				rankingLines[j][i] = prop.getProperty("marathon.ranking." + ruleName + "." + j + ".lines." + i, 0);
-				rankingTime[j][i] = prop.getProperty("marathon.ranking." + ruleName + "." + j + ".time." + i, 0);
-			}
-		}
-	}
-
-	/**
-	 * Save rankings to property file
-	 * @param prop Property file
-	 * @param ruleName Rule name
-	 */
-	private void saveRanking(CustomProperties prop, String ruleName) {
-		for(int i = 0; i < RANKING_MAX; i++) {
-			for(int j = 0; j < GAMETYPE_MAX; j++) {
-				prop.setProperty("marathon.ranking." + ruleName + "." + j + ".score." + i, rankingScore[j][i]);
-				prop.setProperty("marathon.ranking." + ruleName + "." + j + ".lines." + i, rankingLines[j][i]);
-				prop.setProperty("marathon.ranking." + ruleName + "." + j + ".time." + i, rankingTime[j][i]);
-			}
-		}
-	}
-
-	/**
-	 * Update rankings
-	 * @param sc Score
-	 * @param li Lines
-	 * @param time Time
-	 */
-	private void updateRanking(int sc, int li, int time, int type) {
-		rankingRank = checkRanking(sc, li, time, type);
-
-		if(rankingRank != -1) {
-			// Shift down ranking entries
-			for(int i = RANKING_MAX - 1; i > rankingRank; i--) {
-				rankingScore[type][i] = rankingScore[type][i - 1];
-				rankingLines[type][i] = rankingLines[type][i - 1];
-				rankingTime[type][i] = rankingTime[type][i - 1];
-			}
-
-			// Add new data
-			rankingScore[type][rankingRank] = sc;
-			rankingLines[type][rankingRank] = li;
-			rankingTime[type][rankingRank] = time;
-		}
-	}
-
-	/**
-	 * Calculate ranking position
-	 * @param sc Score
-	 * @param li Lines
-	 * @param time Time
-	 * @return Position (-1 if unranked)
-	 */
-	private int checkRanking(int sc, int li, int time, int type) {
-		for(int i = 0; i < RANKING_MAX; i++) {
-			if(sc > rankingScore[type][i]) {
-				return i;
-			} else if((sc == rankingScore[type][i]) && (li > rankingLines[type][i])) {
-				return i;
-			} else if((sc == rankingScore[type][i]) && (li == rankingLines[type][i]) && (time < rankingTime[type][i])) {
-				return i;
-			}
-		}
-
-		return -1;
 	}
 
 	/**
