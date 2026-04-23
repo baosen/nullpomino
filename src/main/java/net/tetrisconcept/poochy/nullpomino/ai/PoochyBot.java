@@ -765,14 +765,6 @@ public class PoochyBot extends DummyAI implements Runnable {
 			fld = new Field(engine.field);
 		Piece pieceNow = engine.nowPieceObject;
 		Piece pieceHold = engine.holdPieceObject;
-		/*
-		Piece pieceNow = null;
-		if (engine.nowPieceObject != null)
-			pieceNow = new Piece(engine.nowPieceObject);
-		Piece pieceHold = null;
-		if (engine.holdPieceObject != null)
-			pieceHold = new Piece(engine.holdPieceObject);
-		*/
 		int nowX, nowY, nowRt;
 		if (inARE || pieceNow == null)
 		{
@@ -794,14 +786,6 @@ public class PoochyBot extends DummyAI implements Runnable {
 		pieceHold = checkOffset(pieceHold, engine);
 		if (pieceHold.id == pieceNow.id)
 			pieceHold = null;
-		/*
-		if (!pieceNow.offsetApplied)
-		pieceNow.applyOffsetArray(engine.ruleopt.pieceOffsetX[pieceNow.id],
-				engine.ruleopt.pieceOffsetY[pieceNow.id]);
-		if (!pieceHold.offsetApplied)
-		pieceHold.applyOffsetArray(engine.ruleopt.pieceOffsetX[pieceHold.id],
-				engine.ruleopt.pieceOffsetY[pieceHold.id]);
-		*/
 		boolean holdOK = engine.isHoldOK();
 
 		boolean canFloorKick = engine.nowUpwardWallkickCount < engine.ruleopt.rotateMaxUpwardWallkick
@@ -820,13 +804,6 @@ public class PoochyBot extends DummyAI implements Runnable {
 			move = 2;
 
 		for(int depth = 0; depth < MAX_THINK_DEPTH; depth++) {
-			/*
-			int dirCount = Piece.DIRECTION_COUNT;
-			if (pieceNow.id == Piece.PIECE_I || pieceNow.id == Piece.PIECE_S || pieceNow.id == Piece.PIECE_Z)
-				dirCount = 2;
-			else if (pieceNow.id == Piece.PIECE_O)
-				dirCount = 1;
-			*/
 			for(int rt = 0; rt < Piece.DIRECTION_COUNT; rt++) {
 				int tempY = nowY;
 				if (canFloorKickI && (rt&1) == 1)
@@ -1381,10 +1358,6 @@ public class PoochyBot extends DummyAI implements Runnable {
 		int holeAfter = fld.getHowManyHoles();
 
 		int rColPenalty = 1000;
-		/*
-		if (danger)
-			rColPenalty = 100;
-		*/
 		//Apply score penalty if I piece would overflow canyon,
 		//unless it would also uncover a hole.
 		if (!big && piece.id == Piece.PIECE_I && holeBefore <= holeAfter && xMax == width-1)
@@ -1450,13 +1423,6 @@ public class PoochyBot extends DummyAI implements Runnable {
 				else
 					pts += (holeBefore - holeAfter) * 400;
 			}
-
-			/*
-			if(lidAfter < lidBefore) {
-				// Add points for reduction in number blocks above holes
-				pts += (lidAfter - lidBefore) * 500;
-			}
-			*/
 
 			if((tspin) && (lines >= 1)) {
 				// T-Spin Bonus - retained from Basic AI, but should never actually trigger
@@ -1708,13 +1674,6 @@ public class PoochyBot extends DummyAI implements Runnable {
 			result[2] += 2;
 		if ((move >= 2) && ((depths[depths.length-1] - depths[depths.length-move-1])/move)%4 == 2)
 			result[1] += 2;
-		/*
-		if ((depthsBefore[width-2] - depthsBefore[width-3])%4 == 2 &&
-				(depthsBefore[width-1] - depthsBefore[width-2]) < 2)
-			valleysBefore[1]++;
-		valleysBefore[2] >>= 1;
-		valleysBefore[1] >>= 1;
-		*/
 		return result;
 	}
 	

@@ -232,12 +232,6 @@ public void setRank(int [] surface, int []surfaceDecodedWork){
 }
 
 public void scaleRanks(){
-	/*int pas =(Integer.MAX_VALUE-rankMin)/4;
-	 int n1=0;
-	 int n2=0;
-	 int n3=0;
-	 int n4=0;*/
-
 	for (int i=0;i<size;i++){
 		long newValue=((long)(ranks[i]-rankMin))*((long)(Integer.MAX_VALUE-rankMin));
 		newValue=newValue/(rankMax-rankMin);
