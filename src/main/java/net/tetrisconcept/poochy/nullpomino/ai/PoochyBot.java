@@ -842,7 +842,6 @@ public class PoochyBot extends DummyAI implements Runnable {
 							thinkSuccess = true;
 						}
 						//Check regardless
-						//if((depth > 0) || (bestPts <= 10) || (pieceNow.id == Piece.PIECE_T)) {
 						// Left shift
 						fld.copy(engine.field);
 						if(!pieceNow.checkCollision(x - move, y, rt, fld) && pieceNow.checkCollision(x - move, y - 1, rt, fld)) {
@@ -1050,7 +1049,6 @@ public class PoochyBot extends DummyAI implements Runnable {
 								thinkSuccess = true;
 							}
 							//Check regardless
-							//if((depth > 0) || (bestPts <= 10) || (pieceHold.id == Piece.PIECE_T)) {
 							// Left shift
 							fld.copy(engine.field);
 							if(!pieceHold.checkCollision(x - move, y, rt, fld) && pieceHold.checkCollision(x - move, y - 1, rt, fld)) {
