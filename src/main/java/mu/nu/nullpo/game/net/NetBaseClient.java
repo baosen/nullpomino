@@ -145,7 +145,6 @@ public class NetBaseClient extends Thread {
 
 			while( (threadRunning) && ((size = socket.getInputStream().read(buf)) > 0) ) {
 				String message = new String(buf, 0, size, "UTF-8");
-				//log.debug(message);
 
 				// The various processing depending on the received message
 				StringBuilder packetBuffer = new StringBuilder();

@@ -606,7 +606,6 @@ public class ComboRaceBot extends DummyAI implements Runnable {
 				try {
 					thinkBestPosition(gEngine, gEngine.playerID);
 					thinkComplete = true;
-					//log.debug("ComboRaceBot: thinkBestPosition completed successfully");
 				} catch (Throwable e) {
 					log.debug("ComboRaceBot: thinkBestPosition Failed", e);
 				}
