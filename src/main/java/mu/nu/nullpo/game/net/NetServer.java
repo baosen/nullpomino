@@ -1718,7 +1718,6 @@ public class NetServer {
 			float clientVer = Float.parseFloat(message[1]);
 			if(serverVer != clientVer) {
 				send(client, "observerloginfail\tDIFFERENT_VERSION\t" + serverVer + "\n");
-				//logout(client);
 				synchronized (this.pendingChanges) {
 				  this.pendingChanges.add(new ChangeRequest(client, ChangeRequest.DISCONNECT, 0));
 				}
@@ -1762,7 +1761,6 @@ public class NetServer {
 			float clientVer = Float.parseFloat(message[1]);
 			if(serverVer != clientVer) {
 				send(client, "loginfail\tDIFFERENT_VERSION\t" + serverVer + "\n");
-				//logout(client);
 				synchronized (this.pendingChanges) {
 				  this.pendingChanges.add(new ChangeRequest(client, ChangeRequest.DISCONNECT, 0));
 				}
@@ -1859,7 +1857,6 @@ public class NetServer {
 
 			// Load rating
 			getPlayerDataFromProperty(pInfo);
-			//log.info("Play:" + pInfo.playCount[0] + " Win:" + pInfo.winCount[0]);
 
 			// Success
 			playerInfoMap.put(client, pInfo);
@@ -1896,8 +1893,6 @@ public class NetServer {
 			str += "\n";
 
 			send(client, str);
-
-			//log.info("Sent preset message: " + str);
 
 			return;
 		}
@@ -2196,7 +2191,6 @@ public class NetServer {
 					String strRuleTemp = prop.encode("RuleData");
 					String strRuleData = NetUtil.compressString(strRuleTemp);
 					send(client, "rulelock\t" + strRuleData + "\n");
-					//log.info("rulelock\t" + strRuleData);
 				}
 
 				broadcastPlayerInfoUpdate(pInfo);
@@ -2338,7 +2332,6 @@ public class NetServer {
 						String strRuleTemp = prop.encode("RuleData");
 						String strRuleData = NetUtil.compressString(strRuleTemp);
 						send(client, "rulelock\t" + strRuleData + "\n");
-						//log.info("rulelock\t" + strRuleData);
 					}
 
 					// Map send
