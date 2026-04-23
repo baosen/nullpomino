@@ -227,7 +227,6 @@ public class ComboRaceBot extends DummyAI implements Runnable {
 			Field fld = engine.field;
 			boolean pieceTouchGround = pieceNow.checkCollision(nowX, nowY + 1, fld);
 			int nowType = pieceNow.id;
-			//int width = fld.getWidth();
 
 			int moveDir = 0; //-1 = left,  1 = right
 			int rotateDir = 0; //-1 = left,  1 = right

@@ -801,7 +801,6 @@ public class NetDummyMode extends AbstractMode implements NetLobbyListener {
 			int pieceX = Integer.parseInt(message[5]);
 			int pieceY = Integer.parseInt(message[6]);
 			int pieceDir = Integer.parseInt(message[7]);
-			//int pieceBottomY = Integer.parseInt(message[8]);
 			int pieceColor = Integer.parseInt(message[9]);
 			int pieceSkin = Integer.parseInt(message[10]);
 			boolean pieceBig = (message.length > 11) ? Boolean.parseBoolean(message[11]) : false;

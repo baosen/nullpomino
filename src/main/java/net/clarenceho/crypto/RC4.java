@@ -136,8 +136,6 @@ public class RC4 {
      */
     public byte[] rc4(byte[] buf) {
 
-        //int lx = this.x;
-        //int ly = this.y;
 
         int xorIndex;
         byte tmp;
@@ -216,8 +214,6 @@ public class RC4 {
      */
     public byte[] rc4(char[] buf) {
 
-        //int lx = this.x;
-        //int ly = this.y;
 
         int xorIndex;
         byte tmp;

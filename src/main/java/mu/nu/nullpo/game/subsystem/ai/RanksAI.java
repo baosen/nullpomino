@@ -522,7 +522,6 @@ public class RanksAI extends DummyAI implements Runnable {
 
 		 // Variable to temporarily store the score
 		 Score score;
-		 //int [] piecesCopy= Arrays.copyOf(pieces, pieces.length);
 		 int[] piecesCopy = new int[pieces.length];
 		 for(int i = 0; i < piecesCopy.length; i++) piecesCopy[i] = pieces[i];
 
