@@ -696,8 +696,6 @@ public class GameEngine {
 	 * READYPreviousInitialization
 	 */
 	public void init() {
-		//log.debug("GameEngine init() playerID:" + playerID);
-
 		field = null;
 		ctrl = new Controller();
 		statistics = new Statistics();
@@ -939,8 +937,6 @@ public class GameEngine {
 	 * End processing
 	 */
 	public void shutdown() {
-		//log.debug("GameEngine shutdown() playerID:" + playerID);
-
 		if(ai != null) ai.shutdown(this, playerID);
 		owner = null;
 		ruleopt = null;
@@ -1370,8 +1366,6 @@ public class GameEngine {
 					isLowSpot2 = true;
 				}
 
-				//log.debug(isHighSpot1 + "," + isHighSpot2 + "," + isLowSpot1 + "," + isLowSpot2);
-
 				if(isHighSpot1 && isHighSpot2 && (isLowSpot1 || isLowSpot2)) {
 					tspin = true;
 				} else if(!tspin && isLowSpot1 && isLowSpot2 && (isHighSpot1 || isHighSpot2)) {
@@ -1380,9 +1374,6 @@ public class GameEngine {
 				}
 			}
 		} else if(spinCheckType == SPINTYPE_IMMOBILE) {
-			//int y2 = y - 1;
-			//log.debug(x + "," + y2 + ":" + piece.checkCollision(x, y2, fld));
-
 			if( piece.checkCollision(x, y - 1, fld) &&
 					piece.checkCollision(x + 1, y, fld) &&
 					piece.checkCollision(x - 1, y, fld) ) {
@@ -1390,7 +1381,6 @@ public class GameEngine {
 				Field copyField = new Field(fld);
 				piece.placeToField(x, y, copyField);
 				if((piece.getHeight() + 1 != copyField.checkLineNoFlag()) && (kickused == true)) tspinmini = true;
-				//if((copyField.checkLineNoFlag() == 1) && (kickused == true)) tspinmini = true;
 			} else if((tspinEnableEZ) && (kickused == true)) {
 				tspin = true;
 				tspinez = true;
@@ -2141,7 +2131,6 @@ public class GameEngine {
 
 			// Precedingrotation
 			if(versionMajor < 7.5f) initialRotate(); //XXX: Weird active time IRS
-			//if( (getARE() != 0) && ((getARELine() != 0) || (version < 6.3f)) ) initialRotate();
 
 			if((speed.gravity > speed.denominator) && (speed.denominator > 0))
 				gcount = speed.gravity % speed.denominator;
@@ -2383,8 +2372,6 @@ public class GameEngine {
 								dasRepeat = true;
 								dasInstant = true;
 							}
-
-							//log.debug("Successful movement: move="+move);
 
 							if((ruleopt.lockresetMove == true) && (isMoveCountExceed() == false)) {
 								lockDelayNow = 0;
@@ -2782,7 +2769,6 @@ public class GameEngine {
 			int li = lineClearing;
 			if(big && bighalf)
 				li >>= 1;
-			//if(li > 4) li = 4;
 
 			if(tspin) {
 				playSE("tspin" + li);
