@@ -249,7 +249,6 @@ public class GameKeyDummy {
 	}
 
 	public static boolean isNavKey(int key) {
-		//return (key >= BUTTON_NAV_UP) && (key <= BUTTON_NAV_CANCEL);
 		return false;
 	}
 

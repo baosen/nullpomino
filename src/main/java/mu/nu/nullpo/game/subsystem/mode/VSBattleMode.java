@@ -956,7 +956,6 @@ public class VSBattleMode extends AbstractMode {
 				// Immobile EZ Spin
 				if(engine.tspinez) {
 					if(engine.useAllSpinBonus) {
-						//pts += 0;
 					} else {
 						pts += 1;
 					}
@@ -966,7 +965,6 @@ public class VSBattleMode extends AbstractMode {
 				else if(lines == 1) {
 					if(engine.tspinmini) {
 						if(engine.useAllSpinBonus) {
-							//pts += 0;
 						} else {
 							pts += 1;
 						}
