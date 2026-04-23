@@ -924,15 +924,6 @@ public class PracticeMode extends AbstractMode {
 			receiver.drawScoreFont(engine, playerID, 0, 4, "Y POS", EventReceiver.COLOR_BLUE);
 			receiver.drawScoreFont(engine, playerID, 0, 5, "" + engine.fldeditY);
 
-			// Put your field-checking algorithm test codes here
-			/*
-			if(engine.field != null) {
-				receiver.drawScoreFont(engine, playerID, 0, 7, "T-SLOT+LINECLEAR", EventReceiver.COLOR_BLUE);
-				receiver.drawScoreFont(engine, playerID, 0, 8, "" + engine.field.getTSlotLineClearAll(false));
-				receiver.drawScoreFont(engine, playerID, 0, 9, "HOLE", EventReceiver.COLOR_BLUE);
-				receiver.drawScoreFont(engine, playerID, 0, 10, "" + engine.field.getHowManyHoles());
-			}
-			*/
 		} else if((leveltype == LEVELTYPE_MANIA) || (leveltype == LEVELTYPE_MANIAPLUS)) {
 			//  levelTypesMANIAWhen
 

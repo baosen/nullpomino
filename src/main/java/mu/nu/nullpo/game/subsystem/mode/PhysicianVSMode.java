@@ -699,30 +699,6 @@ public class PhysicianVSMode extends AbstractMode {
 			receiver.drawDirectFont(engine, playerID, fldPosX + 152, fldPosY + 296, SPEED_NAME[speed[playerID]], SPEED_COLOR[speed[playerID]]);
 		}
 
-		/*
-		if(playerID == 0) {
-			receiver.drawScoreFont(engine, playerID, -1, 0, "PHYSICIAN VS", EventReceiver.COLOR_GREEN);
-
-			receiver.drawScoreFont(engine, playerID, -1, 2, "REST", EventReceiver.COLOR_PURPLE);
-			receiver.drawScoreFont(engine, playerID, -1, 3, "1P:", EventReceiver.COLOR_RED);
-			receiver.drawScoreFont(engine, playerID, 3, 3, String.valueOf(rest[0]), (rest[0] <= (flash[playerID] ? 1 : 3)));
-			receiver.drawScoreFont(engine, playerID, -1, 4, "2P:", EventReceiver.COLOR_BLUE);
-			receiver.drawScoreFont(engine, playerID, 3, 4, String.valueOf(rest[1]), (rest[1] <= (flash[playerID] ? 1 : 3)));
-
-			receiver.drawScoreFont(engine, playerID, -1, 6, "SPEED", EventReceiver.COLOR_GREEN);
-			receiver.drawScoreFont(engine, playerID, -1, 7, "1P:", EventReceiver.COLOR_RED);
-			receiver.drawScoreFont(engine, playerID,  3, 7, SPEED_NAME[speed[0]], SPEED_COLOR[speed[0]]);
-			receiver.drawScoreFont(engine, playerID, -1, 8, "2P:", EventReceiver.COLOR_BLUE);
-			receiver.drawScoreFont(engine, playerID,  3, 8, SPEED_NAME[speed[1]], SPEED_COLOR[speed[1]]);
-
-			receiver.drawScoreFont(engine, playerID, -1, 10, "SCORE", EventReceiver.COLOR_PURPLE);
-			receiver.drawScoreFont(engine, playerID, -1, 11, "1P: " + String.valueOf(score[0]), EventReceiver.COLOR_RED);
-			receiver.drawScoreFont(engine, playerID, -1, 12, "2P: " + String.valueOf(score[1]), EventReceiver.COLOR_BLUE);
-
-			receiver.drawScoreFont(engine, playerID, -1, 14, "TIME", EventReceiver.COLOR_GREEN);
-			receiver.drawScoreFont(engine, playerID, -1, 15, GeneralUtil.getTime(engine.statistics.time));
-		}
-		*/
 	}
 
 	/*

@@ -3292,23 +3292,9 @@ public class NetServer {
 						pInfo.winCountNow++;
 						broadcastPlayerInfoUpdate(pInfo);
 						roomInfo.playerSeatDead.addFirst(pInfo);
-
-						// Rated game
-						/*
-						if(roomInfo.rated) {
-							// TODO: Update ratings?
-							pInfo.winCount[roomInfo.style]++;
-							setPlayerDataToProperty(pInfo);
-						}
-						*/
 					}
 				}
 
-				/*
-				if(roomInfo.rated) {
-					writePlayerDataToFile();
-				}
-				*/
 			} else if((winner != null) && !roomInfo.singleplayer) {
 				// Winner is a player
 				roomInfo.playerSeatDead.addFirst(winner);
