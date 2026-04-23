@@ -196,7 +196,6 @@ public class BasicAI extends DummyAI implements Runnable {
 					//thinkBestPosition(engine, playerID);
 					thinkRequest = true;
 					//thinkCurrentPieceNo++;
-					//System.out.println("rethink c:" + thinkCurrentPieceNo + " l:" + thinkLastPieceNo);
 				} else {
 					// If you are able to reach
 					if((nowX == bestX) && (pieceTouchGround) && (rt == bestRt)) {
@@ -479,7 +478,6 @@ public class BasicAI extends DummyAI implements Runnable {
 
 		thinkLastPieceNo++;
 
-		//System.out.println("X:" + bestX + " Y:" + bestY + " R:" + bestRt + " H:" + bestHold + " Pts:" + bestPts);
 	}
 
 	/**

@@ -284,7 +284,6 @@ private int getRank(int [] surface,int [] surfaceDecodedWork){
 
 	for (int p=0;p<Piece.PIECE_STANDARD_COUNT;p++){
 		int rankForPiece=getRankPiece(surface,surfaceDecodedWork,p);
-		//System.out.println("piece :"+p+" rank : "+rankForPiece);
 		sum+=rankForPiece;
 	}
 	int result=0;

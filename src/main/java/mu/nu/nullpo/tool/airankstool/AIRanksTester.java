@@ -59,7 +59,6 @@ public class AIRanksTester {
 	private void playGame(){
 		init();
 		/*if ((pieces[0]==Piece.PIECE_S) || (pieces[0]==Piece.PIECE_Z) || (pieces[0]==Piece.PIECE_O)){
-			//System.out.println("Suchec !!");
 		}*/
 		int [] heights=new int[9];
 		int [] holdPiece={-1};
@@ -67,7 +66,6 @@ public class AIRanksTester {
 		while (!ranksAI.isGameOver()){
 			//holdOK[0]=false;
 			totalPieces++;
-			//System.out.println(Arrays.toString(heights));
 			ranksAI.playFictitiousMove(heights,pieces,holdPiece,holdOK);
 			incrementPieces();
 

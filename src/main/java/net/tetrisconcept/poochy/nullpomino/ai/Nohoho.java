@@ -260,7 +260,6 @@ public class Nohoho extends DummyAI implements Runnable {
 					thinkRequest.newRequest();
 					thinkComplete = false;
 					//thinkCurrentPieceNo++;
-					//System.out.println("rethink c:" + thinkCurrentPieceNo + " l:" + thinkLastPieceNo);
 					if (DEBUG_ALL) log.debug("Needs rethink - cannot reach desired position");
 				} else {
 					// If you are able to reach
@@ -528,7 +527,6 @@ public class Nohoho extends DummyAI implements Runnable {
 
 		thinkLastPieceNo++;
 
-		//System.out.println("X:" + bestX + " Y:" + bestY + " R:" + bestRt + " H:" + bestHold + " Pts:" + bestPts);
 	}
 
 	/**

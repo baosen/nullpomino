@@ -285,7 +285,6 @@ public class ComboRaceBot extends DummyAI implements Runnable {
 					//thinkBestPosition(engine, playerID);
 					thinkComplete = false;
 					//thinkCurrentPieceNo++;
-					//System.out.println("rethink c:" + thinkCurrentPieceNo + " l:" + thinkLastPieceNo);
 					if (DEBUG_ALL) log.debug("Needs rethink - cannot reach desired position");
 					thinkRequest.newRequest();
 				} else {
@@ -521,7 +520,6 @@ public class ComboRaceBot extends DummyAI implements Runnable {
 				bestRtSub = bestRt;
 		}
 
-		//System.out.println("X:" + bestX + " Y:" + bestY + " R:" + bestRt + " H:" + bestHold + " Pts:" + bestPts);
 	}
 
 	/**
@@ -1018,7 +1016,6 @@ public class ComboRaceBot extends DummyAI implements Runnable {
 					//thinkBestPosition(engine, playerID);
 					thinkComplete = false;
 					//thinkCurrentPieceNo++;
-					//System.out.println("rethink c:" + thinkCurrentPieceNo + " l:" + thinkLastPieceNo);
 					if (DEBUG_ALL) log.debug("Needs rethink - cannot reach desired position");
 					thinkRequest.newRequest();
 				} else {
