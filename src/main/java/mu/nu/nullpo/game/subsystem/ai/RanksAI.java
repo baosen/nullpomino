@@ -167,21 +167,12 @@ public class RanksAI extends DummyAI implements Runnable {
 		}
 		public int compareTo(Object o) {
 			Score otherScore=(Score) o;
-
-
-			/*if (this.distanceToSet!= otherScore.distanceToSet){
-				return this.distanceToSet<otherScore.distanceToSet?1:-1;
+			if (this.rankStacking != otherScore.rankStacking){
+				return this.rankStacking>otherScore.rankStacking?1:-1;
 			}
-			else {*/
-				if (this.rankStacking != otherScore.rankStacking){
-					return this.rankStacking>otherScore.rankStacking?1:-1;
-				}
-				//}
-
-
-				return 0;
-			}
+			return 0;
 		}
+	}
 
 	@Override
 	public String getName() {
@@ -816,14 +807,6 @@ public class RanksAI extends DummyAI implements Runnable {
 						 }
 					 }
 				 }
-
-				 // Uncomment to compare all the nodes of the tree between themselves, and not only the end nodes
-
-				  /*scoreCurrent=new Score();
-					scoreCurrent.computeScore(heightsWork);
-					if(scoreCurrent.compareTo(bestScore)>0) {
-						bestScore=scoreCurrent;
-					}*/
 
 				 // Returns the best score
 				 return bestScore;

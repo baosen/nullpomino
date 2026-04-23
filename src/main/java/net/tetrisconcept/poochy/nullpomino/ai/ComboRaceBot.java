@@ -237,11 +237,6 @@ public class ComboRaceBot extends DummyAI implements Runnable {
 			if((bestHold == true) && thinkComplete && engine.isHoldOK()) {
 				// Hold
 				input |= Controller.BUTTON_BIT_D;
-				/*
-				Piece holdPiece = engine.holdPieceObject;
-				if (holdPiece != null)
-					input |= calcIRS(holdPiece, engine);
-				*/
 			} else {
 				if (DEBUG_ALL) log.debug("bestX = " + bestX + ", nowX = " + nowX +
 						", bestY = " + bestY + ", nowY = " + nowY +
