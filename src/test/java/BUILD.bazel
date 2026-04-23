@@ -43,3 +43,9 @@ java_binary(
     main_class = "mu.nu.nullpo.testutil.BaselineRecorder",
     runtime_deps = [":testutil"],
 )
+
+java_binary(
+    name = "CorpusGenerator",
+    main_class = "mu.nu.nullpo.testutil.CorpusGenerator",
+    runtime_deps = [":testutil"],
+)
