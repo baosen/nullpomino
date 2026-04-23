@@ -36,6 +36,7 @@ import java.util.ArrayList;
 import mu.nu.nullpo.game.subsystem.ai.AIPlayer;
 import mu.nu.nullpo.gui.sdl.binding.SDL3;
 import mu.nu.nullpo.util.GeneralUtil;
+import mu.nu.nullpo.util.LegacyClassNames;
 
 import org.apache.log4j.Logger;
 
@@ -154,7 +155,7 @@ public class StateConfigAISelectSDL extends BaseStateSDL {
 			aiName[i] = "(INVALID)";
 
 			try {
-				aiClass = Class.forName(aiPath[i]);
+				aiClass = Class.forName(LegacyClassNames.translate(aiPath[i]));
 				aiObj = (AIPlayer) aiClass.newInstance();
 				aiName[i] = aiObj.getName();
 			} catch(ClassNotFoundException e) {

@@ -194,7 +194,7 @@ public class ModeManager {
 			GameMode modeObject;
 
 			try {
-				modeClass = Class.forName(name);
+				modeClass = Class.forName(LegacyClassNames.translate(name));
 				modeObject = (GameMode) modeClass.newInstance();
 				modelist.add(modeObject);
 			} catch(ClassNotFoundException e) {
@@ -229,7 +229,7 @@ public class ModeManager {
 				GameMode modeObject;
 
 				try {
-					modeClass = Class.forName(name);
+					modeClass = Class.forName(LegacyClassNames.translate(name));
 					modeObject = (GameMode) modeClass.newInstance();
 					modelist.add(modeObject);
 				} catch(ClassNotFoundException e) {
