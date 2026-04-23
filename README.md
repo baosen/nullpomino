@@ -22,7 +22,7 @@ frontend uses JNA to load `SDL3`, `SDL3_image`, `SDL3_mixer`, and
 #### Standalone tools
 
 Swing-based utility programs live at the repo root alongside the
-Java sources under `src/main/java/mu/nu/nullpo/tool/`:
+Java sources under `src/main/java/nullpomino/tool/`:
 
 - `./ruleeditor` — edit game rulesets
 - `./sequencer` — inspect replay piece sequences (by Zircean)

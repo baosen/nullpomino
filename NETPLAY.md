@@ -75,16 +75,16 @@ Anything not starting with `/` is sent as a normal chat message to the current c
 
 | Component | Path |
 |---|---|
-| Server | `src/main/java/mu/nu/nullpo/game/net/NetServer.java` |
-| Base client | `src/main/java/mu/nu/nullpo/game/net/NetBaseClient.java` |
-| Player client | `src/main/java/mu/nu/nullpo/game/net/NetPlayerClient.java` |
-| Observer client | `src/main/java/mu/nu/nullpo/game/net/NetObserverClient.java` |
-| Net utilities | `src/main/java/mu/nu/nullpo/game/net/NetUtil.java` |
-| Base netplay mode | `src/main/java/mu/nu/nullpo/game/net/NetDummyMode.java` |
-| VS mode base | `src/main/java/mu/nu/nullpo/game/net/NetDummyVSMode.java` |
-| Lobby session | `src/main/java/mu/nu/nullpo/gui/net/NetLobbyFrame.java` |
-| SDL lobby screens | `src/main/java/mu/nu/nullpo/gui/sdl/StateNet*SDL.java` |
-| SDL lobby widgets | `src/main/java/mu/nu/nullpo/gui/sdl/widget/` |
+| Server | `src/main/java/nullpomino/game/net/NetServer.java` |
+| Base client | `src/main/java/nullpomino/game/net/NetBaseClient.java` |
+| Player client | `src/main/java/nullpomino/game/net/NetPlayerClient.java` |
+| Observer client | `src/main/java/nullpomino/game/net/NetObserverClient.java` |
+| Net utilities | `src/main/java/nullpomino/game/net/NetUtil.java` |
+| Base netplay mode | `src/main/java/nullpomino/game/net/NetDummyMode.java` |
+| VS mode base | `src/main/java/nullpomino/game/net/NetDummyVSMode.java` |
+| Lobby session | `src/main/java/nullpomino/gui/net/NetLobbyFrame.java` |
+| SDL lobby screens | `src/main/java/nullpomino/gui/sdl/StateNet*SDL.java` |
+| SDL lobby widgets | `src/main/java/nullpomino/gui/sdl/widget/` |
 
 ## Server Setup
 
@@ -103,7 +103,7 @@ scripts\netserver.bat
 ./scripts/netserver 5000
 ```
 
-Both scripts invoke `java -cp ... mu.nu.nullpo.game.net.NetServer` with the port as an optional first argument. The project must be built first with `mvn package`.
+Both scripts invoke `java -cp ... nullpomino.game.net.NetServer` with the port as an optional first argument. The project must be built first with `mvn package`.
 
 ### Configuration
 

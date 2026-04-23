@@ -1,7 +1,7 @@
 package net.tetrisconcept.poochy.nullpomino.ai;
 
-import mu.nu.nullpo.game.component.Field;
-import mu.nu.nullpo.game.component.Piece;
+import nullpomino.game.component.Field;
+import nullpomino.game.component.Piece;
 
 public class PoochyBotDefensive extends PoochyBot {
 	/*
