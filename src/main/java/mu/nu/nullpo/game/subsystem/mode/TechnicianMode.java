@@ -302,7 +302,6 @@ public class TechnicianMode extends NetDummyMode {
 					if(engine.owner.backgroundStatus.bg > 19) engine.owner.backgroundStatus.bg = 19;
 					break;
 				case 2:
-					//enableTSpin = !enableTSpin;
 					tspinEnableType += change;
 					if(tspinEnableType < 0) tspinEnableType = 2;
 					if(tspinEnableType > 2) tspinEnableType = 0;

@@ -198,8 +198,6 @@ public class PhysicianVSMode extends AbstractMode {
 		owner = manager;
 		receiver = owner.receiver;
 
-		//garbage = new int[MAX_PLAYERS];
-		//garbageSent = new int[MAX_PLAYERS];
 
 		scgettime = new int[MAX_PLAYERS];
 		bgmno = 0;
@@ -214,7 +212,6 @@ public class PhysicianVSMode extends AbstractMode {
 		randMap = new Random();
 
 		lastscore = new int[MAX_PLAYERS];
-		//garbageAdd = new int[MAX_PLAYERS];
 		score = new int[MAX_PLAYERS];
 		hoverBlocks = new int[MAX_PLAYERS];
 		speed = new int[MAX_PLAYERS];

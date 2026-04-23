@@ -162,14 +162,11 @@ public class RanksIterator extends JDialog implements PropertyChangeListener,Act
 					e.printStackTrace();
 				}
 				if (cancelled){
-	        		//ranks=ranks.getRanksFrom();
 	        		//allIterations.cancelTask();
 	        		break;
 	        	}
 
         	ranks.scaleRanks();
-        	//lastError=ranks.getErrorPercentage();
-        	//lastErrorMax=ranks.getMaxError();
         	if (n!=numIterations-1){
         	  ranksFrom=ranks.getRanksFrom();
         	  ranksFrom.setRanksFrom(ranks);
@@ -212,7 +209,6 @@ public class RanksIterator extends JDialog implements PropertyChangeListener,Act
 
            dispose();
 
-        	//new RanksResult(parent,ranks,100,false);
 
         }
 
@@ -248,7 +244,6 @@ public RanksIterator(JFrame parent,String inputFile,String outputFile, int numIt
 	setVisible(true);
 
 
-	//size=ranks.getSize();
 	int numProcessors=Runtime.getRuntime().availableProcessors();
 
 	allIterations =this.new AllIterations(numProcessors,this,inputFile);
