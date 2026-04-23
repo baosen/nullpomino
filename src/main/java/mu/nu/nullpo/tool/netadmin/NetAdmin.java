@@ -1049,7 +1049,6 @@ public class NetAdmin extends JFrame implements ActionListener, NetMessageListen
 	 * Received a message
 	 */
 	public void netOnMessage(NetBaseClient client, String[] message) throws IOException {
-		//if(message.length > 0) log.debug(message[0]);
 
 		// Welcome
 		if(message[0].equals("welcome")) {

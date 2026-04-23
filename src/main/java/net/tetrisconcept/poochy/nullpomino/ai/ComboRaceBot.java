@@ -247,7 +247,6 @@ public class ComboRaceBot extends DummyAI implements Runnable {
 				if (rt != bestRt)
 				{
 					boolean best180 = Math.abs(rt - bestRt) == 2;
-					//if (DEBUG_ALL) log.debug("Case 1 rotation");
 
 					int lrot = engine.getRotateDirection(-1);
 					int rrot = engine.getRotateDirection(1);
@@ -933,7 +932,6 @@ public class ComboRaceBot extends DummyAI implements Runnable {
 				{
 					int rotateDir = 0; //-1 = left,  1 = right, 2 = 180
 					boolean best180 = Math.abs(rt - bestRt) == 2;
-					//if (DEBUG_ALL) log.debug("Case 1 rotation");
 
 					int lrot = engine.getRotateDirection(-1);
 					int rrot = engine.getRotateDirection(1);
@@ -971,7 +969,6 @@ public class ComboRaceBot extends DummyAI implements Runnable {
 				if (rt != bestRtSub)
 				{
 					boolean best180 = Math.abs(rt - bestRtSub) == 2;
-					//if (DEBUG_ALL) log.debug("Case 1 rotation");
 
 					int lrot = engine.getRotateDirection(-1);
 					int rrot = engine.getRotateDirection(1);
