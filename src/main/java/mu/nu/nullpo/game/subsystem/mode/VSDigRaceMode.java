@@ -456,12 +456,6 @@ public class VSDigRaceMode extends AbstractMode {
 		if((remainLines <=  4) && (remainLines > 0)) fontColor = EventReceiver.COLOR_RED;
 
 		int enemyRemainLines = Math.max(0, getRemainGarbageLines(owner.engine[enemyID], enemyID));
-		/*
-		int fontColorEnemy = EventReceiver.COLOR_WHITE;
-		if((enemyRemainLines <= 14) && (enemyRemainLines > 0)) fontColorEnemy = EventReceiver.COLOR_YELLOW;
-		if((enemyRemainLines <=  8) && (enemyRemainLines > 0)) fontColorEnemy = EventReceiver.COLOR_ORANGE;
-		if((enemyRemainLines <=  4) && (enemyRemainLines > 0)) fontColorEnemy = EventReceiver.COLOR_RED;
-		*/
 
 		// Lines left (bottom)
 		String strLines = String.valueOf(remainLines);
