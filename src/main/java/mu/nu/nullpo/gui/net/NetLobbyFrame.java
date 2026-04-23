@@ -36,11 +36,8 @@ import java.io.FileReader;
 import java.io.FilenameFilter;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
 import java.util.Arrays;
 import java.util.Calendar;
-import java.util.GregorianCalendar;
 import java.util.LinkedList;
 import java.util.Locale;
 import java.util.concurrent.ConcurrentLinkedQueue;
@@ -855,18 +852,6 @@ public class NetLobbyFrame implements NetMessageListener {
 		return result == null ? norm : result;
 	}
 
-	public String getCurrentTimeAsString() {
-		return new SimpleDateFormat("HH:mm:ss").format(new GregorianCalendar().getTime());
-	}
-
-	public String getTimeAsString(Calendar cal) { return getTimeAsString(cal, false); }
-
-	public String getTimeAsString(Calendar cal, boolean showDate) {
-		if(cal == null) return showDate ? "????-??-?? ??:??:??" : "??:??:??";
-		DateFormat dfm = new SimpleDateFormat(showDate ? "yyyy-MM-dd HH:mm:ss" : "HH:mm:ss");
-		return dfm.format(cal.getTime());
-	}
-
 	public String getPlayerNameWithTripCode(NetPlayerInfo pInfo) { return convTripCode(pInfo.strName); }
 
 	public String convTripCode(String s) {
@@ -924,16 +909,6 @@ public class NetLobbyFrame implements NetMessageListener {
 		LinkedList<RuleEntry> sub = new LinkedList<RuleEntry>();
 		for(RuleEntry e : ruleEntries) if(e.style == style) sub.add(e);
 		return sub;
-	}
-
-	public String[] extractRuleListFromRuleEntries(int style) {
-		LinkedList<RuleEntry> sub = getSubsetEntries(style);
-		String[] result = new String[sub.size()];
-		for(int i = 0; i < sub.size(); i++) {
-			RuleEntry e = sub.get(i);
-			result[i] = e.rulename + " (" + e.filename + ")";
-		}
-		return result;
 	}
 
 	/** Default room-list row formatter — used by the SDL lobby's room table. */
