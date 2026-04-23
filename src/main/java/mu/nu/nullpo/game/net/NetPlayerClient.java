@@ -267,20 +267,6 @@ public class NetPlayerClient extends NetBaseClient {
 	}
 
 	/**
-	 * SpecifiedNameOfPlayerGet the
-	 * @param name Name
-	 * @return SpecifiedNameOfPlayerInformation(There were nonull)
-	 */
-	public NetPlayerInfo getPlayerInfoByName(String name) {
-		for(NetPlayerInfo pInfo: playerInfoList) {
-			if((pInfo != null) && name.equals(pInfo.strName)) {
-				return pInfo;
-			}
-		}
-		return null;
-	}
-
-	/**
 	 * SpecifiedIDOfPlayerGet the
 	 * @param uid ID
 	 * @return SpecifiedIDOfPlayerInformation(There were nonull)
@@ -345,13 +331,6 @@ public class NetPlayerClient extends NetBaseClient {
 	 */
 	public NetRoomInfo getCurrentRoomInfo() {
 		return getRoomInfo(getCurrentRoomID());
-	}
-
-	/**
-	 * @return ServerVersion
-	 */
-	public float getServerVersion() {
-		return serverVersion;
 	}
 
 	/**

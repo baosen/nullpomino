@@ -483,17 +483,6 @@ public class NetRoomInfo implements Serializable {
 	}
 
 	/**
-	 * SpecifiedPlayerI will find out if you are in the game seat
-	 *
-	 * @param pInfo
-	 *            Player
-	 * @return SpecifiedPlayerIf you&#39;re in the game seattrue
-	 */
-	public boolean isPlayerInSeat(NetPlayerInfo pInfo) {
-		return playerSeat.contains(pInfo);
-	}
-
-	/**
 	 * SpecifiedPlayerWhat is numberI look at the game you are in the seat of
 	 *
 	 * @param pInfo

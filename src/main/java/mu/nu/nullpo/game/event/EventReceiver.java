@@ -704,29 +704,6 @@ public class EventReceiver {
 	public void drawSpeedMeter(GameEngine engine, int playerID, int x, int y, int s) {}
 
 	/**
-	 * Draw a block
-	 * @param engine GameEngine
-	 * @param playerID Player ID
-	 * @param x X-coordinate
-	 * @param y Y-coordinate
-	 * @param color Block color
-	 * @param skin Block skin
-	 * @param bone When true, it will use [] (bone) blocks
-	 * @param darkness Brightness
-	 * @param alpha Alpha-blending
-	 * @param scale Size (0.5f, 1.0f, 2.0f)
-	 */
-	public void drawSingleBlock(GameEngine engine, int playerID, int x, int y, int color, int skin, boolean bone, float darkness, float alpha, float scale) {}
-
-	/**
-	 * Is TTF font available?
-	 * @return true if you can use TTF font routines.
-	 */
-	public boolean isTTFSupport() {
-		return false;
-	}
-
-	/**
 	 * Get key name by button ID
 	 * @param engine GameEngine
 	 * @param btnID Button ID
@@ -749,21 +726,6 @@ public class EventReceiver {
 		else if (engine.displaysize == 1)
 			blksize = 32;
 		return engine.fieldHeight * blksize;
-	}
-
-	/**
-	 * Get width of block image.
-	 * @param engine GameEngine
-	 * @param playerID Player ID
-	 * @return Width of block image
-	 */
-	public int getBlockGraphicsWidth(GameEngine engine, int playerID) {
-		if (engine.displaysize == -1)
-			return 8;
-		else if (engine.displaysize == 1)
-			return 32;
-		else
-			return 16;
 	}
 
 	/**

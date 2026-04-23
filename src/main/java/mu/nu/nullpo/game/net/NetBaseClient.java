@@ -310,13 +310,6 @@ public class NetBaseClient extends Thread {
 	}
 
 	/**
-	 * Stop the Ping timer task
-	 */
-	public void stopPingTask() {
-		if(timerPing != null) timerPing.cancel();
-	}
-
-	/**
 	 * Ping task
 	 */
 	protected class PingTask extends TimerTask {
