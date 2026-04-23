@@ -1,11 +1,11 @@
 package net.tetrisconcept.poochy.nullpomino.ai;
 
-import mu.nu.nullpo.game.component.Field;
-import mu.nu.nullpo.game.component.Piece;
-import mu.nu.nullpo.game.component.WallkickResult;
-import mu.nu.nullpo.game.play.GameEngine;
-import mu.nu.nullpo.game.subsystem.ai.DummyAI;
-import mu.nu.nullpo.game.subsystem.wallkick.StandardWallkick;
+import nullpomino.game.component.Field;
+import nullpomino.game.component.Piece;
+import nullpomino.game.component.WallkickResult;
+import nullpomino.game.play.GameEngine;
+import nullpomino.game.subsystem.ai.DummyAI;
+import nullpomino.game.subsystem.wallkick.StandardWallkick;
 import net.omegaboshi.nullpomino.game.subsystem.randomizer.BagNoSZORandomizer;
 
 import org.apache.log4j.Logger;

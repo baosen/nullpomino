@@ -10,48 +10,48 @@ filegroup(
 
 java_binary(
     name = "NullpoMinoSDL",
-    main_class = "mu.nu.nullpo.gui.sdl.NullpoMinoSDL",
+    main_class = "nullpomino.gui.sdl.NullpoMinoSDL",
     runtime_deps = [_LIB],
 )
 
 java_binary(
     name = "NetServer",
-    main_class = "mu.nu.nullpo.game.net.NetServer",
+    main_class = "nullpomino.game.net.NetServer",
     runtime_deps = [_LIB],
 )
 
 java_binary(
     name = "NetAdmin",
-    main_class = "mu.nu.nullpo.tool.netadmin.NetAdmin",
+    main_class = "nullpomino.tool.netadmin.NetAdmin",
     runtime_deps = [_LIB],
 )
 
 java_binary(
     name = "AIRanksTool",
-    main_class = "mu.nu.nullpo.tool.airankstool.AIRanksTool",
+    main_class = "nullpomino.tool.airankstool.AIRanksTool",
     runtime_deps = [_LIB],
 )
 
 java_binary(
     name = "Sequencer",
-    main_class = "mu.nu.nullpo.tool.sequencer.Sequencer",
+    main_class = "nullpomino.tool.sequencer.Sequencer",
     runtime_deps = [_LIB],
 )
 
 java_binary(
     name = "RuleEditor",
-    main_class = "mu.nu.nullpo.tool.ruleeditor.RuleEditor",
+    main_class = "nullpomino.tool.ruleeditor.RuleEditor",
     runtime_deps = [_LIB],
 )
 
 java_binary(
     name = "MusicListEditor",
-    main_class = "mu.nu.nullpo.tool.musiclisteditor.MusicListEditor",
+    main_class = "nullpomino.tool.musiclisteditor.MusicListEditor",
     runtime_deps = [_LIB],
 )
 
 java_binary(
     name = "AIRanksTester",
-    main_class = "mu.nu.nullpo.tool.airankstool.AIRanksTester",
+    main_class = "nullpomino.tool.airankstool.AIRanksTester",
     runtime_deps = [_LIB],
 )

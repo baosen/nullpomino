@@ -1,6 +1,6 @@
 package net.omegaboshi.nullpomino.game.subsystem.randomizer;
 
-import mu.nu.nullpo.game.component.Piece;
+import nullpomino.game.component.Piece;
 
 public class History6RollsRandomizer extends LimitedHistoryRandomizer {
 
