@@ -413,60 +413,6 @@ public class ComboRaceBot extends DummyAI implements Runnable {
 		if (DEBUG_ALL) log.debug(result);
 	}
 
-	/*
-	public int calcIRS(Piece piece, GameEngine engine)
-	{
-		piece = checkOffset(piece, engine);
-		int nextType = piece.id;
-		Field fld = engine.field;
-		int spawnX = engine.getSpawnPosX(fld, piece);
-		SpeedParam speed = engine.speed;
-		boolean gravityHigh = speed.gravity > speed.denominator;
-		int width = fld.getWidth();
-		int midColumnX = (width/2)-1;
-		if(Math.abs(spawnX - bestX) == 1)
-		{
-			if (bestRt == 1)
-			{
-				if (engine.ruleopt.rotateButtonDefaultRight)
-					return Controller.BUTTON_BIT_A;
-				else
-					return Controller.BUTTON_BIT_B;
-			}
-			else if (bestRt == 3)
-			{
-				if (engine.ruleopt.rotateButtonDefaultRight)
-					return Controller.BUTTON_BIT_B;
-				else
-					return Controller.BUTTON_BIT_A;
-			}
-		}
-		else if (nextType == Piece.PIECE_L)
-		{
-			if (gravityHigh && fld.getHighestBlockY(midColumnX-1) <
-					Math.min(fld.getHighestBlockY(midColumnX), fld.getHighestBlockY(midColumnX+1)))
-				return 0;
-			else if (engine.ruleopt.rotateButtonDefaultRight)
-				return Controller.BUTTON_BIT_B;
-			else
-				return Controller.BUTTON_BIT_A;
-		}
-		else if (nextType == Piece.PIECE_J)
-		{
-			if (gravityHigh && fld.getHighestBlockY(midColumnX+1) <
-					Math.min(fld.getHighestBlockY(midColumnX), fld.getHighestBlockY(midColumnX-1)))
-				return 0;
-			if (engine.ruleopt.rotateButtonDefaultRight)
-				return Controller.BUTTON_BIT_A;
-			else
-				return Controller.BUTTON_BIT_B;
-		}
-		//else if (nextType == Piece.PIECE_I)
-		//	return Controller.BUTTON_BIT_A;
-		return 0;
-	}
-	*/
-
 	/**
 	 * Search for the best choice
 	 * @param engine The GameEngine that owns this AI
