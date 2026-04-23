@@ -160,7 +160,6 @@ public class MarathonMode extends AbstractMarathonMode {
 					engine.owner.backgroundStatus.bg = startlevel;
 					break;
 				case 1:
-					//enableTSpin = !enableTSpin;
 					tspinEnableType += change;
 					if(tspinEnableType < 0) tspinEnableType = 2;
 					if(tspinEnableType > 2) tspinEnableType = 0;

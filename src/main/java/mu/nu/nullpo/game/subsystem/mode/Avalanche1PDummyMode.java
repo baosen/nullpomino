@@ -172,7 +172,6 @@ public abstract class Avalanche1PDummyMode extends AbstractMode {
 		zenKeshi = false;
 		garbageSent = 0;
 		garbageAdd = 0;
-		//firstExtra = false;
 
 		zenKeshiCount = 0;
 		engine.statistics.maxChain = 0;

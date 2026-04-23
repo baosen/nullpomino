@@ -302,7 +302,6 @@ public class UltraMode extends NetDummyMode {
 					if(goaltype > GOALTYPE_MAX - 1) goaltype = 0;
 					break;
 				case 10:
-					//enableTSpin = !enableTSpin;
 					tspinEnableType += change;
 					if(tspinEnableType < 0) tspinEnableType = 2;
 					if(tspinEnableType > 2) tspinEnableType = 0;

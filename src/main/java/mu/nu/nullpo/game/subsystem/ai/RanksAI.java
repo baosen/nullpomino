@@ -462,10 +462,8 @@ public class RanksAI extends DummyAI implements Runnable {
 		 bestYSub=bestY;
 
 		 // If we cant fit the pieces anymore without creating holes, try hold
-		 //bestHold=false;
 		 if (bestScore.rankStacking==0)
 			 threadRunning=false;
-		 	 //bestHold=true;
 		 thinkLastPieceNo++;
 		 log.debug("nowX : "+engine.nowPieceX+" X:" + bestX + " Y:" + bestY + " R:" + bestRt + " H:" + bestHold + " Pts:" + bestScore);
 
