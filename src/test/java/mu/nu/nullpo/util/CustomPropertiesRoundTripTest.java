@@ -36,6 +36,13 @@ class CustomPropertiesRoundTripTest {
 	}
 
 	@Test
+	void doubleRoundTrip() {
+		CustomProperties p = new CustomProperties();
+		p.setProperty("d", 3.141592653589793);
+		assertEquals(3.141592653589793, p.getProperty("d", 0.0));
+	}
+
+	@Test
 	void booleanRoundTrip() {
 		CustomProperties p = new CustomProperties();
 		p.setProperty("b", true);
