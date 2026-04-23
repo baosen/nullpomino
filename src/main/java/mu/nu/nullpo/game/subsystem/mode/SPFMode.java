@@ -706,11 +706,6 @@ public class SPFMode extends AbstractMode {
 					if(dropMap[playerID] >= DROP_PATTERNS[dropSet[playerID]].length) dropMap[playerID] = 0;
 					loadDropMapPreview(engine, playerID, DROP_PATTERNS[dropSet[playerID]][dropMap[playerID]]);
 					break;
-				/*
-				case 20:
-					big[playerID] = !big[playerID];
-					break;
-					*/
 				}
 			}
 
