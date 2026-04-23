@@ -290,7 +290,6 @@ public class PoochyBot extends DummyAI implements Runnable {
 			boolean sync = false; //true = delay either rotate or movement for synchro move if needed.
 
 			//SpeedParam speed = engine.speed;
-			//boolean lowSpeed = speed.gravity < speed.denominator;
 			boolean canFloorKick = engine.nowUpwardWallkickCount < engine.ruleopt.rotateMaxUpwardWallkick
 				|| engine.ruleopt.rotateMaxUpwardWallkick < 0;
 
@@ -1219,7 +1218,6 @@ public class PoochyBot extends DummyAI implements Runnable {
 
 		// Number of holes and valleys needing an I piece (before placement)
 		int holeBefore = fld.getHowManyHoles();
-		//int lidBefore = fld.getHowManyLidAboveHoles();
 
 		//Check number of holes in rightmost column
 		int testY = fld.getHiddenHeight();
@@ -1352,7 +1350,6 @@ public class PoochyBot extends DummyAI implements Runnable {
 
 		if( (lines < 4) && (!allclear) ) {
 			// Number of holes and valleys needing an I piece (after placement)
-			//int lidAfter = fld.getHowManyLidAboveHoles();
 
 			//Find valleys that need an I, J, or L.
 			int[] valleysAfter = calcValleys(depthsAfter, move);
