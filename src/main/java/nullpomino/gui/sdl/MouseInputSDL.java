@@ -18,6 +18,9 @@ public class MouseInputSDL extends MouseInputDummy {
 	}
 
 	public void update() {
+		prevMouseX = mouseX;
+		prevMouseY = mouseY;
+
 		FloatByReference mx = new FloatByReference();
 		FloatByReference my = new FloatByReference();
 		int buttons = SDL3.INSTANCE.SDL_GetMouseState(mx, my);

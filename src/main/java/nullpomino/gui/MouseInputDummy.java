@@ -3,12 +3,21 @@ package nullpomino.gui;
 public abstract class MouseInputDummy {
 	protected int mouseX;
 	protected int mouseY;
+	protected int prevMouseX;
+	protected int prevMouseY;
 	protected int[] mousePressed;
 	protected int mouseBackPressed;
 
 	protected MouseInputDummy() {
 		mousePressed = new int[3];
 		mouseBackPressed = 0;
+		prevMouseX = -1;
+		prevMouseY = -1;
+	}
+
+	/** True when the logical-coordinate mouse position changed since the last update. */
+	public boolean isMouseMoved() {
+		return mouseX != prevMouseX || mouseY != prevMouseY;
 	}
 
 	public boolean isMouseClicked() {
