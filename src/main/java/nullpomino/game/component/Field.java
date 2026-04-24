@@ -2356,13 +2356,13 @@ public class Field implements Serializable {
 	 * @return a String representing the row
 	 */
 	public String rowToString(Block[] row){
-		String strResult = "";
+		StringBuilder strResult = new StringBuilder(row.length);
 
 		for(int x = 0; x < row.length; x++) {
-			strResult += row[x];
+			strResult.append(row[x].blockToChar());
 		}
 
-		return strResult;
+		return strResult.toString();
 	}
 
 	/**
