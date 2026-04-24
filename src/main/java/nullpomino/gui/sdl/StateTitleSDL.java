@@ -45,7 +45,7 @@ public class StateTitleSDL extends DummyMenuChooseStateSDL {
 
 	public StateTitleSDL () {
 		maxCursor = 4;
-		minChoiceY = 4;
+		minChoiceY = 3;
 	}
 
 	/*
@@ -71,9 +71,9 @@ public class StateTitleSDL extends DummyMenuChooseStateSDL {
 
 		NormalFontSDL.printFontGrid(1, 1, "NULLPOMINO", NormalFontSDL.COLOR_ORANGE);
 
-		NormalFontSDL.printFontGrid(1, 4 + cursor, "b", NormalFontSDL.COLOR_RED);
+		NormalFontSDL.printFontGrid(1, 3 + cursor, "b", NormalFontSDL.COLOR_RED);
 
-		renderChoices(2, 4, CHOICES);
+		renderChoices(2, 3, CHOICES);
 
 		NormalFontSDL.printTTFFont(16, 432, NullpoMinoSDL.getUIText(UI_TEXT[cursor]));
 
