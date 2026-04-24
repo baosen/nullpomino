@@ -1129,6 +1129,11 @@ public class NetDummyVSMode extends NetDummyMode {
 	 */
 	@Override
 	public void renderResult(GameEngine engine, int playerID) {
+		// Empty seats (isVisible=false in a 2-max room) must not paint anything —
+		// otherwise their small-display RESULT panels overlay the real two fields.
+		// Matches the guards in renderSetting / renderGameOver / renderExcellent.
+		if(!engine.isVisible) return;
+
 		float scale = 1.0f;
 		if(engine.displaysize == -1) scale = 0.5f;
 
