@@ -871,6 +871,9 @@ public class NetVSBattleMode extends NetDummyVSMode {
 	@Override
 	public void renderResult(GameEngine engine, int playerID) {
 		super.renderResult(engine, playerID);
+		// super returns without drawing when the engine is invisible (empty seat).
+		// Skip the extra stats panel here too so we don't paint ATTACK/LINE/... for non-players.
+		if(!engine.isVisible) return;
 
 		float scale = 1.0f;
 		if(engine.displaysize == -1) scale = 0.5f;
