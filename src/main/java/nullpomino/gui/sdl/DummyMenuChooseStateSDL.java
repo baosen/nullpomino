@@ -111,6 +111,24 @@ public abstract class DummyMenuChooseStateSDL extends BaseStateSDL {
 	protected boolean updateMouseInput()
 	{
 		MouseInputSDL.mouseInput.update();
+
+		// Hover: when the pointer moves, slide the cursor to the row it's
+		// over. Gated on isMouseMoved() so a stationary pointer can't fight
+		// keyboard / wheel navigation — if the mouse stays put while the
+		// user arrows around, the cursor stays wherever they put it.
+		// Doesn't return true, so hover never confirms; confirmation stays
+		// bound to click / BUTTON_A below.
+		if (MouseInputSDL.mouseInput.isMouseMoved())
+		{
+			int y = MouseInputSDL.mouseInput.getMouseY() >> 4;
+			int newCursor = y - minChoiceY;
+			if (newCursor >= 0 && newCursor <= maxCursor && newCursor != cursor)
+			{
+				cursor = newCursor;
+				ResourceHolderSDL.soundManager.play("cursor");
+			}
+		}
+
 		if (MouseInputSDL.mouseInput.isMouseClicked())
 		{
 			int y = MouseInputSDL.mouseInput.getMouseY() >> 4;
