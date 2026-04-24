@@ -135,6 +135,21 @@ public abstract class DummyMenuScrollStateSDL extends DummyMenuChooseStateSDL {
 			sbDragging = false;
 		}
 
+		// Hover: move the cursor to whichever row the pointer is over when
+		// the pointer actually moves. Constrained to the list column (left
+		// of the scrollbar) and to visible rows; leaves minentry alone so
+		// the list never scrolls just because the mouse wandered. Suppressed
+		// while dragging the thumb (the early return above) so drag-scroll
+		// can't nudge the cursor as rows slide under the pointer.
+		if (MouseInputSDL.mouseInput.isMouseMoved() && list != null
+				&& x < SB_TEXT_X-1 && y >= 3 && y <= 2 + pageHeight) {
+			int newCursor = y - 3 + minentry;
+			if (newCursor < list.length && newCursor != cursor) {
+				cursor = newCursor;
+				ResourceHolderSDL.soundManager.play("cursor");
+			}
+		}
+
 		if (x == SB_TEXT_X && (clicked || MouseInputSDL.mouseInput.isMenuRepeatLeft()) && y >= 3 && y <= 2 + pageHeight)
 		{
 			int maxentry = minentry + pageHeight - 1;
