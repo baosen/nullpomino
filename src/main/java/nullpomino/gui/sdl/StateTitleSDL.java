@@ -70,13 +70,15 @@ public class StateTitleSDL extends DummyMenuChooseStateSDL {
 		SDL3.INSTANCE.SDL_RenderTexture(NullpoMinoSDL.renderer, ResourceHolderSDL.imgTitle, null, null);
 
 		NormalFontSDL.printFontGrid(1, 1, "NULLPOMINO", NormalFontSDL.COLOR_ORANGE);
-		NormalFontSDL.printFontGrid(1, 2, "VERSION " + GameManager.getVersionString(), NormalFontSDL.COLOR_ORANGE);
 
 		NormalFontSDL.printFontGrid(1, 4 + cursor, "b", NormalFontSDL.COLOR_RED);
 
 		renderChoices(2, 4, CHOICES);
 
 		NormalFontSDL.printTTFFont(16, 432, NullpoMinoSDL.getUIText(UI_TEXT[cursor]));
+
+		String versionString = GameManager.getVersionString();
+		NormalFontSDL.printFontGrid(40 - versionString.length() - 1, 28, versionString, NormalFontSDL.COLOR_ORANGE);
 	}
 
 	@Override
