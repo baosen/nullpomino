@@ -72,14 +72,6 @@ public abstract class DummyMenuChooseStateSDL extends BaseStateSDL {
 				ResourceHolderSDL.soundManager.play("cursor");
 			}
 
-			// Scroll wheel: one entry per wheel step, wrapping like the arrow keys
-			int wheel = mouseEnabled ? (int) NullpoMinoSDL.mouseWheelDelta : 0;
-			if(wheel != 0) {
-				int cycle = maxCursor + 1;
-				cursor = ((cursor - wheel) % cycle + cycle) % cycle;
-				ResourceHolderSDL.soundManager.play("cursor");
-			}
-
 			// Page Up / Page Down
 			int pageEvent = PageNavigationSDL.checkPageEvent();
 			if(pageEvent != 0) onPageEvent(pageEvent);

@@ -150,6 +150,28 @@ public abstract class DummyMenuScrollStateSDL extends DummyMenuChooseStateSDL {
 			}
 		}
 
+		// Wheel: slide the viewport (minentry) without dragging the cursor
+		// item-by-item. Selection stays put as long as it remains visible;
+		// only if a scroll would push it off-screen do we clamp it back
+		// into the window (same clamp the scrollbar-thumb drag uses). When
+		// the list fits entirely on one page there's nothing to scroll, so
+		// the wheel is a no-op. Positive wheelY is "away from user" which
+		// scrolls up in SDL convention, hence `minentry - wheel`.
+		int wheel = (int) NullpoMinoSDL.mouseWheelDelta;
+		if (wheel != 0 && list != null && list.length > pageHeight) {
+			int maxMinentry = list.length - pageHeight;
+			int newMin = minentry - wheel;
+			if (newMin < 0) newMin = 0;
+			if (newMin > maxMinentry) newMin = maxMinentry;
+			if (newMin != minentry) {
+				ResourceHolderSDL.soundManager.play("cursor");
+				minentry = newMin;
+				if (cursor < minentry) cursor = minentry;
+				int maxentry = minentry + pageHeight - 1;
+				if (cursor > maxentry) cursor = maxentry;
+			}
+		}
+
 		if (x == SB_TEXT_X && (clicked || MouseInputSDL.mouseInput.isMenuRepeatLeft()) && y >= 3 && y <= 2 + pageHeight)
 		{
 			int maxentry = minentry + pageHeight - 1;
