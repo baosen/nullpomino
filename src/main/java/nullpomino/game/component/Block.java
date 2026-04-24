@@ -335,6 +335,23 @@ public class Block implements Serializable {
 	}
 
 	/**
+	 * @return the character representing the color of this block
+	 */
+	public char blockToChar(){
+		//'0'-'9','A'-'Z' represent colors 0-35.
+		//Colors beyond that would follow the ASCII table starting at '['.
+		if(color >= 10) {
+			return (char)('A' + (color - 10));
+		}
+		return (char)('0' + Math.max(0, color));
+	}
+
+	@Override
+	public String toString(){
+		return ""+blockToChar();
+	}
+
+	/**
 	 * @param c A character representing a block
 	 * @return The int representing the block's color
 	 */
