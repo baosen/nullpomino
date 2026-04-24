@@ -100,4 +100,33 @@ class FieldCharacterisationTest {
 		assertEquals(2, f.checkLine());
 		assertEquals(2, f.getLines());
 	}
+
+	/**
+	 * Regression test: Block.toString / blockToChar are load-bearing for netplay.
+	 * Field.rowToString feeds fieldToString, which is sent over the wire. If the
+	 * per-block char encoding ever breaks, the opponent's field gets decoded into
+	 * gem / gold-square / silver-square colors (color >= 9) and renders as an
+	 * Avalanche-looking mess instead of normal tetromino blocks.
+	 */
+	@Test
+	void fieldToStringRoundTripPreservesTetrominoColors() {
+		Field src = newField();
+		int[] colors = {
+			Block.BLOCK_COLOR_GRAY, Block.BLOCK_COLOR_RED, Block.BLOCK_COLOR_ORANGE,
+			Block.BLOCK_COLOR_YELLOW, Block.BLOCK_COLOR_GREEN, Block.BLOCK_COLOR_CYAN,
+			Block.BLOCK_COLOR_BLUE, Block.BLOCK_COLOR_PURPLE
+		};
+		for (int i = 0; i < colors.length; i++) {
+			src.setBlockColor(i, 19, colors[i]);
+		}
+		String encoded = src.fieldToString();
+
+		Field dst = newField();
+		dst.stringToField(encoded);
+
+		for (int i = 0; i < colors.length; i++) {
+			assertEquals(colors[i], dst.getBlockColor(i, 19),
+				"round-trip must preserve color at (" + i + ",19); encoded=" + encoded);
+		}
+	}
 }
