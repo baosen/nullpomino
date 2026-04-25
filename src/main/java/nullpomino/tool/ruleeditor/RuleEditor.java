@@ -11,11 +11,9 @@ import java.awt.event.ActionListener;
 import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
 import java.awt.image.BufferedImage;
-import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
-import java.io.FileReader;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -52,6 +50,7 @@ import nullpomino.game.component.Block;
 import nullpomino.game.component.Piece;
 import nullpomino.game.component.RuleOptions;
 import nullpomino.game.play.GameEngine;
+import nullpomino.tool.SwingToolUtil;
 import nullpomino.util.CustomProperties;
 
 import org.apache.log4j.Logger;
@@ -648,8 +647,8 @@ public class RuleEditor extends JFrame implements ActionListener {
 		JLabel lRandomizer = new JLabel(getUIText("Basic_Randomizer"));
 		pRandomizer.add(lRandomizer);
 
-		vectorRandomizer = getTextFileVector("config/list/randomizer.lst");
-		comboboxRandomizer = new JComboBox(createShortStringVector(vectorRandomizer));
+		vectorRandomizer = SwingToolUtil.readNonEmptyLines("config/list/randomizer.lst");
+		comboboxRandomizer = new JComboBox(SwingToolUtil.shortClassNames(vectorRandomizer));
 		comboboxRandomizer.setPreferredSize(new Dimension(200, 30));
 		pRandomizer.add(comboboxRandomizer);
 
@@ -836,8 +835,8 @@ public class RuleEditor extends JFrame implements ActionListener {
 		JLabel lWallkickSystem = new JLabel(getUIText("Rotate_WallkickSystem"));
 		pWallkickSystem.add(lWallkickSystem);
 
-		vectorWallkickSystem = getTextFileVector("config/list/wallkick.lst");
-		comboboxWallkickSystem = new JComboBox(createShortStringVector(vectorWallkickSystem));
+		vectorWallkickSystem = SwingToolUtil.readNonEmptyLines("config/list/wallkick.lst");
+		comboboxWallkickSystem = new JComboBox(SwingToolUtil.shortClassNames(vectorWallkickSystem));
 		comboboxWallkickSystem.setPreferredSize(new Dimension(200, 30));
 		pWallkickSystem.add(comboboxWallkickSystem);
 
@@ -1341,74 +1340,12 @@ public class RuleEditor extends JFrame implements ActionListener {
 	 * @return Resource FilesURL
 	 */
 	public URL getURL(String str) {
-		URL url = null;
-
 		try {
-			char sep = File.separator.charAt(0);
-			String file = str.replace(sep, '/');
-
-			// Note:http://www.asahi-net.or.jp/~DP8T-ASM/java/tips/HowToMakeURL.html
-			if(file.charAt(0) != '/') {
-				String dir = System.getProperty("user.dir");
-				dir = dir.replace(sep, '/') + '/';
-				if(dir.charAt(0) != '/') {
-					dir = "/" + dir;
-				}
-				file = dir + file;
-			}
-			url = new URL("file", "", file);
+			return SwingToolUtil.fileUrl(str);
 		} catch(MalformedURLException e) {
 			log.warn("Invalid URL:" + str, e);
 			return null;
 		}
-
-		return url;
-	}
-
-	/**
-	 * Read the text fileVector&lt;String&gt;Add to
-	 * @param filename Filename
-	 * @return I read a text fileVector&lt;String&gt;
-	 */
-	public Vector<String> getTextFileVector(String filename) {
-		Vector<String> vec = new Vector<String>();
-
-		try {
-			BufferedReader in = new BufferedReader(new FileReader(filename));
-
-			while(true) {
-				String str = in.readLine();
-				if((str == null) || (str.length() <= 0)) break;
-				vec.add(str);
-			}
-		} catch (IOException e) {}
-
-		return vec;
-	}
-
-	/**
-	 * SpecificVector&lt;String&gt;Only the target was removed from the last dot symbolVector&lt;String&gt;Create
-	 * @param vecSrc OriginalVector&lt;String&gt;
-	 * @return Was processedVector&lt;String&gt;
-	 */
-	public Vector<String> createShortStringVector(Vector<String> vecSrc) {
-		Vector<String> vec = new Vector<String>();
-
-		for(int i = 0; i < vecSrc.size(); i++) {
-			String str = vecSrc.get(i);
-			int last = str.lastIndexOf('.');
-
-			String newStr = "";
-			if(last != -1) {
-				newStr = str.substring(last + 1);
-			} else {
-				newStr = str;
-			}
-
-			vec.add(newStr);
-		}
-
-		return vec;
 	}
 
 	/**

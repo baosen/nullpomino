@@ -9,11 +9,9 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
-import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.Locale;
@@ -42,6 +40,7 @@ import org.apache.log4j.Logger;
 import org.apache.log4j.PropertyConfigurator;
 
 import nullpomino.game.component.Piece;
+import nullpomino.tool.SwingToolUtil;
 import nullpomino.util.CustomProperties;
 import nullpomino.util.LegacyClassNames;
 import net.omegaboshi.nullpomino.game.subsystem.randomizer.Randomizer;
@@ -259,8 +258,8 @@ public class Sequencer extends JFrame implements ActionListener {
 		JLabel lRandomizer = new JLabel(getUIText("Option_Randomizer"));
 		pRandomizer.add(lRandomizer);
 
-		vectorRandomizer = getTextFileVector("config/list/randomizer.lst");
-		comboboxRandomizer = new JComboBox(createShortStringVector(vectorRandomizer));
+		vectorRandomizer = SwingToolUtil.readNonEmptyLines("config/list/randomizer.lst");
+		comboboxRandomizer = new JComboBox(SwingToolUtil.shortClassNames(vectorRandomizer));
 		comboboxRandomizer.setPreferredSize(new Dimension(200, 30));
 		comboboxRandomizer.setSelectedIndex(0);
 		pRandomizer.add(comboboxRandomizer);
@@ -286,48 +285,10 @@ public class Sequencer extends JFrame implements ActionListener {
 
 	}
 
-	public Vector<String> getTextFileVector(String filename) {
-		Vector<String> vec = new Vector<String>();
-
-		try {
-			BufferedReader in = new BufferedReader(new FileReader(filename));
-
-			while(true) {
-				String str = in.readLine();
-				if((str == null) || (str.length() <= 0)) break;
-				vec.add(str);
-			}
-		} catch (IOException e) {}
-
-		return vec;
-	}
-
-	public Vector<String> createShortStringVector(Vector<String> vecSrc) {
-		Vector<String> vec = new Vector<String>();
-
-		for(int i = 0; i < vecSrc.size(); i++) {
-			vec.add(createShortString(vecSrc.get(i)));
-		}
-
-		return vec;
-	}
-
-	public String createShortString(String str) {
-		int last = str.lastIndexOf('.');
-
-		String newStr = "";
-		if(last != -1) {
-			newStr = str.substring(last + 1);
-		} else {
-			newStr = str;
-		}
-		return newStr;
-	}
-
 	public void readReplayToUI(CustomProperties prop, int playerID) {
 		txtfldSeed.setText(String.valueOf(Long.parseLong(prop.getProperty(
 			playerID+".replay.randSeed", "0"),16)));
-		comboboxRandomizer.setSelectedItem(createShortString(prop.getProperty(
+		comboboxRandomizer.setSelectedItem(SwingToolUtil.shortClassName(prop.getProperty(
 			playerID+".ruleopt.strRandomizer",null)));
 	}
 
