@@ -134,6 +134,9 @@ public class ToolVSMapEditMode extends AbstractMode {
 	 */
 	@Override
 	public void playerInit(GameEngine engine, int playerID) {
+		menuTime = 0;
+		menuCursor = 0;
+
 		engine.framecolor = GameEngine.FRAME_COLOR_GRAY;
 		engine.createFieldIfNeeded();
 		loadAllMaps(nowMapSetID);

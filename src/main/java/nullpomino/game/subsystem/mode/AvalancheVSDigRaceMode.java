@@ -74,6 +74,10 @@ public class AvalancheVSDigRaceMode extends AvalancheVSDummyMode {
 	public void playerInit(GameEngine engine, int playerID) {
 		owner = engine.owner;
 		receiver = engine.owner.receiver;
+		menuTime = 0;
+		menuCursor = 0;
+		menuTime = 0;
+		menuCursor = 0;
 		useMap[playerID] = false;
 		feverMapSet[playerID] = -1;
 

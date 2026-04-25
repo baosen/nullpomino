@@ -90,6 +90,10 @@ public class AvalancheMode extends Avalanche1PDummyMode {
 	public void playerInit(GameEngine engine, int playerID) {
 		owner = engine.owner;
 		receiver = engine.owner.receiver;
+		menuTime = 0;
+		menuCursor = 0;
+		menuTime = 0;
+		menuCursor = 0;
 
 		showChains = true;
 
