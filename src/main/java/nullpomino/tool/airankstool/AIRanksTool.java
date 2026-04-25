@@ -274,7 +274,7 @@ public class AIRanksTool extends JFrame implements ActionListener {
 
 		//Speed Limit
 		speedLimitLabel=new JLabel(getUIText("Main_Speed_Limit_Label"));
-		speedLimitField=new JFormattedTextField(new Integer(speedLimit));
+		speedLimitField=new JFormattedTextField(Integer.valueOf(speedLimit));
 		speedLimitField.setToolTipText(getUIText("Main_Speed_Limit_Tip"));
 
 		// Save config Button

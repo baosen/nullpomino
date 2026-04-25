@@ -1838,7 +1838,7 @@ public class Field implements Serializable {
 					if (!flag)
 						continue;
 					if (count == size)
-						lineColorsCleared.add(new Integer(lineColor));
+						lineColorsCleared.add(lineColor);
 					x = j;
 					y = i;
 					blockColor = lineColor;
