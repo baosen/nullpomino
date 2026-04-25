@@ -249,6 +249,9 @@ public class NetDummyVSMode extends NetDummyMode {
 	 */
 	@Override
 	public void playerInit(GameEngine engine, int playerID) {
+		menuTime = 0;
+		menuCursor = 0;
+
 		netPlayerInit(engine, playerID);
 	}
 

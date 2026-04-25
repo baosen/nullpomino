@@ -79,6 +79,10 @@ public class AvalancheVSBombBattleMode extends AvalancheVSDummyMode {
 	public void playerInit(GameEngine engine, int playerID) {
 		owner = engine.owner;
 		receiver = engine.owner.receiver;
+		menuTime = 0;
+		menuCursor = 0;
+		menuTime = 0;
+		menuCursor = 0;
 		if(engine.owner.replayMode == false) {
 			loadOtherSetting(engine, engine.owner.modeConfig);
 			loadPreset(engine, engine.owner.modeConfig, -1 - playerID, "bombbattle");

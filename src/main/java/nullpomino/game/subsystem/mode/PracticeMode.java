@@ -219,6 +219,10 @@ public class PracticeMode extends AbstractMode {
 
 		owner = engine.owner;
 		receiver = engine.owner.receiver;
+		menuTime = 0;
+		menuCursor = 0;
+		menuTime = 0;
+		menuCursor = 0;
 		goal = 0;
 		lastgoal = 0;
 		lastscore = 0;

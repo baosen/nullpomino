@@ -409,6 +409,9 @@ public class VSBattleMode extends AbstractMode {
 	 */
 	@Override
 	public void playerInit(GameEngine engine, int playerID) {
+		menuTime = 0;
+		menuCursor = 0;
+
 		if(playerID == 1) {
 			engine.randSeed = owner.engine[0].randSeed;
 			engine.random = new Random(owner.engine[0].randSeed);
