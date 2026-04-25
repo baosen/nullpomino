@@ -1,1 +1,2 @@
 - Use `jj` for VCS.
+- Make atomic conventional commits with descriptive body.
