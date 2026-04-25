@@ -3,4 +3,4 @@ cd "$(dirname "$0")"
 bazel build //:NullpoMinoSDL_deploy.jar || exit $?
 
 export LD_LIBRARY_PATH="/usr/local/lib:$LD_LIBRARY_PATH"
-java -Djna.library.path=/usr/local/lib:/usr/lib/x86_64-linux-gnu -jar bazel-bin/NullpoMinoSDL_deploy.jar "$@"
+java --enable-native-access=ALL-UNNAMED -Djna.library.path=/usr/local/lib:/usr/lib/x86_64-linux-gnu -jar bazel-bin/NullpoMinoSDL_deploy.jar "$@"

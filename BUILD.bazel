@@ -11,6 +11,7 @@ filegroup(
 java_binary(
     name = "NullpoMinoSDL",
     main_class = "nullpomino.gui.sdl.NullpoMinoSDL",
+    jvm_flags = ["--enable-native-access=ALL-UNNAMED"],
     runtime_deps = [_LIB],
 )
 
