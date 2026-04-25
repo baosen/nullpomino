@@ -29,6 +29,12 @@ public class StateConfigKeyboardSDL extends BaseStateSDL {
 	/** Frame counter */
 	protected int frame;
 
+	/** Frames UP has been held in menu mode (for cursor auto-repeat) */
+	protected int upInputState;
+
+	/** Frames DOWN has been held in menu mode (for cursor auto-repeat) */
+	protected int downInputState;
+
 	/** Nunber of frames left in key-set mode */
 	protected int keyConfigRestFrame;
 
@@ -44,6 +50,8 @@ public class StateConfigKeyboardSDL extends BaseStateSDL {
 	protected void reset() {
 		keynum = 0;
 		frame = 0;
+		upInputState = 0;
+		downInputState = 0;
 		keyConfigRestFrame = 0;
 
 		keymap = new int[NUM_KEYS];
@@ -159,21 +167,26 @@ public class StateConfigKeyboardSDL extends BaseStateSDL {
 					ResourceHolderSDL.soundManager.play("change");
 					keymap[keynum] = key;
 					frame = 0;
+					upInputState = 0;
+					downInputState = 0;
 					keyConfigRestFrame = 0;
 					return;
 				}
 
 				keyConfigRestFrame--;
 			} else {
-				// Menu mode
-				if(NullpoMinoSDL.keyPressedState[SDLConstants.SDL_SCANCODE_UP]) {
-					frame = 0;
+				// Menu mode: track UP/DOWN hold for auto-repeat
+				if(NullpoMinoSDL.keyPressedState[SDLConstants.SDL_SCANCODE_UP]) upInputState++;
+				else upInputState = 0;
+				if(NullpoMinoSDL.keyPressedState[SDLConstants.SDL_SCANCODE_DOWN]) downInputState++;
+				else downInputState = 0;
+
+				if(isMenuRepeatKey(upInputState)) {
 					ResourceHolderSDL.soundManager.play("cursor");
 					keynum--;
 					if(keynum < 0) keynum = NUM_KEYS;
 				}
-				if(NullpoMinoSDL.keyPressedState[SDLConstants.SDL_SCANCODE_DOWN]) {
-					frame = 0;
+				if(isMenuRepeatKey(downInputState)) {
 					ResourceHolderSDL.soundManager.play("cursor");
 					keynum++;
 					if(keynum > NUM_KEYS) keynum = 0;
@@ -221,12 +234,21 @@ public class StateConfigKeyboardSDL extends BaseStateSDL {
 					return;
 				}
 			}
+		} else {
+			// Re-arm so the first frame after the entry gate reopens registers as a fresh press
+			upInputState = 0;
+			downInputState = 0;
 		}
 
 		for(int i = 0; i < NullpoMinoSDL.keyPressedState.length; i++) {
 			previousKeyPressedState[i] = NullpoMinoSDL.keyPressedState[i];
 		}
 		frame++;
+	}
+
+	/** Mirrors {@link nullpomino.gui.GameKeyDummy#isMenuRepeatKey} for raw scancode polling. */
+	private static boolean isMenuRepeatKey(int holdFrames) {
+		return (holdFrames == 1) || ((holdFrames >= 25) && (holdFrames % 3 == 0));
 	}
 
 	/*
