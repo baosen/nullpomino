@@ -65,7 +65,7 @@ public class StateReplaySelectSDL extends DummyMenuScrollStateSDL {
 
 		String[] list = dir.list(filter);
 
-		if(!System.getProperty("os.name").startsWith("Windows")) {
+		if(list != null && !System.getProperty("os.name").startsWith("Windows")) {
 			// Sort if not windows
 			Arrays.sort(list);
 		}
