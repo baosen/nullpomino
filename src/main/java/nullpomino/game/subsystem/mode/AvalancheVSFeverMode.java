@@ -98,8 +98,6 @@ public class AvalancheVSFeverMode extends AvalancheVSDummyMode {
 		receiver = engine.owner.receiver;
 		menuTime = 0;
 		menuCursor = 0;
-		menuTime = 0;
-		menuCursor = 0;
 		ojamaCounterMode[playerID] = OJAMA_COUNTER_FEVER;
 
 		ojama[playerID] = 0;

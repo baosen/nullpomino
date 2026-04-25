@@ -155,8 +155,6 @@ public class DigChallengeMode extends NetDummyMode {
 		receiver = engine.owner.receiver;
 		menuTime = 0;
 		menuCursor = 0;
-		menuTime = 0;
-		menuCursor = 0;
 
 		lastscore = 0;
 		lastbonusscore = 0;

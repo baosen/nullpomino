@@ -241,8 +241,6 @@ public class AvalancheVSSPFMode extends AvalancheVSDummyMode {
 		receiver = engine.owner.receiver;
 		menuTime = 0;
 		menuCursor = 0;
-		menuTime = 0;
-		menuCursor = 0;
 		numColors[playerID] = 4;
 		ojamaHard[playerID] = 4;
 		countdownDecremented[playerID] = true;

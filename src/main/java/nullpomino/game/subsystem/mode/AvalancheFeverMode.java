@@ -118,8 +118,6 @@ public class AvalancheFeverMode extends Avalanche1PDummyMode {
 		receiver = engine.owner.receiver;
 		menuTime = 0;
 		menuCursor = 0;
-		menuTime = 0;
-		menuCursor = 0;
 
 		cleared = false;
 		boardsPlayed = 0;

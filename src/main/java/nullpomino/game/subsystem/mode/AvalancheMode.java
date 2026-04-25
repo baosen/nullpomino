@@ -92,8 +92,6 @@ public class AvalancheMode extends Avalanche1PDummyMode {
 		receiver = engine.owner.receiver;
 		menuTime = 0;
 		menuCursor = 0;
-		menuTime = 0;
-		menuCursor = 0;
 
 		showChains = true;
 
