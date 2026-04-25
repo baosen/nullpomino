@@ -1,6 +1,5 @@
-/*
-    Copyright (c) 2010, NullNoname — see LICENSE for details.
-*/
+// SPDX-FileCopyrightText: 2010 NullNoname
+// SPDX-License-Identifier: BSD-3-Clause
 package nullpomino.gui.sdl;
 
 import nullpomino.game.play.GameEngine;
