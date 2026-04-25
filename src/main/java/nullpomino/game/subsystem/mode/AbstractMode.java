@@ -4,7 +4,6 @@ package nullpomino.game.subsystem.mode;
 
 import java.util.ArrayList;
 
-import nullpomino.game.component.Block;
 import nullpomino.game.component.Controller;
 import nullpomino.game.event.EventReceiver;
 import nullpomino.game.play.GameEngine;
@@ -65,27 +64,6 @@ public abstract class AbstractMode implements GameMode {
 			item.save(-1, prop, propName);
 	}
 
-	public void pieceLocked(GameEngine engine, int playerID, int lines) {
-	}
-
-	public boolean lineClearEnd(GameEngine engine, int playerID) {
-		return false;
-	}
-
-	public void afterHardDropFall(GameEngine engine, int playerID, int fall) {
-	}
-
-	public void afterSoftDropFall(GameEngine engine, int playerID, int fall) {
-	}
-
-	public void blockBreak(GameEngine engine, int playerID, int x, int y, Block blk) {
-	}
-
-	public void calcScore(GameEngine engine, int playerID, int lines) {
-	}
-
-	public void fieldEditExit(GameEngine engine, int playerID) {}
-
 	public String getName() {
 		return "DUMMY";
 	}
@@ -98,105 +76,12 @@ public abstract class AbstractMode implements GameMode {
 		return GameEngine.GAMESTYLE_TETROMINO;
 	}
 
-	public void loadReplay(GameEngine engine, int playerID, CustomProperties prop) {
-	}
-
 	public void modeInit(GameManager manager) {
-	}
-
-	public boolean onARE(GameEngine engine, int playerID) {
-		return false;
-	}
-
-	public boolean onCustom(GameEngine engine, int playerID) {
-		return false;
-	}
-
-	public boolean onEndingStart(GameEngine engine, int playerID) {
-		return false;
-	}
-
-	public boolean onExcellent(GameEngine engine, int playerID) {
-		return false;
-	}
-
-	public void onFirst(GameEngine engine, int playerID) {
-	}
-
-	public boolean onGameOver(GameEngine engine, int playerID) {
-		return false;
-	}
-
-	public void onLast(GameEngine engine, int playerID) {
-	}
-
-	public boolean onLineClear(GameEngine engine, int playerID) {
-		return false;
-	}
-
-	public boolean onLockFlash(GameEngine engine, int playerID) {
-		return false;
-	}
-
-	public boolean onMove(GameEngine engine, int playerID) {
-		return false;
-	}
-
-	public boolean onReady(GameEngine engine, int playerID) {
-		return false;
-	}
-
-	public boolean onResult(GameEngine engine, int playerID) {
-		return false;
-	}
-
-	public boolean onSetting(GameEngine engine, int playerID) {
-		return false;
-	}
-
-	public boolean onFieldEdit(GameEngine engine, int playerID) {
-		return false;
 	}
 
 	public void playerInit(GameEngine engine, int playerID) {
 		owner = engine.owner;
 		receiver = engine.owner.receiver;
-	}
-
-	public void renderARE(GameEngine engine, int playerID) {
-	}
-
-	public void renderCustom(GameEngine engine, int playerID) {
-	}
-
-	public void renderEndingStart(GameEngine engine, int playerID) {
-	}
-
-	public void renderExcellent(GameEngine engine, int playerID) {
-	}
-
-	public void renderFirst(GameEngine engine, int playerID) {
-	}
-
-	public void renderGameOver(GameEngine engine, int playerID) {
-	}
-
-	public void renderLast(GameEngine engine, int playerID) {
-	}
-
-	public void renderLineClear(GameEngine engine, int playerID) {
-	}
-
-	public void renderLockFlash(GameEngine engine, int playerID) {
-	}
-
-	public void renderMove(GameEngine engine, int playerID) {
-	}
-
-	public void renderReady(GameEngine engine, int playerID) {
-	}
-
-	public void renderResult(GameEngine engine, int playerID) {
 	}
 
 	public void renderSetting(GameEngine engine, int playerID) {
@@ -214,32 +99,6 @@ public abstract class AbstractMode implements GameMode {
 			else 
 				receiver.drawMenuFont(engine, playerID, 1, (i << 1) + 1, menuItem.getValueString());
 		}
-	}
-
-	public void renderFieldEdit(GameEngine engine, int playerID) {
-	}
-
-	public void saveReplay(GameEngine engine, int playerID, CustomProperties prop) {
-	}
-
-	public void startGame(GameEngine engine, int playerID) {
-	}
-
-	public boolean isNetplayMode() {
-		return false;
-	}
-
-	public boolean isVSMode() {
-		return false;
-	}
-
-	public void netplayInit(Object obj) {
-	}
-
-	public void netplayUnload(Object obj){
-	}
-
-	public void netplayOnRetryKey(GameEngine engine, int playerID) {
 	}
 
 	/**
