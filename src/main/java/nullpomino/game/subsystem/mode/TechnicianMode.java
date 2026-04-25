@@ -14,7 +14,7 @@ import nullpomino.util.GeneralUtil;
 /**
  * TECHNICIAN Mode
  */
-public class TechnicianMode extends NetDummyMode {
+public class TechnicianMode extends AbstractMarathonMode {
 	/** Current version */
 	private static final int CURRENT_VERSION = 2;
 
@@ -30,26 +30,8 @@ public class TechnicianMode extends NetDummyMode {
 	/** Combo goal table */
 	private static final int COMBO_GOAL_TABLE[] = {0,0,1,1,2,2,3,3,4,4,4,5};
 
-	/** Number of entries in rankings */
-	private static final int RANKING_MAX = 10;
-
 	/** Number of ranking types */
 	private static final int RANKING_TYPE = 5;
-
-	/** Most recent scoring event type constants */
-	private static final int EVENT_NONE = 0,
-							 EVENT_SINGLE = 1,
-							 EVENT_DOUBLE = 2,
-							 EVENT_TRIPLE = 3,
-							 EVENT_FOUR = 4,
-							 EVENT_TSPIN_ZERO_MINI = 5,
-							 EVENT_TSPIN_ZERO = 6,
-							 EVENT_TSPIN_SINGLE_MINI = 7,
-							 EVENT_TSPIN_SINGLE = 8,
-							 EVENT_TSPIN_DOUBLE_MINI = 9,
-							 EVENT_TSPIN_DOUBLE = 10,
-							 EVENT_TSPIN_TRIPLE = 11,
-							 EVENT_TSPIN_EZ = 12;
 
 	/** Game type constants */
 	private static final int GAMETYPE_LV15_EASY = 0,
@@ -97,77 +79,24 @@ public class TechnicianMode extends NetDummyMode {
 	/** Most recent increase in goal-points */
 	private int lastgoal;
 
-	/** Most recent increase in score */
-	private int lastscore;
-
 	/** Most recent increase in time limit */
 	private int lasttimebonus;
-
-	/** Time to display the most recent increase in score */
-	private int scgettime;
 
 	/** REGRET display time frame count */
 	private int regretdispframe;
 
-	/** Most recent scoring event type */
-	private int lastevent;
-
-	/** Most recent scoring event b2b */
-	private boolean lastb2b;
-
-	/** Most recent scoring event combo count */
-	private int lastcombo;
-
-	/** Most recent scoring event piece ID */
-	private int lastpiece;
-
-	/** Current BGM */
-	private int bgmlv;
-
 	/** Game type */
 	private int goaltype;
 
-	/** Level at start time */
-	private int startlevel;
+	@Override
+	protected String getPropertyPrefix() {
+		return "technician";
+	}
 
-	/** Flag for types of T-Spins allowed (0=none, 1=normal, 2=all spin) */
-	private int tspinEnableType;
-
-	/** Old flag for allowing T-Spins */
-	private boolean enableTSpin;
-
-	/** Flag for enabling wallkick T-Spins */
-	private boolean enableTSpinKick;
-
-	/** Spin check type (4Point or Immobile) */
-	private int spinCheckType;
-
-	/** Immobile EZ spin */
-	private boolean tspinEnableEZ;
-
-	/** Flag for enabling B2B */
-	private boolean enableB2B;
-
-	/** Flag for enabling combos */
-	private boolean enableCombo;
-
-	/** Big */
-	private boolean big;
-
-	/** Version */
-	private int version;
-
-	/** Current round's ranking rank */
-	private int rankingRank;
-
-	/** Rankings' scores */
-	private int[][] rankingScore;
-
-	/** Rankings' line counts */
-	private int[][] rankingLines;
-
-	/** Rankings' times */
-	private int[][] rankingTime;
+	@Override
+	protected int getGameTypeCount() {
+		return RANKING_TYPE;
+	}
 
 	/*
 	 * Mode name
@@ -205,9 +134,7 @@ public class TechnicianMode extends NetDummyMode {
 		bgmlv = 0;
 
 		rankingRank = -1;
-		rankingScore = new int[RANKING_TYPE][RANKING_MAX];
-		rankingLines = new int[RANKING_TYPE][RANKING_MAX];
-		rankingTime = new int[RANKING_TYPE][RANKING_MAX];
+		allocateRankingArrays();
 
 		netPlayerInit(engine, playerID);
 
@@ -944,16 +871,7 @@ public class TechnicianMode extends NetDummyMode {
 	 */
 	protected void loadSetting(CustomProperties prop) {
 		goaltype = prop.getProperty("technician.gametype", 0);
-		startlevel = prop.getProperty("technician.startlevel", 0);
-		tspinEnableType = prop.getProperty("technician.tspinEnableType", 1);
-		enableTSpin = prop.getProperty("technician.enableTSpin", true);
-		enableTSpinKick = prop.getProperty("technician.enableTSpinKick", true);
-		spinCheckType = prop.getProperty("technician.spinCheckType", 0);
-		tspinEnableEZ = prop.getProperty("technician.tspinEnableEZ", false);
-		enableB2B = prop.getProperty("technician.enableB2B", true);
-		enableCombo = prop.getProperty("technician.enableCombo", true);
-		big = prop.getProperty("technician.big", false);
-		version = prop.getProperty("technician.version", 0);
+		loadCoreSettings(prop);
 	}
 
 	/**
@@ -962,83 +880,7 @@ public class TechnicianMode extends NetDummyMode {
 	 */
 	protected void saveSetting(CustomProperties prop) {
 		prop.setProperty("technician.gametype", goaltype);
-		prop.setProperty("technician.startlevel", startlevel);
-		prop.setProperty("technician.tspinEnableType", tspinEnableType);
-		prop.setProperty("technician.enableTSpin", enableTSpin);
-		prop.setProperty("technician.enableTSpinKick", enableTSpinKick);
-		prop.setProperty("technician.spinCheckType", spinCheckType);
-		prop.setProperty("technician.tspinEnableEZ", tspinEnableEZ);
-		prop.setProperty("technician.enableB2B", enableB2B);
-		prop.setProperty("technician.enableCombo", enableCombo);
-		prop.setProperty("technician.big", big);
-		prop.setProperty("technician.version", version);
-	}
-
-	/**
-	 * Read rankings from property file
-	 * @param prop Property file
-	 * @param ruleName Rule name
-	 */
-	@Override
-	protected void loadRanking(CustomProperties prop, String ruleName) {
-		for(int i = 0; i < RANKING_MAX; i++) {
-			for(int gametypeIndex = 0; gametypeIndex < RANKING_TYPE; gametypeIndex++) {
-				rankingScore[gametypeIndex][i] = prop.getProperty("technician.ranking." + ruleName + "." + gametypeIndex + ".score." + i, 0);
-				rankingLines[gametypeIndex][i] = prop.getProperty("technician.ranking." + ruleName + "." + gametypeIndex + ".lines." + i, 0);
-				rankingTime[gametypeIndex][i] = prop.getProperty("technician.ranking." + ruleName + "." + gametypeIndex + ".time." + i, 0);
-			}
-		}
-	}
-
-	/**
-	 * Save rankings to property file
-	 * @param prop Property file
-	 * @param ruleName Rule name
-	 */
-	private void saveRanking(CustomProperties prop, String ruleName) {
-		for(int i = 0; i < RANKING_MAX; i++) {
-			for(int gametypeIndex = 0; gametypeIndex < RANKING_TYPE; gametypeIndex++) {
-				prop.setProperty("technician.ranking." + ruleName + "." + gametypeIndex + ".score." + i, rankingScore[gametypeIndex][i]);
-				prop.setProperty("technician.ranking." + ruleName + "." + gametypeIndex + ".lines." + i, rankingLines[gametypeIndex][i]);
-				prop.setProperty("technician.ranking." + ruleName + "." + gametypeIndex + ".time." + i, rankingTime[gametypeIndex][i]);
-			}
-		}
-	}
-
-	/**
-	 * Update rankings
-	 * @param sc Score
-	 * @param li Lines
-	 * @param time Time
-	 * @param type Game type
-	 */
-	private void updateRanking(int sc, int li, int time, int type) {
-		rankingRank = checkRanking(sc, li, time, type);
-		RankingHelper.insertAt(rankingRank, RANKING_MAX,
-			(to, from) -> {
-				rankingScore[type][to] = rankingScore[type][from];
-				rankingLines[type][to] = rankingLines[type][from];
-				rankingTime[type][to] = rankingTime[type][from];
-			},
-			rank -> {
-				rankingScore[type][rank] = sc;
-				rankingLines[type][rank] = li;
-				rankingTime[type][rank] = time;
-			});
-	}
-
-	/**
-	 * Calculate ranking position
-	 * @param sc Score
-	 * @param li Lines
-	 * @param time Time
-	 * @return Position (-1 if unranked)
-	 */
-	private int checkRanking(int sc, int li, int time, int type) {
-		return RankingHelper.findRank(RANKING_MAX, i ->
-			sc > rankingScore[type][i]
-				|| ((sc == rankingScore[type][i]) && (li > rankingLines[type][i]))
-				|| ((sc == rankingScore[type][i]) && (li == rankingLines[type][i]) && (time < rankingTime[type][i])));
+		saveCoreSettings(prop);
 	}
 
 	/**
