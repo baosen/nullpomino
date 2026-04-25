@@ -138,14 +138,14 @@ public class StateConfigKeyboardSDL extends BaseStateSDL {
 			if(keyConfigRestFrame > 0) {
 				NormalFontSDL.printFontGrid(1, 21, "PUSH KEY... " + GeneralUtil.getTime(keyConfigRestFrame), NormalFontSDL.COLOR_PINK);
 			} else if(keynum < NUM_KEYS) {
-				NormalFontSDL.printFontGrid(1, 21, "UP/DOWN:   MOVE CURSOR", NormalFontSDL.COLOR_GREEN);
-				NormalFontSDL.printFontGrid(1, 22, "ENTER:     SET KEY", NormalFontSDL.COLOR_GREEN);
-				NormalFontSDL.printFontGrid(1, 23, "DELETE:    SET TO NONE", NormalFontSDL.COLOR_GREEN);
-				NormalFontSDL.printFontGrid(1, 24, "BACKSPACE: CANCEL", NormalFontSDL.COLOR_GREEN);
+				NormalFontSDL.printFontGrid(1, 21, "UP/DOWN:        MOVE CURSOR", NormalFontSDL.COLOR_GREEN);
+				NormalFontSDL.printFontGrid(1, 22, "ENTER:          SET KEY", NormalFontSDL.COLOR_GREEN);
+				NormalFontSDL.printFontGrid(1, 23, "DELETE:         SET TO NONE", NormalFontSDL.COLOR_GREEN);
+				NormalFontSDL.printFontGrid(1, 24, "ESC/BACKSPACE:  CANCEL", NormalFontSDL.COLOR_GREEN);
 			} else {
-				NormalFontSDL.printFontGrid(1, 21, "UP/DOWN:   MOVE CURSOR", NormalFontSDL.COLOR_GREEN);
-				NormalFontSDL.printFontGrid(1, 22, "ENTER:     SAVE & EXIT", NormalFontSDL.COLOR_GREEN);
-				NormalFontSDL.printFontGrid(1, 23, "BACKSPACE: CANCEL", NormalFontSDL.COLOR_GREEN);
+				NormalFontSDL.printFontGrid(1, 21, "UP/DOWN:        MOVE CURSOR", NormalFontSDL.COLOR_GREEN);
+				NormalFontSDL.printFontGrid(1, 22, "ENTER:          SAVE & EXIT", NormalFontSDL.COLOR_GREEN);
+				NormalFontSDL.printFontGrid(1, 23, "ESC/BACKSPACE:  CANCEL", NormalFontSDL.COLOR_GREEN);
 			}
 		}
 	}
@@ -228,8 +228,9 @@ public class StateConfigKeyboardSDL extends BaseStateSDL {
 					}
 				}
 
-				// Backspace
-				if(NullpoMinoSDL.keyPressedState[SDLConstants.SDL_SCANCODE_BACKSPACE]) {
+				// Backspace / Escape
+				if(NullpoMinoSDL.keyPressedState[SDLConstants.SDL_SCANCODE_BACKSPACE]
+						|| NullpoMinoSDL.keyPressedState[SDLConstants.SDL_SCANCODE_ESCAPE]) {
 					NullpoMinoSDL.goBack();
 					return;
 				}
