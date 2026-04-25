@@ -472,7 +472,9 @@ public class RuleEditor extends JFrame implements ActionListener {
 			FileInputStream in = new FileInputStream("config/setting/swing.cfg");
 			propConfig.load(in);
 			in.close();
-		} catch(IOException e) {}
+		} catch(IOException e) {
+			SwingToolUtil.ignoreOptionalFileLoad(e);
+		}
 
 		// Read language file
 		propLangDefault = new CustomProperties();
@@ -489,7 +491,9 @@ public class RuleEditor extends JFrame implements ActionListener {
 			FileInputStream in = new FileInputStream("config/lang/ruleeditor_" + Locale.getDefault().getCountry() + ".properties");
 			propLang.load(in);
 			in.close();
-		} catch(IOException e) {}
+		} catch(IOException e) {
+			SwingToolUtil.ignoreOptionalFileLoad(e);
+		}
 
 		// Look&FeelSetting
 		if(propConfig.getProperty("option.usenativelookandfeel", true) == true) {
@@ -1646,7 +1650,9 @@ public class RuleEditor extends JFrame implements ActionListener {
 
 		try {
 			v = Integer.parseInt(txtfld.getText());
-		} catch(Exception e) {}
+		} catch(Exception e) {
+			SwingToolUtil.ignoreInvalidTextField(e);
+		}
 
 		return v;
 	}
@@ -1661,7 +1667,9 @@ public class RuleEditor extends JFrame implements ActionListener {
 
 		try {
 			v = Float.parseFloat(txtfld.getText());
-		} catch (Exception e) {}
+		} catch (Exception e) {
+			SwingToolUtil.ignoreInvalidTextField(e);
+		}
 
 		return v;
 	}

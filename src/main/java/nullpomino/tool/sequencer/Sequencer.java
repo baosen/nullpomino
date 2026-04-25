@@ -112,7 +112,9 @@ public class Sequencer extends JFrame implements ActionListener {
 			FileInputStream in = new FileInputStream("config/setting/swing.cfg");
 			propConfig.load(in);
 			in.close();
-		} catch(IOException e) {}
+		} catch(IOException e) {
+			SwingToolUtil.ignoreOptionalFileLoad(e);
+		}
 
 		// Load UI Language file
 		propLangDefault = new CustomProperties();
@@ -129,7 +131,9 @@ public class Sequencer extends JFrame implements ActionListener {
 			FileInputStream in = new FileInputStream("config/lang/sequencer_" + Locale.getDefault().getCountry() + ".properties");
 			propLang.load(in);
 			in.close();
-		} catch(IOException e) {}
+		} catch(IOException e) {
+			SwingToolUtil.ignoreOptionalFileLoad(e);
+		}
 
 		// Set Look&Feel
 		if(propConfig.getProperty("option.usenativelookandfeel", true) == true) {
@@ -334,7 +338,9 @@ public class Sequencer extends JFrame implements ActionListener {
 
 		try {
 			v = Integer.parseInt(txtfld.getText());
-		} catch(Exception e) {}
+		} catch(Exception e) {
+			SwingToolUtil.ignoreInvalidTextField(e);
+		}
 
 		return v;
 	}
@@ -349,7 +355,9 @@ public class Sequencer extends JFrame implements ActionListener {
 
 		try {
 			v = Long.parseLong(txtfld.getText());
-		} catch(Exception e) {}
+		} catch(Exception e) {
+			SwingToolUtil.ignoreInvalidTextField(e);
+		}
 
 		return v;
 	}

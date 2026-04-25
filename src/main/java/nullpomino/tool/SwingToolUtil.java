@@ -41,6 +41,14 @@ public final class SwingToolUtil {
 		// Legacy Swing tools treat missing optional list files as empty lists.
 	}
 
+	public static void ignoreOptionalFileLoad(IOException e) {
+		// Optional user config and locale files are allowed to be absent.
+	}
+
+	public static void ignoreInvalidTextField(Exception e) {
+		// Legacy text-field readers fall back to zero on malformed input.
+	}
+
 	/**
 	 * Strip package prefixes from fully-qualified class names for compact
 	 * combobox display.
