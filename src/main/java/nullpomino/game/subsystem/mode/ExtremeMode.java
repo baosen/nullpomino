@@ -14,7 +14,7 @@ import nullpomino.util.GeneralUtil;
 /**
  * EXTREME Mode
  */
-public class ExtremeMode extends NetDummyMode {
+public class ExtremeMode extends AbstractMarathonMode {
 	/** Current version */
 	private static final int CURRENT_VERSION = 1;
 
@@ -39,95 +39,24 @@ public class ExtremeMode extends NetDummyMode {
 	/** Line counts when BGM changes occur */
 	private static final int tableBGMChange[] = {50, 100, 150, -1};
 
-	/** Number of entries in rankings */
-	private static final int RANKING_MAX = 10;
-
 	/** Number of ranking types */
 	private static final int RANKING_TYPE = 2;
-
-	/** Most recent scoring event type constants */
-	private static final int EVENT_NONE = 0,
-							 EVENT_SINGLE = 1,
-							 EVENT_DOUBLE = 2,
-							 EVENT_TRIPLE = 3,
-							 EVENT_FOUR = 4,
-							 EVENT_TSPIN_ZERO_MINI = 5,
-							 EVENT_TSPIN_ZERO = 6,
-							 EVENT_TSPIN_SINGLE_MINI = 7,
-							 EVENT_TSPIN_SINGLE = 8,
-							 EVENT_TSPIN_DOUBLE_MINI = 9,
-							 EVENT_TSPIN_DOUBLE = 10,
-							 EVENT_TSPIN_TRIPLE = 11,
-							 EVENT_TSPIN_EZ = 12;
-
-	/** Most recent increase in score */
-	private int lastscore;
-
-	/** Time to display the most recent increase in score */
-	private int scgettime;
-
-	/** Most recent scoring event type */
-	private int lastevent;
-
-	/** True if most recent scoring event is a B2B */
-	private boolean lastb2b;
-
-	/** Combo count for most recent scoring event */
-	private int lastcombo;
-
-	/** Piece ID for most recent scoring event */
-	private int lastpiece;
 
 	/** Ending time */
 	private int rolltime;
 
-	/** Current BGM */
-	private int bgmlv;
-
-	/** Level at start time */
-	private int startlevel;
-
-	/** Flag for types of T-Spins allowed (0=none, 1=normal, 2=all spin) */
-	private int tspinEnableType;
-
-	/** Old flag for allowing T-Spins */
-	private boolean enableTSpin;
-
-	/** Flag for enabling wallkick T-Spins */
-	private boolean enableTSpinKick;
-
-	/** Spin check type (4Point or Immobile) */
-	private int spinCheckType;
-
-	/** Immobile EZ spin */
-	private boolean tspinEnableEZ;
-
-	/** Flag for enabling B2B */
-	private boolean enableB2B;
-
-	/** Flag for enabling combos */
-	private boolean enableCombo;
-
 	/** Endless flag */
 	private boolean endless;
 
-	/** Big */
-	private boolean big;
+	@Override
+	protected String getPropertyPrefix() {
+		return "extreme";
+	}
 
-	/** Version */
-	private int version;
-
-	/** Current round's ranking rank */
-	private int rankingRank;
-
-	/** Rankings' scores */
-	private int[][] rankingScore;
-
-	/** Rankings' line counts */
-	private int[][] rankingLines;
-
-	/** Rankings' times */
-	private int[][] rankingTime;
+	@Override
+	protected int getGameTypeCount() {
+		return RANKING_TYPE;
+	}
 
 	/*
 	 * Mode name
@@ -158,9 +87,7 @@ public class ExtremeMode extends NetDummyMode {
 		rolltime = 0;
 
 		rankingRank = -1;
-		rankingScore = new int[RANKING_TYPE][RANKING_MAX];
-		rankingLines = new int[RANKING_TYPE][RANKING_MAX];
-		rankingTime = new int[RANKING_TYPE][RANKING_MAX];
+		allocateRankingArrays();
 
 		netPlayerInit(engine, playerID);
 
@@ -717,7 +644,7 @@ public class ExtremeMode extends NetDummyMode {
 
 		// Update rankings
 		if((owner.replayMode == false) && (big == false) && (engine.ai == null)) {
-			updateRanking(engine.statistics.score, engine.statistics.lines, engine.statistics.time, endless);
+			updateRanking(engine.statistics.score, engine.statistics.lines, engine.statistics.time, endless ? 1 : 0);
 
 			if(rankingRank != -1) {
 				saveRanking(owner.modeConfig, engine.ruleopt.strRuleName);
@@ -731,17 +658,8 @@ public class ExtremeMode extends NetDummyMode {
 	 * @param prop Property file
 	 */
 	protected void loadSetting(CustomProperties prop) {
-		startlevel = prop.getProperty("extreme.startlevel", 0);
-		tspinEnableType = prop.getProperty("extreme.tspinEnableType", 1);
-		enableTSpin = prop.getProperty("extreme.enableTSpin", true);
-		enableTSpinKick = prop.getProperty("extreme.enableTSpinKick", true);
-		spinCheckType = prop.getProperty("extreme.spinCheckType", 0);
-		tspinEnableEZ = prop.getProperty("extreme.tspinEnableEZ", false);
-		enableB2B = prop.getProperty("extreme.enableB2B", true);
-		enableCombo = prop.getProperty("extreme.enableCombo", true);
+		loadCoreSettings(prop);
 		endless = prop.getProperty("extreme.endless", false);
-		big = prop.getProperty("extreme.big", false);
-		version = prop.getProperty("extreme.version", 0);
 	}
 
 	/**
@@ -749,85 +667,8 @@ public class ExtremeMode extends NetDummyMode {
 	 * @param prop Property file
 	 */
 	protected void saveSetting(CustomProperties prop) {
-		prop.setProperty("extreme.startlevel", startlevel);
-		prop.setProperty("extreme.tspinEnableType", tspinEnableType);
-		prop.setProperty("extreme.enableTSpin", enableTSpin);
-		prop.setProperty("extreme.enableTSpinKick", enableTSpinKick);
-		prop.setProperty("extreme.spinCheckType", spinCheckType);
-		prop.setProperty("extreme.tspinEnableEZ", tspinEnableEZ);
-		prop.setProperty("extreme.enableB2B", enableB2B);
-		prop.setProperty("extreme.enableCombo", enableCombo);
+		saveCoreSettings(prop);
 		prop.setProperty("extreme.endless", endless);
-		prop.setProperty("extreme.big", big);
-		prop.setProperty("extreme.version", version);
-	}
-
-	/**
-	 * Read rankings from property file
-	 * @param prop Property file
-	 * @param ruleName Rule name
-	 */
-	@Override
-	protected void loadRanking(CustomProperties prop, String ruleName) {
-		for(int i = 0; i < RANKING_MAX; i++) {
-			for(int endlessIndex = 0; endlessIndex < 2; endlessIndex++) {
-				rankingScore[endlessIndex][i] = prop.getProperty("extreme.ranking." + ruleName + "." + endlessIndex + ".score." + i, 0);
-				rankingLines[endlessIndex][i] = prop.getProperty("extreme.ranking." + ruleName + "." + endlessIndex + ".lines." + i, 0);
-				rankingTime[endlessIndex][i] = prop.getProperty("extreme.ranking." + ruleName + "." + endlessIndex + ".time." + i, 0);
-			}
-		}
-	}
-
-	/**
-	 * Save rankings to property file
-	 * @param prop Property file
-	 * @param ruleName Rule name
-	 */
-	private void saveRanking(CustomProperties prop, String ruleName) {
-		for(int i = 0; i < RANKING_MAX; i++) {
-			for(int endlessIndex = 0; endlessIndex < 2; endlessIndex++) {
-				prop.setProperty("extreme.ranking." + ruleName + "." + endlessIndex + ".score." + i, rankingScore[endlessIndex][i]);
-				prop.setProperty("extreme.ranking." + ruleName + "." + endlessIndex + ".lines." + i, rankingLines[endlessIndex][i]);
-				prop.setProperty("extreme.ranking." + ruleName + "." + endlessIndex + ".time." + i, rankingTime[endlessIndex][i]);
-			}
-		}
-	}
-
-	/**
-	 * Update rankings
-	 * @param sc Score
-	 * @param li Lines
-	 * @param time Time
-	 */
-	private void updateRanking(int sc, int li, int time, boolean endlessMode) {
-		rankingRank = checkRanking(sc, li, time, endlessMode);
-		int endlessIndex = endlessMode ? 1 : 0;
-		RankingHelper.insertAt(rankingRank, RANKING_MAX,
-			(to, from) -> {
-				rankingScore[endlessIndex][to] = rankingScore[endlessIndex][from];
-				rankingLines[endlessIndex][to] = rankingLines[endlessIndex][from];
-				rankingTime[endlessIndex][to] = rankingTime[endlessIndex][from];
-			},
-			rank -> {
-				rankingScore[endlessIndex][rank] = sc;
-				rankingLines[endlessIndex][rank] = li;
-				rankingTime[endlessIndex][rank] = time;
-			});
-	}
-
-	/**
-	 * Calculate ranking position
-	 * @param sc Score
-	 * @param li Lines
-	 * @param time Time
-	 * @return Position (-1 if unranked)
-	 */
-	private int checkRanking(int sc, int li, int time, boolean endlessMode) {
-		int endlessIndex = endlessMode ? 1 : 0;
-		return RankingHelper.findRank(RANKING_MAX, i ->
-			sc > rankingScore[endlessIndex][i]
-				|| ((sc == rankingScore[endlessIndex][i]) && (li > rankingLines[endlessIndex][i]))
-				|| ((sc == rankingScore[endlessIndex][i]) && (li == rankingLines[endlessIndex][i]) && (time < rankingTime[endlessIndex][i])));
 	}
 
 	/**
