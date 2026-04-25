@@ -134,19 +134,17 @@ public class StateConfigKeyboardSDL extends BaseStateSDL {
 
 		NormalFontSDL.printFontGrid(1, 3 + keynum, "b", NormalFontSDL.COLOR_RED);
 
-		if(frame >= KEYACCEPTFRAME) {
-			if(keyConfigRestFrame > 0) {
-				NormalFontSDL.printFontGrid(1, 21, "PUSH KEY... " + GeneralUtil.getTime(keyConfigRestFrame), NormalFontSDL.COLOR_PINK);
-			} else if(keynum < NUM_KEYS) {
-				NormalFontSDL.printFontGrid(1, 21, "UP/DOWN:        MOVE CURSOR", NormalFontSDL.COLOR_GREEN);
-				NormalFontSDL.printFontGrid(1, 22, "ENTER:          SET KEY", NormalFontSDL.COLOR_GREEN);
-				NormalFontSDL.printFontGrid(1, 23, "DELETE:         SET TO NONE", NormalFontSDL.COLOR_GREEN);
-				NormalFontSDL.printFontGrid(1, 24, "ESC/BACKSPACE:  CANCEL", NormalFontSDL.COLOR_GREEN);
-			} else {
-				NormalFontSDL.printFontGrid(1, 21, "UP/DOWN:        MOVE CURSOR", NormalFontSDL.COLOR_GREEN);
-				NormalFontSDL.printFontGrid(1, 22, "ENTER:          SAVE & EXIT", NormalFontSDL.COLOR_GREEN);
-				NormalFontSDL.printFontGrid(1, 23, "ESC/BACKSPACE:  CANCEL", NormalFontSDL.COLOR_GREEN);
-			}
+		if(keyConfigRestFrame > 0) {
+			NormalFontSDL.printFontGrid(1, 21, "PUSH KEY... " + GeneralUtil.getTime(keyConfigRestFrame), NormalFontSDL.COLOR_PINK);
+		} else if(keynum < NUM_KEYS) {
+			NormalFontSDL.printFontGrid(1, 21, "UP/DOWN:        MOVE CURSOR", NormalFontSDL.COLOR_GREEN);
+			NormalFontSDL.printFontGrid(1, 22, "ENTER:          SET KEY", NormalFontSDL.COLOR_GREEN);
+			NormalFontSDL.printFontGrid(1, 23, "DELETE:         SET TO NONE", NormalFontSDL.COLOR_GREEN);
+			NormalFontSDL.printFontGrid(1, 24, "ESC/BACKSPACE:  CANCEL", NormalFontSDL.COLOR_GREEN);
+		} else {
+			NormalFontSDL.printFontGrid(1, 21, "UP/DOWN:        MOVE CURSOR", NormalFontSDL.COLOR_GREEN);
+			NormalFontSDL.printFontGrid(1, 22, "ENTER:          SAVE & EXIT", NormalFontSDL.COLOR_GREEN);
+			NormalFontSDL.printFontGrid(1, 23, "ESC/BACKSPACE:  CANCEL", NormalFontSDL.COLOR_GREEN);
 		}
 	}
 
