@@ -1,0 +1,22 @@
+# Default: treat all files as text, normalize to LF in the repository
+# and on checkout (regardless of platform).
+* text=auto eol=lf
+
+# Windows shell scripts must keep CRLF so cmd.exe can run them.
+*.bat text eol=crlf
+*.cmd text eol=crlf
+
+# Pin known-binary extensions so future Git versions don't second-guess.
+*.png  binary
+*.jpg  binary
+*.jpeg binary
+*.gif  binary
+*.ico  binary
+*.ttf  binary
+*.otf  binary
+*.wav  binary
+*.ogg  binary
+*.mp3  binary
+*.zip  binary
+*.jar  binary
+*.class binary
