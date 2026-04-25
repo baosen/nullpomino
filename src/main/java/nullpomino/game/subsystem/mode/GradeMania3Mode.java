@@ -273,8 +273,6 @@ public class GradeMania3Mode extends AbstractGradeMode {
 		receiver = engine.owner.receiver;
 		menuTime = 0;
 		menuCursor = 0;
-		menuTime = 0;
-		menuCursor = 0;
 
 		gravityindex = 0;
 		nextseclv = 0;

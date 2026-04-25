@@ -187,8 +187,6 @@ public class ComboRaceMode extends NetDummyMode {
 		receiver = engine.owner.receiver;
 		menuTime = 0;
 		menuCursor = 0;
-		menuTime = 0;
-		menuCursor = 0;
 
 		scgettime = 0;
 		lastevent = EVENT_NONE;

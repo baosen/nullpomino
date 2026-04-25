@@ -279,8 +279,6 @@ public class TimeAttackMode extends NetDummyMode {
 		receiver = engine.owner.receiver;
 		menuTime = 0;
 		menuCursor = 0;
-		menuTime = 0;
-		menuCursor = 0;
 
 		norm = 0;
 		goaltype = 0;

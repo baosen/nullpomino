@@ -77,8 +77,6 @@ public class DigRaceMode extends NetDummyMode {
 		receiver = engine.owner.receiver;
 		menuTime = 0;
 		menuCursor = 0;
-		menuTime = 0;
-		menuCursor = 0;
 
 		bgmno = 0;
 		big = false;

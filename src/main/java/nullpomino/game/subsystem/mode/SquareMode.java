@@ -108,8 +108,6 @@ public class SquareMode extends AbstractMode {
 		receiver = engine.owner.receiver;
 		menuTime = 0;
 		menuCursor = 0;
-		menuTime = 0;
-		menuCursor = 0;
 		lastscore = 0;
 		scgettime = 0;
 		squares = 0;

@@ -63,8 +63,6 @@ public class MarathonMode extends AbstractMarathonMode {
 		receiver = engine.owner.receiver;
 		menuTime = 0;
 		menuCursor = 0;
-		menuTime = 0;
-		menuCursor = 0;
 		lastscore = 0;
 		scgettime = 0;
 		lastevent = EVENT_NONE;

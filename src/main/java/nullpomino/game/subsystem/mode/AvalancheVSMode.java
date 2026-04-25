@@ -217,8 +217,6 @@ public class AvalancheVSMode extends AvalancheVSDummyMode {
 		receiver = engine.owner.receiver;
 		menuTime = 0;
 		menuCursor = 0;
-		menuTime = 0;
-		menuCursor = 0;
 		ojamaFever[playerID] = 0;
 		feverPoints[playerID] = 0;
 		feverTime[playerID] = feverTimeMin[playerID] * 60;

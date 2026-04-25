@@ -115,8 +115,6 @@ public class TechnicianMode extends AbstractMarathonMode {
 		receiver = engine.owner.receiver;
 		menuTime = 0;
 		menuCursor = 0;
-		menuTime = 0;
-		menuCursor = 0;
 		goal = 0;
 		levelTimer = 0;
 		levelTimeOut = false;

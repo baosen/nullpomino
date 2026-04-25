@@ -222,8 +222,6 @@ public class GemManiaMode extends AbstractMode {
 		receiver = engine.owner.receiver;
 		menuTime = 0;
 		menuCursor = 0;
-		menuTime = 0;
-		menuCursor = 0;
 
 		rest = 0;
 		stage = 0;
