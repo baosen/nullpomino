@@ -801,23 +801,18 @@ public class ExtremeMode extends NetDummyMode {
 	 */
 	private void updateRanking(int sc, int li, int time, boolean endlessMode) {
 		rankingRank = checkRanking(sc, li, time, endlessMode);
-
-		if(rankingRank != -1) {
-			int endlessIndex = 0;
-			if(endlessMode) endlessIndex = 1;
-
-			// Shift down ranking entries
-			for(int i = RANKING_MAX - 1; i > rankingRank; i--) {
-				rankingScore[endlessIndex][i] = rankingScore[endlessIndex][i - 1];
-				rankingLines[endlessIndex][i] = rankingLines[endlessIndex][i - 1];
-				rankingTime[endlessIndex][i] = rankingTime[endlessIndex][i - 1];
-			}
-
-			// Add new data
-			rankingScore[endlessIndex][rankingRank] = sc;
-			rankingLines[endlessIndex][rankingRank] = li;
-			rankingTime[endlessIndex][rankingRank] = time;
-		}
+		int endlessIndex = endlessMode ? 1 : 0;
+		RankingHelper.insertAt(rankingRank, RANKING_MAX,
+			(to, from) -> {
+				rankingScore[endlessIndex][to] = rankingScore[endlessIndex][from];
+				rankingLines[endlessIndex][to] = rankingLines[endlessIndex][from];
+				rankingTime[endlessIndex][to] = rankingTime[endlessIndex][from];
+			},
+			rank -> {
+				rankingScore[endlessIndex][rank] = sc;
+				rankingLines[endlessIndex][rank] = li;
+				rankingTime[endlessIndex][rank] = time;
+			});
 	}
 
 	/**
@@ -828,20 +823,11 @@ public class ExtremeMode extends NetDummyMode {
 	 * @return Position (-1 if unranked)
 	 */
 	private int checkRanking(int sc, int li, int time, boolean endlessMode) {
-		int endlessIndex = 0;
-		if(endlessMode) endlessIndex = 1;
-
-		for(int i = 0; i < RANKING_MAX; i++) {
-			if(sc > rankingScore[endlessIndex][i]) {
-				return i;
-			} else if((sc == rankingScore[endlessIndex][i]) && (li > rankingLines[endlessIndex][i])) {
-				return i;
-			} else if((sc == rankingScore[endlessIndex][i]) && (li == rankingLines[endlessIndex][i]) && (time < rankingTime[endlessIndex][i])) {
-				return i;
-			}
-		}
-
-		return -1;
+		int endlessIndex = endlessMode ? 1 : 0;
+		return RankingHelper.findRank(RANKING_MAX, i ->
+			sc > rankingScore[endlessIndex][i]
+				|| ((sc == rankingScore[endlessIndex][i]) && (li > rankingLines[endlessIndex][i]))
+				|| ((sc == rankingScore[endlessIndex][i]) && (li == rankingLines[endlessIndex][i]) && (time < rankingTime[endlessIndex][i])));
 	}
 
 	/**
