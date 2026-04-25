@@ -934,20 +934,17 @@ public class DigChallengeMode extends NetDummyMode {
 	 */
 	private void updateRanking(int sc, int li, int time, int type) {
 		rankingRank = checkRanking(sc, li, time, type);
-
-		if(rankingRank != -1) {
-			// Shift down ranking entries
-			for(int i = RANKING_MAX - 1; i > rankingRank; i--) {
-				rankingScore[type][i] = rankingScore[type][i - 1];
-				rankingLines[type][i] = rankingLines[type][i - 1];
-				rankingTime[type][i] = rankingTime[type][i - 1];
-			}
-
-			// Add new data
-			rankingScore[type][rankingRank] = sc;
-			rankingLines[type][rankingRank] = li;
-			rankingTime[type][rankingRank] = time;
-		}
+		RankingHelper.insertAt(rankingRank, RANKING_MAX,
+			(to, from) -> {
+				rankingScore[type][to] = rankingScore[type][from];
+				rankingLines[type][to] = rankingLines[type][from];
+				rankingTime[type][to] = rankingTime[type][from];
+			},
+			rank -> {
+				rankingScore[type][rank] = sc;
+				rankingLines[type][rank] = li;
+				rankingTime[type][rank] = time;
+			});
 	}
 
 	/**
@@ -958,17 +955,10 @@ public class DigChallengeMode extends NetDummyMode {
 	 * @return Position (-1 if unranked)
 	 */
 	private int checkRanking(int sc, int li, int time, int type) {
-		for(int i = 0; i < RANKING_MAX; i++) {
-			if(sc > rankingScore[type][i]) {
-				return i;
-			} else if((sc == rankingScore[type][i]) && (li > rankingLines[type][i])) {
-				return i;
-			} else if((sc == rankingScore[type][i]) && (li == rankingLines[type][i]) && (time > rankingTime[type][i])) {
-				return i;
-			}
-		}
-
-		return -1;
+		return RankingHelper.findRank(RANKING_MAX, i ->
+			sc > rankingScore[type][i]
+				|| ((sc == rankingScore[type][i]) && (li > rankingLines[type][i]))
+				|| ((sc == rankingScore[type][i]) && (li == rankingLines[type][i]) && (time > rankingTime[type][i])));
 	}
 
 	/**
