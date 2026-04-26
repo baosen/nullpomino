@@ -25,9 +25,9 @@ public final class SwingToolUtil {
 		Vector<String> lines = new Vector<String>();
 
 		try (BufferedReader in = new BufferedReader(new FileReader(filename))) {
-			while(true) {
-				String str = in.readLine();
-				if((str == null) || (str.length() <= 0)) break;
+			String str;
+			while((str = in.readLine()) != null) {
+				if(str.length() <= 0) break;
 				lines.add(str);
 			}
 		} catch(IOException e) {
@@ -56,8 +56,8 @@ public final class SwingToolUtil {
 	public static Vector<String> shortClassNames(Vector<String> names) {
 		Vector<String> shortNames = new Vector<String>();
 
-		for(int i = 0; i < names.size(); i++) {
-			shortNames.add(shortClassName(names.get(i)));
+		for(String name : names) {
+			shortNames.add(shortClassName(name));
 		}
 
 		return shortNames;
@@ -79,17 +79,6 @@ public final class SwingToolUtil {
 	 * Convert a local path to the file URL shape used by the Swing tools.
 	 */
 	public static URL fileUrl(String path) throws MalformedURLException {
-		char sep = File.separator.charAt(0);
-		String file = path.replace(sep, '/');
-
-		if(file.charAt(0) != '/') {
-			String dir = System.getProperty("user.dir");
-			dir = dir.replace(sep, '/') + '/';
-			if(dir.charAt(0) != '/') {
-				dir = "/" + dir;
-			}
-			file = dir + file;
-		}
-		return new URL("file", "", file);
+		return new File(path).toURI().toURL();
 	}
 }
