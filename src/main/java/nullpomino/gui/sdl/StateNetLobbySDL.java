@@ -145,6 +145,10 @@ public class StateNetLobbySDL extends BaseStateSDL {
 			NullpoMinoSDL.goBack();
 			return;
 		}
+		if(MouseInputSDL.mouseInput.isMouseForwardClicked()) {
+			NullpoMinoSDL.goForward();
+			return;
+		}
 
 		if(roomTable.update(mx, my, clicked)) setFocus(roomTable);
 		if(roomTable.activated) attemptJoinSelected();

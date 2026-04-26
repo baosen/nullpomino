@@ -76,6 +76,13 @@ public abstract class DummyMenuChooseStateSDL extends BaseStateSDL {
 				|| MouseInputSDL.mouseInput.isMouseBackClicked()) {
 			if (onCancel()) return;
 		}
+
+		// Mouse forward button replays whatever back navigation the user
+		// just performed. No-op when the forward stack is empty.
+		if(MouseInputSDL.mouseInput.isMouseForwardClicked()) {
+			NullpoMinoSDL.goForward();
+			return;
+		}
 	}
 
 	protected boolean updateMouseInput()

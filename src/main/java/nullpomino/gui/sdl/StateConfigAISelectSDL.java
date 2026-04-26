@@ -267,5 +267,9 @@ public class StateConfigAISelectSDL extends BaseStateSDL {
 			NullpoMinoSDL.goBack();
 			return;
 		}
+		if(MouseInputSDL.mouseInput.isMouseForwardClicked()) {
+			NullpoMinoSDL.goForward();
+			return;
+		}
 	}
 }

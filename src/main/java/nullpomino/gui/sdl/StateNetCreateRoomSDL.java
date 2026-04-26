@@ -617,6 +617,10 @@ public class StateNetCreateRoomSDL extends BaseStateSDL {
 			cancel();
 			return;
 		}
+		if(MouseInputSDL.mouseInput.isMouseForwardClicked()) {
+			NullpoMinoSDL.goForward();
+			return;
+		}
 
 		// A click can only land on one widget — once a widget consumes it
 		// (returns true from update), clear the flag so later widgets in

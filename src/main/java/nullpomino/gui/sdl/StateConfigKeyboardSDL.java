@@ -253,6 +253,10 @@ public class StateConfigKeyboardSDL extends BaseStateSDL {
 					NullpoMinoSDL.goBack();
 					return;
 				}
+				if(MouseInputSDL.mouseInput.isMouseForwardClicked()) {
+					NullpoMinoSDL.goForward();
+					return;
+				}
 			}
 		} else {
 			// Re-arm so the first frame after the entry gate reopens registers as a fresh press
