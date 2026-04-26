@@ -15,6 +15,14 @@ public class NetPlayerInfo implements Serializable {
 	/** Serial version */
 	private static final long serialVersionUID = 1L;
 
+	private static final int EXPORT_FIELD_COUNT = 27;
+	private static final int RATING_INDEX = 12;
+	private static final int PLAY_COUNT_INDEX = 16;
+	private static final int WIN_COUNT_INDEX = 20;
+	private static final int SP_PERSONAL_BEST_INDEX = 24;
+	private static final int PLAY_COUNT_NOW_INDEX = 25;
+	private static final int WIN_COUNT_NOW_INDEX = 26;
+
 	/** Default rating for multiplayer games */
 	public static final int DEFAULT_MULTIPLAYER_RATING = 1500;
 
@@ -174,23 +182,14 @@ public class NetPlayerInfo implements Serializable {
 		playing = Boolean.parseBoolean(pdata[9]);
 		connected = Boolean.parseBoolean(pdata[10]);
 		isTripUse = Boolean.parseBoolean(pdata[11]);
-		rating[0] = Integer.parseInt(pdata[12]);
-		rating[1] = Integer.parseInt(pdata[13]);
-		rating[2] = Integer.parseInt(pdata[14]);
-		rating[3] = Integer.parseInt(pdata[15]);
-		playCount[0] = Integer.parseInt(pdata[16]);
-		playCount[1] = Integer.parseInt(pdata[17]);
-		playCount[2] = Integer.parseInt(pdata[18]);
-		playCount[3] = Integer.parseInt(pdata[19]);
-		winCount[0] = Integer.parseInt(pdata[20]);
-		winCount[1] = Integer.parseInt(pdata[21]);
-		winCount[2] = Integer.parseInt(pdata[22]);
-		winCount[3] = Integer.parseInt(pdata[23]);
-		if(pdata.length > 24) {
-			spPersonalBest.importString(NetUtil.decompressString(pdata[24]));
+		readIntArray(pdata, RATING_INDEX, rating);
+		readIntArray(pdata, PLAY_COUNT_INDEX, playCount);
+		readIntArray(pdata, WIN_COUNT_INDEX, winCount);
+		if(pdata.length > SP_PERSONAL_BEST_INDEX) {
+			spPersonalBest.importString(NetUtil.decompressString(pdata[SP_PERSONAL_BEST_INDEX]));
 		}
-		if(pdata.length > 25) playCountNow = Integer.parseInt(pdata[25]);
-		if(pdata.length > 26) winCountNow = Integer.parseInt(pdata[26]);
+		if(pdata.length > PLAY_COUNT_NOW_INDEX) playCountNow = Integer.parseInt(pdata[PLAY_COUNT_NOW_INDEX]);
+		if(pdata.length > WIN_COUNT_NOW_INDEX) winCountNow = Integer.parseInt(pdata[WIN_COUNT_NOW_INDEX]);
 	}
 
 	/**
@@ -198,7 +197,7 @@ public class NetPlayerInfo implements Serializable {
 	 * @param str String
 	 */
 	public void importString(String str) {
-		importStringArray(str.split(";"));
+		importStringArray(str.split(";", -1));
 	}
 
 	/**
@@ -206,7 +205,7 @@ public class NetPlayerInfo implements Serializable {
 	 * @return String array (String[27])
 	 */
 	public String[] exportStringArray() {
-		String[] pdata = new String[27];
+		String[] pdata = new String[EXPORT_FIELD_COUNT];
 		pdata[0] = NetUtil.urlEncode(strName);
 		pdata[1] = NetUtil.urlEncode(strCountry);
 		pdata[2] = NetUtil.urlEncode(strHost);
@@ -219,21 +218,12 @@ public class NetPlayerInfo implements Serializable {
 		pdata[9] = Boolean.toString(playing);
 		pdata[10] = Boolean.toString(connected);
 		pdata[11] = Boolean.toString(isTripUse);
-		pdata[12] = Integer.toString(rating[0]);
-		pdata[13] = Integer.toString(rating[1]);
-		pdata[14] = Integer.toString(rating[2]);
-		pdata[15] = Integer.toString(rating[3]);
-		pdata[16] = Integer.toString(playCount[0]);
-		pdata[17] = Integer.toString(playCount[1]);
-		pdata[18] = Integer.toString(playCount[2]);
-		pdata[19] = Integer.toString(playCount[3]);
-		pdata[20] = Integer.toString(winCount[0]);
-		pdata[21] = Integer.toString(winCount[1]);
-		pdata[22] = Integer.toString(winCount[2]);
-		pdata[23] = Integer.toString(winCount[3]);
-		pdata[24] = NetUtil.compressString(spPersonalBest.exportString());
-		pdata[25] = Integer.toString(playCountNow);
-		pdata[26] = Integer.toString(winCountNow);
+		writeIntArray(pdata, RATING_INDEX, rating);
+		writeIntArray(pdata, PLAY_COUNT_INDEX, playCount);
+		writeIntArray(pdata, WIN_COUNT_INDEX, winCount);
+		pdata[SP_PERSONAL_BEST_INDEX] = NetUtil.compressString(spPersonalBest.exportString());
+		pdata[PLAY_COUNT_NOW_INDEX] = Integer.toString(playCountNow);
+		pdata[WIN_COUNT_NOW_INDEX] = Integer.toString(winCountNow);
 		return pdata;
 	}
 
@@ -242,15 +232,19 @@ public class NetPlayerInfo implements Serializable {
 	 * @return String
 	 */
 	public String exportString() {
-		String[] data = exportStringArray();
-		String strResult = "";
+		return String.join(";", exportStringArray());
+	}
 
-		for(int i = 0; i < data.length; i++) {
-			strResult += data[i];
-			if(i < data.length - 1) strResult += ";";
+	private static void readIntArray(String[] source, int startIndex, int[] target) {
+		for(int i = 0; i < target.length; i++) {
+			target[i] = Integer.parseInt(source[startIndex + i]);
 		}
+	}
 
-		return strResult;
+	private static void writeIntArray(String[] target, int startIndex, int[] source) {
+		for(int i = 0; i < source.length; i++) {
+			target[startIndex + i] = Integer.toString(source[i]);
+		}
 	}
 
 	/**
