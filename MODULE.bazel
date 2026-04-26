@@ -20,6 +20,7 @@ maven.install(
         "org.junit.jupiter:junit-jupiter:5.10.2",
         "org.junit.platform:junit-platform-console:1.10.2",
     ],
+    known_contributing_modules = ["protobuf"],
     lock_file = "//:maven_install.json",
 )
 use_repo(maven, "maven")
