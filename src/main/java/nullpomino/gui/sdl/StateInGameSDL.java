@@ -4,6 +4,7 @@ package nullpomino.gui.sdl;
 
 import org.apache.log4j.Logger;
 
+import nullpomino.game.component.Controller;
 import nullpomino.game.component.RuleOptions;
 import nullpomino.game.play.GameEngine;
 import nullpomino.game.play.GameManager;
@@ -545,6 +546,21 @@ public class StateInGameSDL extends BaseStateSDL {
 					}
 				}
 
+				// Pre-game SETTING screen mouse + Escape. Hover slides the
+				// menu cursor row-by-row, wheel cycles the current item's
+				// value (LEFT/RIGHT), click confirms (BUTTON_A — usually
+				// "start the game"), and right-click / mouse back / Escape
+				// cancels (BUTTON_B). Synthetic button presses are OR'd
+				// into ctrl.buttonPress[] before updateAll() so the mode's
+				// onSetting reads them via the standard isPush /
+				// isMenuRepeatKey path.
+				if(gameManager.engine.length > 0
+						&& gameManager.engine[0] != null
+						&& gameManager.engine[0].stat == GameEngine.Status.SETTING
+						&& gameManager.mode != null) {
+					injectSettingMouseInput(gameManager.engine[0]);
+				}
+
 				for(int i = 0; i <= fastforward; i++) gameManager.updateAll();
 			}
 		}
@@ -566,6 +582,61 @@ public class StateInGameSDL extends BaseStateSDL {
 				NullpoMinoSDL.goBack();
 				return;
 			}
+		}
+	}
+
+	/**
+	 * Synthesize controller input from mouse + Escape on the pre-game
+	 * SETTING screen. Hover updates the mode's cursor directly via
+	 * {@link nullpomino.game.subsystem.mode.GameMode#setMenuCursor};
+	 * wheel / click / cancel are OR'd into ctrl.buttonPress[] (which
+	 * inputStatusUpdate just populated from the keyboard) so keyboard and
+	 * mouse can drive the same menu without one clobbering the other.
+	 */
+	private void injectSettingMouseInput(GameEngine engine) {
+		MouseInputSDL.mouseInput.update();
+		Controller ctrl = engine.ctrl;
+
+		// Hover: each menu item is rendered as two rows (label + value),
+		// 16 px per row, so item index = (mouseY - baseY) / 32. baseY
+		// matches drawMenuFont's offsetY + 4 / + 52 split. We only set the
+		// cursor when the mode exposes one (getMenuCursor != -1) and only
+		// when the row actually changed to avoid fighting keyboard input
+		// every frame.
+		if(MouseInputSDL.mouseInput.isMouseMoved()) {
+			int currentCursor = gameManager.mode.getMenuCursor();
+			if(currentCursor >= 0) {
+				int offsetY = gameManager.receiver.getFieldDisplayPositionY(engine, 0);
+				int baseY = offsetY + (engine.displaysize == -1 ? 4 : 52);
+				int my = MouseInputSDL.mouseInput.getMouseY();
+				if(my >= baseY) {
+					int item = (my - baseY) / 32;
+					int itemMax = gameManager.mode.getMenuItemCount();
+					int upper = itemMax > 0 ? itemMax - 1 : 19;
+					if(item >= 0 && item <= upper && item != currentCursor) {
+						gameManager.mode.setMenuCursor(item);
+						ResourceHolderSDL.soundManager.play("cursor");
+					}
+				}
+			}
+		}
+
+		// Wheel cycles the value of the highlighted item. Up = forward
+		// (BUTTON_RIGHT, "next / increase"); down = backward (BUTTON_LEFT,
+		// "prev / decrease"). The mode's onSetting plays its own "change"
+		// SE in response.
+		int wheel = (int) NullpoMinoSDL.mouseWheelDelta;
+		if(wheel > 0) ctrl.buttonPress[Controller.BUTTON_RIGHT] = true;
+		else if(wheel < 0) ctrl.buttonPress[Controller.BUTTON_LEFT] = true;
+
+		if(MouseInputSDL.mouseInput.isMouseClicked()) {
+			ctrl.buttonPress[Controller.BUTTON_A] = true;
+		}
+
+		if(MouseInputSDL.mouseInput.isMouseBackClicked()
+				|| MouseInputSDL.mouseInput.isMouseRightClicked()
+				|| NullpoMinoSDL.isEscapePushedThisFrame()) {
+			ctrl.buttonPress[Controller.BUTTON_B] = true;
 		}
 	}
 
