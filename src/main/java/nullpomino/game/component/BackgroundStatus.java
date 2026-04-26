@@ -68,20 +68,22 @@ public class BackgroundStatus implements Serializable {
 	 * Update background fade state
 	 */
 	public void fadeUpdate() {
-		if(fadesw == true) {
-			if(fadecount < 100) {
-				fadecount += 10;
-			} else {
-				if(fadestat == false) {
-					bg = fadebg;
-					fadestat = true;
-					fadecount = 0;
-				} else {
-					fadesw = false;
-					fadestat = false;
-					fadecount = 0;
-				}
-			}
+		if(!fadesw) return;
+
+		if(fadecount < 100) {
+			fadecount += 10;
+			return;
 		}
+
+		if(!fadestat) {
+			bg = fadebg;
+			fadestat = true;
+			fadecount = 0;
+			return;
+		}
+
+		fadesw = false;
+		fadestat = false;
+		fadecount = 0;
 	}
 }
