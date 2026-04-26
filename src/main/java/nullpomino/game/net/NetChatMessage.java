@@ -126,7 +126,7 @@ public class NetChatMessage implements Serializable {
 	 * @param str String
 	 */
 	public void importString(String str) {
-		importStringArray(str.split(";"));
+		importStringArray(str.split(";", -1));
 	}
 
 	/**
@@ -150,15 +150,7 @@ public class NetChatMessage implements Serializable {
 	 * @return String
 	 */
 	public String exportString() {
-		String[] data = exportStringArray();
-		String strResult = "";
-
-		for(int i = 0; i < data.length; i++) {
-			strResult += data[i];
-			if(i < data.length - 1) strResult += ";";
-		}
-
-		return strResult;
+		return String.join(";", exportStringArray());
 	}
 
 	/**
