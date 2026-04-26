@@ -442,18 +442,15 @@ public class PhysicianMode extends AbstractMode {
 	 */
 	private void updateRanking(int sc, int time) {
 		rankingRank = checkRanking(sc, time);
-
-		if(rankingRank != -1) {
-			// Shift down ranking entries
-			for(int i = RANKING_MAX - 1; i > rankingRank; i--) {
-				rankingScore[i] = rankingScore[i - 1];
-				rankingTime[i] = rankingTime[i - 1];
-			}
-
-			// Add new data
-			rankingScore[rankingRank] = sc;
-			rankingTime[rankingRank] = time;
-		}
+		RankingHelper.insertAt(rankingRank, RANKING_MAX,
+			(to, from) -> {
+				rankingScore[to] = rankingScore[from];
+				rankingTime[to] = rankingTime[from];
+			},
+			rank -> {
+				rankingScore[rank] = sc;
+				rankingTime[rank] = time;
+			});
 	}
 
 	/**
@@ -463,14 +460,8 @@ public class PhysicianMode extends AbstractMode {
 	 * @return Position (-1 if unranked)
 	 */
 	private int checkRanking(int sc, int time) {
-		for(int i = 0; i < RANKING_MAX; i++) {
-			if(sc > rankingScore[i]) {
-				return i;
-			} else if((sc == rankingScore[i]) && (time < rankingTime[i])) {
-				return i;
-			}
-		}
-
-		return -1;
+		return RankingHelper.findRank(RANKING_MAX, i ->
+			(sc > rankingScore[i])
+				|| ((sc == rankingScore[i]) && (time < rankingTime[i])));
 	}
 }

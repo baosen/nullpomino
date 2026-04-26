@@ -730,18 +730,15 @@ public class AvalancheFeverMode extends Avalanche1PDummyMode {
 	 */
 	private void updateRanking(int sc, int time, int type, int colors) {
 		rankingRank = checkRanking(sc, time, type, colors);
-
-		if(rankingRank != -1) {
-			// Shift down ranking entries
-			for(int i = RANKING_MAX - 1; i > rankingRank; i--) {
-				rankingScore[colors-3][type][i] = rankingScore[colors-3][type][i - 1];
-				rankingTime[colors-3][type][i] = rankingTime[colors-3][type][i - 1];
-			}
-
-			// Add new data
-			rankingScore[colors-3][type][rankingRank] = sc;
-			rankingTime[colors-3][type][rankingRank] = time;
-		}
+		RankingHelper.insertAt(rankingRank, RANKING_MAX,
+			(to, from) -> {
+				rankingScore[colors-3][type][to] = rankingScore[colors-3][type][from];
+				rankingTime[colors-3][type][to] = rankingTime[colors-3][type][from];
+			},
+			rank -> {
+				rankingScore[colors-3][type][rank] = sc;
+				rankingTime[colors-3][type][rank] = time;
+			});
 	}
 
 	/**
@@ -751,14 +748,9 @@ public class AvalancheFeverMode extends Avalanche1PDummyMode {
 	 * @return Position (-1 if unranked)
 	 */
 	private int checkRanking(int sc, int time, int type, int colors) {
-		for(int i = 0; i < RANKING_MAX; i++) {
-			if(sc > rankingScore[colors-3][type][i]) {
-				return i;
-			} else if((sc == rankingScore[colors-3][type][i]) && (time < rankingTime[colors-3][type][i])) {
-				return i;
-			}
-		}
-
-		return -1;
+		return RankingHelper.findRank(RANKING_MAX, i ->
+			(sc > rankingScore[colors-3][type][i])
+				|| ((sc == rankingScore[colors-3][type][i])
+					&& (time < rankingTime[colors-3][type][i])));
 	}
 }
