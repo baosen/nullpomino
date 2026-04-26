@@ -117,7 +117,7 @@ public class StateSelectModeSDL extends DummyMenuScrollStateSDL {
 			NormalFontSDL.printFontGrid(1, 1, strCurrentFolder + " (" + (cursor + 1) + "/" + list.length + ")",
 					NormalFontSDL.COLOR_ORANGE);
 		} else {
-			NormalFontSDL.printFontGrid(1, 1, "MODE SELECT (" + (cursor + 1) + "/" + list.length + ")",
+			NormalFontSDL.printFontGrid(1, 1, "SELECT MODE (" + (cursor + 1) + "/" + list.length + ")",
 										NormalFontSDL.COLOR_ORANGE);
 		}
 
