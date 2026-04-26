@@ -1,6 +1,7 @@
 package nullpomino.game.subsystem.randomizer;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import net.omegaboshi.nullpomino.game.subsystem.randomizer.BagMinusRandomizer;
@@ -30,6 +31,23 @@ class BagRandomizerTest {
 	void minusBagsWorkAfterDefaultConstructorAndSetState() {
 		assertDrawsEnabledPieces(new BagMinusRandomizer(), Piece.PIECE_STANDARD_COUNT * 3);
 		assertDrawsEnabledPieces(new BagMinusTwoRandomizer(), Piece.PIECE_STANDARD_COUNT * 3);
+	}
+
+	@Test
+	void setPieceEnableCompactsEnabledPiecesInPieceIdOrder() {
+		BagRandomizer randomizer = new BagRandomizer();
+		boolean[] enabled = new boolean[Piece.PIECE_COUNT];
+		enabled[Piece.PIECE_O] = true;
+		enabled[Piece.PIECE_T] = true;
+		enabled[Piece.PIECE_L3] = true;
+
+		randomizer.setPieceEnable(enabled);
+
+		assertArrayEquals(new int[] {
+				Piece.PIECE_O,
+				Piece.PIECE_T,
+				Piece.PIECE_L3
+		}, randomizer.pieces);
 	}
 
 	private static void assertCycleCounts(Randomizer randomizer, int expectedCopies) {
