@@ -1,6 +1,7 @@
 package nullpomino.util;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import org.junit.jupiter.api.Test;
 
@@ -56,5 +57,20 @@ class CustomPropertiesRoundTripTest {
 		CustomProperties p = new CustomProperties();
 		p.setProperty("bad", "not-a-number");
 		assertEquals(7, p.getProperty("bad", 7));
+	}
+
+	@Test
+	void encodeDecodeRoundTripsStoredProperties() {
+		CustomProperties source = new CustomProperties();
+		source.setProperty("name", "Nullpo Mino");
+		source.setProperty("unicode", "テスト");
+		source.setProperty("enabled", true);
+
+		CustomProperties decoded = new CustomProperties();
+		assertTrue(decoded.decode(source.encode("roundtrip")));
+
+		assertEquals("Nullpo Mino", decoded.getProperty("name"));
+		assertEquals("テスト", decoded.getProperty("unicode"));
+		assertEquals(true, decoded.getProperty("enabled", false));
 	}
 }

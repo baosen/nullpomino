@@ -3,9 +3,10 @@
 package nullpomino.game.net;
 
 import java.io.ByteArrayOutputStream;
-import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.net.URLEncoder;
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 import java.util.zip.DataFormatException;
 import java.util.zip.Deflater;
@@ -17,17 +18,15 @@ import org.cacas.java.gnu.tools.Crypt;
  * Network utils
  */
 public class NetUtil {
+	private static final Charset SHIFT_JIS = Charset.forName("Shift_JIS");
+
 	/**
 	 * Convert byte[] to String (with UTF-8 encoding)
 	 * @param bytes Byte array (byte[])
 	 * @return String
 	 */
 	public static String bytesToString(byte[] bytes) {
-		try {
-			return new String(bytes, "UTF-8");
-		} catch (UnsupportedEncodingException e) {
-			throw new Error("UTF-8 Not Supported", e);
-		}
+		return new String(bytes, StandardCharsets.UTF_8);
 	}
 
 	/**
@@ -36,11 +35,7 @@ public class NetUtil {
 	 * @return Byte array (byte[])
 	 */
 	public static byte[] stringToBytes(String str) {
-		try {
-			return str.getBytes("UTF-8");
-		} catch (UnsupportedEncodingException e) {
-			throw new Error("UTF-8 Not Supported", e);
-		}
+		return str.getBytes(StandardCharsets.UTF_8);
 	}
 
 	/**
@@ -49,11 +44,7 @@ public class NetUtil {
 	 * @return URLEncoder-encoded String
 	 */
 	public static String urlEncode(String str) {
-		try {
-			return URLEncoder.encode(str, "UTF-8");
-		} catch (UnsupportedEncodingException e) {
-			throw new Error("UTF-8 Not Supported", e);
-		}
+		return URLEncoder.encode(str, StandardCharsets.UTF_8);
 	}
 
 	/**
@@ -62,11 +53,7 @@ public class NetUtil {
 	 * @return Decoded String
 	 */
 	public static String urlDecode(String str) {
-		try {
-			return URLDecoder.decode(str, "UTF-8");
-		} catch (UnsupportedEncodingException e) {
-			throw new Error("UTF-8 Not Supported", e);
-		}
+		return URLDecoder.decode(str, StandardCharsets.UTF_8);
 	}
 
 	/**
@@ -75,13 +62,7 @@ public class NetUtil {
 	 * @return Shift_JIS encoded byte array (byte[])
 	 */
 	public static byte[] stringToShiftJIS(String s) {
-		byte[] b = null;
-		try {
-			b = s.getBytes("Shift_JIS");
-		} catch (UnsupportedEncodingException e) {
-			b = s.getBytes();
-		}
-		return b;
+		return s.getBytes(SHIFT_JIS);
 	}
 
 	/**
@@ -90,13 +71,7 @@ public class NetUtil {
 	 * @return UTF-8 String
 	 */
 	public static String shiftJIStoString(byte[] b) {
-		String s = null;
-		try {
-			s = new String(b, "Shift_JIS");
-		} catch (UnsupportedEncodingException e) {
-			s = new String(b);
-		}
-		return s;
+		return new String(b, SHIFT_JIS);
 	}
 
 	/**

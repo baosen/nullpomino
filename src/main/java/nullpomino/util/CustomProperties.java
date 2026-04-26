@@ -4,9 +4,9 @@ package nullpomino.util;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
-import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.Properties;
 
 /**
@@ -118,9 +118,7 @@ public class CustomProperties extends Properties {
 		try {
 			ByteArrayOutputStream out = new ByteArrayOutputStream();
 			store(out, comments);
-			result = URLEncoder.encode(out.toString("UTF-8"), "UTF-8");
-		} catch (UnsupportedEncodingException e) {
-			throw new Error("UTF-8 not supported", e);
+			result = URLEncoder.encode(new String(out.toByteArray(), StandardCharsets.UTF_8), StandardCharsets.UTF_8);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -135,11 +133,9 @@ public class CustomProperties extends Properties {
 	 */
 	public boolean decode(String source) {
 		try {
-			String decodedString = URLDecoder.decode(source, "UTF-8");
-			ByteArrayInputStream in = new ByteArrayInputStream(decodedString.getBytes("UTF-8"));
+			String decodedString = URLDecoder.decode(source, StandardCharsets.UTF_8);
+			ByteArrayInputStream in = new ByteArrayInputStream(decodedString.getBytes(StandardCharsets.UTF_8));
 			load(in);
-		} catch (UnsupportedEncodingException e) {
-			throw new Error("UTF-8 not supported", e);
 		} catch (Exception e) {
 			e.printStackTrace();
 			return false;
