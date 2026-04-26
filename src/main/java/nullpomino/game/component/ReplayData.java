@@ -86,14 +86,15 @@ public class ReplayData implements Serializable {
 	 * @param maxFrame Save frame count (-1Save in all)
 	 */
 	public void writeProperty(CustomProperties p, int id, int maxFrame) {
-		int max = ((maxFrame < 0) || (maxFrame > inputDataArray.size())) ? inputDataArray.size() : maxFrame;
+		int max = replayFrameCount(maxFrame);
+		int previous = 0;
 
 		for(int i = 0; i < max; i++) {
-			int input = getInputData(i);
-			int previous = getInputData(i - 1);
-			if(input != previous) p.setProperty(id + ".r." + i, input);
+			int input = inputDataArray.get(i);
+			if(input != previous) p.setProperty(replayFrameKey(id, i), input);
+			previous = input;
 		}
-		p.setProperty(id + ".r.max", max);
+		p.setProperty(replayMaxKey(id), max);
 	}
 
 	/**
@@ -103,13 +104,25 @@ public class ReplayData implements Serializable {
 	 */
 	public void readProperty(CustomProperties p, int id) {
 		reset();
-		int max = p.getProperty(id + ".r.max", 0);
+		int max = p.getProperty(replayMaxKey(id), 0);
 		int input = 0;
 
 		for(int i = 0; i < max; i++) {
-			int data = p.getProperty(id + ".r." + i, -1);
+			int data = p.getProperty(replayFrameKey(id, i), -1);
 			if(data != -1) input = data;
 			setInputData(input, i);
 		}
+	}
+
+	private int replayFrameCount(int maxFrame) {
+		return ((maxFrame < 0) || (maxFrame > inputDataArray.size())) ? inputDataArray.size() : maxFrame;
+	}
+
+	private static String replayFrameKey(int id, int frame) {
+		return id + ".r." + frame;
+	}
+
+	private static String replayMaxKey(int id) {
+		return id + ".r.max";
 	}
 }
