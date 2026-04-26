@@ -3,8 +3,8 @@
 package nullpomino.game.net;
 
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
 import java.net.Socket;
+import java.nio.charset.StandardCharsets;
 import java.util.LinkedList;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -118,7 +118,7 @@ public class NetBaseClient extends Thread {
 			int size;
 
 			while( (threadRunning) && ((size = socket.getInputStream().read(buf)) > 0) ) {
-				String message = new String(buf, 0, size, "UTF-8");
+				String message = new String(buf, 0, size, StandardCharsets.UTF_8);
 
 				// The various processing depending on the received message
 				StringBuilder packetBuffer = new StringBuilder();
@@ -139,8 +139,6 @@ public class NetBaseClient extends Thread {
 					notCompletePacketBuffer = null;
 				}
 			}
-		} catch (UnsupportedEncodingException e) {
-			throw new Error("UTF-8 Not Supported", e);
 		} catch (Exception e) {
 			log.info("Socket disconnected", e);
 			exDisconnectReason = e;
