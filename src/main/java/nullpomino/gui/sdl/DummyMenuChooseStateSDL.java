@@ -18,10 +18,27 @@ public abstract class DummyMenuChooseStateSDL extends BaseStateSDL {
 	/** Set to false to ignore mouse input */
 	protected boolean mouseEnabled;
 
+	/**
+	 * Set true by {@link NullpoMinoSDL#doTransition(int)} after this state's
+	 * {@code enter()} runs, so the next hover check snaps the cursor to the
+	 * row under the pointer even when the mouse hasn't moved between frames.
+	 * Without this the {@code isMouseMoved()} gate hides the initial position
+	 * — a stationary cursor sitting on a row gets ignored until the user
+	 * nudges the mouse. Consumed (cleared) on the first read.
+	 */
+	boolean justEntered;
+
 	public DummyMenuChooseStateSDL () {
 		maxCursor = -1;
 		minChoiceY = 3;
 		mouseEnabled = true;
+	}
+
+	/** Read-and-clear the {@link #justEntered} flag. */
+	protected boolean consumeJustEntered() {
+		boolean was = justEntered;
+		justEntered = false;
+		return was;
 	}
 
 	@Override
@@ -93,16 +110,20 @@ public abstract class DummyMenuChooseStateSDL extends BaseStateSDL {
 		// over. Gated on isMouseMoved() so a stationary pointer can't fight
 		// keyboard / wheel navigation — if the mouse stays put while the
 		// user arrows around, the cursor stays wherever they put it.
+		// Also fires once on entry (justEntered) so the selection matches
+		// whatever row the pointer is already hovering when the screen
+		// opens, instead of waiting for the user to nudge the mouse.
 		// Doesn't return true, so hover never confirms; confirmation stays
 		// bound to click / BUTTON_A below.
-		if (MouseInputSDL.mouseInput.isMouseMoved())
+		boolean entered = consumeJustEntered();
+		if (MouseInputSDL.mouseInput.isMouseMoved() || entered)
 		{
 			int y = MouseInputSDL.mouseInput.getMouseY() >> 4;
 			int newCursor = y - minChoiceY;
 			if (newCursor >= 0 && newCursor <= maxCursor && newCursor != cursor)
 			{
 				cursor = newCursor;
-				ResourceHolderSDL.soundManager.play("cursor");
+				if (!entered) ResourceHolderSDL.soundManager.play("cursor");
 			}
 		}
 

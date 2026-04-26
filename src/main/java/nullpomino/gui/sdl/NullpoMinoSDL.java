@@ -907,6 +907,15 @@ public class NullpoMinoSDL {
 		if((id >= 0) && (id < STATE_MAX) && (gameStates[id] != null)) {
 			currentState = id;
 			gameStates[currentState].enter();
+			// Tell menu screens they were just entered, so the next mouse-
+			// hover check snaps the cursor to the row under the pointer
+			// without waiting for a movement event. Done here (after
+			// enter()) rather than in the base class enter() so subclasses
+			// that override enter() without chaining to super still pick
+			// it up.
+			if (gameStates[currentState] instanceof DummyMenuChooseStateSDL) {
+				((DummyMenuChooseStateSDL) gameStates[currentState]).justEntered = true;
+			}
 		} else if(id < 0) {
 			quit = true;
 		} else {
