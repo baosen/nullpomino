@@ -4,6 +4,7 @@ package nullpomino.util;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.net.URLDecoder;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
@@ -39,16 +40,7 @@ public class CustomProperties extends Properties {
 	}
 
 	public int getProperty(String key, int defaultValue) {
-		String str = getProperty(key, String.valueOf(defaultValue));
-
-		int result;
-		try {
-			result = Integer.parseInt(str);
-		} catch(NumberFormatException e) {
-			result = defaultValue;
-		}
-
-		return result;
+		return parseInt(getProperty(key), defaultValue);
 	}
 
 	/**
@@ -58,16 +50,7 @@ public class CustomProperties extends Properties {
 	 * @return Integer that corresponds to the specified keycount (Not founddefaultValue)
 	 */
 	public long getProperty(String key, long defaultValue) {
-		String str = getProperty(key, String.valueOf(defaultValue));
-
-		long result;
-		try {
-			result = Long.parseLong(str);
-		} catch(NumberFormatException e) {
-			result = defaultValue;
-		}
-
-		return result;
+		return parseLong(getProperty(key), defaultValue);
 	}
 
 	/**
@@ -77,34 +60,16 @@ public class CustomProperties extends Properties {
 	 * @return Integer that corresponds to the specified keycount (Not founddefaultValue)
 	 */
 	public float getProperty(String key, float defaultValue) {
-		String str = getProperty(key, String.valueOf(defaultValue));
-
-		float result;
-		try {
-			result = Float.parseFloat(str);
-		} catch(NumberFormatException e) {
-			result = defaultValue;
-		}
-
-		return result;
+		return parseFloat(getProperty(key), defaultValue);
 	}
 
 	public double getProperty(String key, double defaultValue) {
-		String str = getProperty(key, String.valueOf(defaultValue));
-
-		double result;
-		try {
-			result = Double.parseDouble(str);
-		} catch(NumberFormatException e) {
-			result = defaultValue;
-		}
-
-		return result;
+		return parseDouble(getProperty(key), defaultValue);
 	}
 
 	public boolean getProperty(String key, boolean defaultValue) {
 		String str = getProperty(key, Boolean.toString(defaultValue));
-		return Boolean.valueOf(str);
+		return Boolean.parseBoolean(str);
 	}
 
 	/**
@@ -113,17 +78,14 @@ public class CustomProperties extends Properties {
 	 * @return URLEncoderProperty string sets that are encoded in
 	 */
 	public String encode(String comments) {
-		String result = null;
-
 		try {
 			ByteArrayOutputStream out = new ByteArrayOutputStream();
 			store(out, comments);
-			result = URLEncoder.encode(new String(out.toByteArray(), StandardCharsets.UTF_8), StandardCharsets.UTF_8);
-		} catch (Exception e) {
-			e.printStackTrace();
+			String properties = new String(out.toByteArray(), StandardCharsets.UTF_8);
+			return URLEncoder.encode(properties, StandardCharsets.UTF_8);
+		} catch (IOException e) {
+			throw new IllegalStateException("Failed to encode properties", e);
 		}
-
-		return result;
 	}
 
 	/**
@@ -136,11 +98,50 @@ public class CustomProperties extends Properties {
 			String decodedString = URLDecoder.decode(source, StandardCharsets.UTF_8);
 			ByteArrayInputStream in = new ByteArrayInputStream(decodedString.getBytes(StandardCharsets.UTF_8));
 			load(in);
-		} catch (Exception e) {
-			e.printStackTrace();
+		} catch (IllegalArgumentException | IOException e) {
 			return false;
 		}
 
 		return true;
+	}
+
+	private static int parseInt(String value, int defaultValue) {
+		if(value == null) return defaultValue;
+
+		try {
+			return Integer.parseInt(value);
+		} catch(NumberFormatException e) {
+			return defaultValue;
+		}
+	}
+
+	private static long parseLong(String value, long defaultValue) {
+		if(value == null) return defaultValue;
+
+		try {
+			return Long.parseLong(value);
+		} catch(NumberFormatException e) {
+			return defaultValue;
+		}
+	}
+
+	private static float parseFloat(String value, float defaultValue) {
+		if(value == null) return defaultValue;
+
+		try {
+			return Float.parseFloat(value);
+		} catch(NumberFormatException e) {
+			return defaultValue;
+		}
+	}
+
+	private static double parseDouble(String value, double defaultValue) {
+		if(value == null) return defaultValue;
+
+		try {
+			return Double.parseDouble(value);
+		} catch(NumberFormatException e) {
+			return defaultValue;
+		}
 	}
 }
