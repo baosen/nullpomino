@@ -68,8 +68,12 @@ public abstract class DummyMenuChooseStateSDL extends BaseStateSDL {
 			if (onPushButtonD()) return;
 		}
 
-		// Cancel button
-		if(GameKeySDL.gamekey[0].isPushKey(GameKeySDL.BUTTON_B) || MouseInputSDL.mouseInput.isMouseRightClicked() || MouseInputSDL.mouseInput.isMouseBackClicked()) {
+		// Cancel button. Escape is checked directly so the back affordance
+		// works even if the user has remapped BUTTON_B to another key.
+		if(GameKeySDL.gamekey[0].isPushKey(GameKeySDL.BUTTON_B)
+				|| NullpoMinoSDL.isEscapePushedThisFrame()
+				|| MouseInputSDL.mouseInput.isMouseRightClicked()
+				|| MouseInputSDL.mouseInput.isMouseBackClicked()) {
 			if (onCancel()) return;
 		}
 	}

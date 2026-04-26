@@ -169,6 +169,24 @@ public class StateConfigAISelectSDL extends BaseStateSDL {
 	 */
 	@Override
 	public void update() {
+		// Mouse: hover slides the cursor, click confirms, right-click / back / Escape cancels.
+		MouseInputSDL.mouseInput.update();
+		boolean mouseConfirm = false;
+		if(MouseInputSDL.mouseInput.isMouseMoved()) {
+			int row = (MouseInputSDL.mouseInput.getMouseY() >> 4) - 3;
+			if(row >= 0 && row <= 6 && row != cursor) {
+				cursor = row;
+				ResourceHolderSDL.soundManager.play("cursor");
+			}
+		}
+		if(MouseInputSDL.mouseInput.isMouseClicked()) {
+			int row = (MouseInputSDL.mouseInput.getMouseY() >> 4) - 3;
+			if(row >= 0 && row <= 6) {
+				cursor = row;
+				mouseConfirm = true;
+			}
+		}
+
 		// Cursor movement
 		if(GameKeySDL.gamekey[0].isMenuRepeatKey(GameKeySDL.BUTTON_UP)) {
 			cursor--;
@@ -224,7 +242,7 @@ public class StateConfigAISelectSDL extends BaseStateSDL {
 		}
 
 		// Decision button
-		if(GameKeySDL.gamekey[0].isPushKey(GameKeySDL.BUTTON_A)) {
+		if(GameKeySDL.gamekey[0].isPushKey(GameKeySDL.BUTTON_A) || mouseConfirm) {
 			ResourceHolderSDL.soundManager.play("decide");
 
 			if(aiID >= 0) NullpoMinoSDL.propGlobal.setProperty(player + ".ai", aiPathList[aiID]);
@@ -241,8 +259,11 @@ public class StateConfigAISelectSDL extends BaseStateSDL {
 			return;
 		}
 
-		// Cancel button
-		if(GameKeySDL.gamekey[0].isPushKey(GameKeySDL.BUTTON_B)) {
+		// Cancel button (BUTTON_B, Escape, mouse back, right-click)
+		if(GameKeySDL.gamekey[0].isPushKey(GameKeySDL.BUTTON_B)
+				|| NullpoMinoSDL.isEscapePushedThisFrame()
+				|| MouseInputSDL.mouseInput.isMouseBackClicked()
+				|| MouseInputSDL.mouseInput.isMouseRightClicked()) {
 			NullpoMinoSDL.goBack();
 			return;
 		}

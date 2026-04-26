@@ -983,6 +983,18 @@ public class NullpoMinoSDL {
 	}
 
 	/**
+	 * Whether Escape was pressed this frame (excluding key-repeat). Useful for menu
+	 * states that need a guaranteed back-to-previous-screen affordance regardless of
+	 * how BUTTON_B is configured in the user's keymap.
+	 */
+	public static boolean isEscapePushedThisFrame() {
+		for(KeyEvent ev : frameKeyEvents) {
+			if(ev.scancode == SDLConstants.SDL_SCANCODE_ESCAPE && !ev.repeat) return true;
+		}
+		return false;
+	}
+
+	/**
 	 * Consume (read and clear) all text typed since last call. Intended for a focused text-input widget.
 	 * @return UTF-8 text that was committed this frame, or empty string if none
 	 */
