@@ -104,12 +104,10 @@ public class StateConfigJoystickButtonSDL extends BaseStateSDL {
 
 		NormalFontSDL.printFontGrid(1, 5 + keynum - 4, "b", NormalFontSDL.COLOR_RED);
 
-		if(frame >= KEYACCEPTFRAME) {
-			NormalFontSDL.printFontGrid(1, 20, "UP/DOWN:   MOVE CURSOR", NormalFontSDL.COLOR_GREEN);
-			NormalFontSDL.printFontGrid(1, 21, "ENTER:     OK",     NormalFontSDL.COLOR_GREEN);
-			NormalFontSDL.printFontGrid(1, 22, "DELETE:    NO SET", NormalFontSDL.COLOR_GREEN);
-			NormalFontSDL.printFontGrid(1, 23, "BACKSPACE: CANCEL", NormalFontSDL.COLOR_GREEN);
-		}
+		NormalFontSDL.printFontGrid(1, 20, "UP/DOWN:   MOVE CURSOR", NormalFontSDL.COLOR_GREEN);
+		NormalFontSDL.printFontGrid(1, 21, "ENTER:     OK",     NormalFontSDL.COLOR_GREEN);
+		NormalFontSDL.printFontGrid(1, 22, "DELETE:    NO SET", NormalFontSDL.COLOR_GREEN);
+		NormalFontSDL.printFontGrid(1, 23, "BACKSPACE: CANCEL", NormalFontSDL.COLOR_GREEN);
 	}
 
 	/*
