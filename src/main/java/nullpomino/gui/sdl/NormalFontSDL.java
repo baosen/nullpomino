@@ -17,7 +17,7 @@ public class NormalFontSDL {
 	public static final int COLOR_WHITE = 0, COLOR_BLUE = 1, COLOR_RED = 2, COLOR_PINK = 3, COLOR_GREEN = 4, COLOR_YELLOW = 5, COLOR_CYAN = 6,
 			COLOR_ORANGE = 7, COLOR_PURPLE = 8, COLOR_DARKBLUE = 9;
 	/** Extra TTF-only color — the bitmap font atlas only has rows 0–9. */
-	public static final int COLOR_DARKGRAY = 10;
+	public static final int COLOR_LIGHTGRAY = 10;
 
 	/**
 	 * Get font color as RGB values
@@ -35,7 +35,7 @@ public class NormalFontSDL {
 		case COLOR_ORANGE:   return new int[]{255,128,  0};
 		case COLOR_PURPLE:   return new int[]{255,  0,255};
 		case COLOR_DARKBLUE: return new int[]{  0,  0,128};
-		case COLOR_DARKGRAY: return new int[]{ 80, 80, 80};
+		case COLOR_LIGHTGRAY: return new int[]{192,192,192};
 		}
 		return new int[]{255,255,255};
 	}

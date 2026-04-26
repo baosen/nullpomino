@@ -56,7 +56,7 @@ public class StateTitleSDL extends DummyMenuChooseStateSDL {
 		// margin the old version string used.
 		String buildString = GameManager.getCommitHash() + " (" + (GameManager.isDevBuild() ? "debug" : "release") + ")";
 		int buildWidth = NormalFontSDL.getTTFStringWidth(buildString);
-		NormalFontSDL.printTTFFont(640 - 16 - buildWidth, 448, buildString, NormalFontSDL.COLOR_DARKGRAY);
+		NormalFontSDL.printTTFFont(640 - 16 - buildWidth, 448, buildString, NormalFontSDL.COLOR_LIGHTGRAY);
 	}
 
 	@Override
