@@ -4,6 +4,7 @@ package nullpomino.game.net;
 
 import java.io.Serializable;
 import java.nio.channels.SocketChannel;
+import java.util.Arrays;
 
 import nullpomino.game.component.RuleOptions;
 import nullpomino.game.play.GameEngine;
@@ -141,12 +142,10 @@ public class NetPlayerInfo implements Serializable {
 			ruleOpt = null;
 		}
 
-		for(int i = 0; i < GameEngine.MAX_GAMESTYLE; i++) {
-			rating[i] = n.rating[i];
-			ratingBefore[i] = n.ratingBefore[i];
-			playCount[i] = n.playCount[i];
-			winCount[i] = n.winCount[i];
-		}
+		rating = Arrays.copyOf(n.rating, GameEngine.MAX_GAMESTYLE);
+		ratingBefore = Arrays.copyOf(n.ratingBefore, GameEngine.MAX_GAMESTYLE);
+		playCount = Arrays.copyOf(n.playCount, GameEngine.MAX_GAMESTYLE);
+		winCount = Arrays.copyOf(n.winCount, GameEngine.MAX_GAMESTYLE);
 		spPersonalBest = new NetSPPersonalBest(n.spPersonalBest);
 
 		playCountNow = n.playCountNow;
