@@ -808,6 +808,26 @@ public class NullpoMinoSDL {
 	private static Deque<Integer> backStack = new ArrayDeque<Integer>();
 
 	/**
+	 * Redo history for {@link #goForward()}. {@link #goBack()} pushes the
+	 * outgoing state here so the mouse forward button can re-enter screens
+	 * the user just stepped back from. Cleared by {@link #enterState(int)}
+	 * (a fresh forward navigation invalidates the redo branch, browser-style)
+	 * and by {@link #enterStateClear(int)} (full reset).
+	 */
+	private static Deque<Integer> forwardStack = new ArrayDeque<Integer>();
+
+	/**
+	 * States whose {@code leave()} tears down per-session resources
+	 * ({@code gameManager}, network room state) and so cannot safely be
+	 * re-entered by replaying a navigation. {@link #goBack()} skips pushing
+	 * these onto {@link #forwardStack}; {@link #goForward()} treats a
+	 * popped entry that's no longer safe as a no-op for the same reason.
+	 */
+	private static boolean isForwardSafe(int id) {
+		return id != STATE_INGAME && id != STATE_NETGAME;
+	}
+
+	/**
 	 * Switch state, pushing the outgoing state onto the back stack so
 	 * {@link #goBack()} can return here later.
 	 * @param id Destination state ID (-1 to end the program)
@@ -820,21 +840,42 @@ public class NullpoMinoSDL {
 		if((currentState >= 0) && (currentState < STATE_MAX)) {
 			backStack.push(currentState);
 		}
+		forwardStack.clear();
 		doTransition(id);
 	}
 
 	/**
 	 * Pop the back stack and transition to the revealed state, or quit the
 	 * program if the stack is empty (the title screen's cancel path lands
-	 * here). Does not push the current state onto the stack — this is the
-	 * inverse of {@link #enterState(int)}.
+	 * here). Pushes the outgoing state onto {@link #forwardStack} when it's
+	 * safely re-enterable so {@link #goForward()} can replay this hop.
 	 */
 	public static void goBack() {
 		if(backStack.isEmpty()) {
 			quit = true;
 			return;
 		}
+		if((currentState >= 0) && (currentState < STATE_MAX) && isForwardSafe(currentState)) {
+			forwardStack.push(currentState);
+		}
 		doTransition(backStack.pop());
+	}
+
+	/**
+	 * Pop the forward stack and re-enter the state {@link #goBack()} last
+	 * stepped away from, pushing the current state onto the back stack so
+	 * the trip remains reversible. No-op when the forward stack is empty
+	 * or the recorded state isn't safe to re-enter (its session has since
+	 * been torn down).
+	 */
+	public static void goForward() {
+		if(forwardStack.isEmpty()) return;
+		int id = forwardStack.pop();
+		if(!isForwardSafe(id)) return;
+		if((currentState >= 0) && (currentState < STATE_MAX)) {
+			backStack.push(currentState);
+		}
+		doTransition(id);
 	}
 
 	/**
@@ -849,6 +890,7 @@ public class NullpoMinoSDL {
 	 */
 	public static void enterStateClear(int id) {
 		backStack.clear();
+		forwardStack.clear();
 		if(id != STATE_TITLE) backStack.push(STATE_TITLE);
 		doTransition(id);
 	}
