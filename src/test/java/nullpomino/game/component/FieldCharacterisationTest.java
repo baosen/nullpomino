@@ -4,6 +4,8 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import nullpomino.util.CustomProperties;
+
 import org.junit.jupiter.api.Test;
 
 /**
@@ -148,5 +150,25 @@ class FieldCharacterisationTest {
 		assertTrue(dst.getBlock(4, 19).getAttribute(Block.BLOCK_ATTRIBUTE_OUTLINE));
 		assertTrue(dst.getBlock(4, 19).getAttribute(Block.BLOCK_ATTRIBUTE_GARBAGE));
 		assertEquals(Block.BLOCK_COLOR_NONE, dst.getBlockColor(5, 19));
+	}
+
+	@Test
+	void propertyRowsRoundTripWithLegacyCommaSeparatedKeys() {
+		Field src = new Field(4, 3, 1, false);
+		src.setBlockColor(0, 1, Block.BLOCK_COLOR_RED);
+		src.setBlockColor(2, 1, Block.BLOCK_COLOR_BLUE);
+		CustomProperties props = new CustomProperties();
+
+		src.writeProperty(props, 2);
+		assertEquals("2,0,7,0", props.getProperty("2.field.map.1"));
+
+		Field dst = new Field(4, 3, 1, false);
+		dst.getBlock(0, 1).elapsedFrames = 99;
+		dst.readProperty(props, 2);
+
+		assertEquals(Block.BLOCK_COLOR_RED, dst.getBlockColor(0, 1));
+		assertEquals(Block.BLOCK_COLOR_BLUE, dst.getBlockColor(2, 1));
+		assertEquals(Block.BLOCK_COLOR_NONE, dst.getBlockColor(1, 1));
+		assertEquals(-1, dst.getBlock(0, 1).elapsedFrames);
 	}
 }
