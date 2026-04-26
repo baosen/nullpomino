@@ -285,20 +285,18 @@ public class NetRoomInfo implements Serializable {
 		customRated = n.customRated;
 		style = n.style;
 
-		mapList.clear();
-		mapList.addAll(n.mapList);
-		playerList.clear();
-		playerList.addAll(n.playerList);
-		playerSeat.clear();
-		playerSeat.addAll(n.playerSeat);
-		playerSeatNowPlaying.clear();
-		playerSeatNowPlaying.addAll(n.playerSeatNowPlaying);
-		playerQueue.clear();
-		playerQueue.addAll(n.playerQueue);
-		playerSeatDead.clear();
-		playerSeatDead.addAll(n.playerSeatDead);
-		chatList.clear();
-		chatList.addAll(n.chatList);
+		copyList(mapList, n.mapList);
+		copyList(playerList, n.playerList);
+		copyList(playerSeat, n.playerSeat);
+		copyList(playerSeatNowPlaying, n.playerSeatNowPlaying);
+		copyList(playerQueue, n.playerQueue);
+		copyList(playerSeatDead, n.playerSeatDead);
+		copyList(chatList, n.chatList);
+	}
+
+	private static <T> void copyList(LinkedList<T> target, LinkedList<T> source) {
+		target.clear();
+		target.addAll(source);
 	}
 
 	/**
