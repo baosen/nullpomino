@@ -2344,18 +2344,18 @@ public class Field implements Serializable {
 	 * @return It was converted to a stringfield
 	 */
 	public String fieldToString() {
-		String strResult = "";
+		StringBuilder strResult = new StringBuilder();
 
 		for(int i = getHeight() - 1; i >= Math.max(-1, getHighestBlockY()); i--) {
-			strResult += rowToString(getRow(i));
+			strResult.append(rowToString(getRow(i)));
 		}
 
 		// Closing0Remove the
-		while(strResult.endsWith("0")) {
-			strResult = strResult.substring(0, strResult.length() - 1);
+		while((strResult.length() > 0) && (strResult.charAt(strResult.length() - 1) == '0')) {
+			strResult.setLength(strResult.length() - 1);
 		}
 
-		return strResult;
+		return strResult.toString();
 	}
 
 	public Block[] stringToRow(String str){
@@ -2446,14 +2446,14 @@ public class Field implements Serializable {
 	 * @return a String representing the row with attributes
 	 */
 	public String attrRowToString(Block[] row){
-		String strResult = "";
+		StringBuilder strResult = new StringBuilder(row.length * 4);
 
 		for(int x = 0; x < row.length; x++) {
-			strResult += Integer.toString(row[x].color, 16) + "/";
-			strResult += Integer.toString(row[x].attribute, 16) + ";";
+			strResult.append(Integer.toString(row[x].color, 16)).append('/');
+			strResult.append(Integer.toString(row[x].attribute, 16)).append(';');
 		}
 
-		return strResult;
+		return strResult.toString();
 	}
 
 	/**
@@ -2461,16 +2461,25 @@ public class Field implements Serializable {
 	 * @return a String representing the field with attributes
 	 */
 	public String attrFieldToString() {
-		String strResult = "";
+		StringBuilder strResult = new StringBuilder();
 
 		for(int i = getHeight() - 1; i >= Math.max(-1, getHighestBlockY()); i--) {
-			strResult += attrRowToString(getRow(i));
+			strResult.append(attrRowToString(getRow(i)));
 		}
-		while(strResult.endsWith("0/0;")) {
-			strResult = strResult.substring(0, strResult.length() - 4);
+		while(endsWith(strResult, "0/0;")) {
+			strResult.setLength(strResult.length() - 4);
 		}
 
-		return strResult;
+		return strResult.toString();
+	}
+
+	private static boolean endsWith(StringBuilder value, String suffix) {
+		if(value.length() < suffix.length()) return false;
+		int offset = value.length() - suffix.length();
+		for(int i = 0; i < suffix.length(); i++) {
+			if(value.charAt(offset + i) != suffix.charAt(i)) return false;
+		}
+		return true;
 	}
 
 	public Block[] attrStringToRow(String str, int skin) {
@@ -2505,21 +2514,18 @@ public class Field implements Serializable {
 	}
 
 	public void attrStringToField(String str, int skin) {
-		String[] strArray = str.split(";");
+		String[] strArray = str.split(";", -1);
 
 		for(int i = -1; i < getHeight(); i++) {
 			int index = (getHeight() - 1 - i) * getWidth();
 
 			try{
-				String strTemp = "";
 				String[] strArray2 = new String[getWidth()];
 				for(int j = 0; j < getWidth(); j++){
 					if(index + j < strArray.length)
 						strArray2[j] = strArray[index + j];
 					else
 						strArray2[j] = "";
-
-					strTemp += strArray2[j] + "/";
 				}
 
 				Block[] row = attrStringToRow(strArray2, skin);
@@ -2540,27 +2546,28 @@ public class Field implements Serializable {
 	 */
 	@Override
 	public String toString() {
-		String str = getClass().getName() + "@" + Integer.toHexString(hashCode()) + "\n";
+		StringBuilder str = new StringBuilder();
+		str.append(getClass().getName()).append('@').append(Integer.toHexString(hashCode())).append('\n');
 
 		for(int i = (hidden_height * -1); i < height; i++) {
-			str += String.format("%3d:", i);
+			str.append(String.format("%3d:", i));
 
 			for(int j = 0; j < width; j++) {
 				int color = getBlockColor(j, i);
 
 				if(color < 0) {
-					str += "*";
+					str.append('*');
 				} else if(color >= 10) {
-					str += "+";
+					str.append('+');
 				} else {
-					str += Integer.toString(color);
+					str.append(Integer.toString(color));
 				}
 			}
 
-			str += "\n";
+			str.append('\n');
 		}
 
-		return str;
+		return str.toString();
 	}
 
 	public int checkColor(int size, boolean flag, boolean garbageClear, boolean gemSame, boolean ignoreHidden) {
