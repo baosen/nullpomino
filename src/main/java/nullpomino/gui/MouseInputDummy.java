@@ -7,10 +7,12 @@ public abstract class MouseInputDummy {
 	protected int prevMouseY;
 	protected int[] mousePressed;
 	protected int mouseBackPressed;
+	protected int mouseForwardPressed;
 
 	protected MouseInputDummy() {
 		mousePressed = new int[3];
 		mouseBackPressed = 0;
+		mouseForwardPressed = 0;
 		prevMouseX = -1;
 		prevMouseY = -1;
 	}
@@ -34,6 +36,10 @@ public abstract class MouseInputDummy {
 
 	public boolean isMouseBackClicked() {
 		return (mouseBackPressed == 1);
+	}
+
+	public boolean isMouseForwardClicked() {
+		return (mouseForwardPressed == 1);
 	}
 
 	public boolean isMousePressed() {

@@ -58,5 +58,10 @@ public class MouseInputSDL extends MouseInputDummy {
 		} else {
 			mouseBackPressed = 0;
 		}
+		if((buttons & SDLConstants.SDL_BUTTON_X2MASK) != 0) {
+			mouseForwardPressed++;
+		} else {
+			mouseForwardPressed = 0;
+		}
 	}
 }
