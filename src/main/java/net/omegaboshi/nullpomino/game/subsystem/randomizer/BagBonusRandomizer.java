@@ -16,6 +16,11 @@ public class BagBonusRandomizer extends Randomizer {
 	}
 
 	public void init() {
+		initBag();
+		shuffle();
+	}
+
+	protected void initBag() {
 		baglen = pieces.length+1;
 		bag = new int[baglen];
 		pt = 0;
@@ -23,21 +28,20 @@ public class BagBonusRandomizer extends Randomizer {
 		for (int i = 0; i < pieces.length; i++) {
 			bag[i] = pieces[i];
 		}
-		shuffle();
 	}
 
 	public void shuffle() {
-		bag[bonus] = pieces[r.nextInt(pieces.length)];
+		shuffleWithBonus(pieces[r.nextInt(pieces.length)]);
+	}
+
+	protected void shuffleWithBonus(int bonusPiece) {
+		bag[bonus] = bonusPiece;
 		for (int i = baglen; i > 1; i--) {
 			int j = r.nextInt(i);
 			int temp = bag[i-1];
 			bag[i-1] = bag[j];
 			bag[j] = temp;
-			if (bonus == i-1) {
-				bonus = j;
-			} else if(bonus == j) {
-				bonus = i-1;
-			}
+			updateBonusPosition(i - 1, j);
 		}
 	}
 
@@ -49,5 +53,13 @@ public class BagBonusRandomizer extends Randomizer {
 			shuffle();
 		}
 		return id;
+	}
+
+	private void updateBonusPosition(int first, int second) {
+		if (bonus == first) {
+			bonus = second;
+		} else if(bonus == second) {
+			bonus = first;
+		}
 	}
 }
