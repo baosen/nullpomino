@@ -107,11 +107,11 @@ public class GameManager {
 		return DEV_BUILD;
 	}
 
-	/** Cached commit hash, resolved lazily from the working tree's .git dir. */
+	/** Cached short commit hash, resolved lazily from the working tree's .git dir. */
 	private static String cachedCommitHash;
 
 	/**
-	 * Get the full git commit hash of the running build, or "unknown" if it
+	 * Get the short git commit hash of the running build, or "unknown" if it
 	 * can't be resolved (e.g. running from a packaged jar without a .git dir
 	 * alongside it).
 	 */
@@ -131,8 +131,8 @@ public class GameManager {
 			String hash = contents.startsWith("ref:")
 				? readRef(contents.substring(4).trim())
 				: contents;
-			if(hash == null || hash.isEmpty()) return "unknown";
-			return hash;
+			if(hash == null || hash.length() < 7) return "unknown";
+			return hash.substring(0, 7);
 		} catch(IOException e) {
 			return "unknown";
 		}
