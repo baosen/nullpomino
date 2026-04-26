@@ -571,19 +571,9 @@ public class StateInGameSDL extends BaseStateSDL {
 		// branches above already consume the click for their own cancel
 		// handling.
 		boolean replayMouseBack = false;
-		if(gameManager != null && gameManager.replayMode && !gameManager.replayRerecord && !pause) {
-			boolean engineBusy = false;
-			for(int i = 0; i < gameManager.getPlayers(); i++) {
-				GameEngine engine = gameManager.engine[i];
-				if(engine != null && (engine.stat == GameEngine.Status.RESULT || engine.stat == GameEngine.Status.SETTING)) {
-					engineBusy = true;
-					break;
-				}
-			}
-			if(!engineBusy) {
-				MouseInputSDL.mouseInput.update();
-				replayMouseBack = MouseInputSDL.mouseInput.isMouseBackClicked();
-			}
+		if(shouldPollReplayBack(gameManager, pause)) {
+			MouseInputSDL.mouseInput.update();
+			replayMouseBack = MouseInputSDL.mouseInput.isMouseBackClicked();
 		}
 
 		if(gameManager != null) {
@@ -605,6 +595,27 @@ public class StateInGameSDL extends BaseStateSDL {
 				return;
 			}
 		}
+	}
+
+	/**
+	 * Whether the in-game update loop should poll the mouse back button
+	 * for "exit replay playback". Hoisted out so the gating predicate
+	 * (replay-only, not re-recording, not paused, no engine in
+	 * SETTING/RESULT — those branches already consume the click) is
+	 * directly testable without driving the rest of {@code update()}.
+	 */
+	static boolean shouldPollReplayBack(GameManager gameManager, boolean pause) {
+		if(gameManager == null) return false;
+		if(!gameManager.replayMode) return false;
+		if(gameManager.replayRerecord) return false;
+		if(pause) return false;
+		for(int i = 0; i < gameManager.getPlayers(); i++) {
+			GameEngine engine = gameManager.engine[i];
+			if(engine != null && (engine.stat == GameEngine.Status.RESULT || engine.stat == GameEngine.Status.SETTING)) {
+				return false;
+			}
+		}
+		return true;
 	}
 
 	/**
