@@ -319,20 +319,10 @@ public class Field implements Serializable {
 	 * @throws ArrayIndexOutOfBoundsException
 	 */
 	public Block[] getRowE(int y) throws ArrayIndexOutOfBoundsException {
-		if(y >= 0) {
-			try {
-				return block_field[y];
-			} catch(ArrayIndexOutOfBoundsException e) {
-				throw e;
-			}
-		}
+		if(y >= 0) return block_field[y];
+
 		// fieldOutside
-		try {
-			int y2 = (y * -1) - 1;
-			return block_hidden[y2];
-		} catch(ArrayIndexOutOfBoundsException e) {
-			throw e;
-		}
+		return block_hidden[(y * -1) - 1];
 	}
 
 	/**
@@ -357,11 +347,7 @@ public class Field implements Serializable {
 	 * @throws ArrayIndexOutOfBoundsException The specified coordinates out of range
 	 */
 	public Block getBlockE(int x, int y) throws ArrayIndexOutOfBoundsException {
-		try {
-			return getRowE(y)[x];
-		} catch(ArrayIndexOutOfBoundsException e) {
-			throw e;
-		}
+		return getRowE(y)[x];
 	}
 
 	/**
@@ -391,11 +377,7 @@ public class Field implements Serializable {
 	 * @throws ArrayIndexOutOfBoundsException When the coordinate is invalid
 	 */
 	public void setBlockE(int x, int y, Block blk) throws ArrayIndexOutOfBoundsException {
-		try {
-			getBlock(x,y).copy(blk);
-		} catch(ArrayIndexOutOfBoundsException e) {
-			throw e;
-		}
+		getBlockE(x, y).copy(blk);
 	}
 
 	/**
@@ -432,11 +414,7 @@ public class Field implements Serializable {
 	 * @throws ArrayIndexOutOfBoundsException The specified coordinates out of range
 	 */
 	public int getBlockColorE(int x, int y) throws ArrayIndexOutOfBoundsException {
-		try {
-			return getBlockE(x,y).color;
-		} catch(ArrayIndexOutOfBoundsException e) {
-			throw e;
-		}
+		return getBlockE(x, y).color;
 	}
 
 	/**
@@ -464,11 +442,7 @@ public class Field implements Serializable {
 	 * @throws ArrayIndexOutOfBoundsException The specified coordinates out of range
 	 */
 	public void setBlockColorE(int x, int y, int c) throws ArrayIndexOutOfBoundsException {
-		try {
-			getBlockE(x,y).color = c;
-		} catch(ArrayIndexOutOfBoundsException e) {
-			throw e;
-		}
+		getBlockE(x, y).color = c;
 	}
 
 	/**
@@ -477,20 +451,8 @@ public class Field implements Serializable {
 	 * @return If the column to disappeartrue, Otherwise (If the coordinates are out of range) orfalse
 	 */
 	public boolean getLineFlag(int y) {
-		// fieldIn
-		if(y >= 0) {
-			try {
-				return lineflag_field[y];
-			} catch(ArrayIndexOutOfBoundsException e) {
-				return false;
-			}
-		}
-
-		// fieldOutside
-		int y2 = (y * -1) - 1;
-
 		try {
-			return lineflag_hidden[y2];
+			return getLineFlagE(y);
 		} catch(ArrayIndexOutOfBoundsException e) {
 			return false;
 		}
@@ -532,11 +494,7 @@ public class Field implements Serializable {
 	 * @throws ArrayIndexOutOfBoundsException The specified coordinates out of range
 	 */
 	public boolean getBlockEmptyE(int x, int y) throws ArrayIndexOutOfBoundsException {
-		try {
-			return getBlockE(x,y).isEmpty();
-		} catch(ArrayIndexOutOfBoundsException e) {
-			throw e;
-		}
+		return getBlockE(x, y).isEmpty();
 	}
 
 	/**
@@ -546,22 +504,10 @@ public class Field implements Serializable {
 	 * @throws ArrayIndexOutOfBoundsException The specified coordinates out of range
 	 */
 	public boolean getLineFlagE(int y) throws ArrayIndexOutOfBoundsException {
-		// fieldIn
-		if(y >= 0) {
-			try {
-				return lineflag_field[y];
-			} catch(ArrayIndexOutOfBoundsException e) {
-				throw e;
-			}
-		}
+		if(y >= 0) return lineflag_field[y];
 
 		// fieldOutside
-		try {
-			int y2 = (y * -1) - 1;
-			return lineflag_hidden[y2];
-		} catch(ArrayIndexOutOfBoundsException e) {
-			throw e;
-		}
+		return lineflag_hidden[(y * -1) - 1];
 	}
 
 	/**
@@ -571,26 +517,12 @@ public class Field implements Serializable {
 	 * @return true if successful, false if failed
 	 */
 	public boolean setLineFlag(int y, boolean flag) {
-		// fieldIn
-		if(y >= 0) {
-			try {
-				lineflag_field[y] = flag;
-			} catch(ArrayIndexOutOfBoundsException e) {
-				return false;
-			}
+		try {
+			setLineFlagE(y, flag);
+			return true;
+		} catch(ArrayIndexOutOfBoundsException e) {
+			return false;
 		}
-		// fieldOutside
-		else {
-			int y2 = (y * -1) - 1;
-
-			try {
-				lineflag_hidden[y2] = flag;
-			} catch(ArrayIndexOutOfBoundsException e) {
-				return false;
-			}
-		}
-
-		return true;
 	}
 
 	/**
@@ -600,23 +532,8 @@ public class Field implements Serializable {
 	 * @throws ArrayIndexOutOfBoundsException The specified coordinates out of range
 	 */
 	public void setLineFlagE(int y, boolean flag) throws ArrayIndexOutOfBoundsException {
-		// fieldIn
-		if(y >= 0) {
-			try {
-				lineflag_field[y] = flag;
-			} catch(ArrayIndexOutOfBoundsException e) {
-				throw e;
-			}
-		}
-		// fieldOutside
-		else {
-			try {
-				int y2 = (y * -1) - 1;
-				lineflag_hidden[y2] = flag;
-			} catch(ArrayIndexOutOfBoundsException e) {
-				throw e;
-			}
-		}
+		if(y >= 0) lineflag_field[y] = flag;
+		else lineflag_hidden[(y * -1) - 1] = flag;
 	}
 
 	/**
