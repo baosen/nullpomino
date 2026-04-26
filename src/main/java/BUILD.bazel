@@ -1,12 +1,140 @@
 load("@rules_java//java:defs.bzl", "java_library")
 
+JAVACOPTS = ["-encoding", "UTF-8"]
+
+LOG4J = "@maven//:ch_qos_reload4j_reload4j"
+
+JNA = "@maven//:net_java_dev_jna_jna"
+
 java_library(
-    name = "nullpomino",
-    srcs = glob(["**/*.java"]),
-    javacopts = ["-encoding", "UTF-8"],
+    name = "crypto",
+    srcs = glob(["net/clarenceho/crypto/*.java"]),
+    javacopts = JAVACOPTS,
+    visibility = ["//visibility:public"],
+)
+
+java_library(
+    name = "unix_crypt",
+    srcs = glob(["org/cacas/java/gnu/tools/*.java"]),
+    javacopts = JAVACOPTS,
+    visibility = ["//visibility:public"],
+)
+
+java_library(
+    name = "sdl_binding",
+    srcs = glob(["nullpomino/gui/sdl/binding/*.java"]),
+    javacopts = JAVACOPTS,
+    visibility = ["//visibility:public"],
+    deps = [JNA],
+)
+
+java_library(
+    name = "swing_tool_util",
+    srcs = ["nullpomino/tool/SwingToolUtil.java"],
+    javacopts = JAVACOPTS,
+    visibility = ["//visibility:public"],
+)
+
+# Cyclically-coupled engine + GUI cluster:
+# util <-> subsystem <-> mode <-> gui/net <-> gui/sdl, plus tool/airankstool which
+# is depended on by subsystem/ai (RanksAI). Cannot be split further without source
+# refactors to break the cycles.
+java_library(
+    name = "core",
+    srcs = glob([
+        "nullpomino/util/*.java",
+        "nullpomino/game/**/*.java",
+        "nullpomino/gui/*.java",
+        "nullpomino/gui/net/*.java",
+        "nullpomino/gui/sdl/*.java",
+        "nullpomino/gui/sdl/widget/*.java",
+        "nullpomino/tool/airankstool/*.java",
+        "net/omegaboshi/nullpomino/game/subsystem/randomizer/*.java",
+    ]),
+    javacopts = JAVACOPTS,
     visibility = ["//visibility:public"],
     deps = [
-        "@maven//:ch_qos_reload4j_reload4j",
-        "@maven//:net_java_dev_jna_jna",
+        ":crypto",
+        ":sdl_binding",
+        ":unix_crypt",
+        JNA,
+        LOG4J,
+    ],
+)
+
+java_library(
+    name = "poochy_ai",
+    srcs = glob(["net/tetrisconcept/poochy/nullpomino/ai/*.java"]),
+    javacopts = JAVACOPTS,
+    visibility = ["//visibility:public"],
+    deps = [
+        ":core",
+        LOG4J,
+    ],
+)
+
+java_library(
+    name = "tool_musiclisteditor",
+    srcs = glob(["nullpomino/tool/musiclisteditor/*.java"]),
+    javacopts = JAVACOPTS,
+    visibility = ["//visibility:public"],
+    deps = [
+        ":core",
+        LOG4J,
+    ],
+)
+
+java_library(
+    name = "tool_ruleeditor",
+    srcs = glob(["nullpomino/tool/ruleeditor/*.java"]),
+    javacopts = JAVACOPTS,
+    visibility = ["//visibility:public"],
+    deps = [
+        ":core",
+        ":swing_tool_util",
+        LOG4J,
+    ],
+)
+
+java_library(
+    name = "tool_sequencer",
+    srcs = glob(["nullpomino/tool/sequencer/*.java"]),
+    javacopts = JAVACOPTS,
+    visibility = ["//visibility:public"],
+    deps = [
+        ":core",
+        ":swing_tool_util",
+        LOG4J,
+    ],
+)
+
+java_library(
+    name = "tool_netadmin",
+    srcs = glob(["nullpomino/tool/netadmin/*.java"]),
+    javacopts = JAVACOPTS,
+    visibility = ["//visibility:public"],
+    deps = [
+        ":core",
+        ":crypto",
+        LOG4J,
+    ],
+)
+
+# Umbrella target preserving the historical :nullpomino label so existing
+# consumers (tests, downstream BUILD files) keep working unchanged.
+java_library(
+    name = "nullpomino",
+    visibility = ["//visibility:public"],
+    exports = [
+        ":core",
+        ":crypto",
+        ":poochy_ai",
+        ":sdl_binding",
+        ":swing_tool_util",
+        ":tool_musiclisteditor",
+        ":tool_netadmin",
+        ":tool_ruleeditor",
+        ":tool_sequencer",
+        ":unix_crypt",
     ],
 )
