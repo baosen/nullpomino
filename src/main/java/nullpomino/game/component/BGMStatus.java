@@ -80,16 +80,12 @@ public class BGMStatus implements Serializable {
 	 * BGM fadeUpdate of state and volume
 	 */
 	public void fadeUpdate() {
-		if(fadesw == true) {
-			if(volume > 0f) {
-				volume -= 0.005f;
-			} else if(volume < 0f) {
-				volume = 0f;
-			}
-		} else {
-			if(volume < 1f) {
-				volume = 1f;
-			}
+		if(!fadesw) {
+			if(volume < 1f) volume = 1f;
+			return;
 		}
+
+		if(volume > 0f) volume -= 0.005f;
+		else if(volume < 0f) volume = 0f;
 	}
 }
