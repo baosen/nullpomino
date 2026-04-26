@@ -2,6 +2,8 @@ package nullpomino.game.component;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import nullpomino.util.CustomProperties;
@@ -101,6 +103,36 @@ class FieldCharacterisationTest {
 		fillRow(f, 17, Block.BLOCK_COLOR_GREEN);
 		assertEquals(2, f.checkLine());
 		assertEquals(2, f.getLines());
+	}
+
+	@Test
+	void safeAccessorsReturnSentinelsForInvalidCoordinates() {
+		Field f = newField();
+
+		assertNull(f.getRow(99));
+		assertNull(f.getBlock(99, 0));
+		assertEquals(Block.BLOCK_COLOR_INVALID, f.getBlockColor(99, 0));
+		assertTrue(f.getBlockEmpty(99, 0));
+		assertFalse(f.getBlockEmptyF(99, 0));
+		assertFalse(f.setBlockColor(99, 0, Block.BLOCK_COLOR_RED));
+		assertFalse(f.setBlock(99, 0, new Block(Block.BLOCK_COLOR_RED)));
+		assertFalse(f.getLineFlag(99));
+		assertFalse(f.setLineFlag(99, true));
+	}
+
+	@Test
+	void throwingAccessorsRejectInvalidCoordinates() {
+		Field f = newField();
+
+		assertThrows(ArrayIndexOutOfBoundsException.class, () -> f.getRowE(99));
+		assertThrows(ArrayIndexOutOfBoundsException.class, () -> f.getBlockE(99, 0));
+		assertThrows(ArrayIndexOutOfBoundsException.class, () -> f.getBlockColorE(99, 0));
+		assertThrows(ArrayIndexOutOfBoundsException.class, () -> f.setBlockColorE(99, 0, Block.BLOCK_COLOR_RED));
+		assertThrows(ArrayIndexOutOfBoundsException.class, () -> f.getBlockEmptyE(99, 0));
+		assertThrows(ArrayIndexOutOfBoundsException.class, () -> f.getLineFlagE(99));
+		assertThrows(ArrayIndexOutOfBoundsException.class, () -> f.setLineFlagE(99, true));
+		assertThrows(ArrayIndexOutOfBoundsException.class,
+				() -> f.setBlockE(99, 0, new Block(Block.BLOCK_COLOR_RED)));
 	}
 
 	/**
