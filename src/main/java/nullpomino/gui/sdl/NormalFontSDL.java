@@ -94,6 +94,20 @@ public class NormalFontSDL {
 	}
 
 	/**
+	 * Measure the rendered pixel width of a string in the loaded TTF font.
+	 * Returns 0 if the font isn't loaded or SDL refuses to size the string —
+	 * callers should treat that as "draw at the requested origin" rather than
+	 * silently mis-aligning.
+	 */
+	public static int getTTFStringWidth(String fontStr) {
+		if(ResourceHolderSDL.ttfFont == null || fontStr == null) return 0;
+		com.sun.jna.ptr.IntByReference w = new com.sun.jna.ptr.IntByReference();
+		com.sun.jna.ptr.IntByReference h = new com.sun.jna.ptr.IntByReference();
+		if(!SDL3TTF.INSTANCE.TTF_GetStringSize(ResourceHolderSDL.ttfFont, fontStr, 0, w, h)) return 0;
+		return w.getValue();
+	}
+
+	/**
 	 * Draws the string using bitmap font
 	 * @param fontX X-coordinate
 	 * @param fontY Y-coordinate
