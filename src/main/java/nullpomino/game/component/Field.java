@@ -206,14 +206,7 @@ public class Field implements Serializable {
 	 */
 	public void writeProperty(CustomProperties p, int id) {
 		for(int i = 0; i < height; i++) {
-			String mapStr = "";
-
-			for(int j = 0; j < width; j++) {
-				mapStr += String.valueOf(getBlockColor(j, i));
-				if(j < width - 1) mapStr += ",";
-			}
-
-			p.setProperty(id + ".field.map." + i, mapStr);
+			p.setProperty(fieldMapKey(id, i), fieldMapRow(i));
 		}
 	}
 
@@ -224,22 +217,39 @@ public class Field implements Serializable {
 	 */
 	public void readProperty(CustomProperties p, int id) {
 		for(int i = 0; i < height; i++) {
-			String mapStr = p.getProperty(id + ".field.map." + i, "");
+			String mapStr = p.getProperty(fieldMapKey(id, i), "");
 			String[] mapArray = mapStr.split(",");
 
-			for(int j = 0; j < mapArray.length; j++) {
-				int blkColor = Block.BLOCK_COLOR_NONE;
-
-				try {
-					blkColor = Integer.parseInt(mapArray[j]);
-				} catch (NumberFormatException e) {}
-
+			for(int j = 0; j < mapArray.length && j < width; j++) {
+				int blkColor = parseBlockColor(mapArray[j]);
 				setBlockColor(j, i, blkColor);
 
-				if(getBlock(j, i) != null) {
-					getBlock(j, i).elapsedFrames = -1;
+				Block block = getBlock(j, i);
+				if(block != null) {
+					block.elapsedFrames = -1;
 				}
 			}
+		}
+	}
+
+	private String fieldMapRow(int row) {
+		StringBuilder map = new StringBuilder(width * 2);
+		for(int x = 0; x < width; x++) {
+			if(x > 0) map.append(',');
+			map.append(getBlockColor(x, row));
+		}
+		return map.toString();
+	}
+
+	private static String fieldMapKey(int id, int row) {
+		return id + ".field.map." + row;
+	}
+
+	private static int parseBlockColor(String value) {
+		try {
+			return Integer.parseInt(value);
+		} catch (NumberFormatException e) {
+			return Block.BLOCK_COLOR_NONE;
 		}
 	}
 
