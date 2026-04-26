@@ -63,10 +63,12 @@ class CustomPropertiesRoundTripTest {
 	void numericGettersFallBackToDefaultOnMalformed() {
 		CustomProperties p = new CustomProperties();
 		p.setProperty("bad", "not-a-number");
+		p.setProperty("empty", "");
 		assertEquals(7, p.getProperty("bad", 7));
 		assertEquals(7L, p.getProperty("bad", 7L));
 		assertEquals(7f, p.getProperty("bad", 7f));
 		assertEquals(7.0, p.getProperty("bad", 7.0));
+		assertEquals(7, p.getProperty("empty", 7));
 	}
 
 	@Test

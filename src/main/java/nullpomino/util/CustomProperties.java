@@ -106,42 +106,32 @@ public class CustomProperties extends Properties {
 	}
 
 	private static int parseInt(String value, int defaultValue) {
-		if(value == null) return defaultValue;
-
-		try {
-			return Integer.parseInt(value);
-		} catch(NumberFormatException e) {
-			return defaultValue;
-		}
+		return parseNumber(value, defaultValue, Integer::parseInt);
 	}
 
 	private static long parseLong(String value, long defaultValue) {
-		if(value == null) return defaultValue;
-
-		try {
-			return Long.parseLong(value);
-		} catch(NumberFormatException e) {
-			return defaultValue;
-		}
+		return parseNumber(value, defaultValue, Long::parseLong);
 	}
 
 	private static float parseFloat(String value, float defaultValue) {
+		return parseNumber(value, defaultValue, Float::parseFloat);
+	}
+
+	private static double parseDouble(String value, double defaultValue) {
+		return parseNumber(value, defaultValue, Double::parseDouble);
+	}
+
+	private static <T> T parseNumber(String value, T defaultValue, NumberParser<T> parser) {
 		if(value == null) return defaultValue;
 
 		try {
-			return Float.parseFloat(value);
+			return parser.parse(value);
 		} catch(NumberFormatException e) {
 			return defaultValue;
 		}
 	}
 
-	private static double parseDouble(String value, double defaultValue) {
-		if(value == null) return defaultValue;
-
-		try {
-			return Double.parseDouble(value);
-		} catch(NumberFormatException e) {
-			return defaultValue;
-		}
+	private interface NumberParser<T> {
+		T parse(String value);
 	}
 }
