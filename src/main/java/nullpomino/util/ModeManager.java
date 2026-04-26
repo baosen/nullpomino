@@ -144,7 +144,7 @@ public class ModeManager {
 		for(int count = 0; ; count++) {
 			// Read the name of a class
 			String name = prop.getProperty(String.valueOf(count), null);
-			if(name == null) return;
+			if(name == null) break;
 			addGameMode(name);
 		}
 	}
@@ -157,12 +157,16 @@ public class ModeManager {
 		try {
 			String name;
 			while((name = bf.readLine()) != null) {
-				if(name.length() == 0) return;
-				if(!name.startsWith("#")) addGameMode(name);
+				if(name.length() == 0) break;
+				addGameModeUnlessComment(name);
 			}
 		} catch (IOException e) {
 			log.warn("IOException on readLine()", e);
 		}
+	}
+
+	private void addGameModeUnlessComment(String name) {
+		if(!name.startsWith("#")) addGameMode(name);
 	}
 
 	private void addGameMode(String name) {

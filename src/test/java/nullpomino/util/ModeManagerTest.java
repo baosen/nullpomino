@@ -5,6 +5,9 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertSame;
 
+import java.io.BufferedReader;
+import java.io.StringReader;
+
 import nullpomino.game.play.GameEngine;
 import nullpomino.game.play.GameManager;
 import nullpomino.game.subsystem.mode.GameMode;
@@ -60,6 +63,32 @@ class ModeManagerTest {
 		assertEquals(1, copy.getSize());
 	}
 
+	@Test
+	void loadGameModesFromPropertiesInstantiatesListedClasses() {
+		CustomProperties props = new CustomProperties();
+		props.setProperty("0", LoadableMode.class.getName());
+		ModeManager manager = new ModeManager();
+
+		manager.loadGameModes(props);
+
+		assertEquals(1, manager.getSize());
+		assertEquals("loadable", manager.getName(0));
+	}
+
+	@Test
+	void loadGameModesFromReaderSkipsCommentsAndStopsAtBlankLine() {
+		String source = "# comment\n"
+				+ LoadableMode.class.getName() + "\n"
+				+ "\n"
+				+ LoadableMode.class.getName() + "\n";
+		ModeManager manager = new ModeManager();
+
+		manager.loadGameModes(new BufferedReader(new StringReader(source)));
+
+		assertEquals(1, manager.getSize());
+		assertEquals("loadable", manager.getName(0));
+	}
+
 	static final class TestMode implements GameMode {
 		private final String name;
 		private final boolean netplay;
@@ -92,6 +121,29 @@ class ModeManagerTest {
 
 		public boolean isNetplayMode() {
 			return netplay;
+		}
+	}
+
+	public static final class LoadableMode implements GameMode {
+		public String getName() {
+			return "loadable";
+		}
+
+		public int getPlayers() {
+			return 1;
+		}
+
+		public int getGameStyle() {
+			return 0;
+		}
+
+		public void modeInit(GameManager manager) {
+		}
+
+		public void playerInit(GameEngine engine, int playerID) {
+		}
+
+		public void renderInput(GameEngine engine, int playerID) {
 		}
 	}
 }
