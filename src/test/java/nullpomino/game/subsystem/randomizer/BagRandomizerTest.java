@@ -6,6 +6,8 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import net.omegaboshi.nullpomino.game.subsystem.randomizer.BagMinusRandomizer;
 import net.omegaboshi.nullpomino.game.subsystem.randomizer.BagMinusTwoRandomizer;
+import net.omegaboshi.nullpomino.game.subsystem.randomizer.BagBonusBagRandomizer;
+import net.omegaboshi.nullpomino.game.subsystem.randomizer.BagBonusRandomizer;
 import net.omegaboshi.nullpomino.game.subsystem.randomizer.BagRandomizer;
 import net.omegaboshi.nullpomino.game.subsystem.randomizer.DoubleBagRandomizer;
 import net.omegaboshi.nullpomino.game.subsystem.randomizer.NineBagRandomizer;
@@ -25,6 +27,12 @@ class BagRandomizerTest {
 	void multipliedBagsDrawEachEnabledPiecePerConfiguredCopy() {
 		assertCycleCounts(new DoubleBagRandomizer(), 2);
 		assertCycleCounts(new NineBagRandomizer(), 9);
+	}
+
+	@Test
+	void bonusBagsDrawEachEnabledPiecePlusOneDuplicatePerCycle() {
+		assertBonusCycle(new BagBonusRandomizer());
+		assertBonusCycle(new BagBonusBagRandomizer());
 	}
 
 	@Test
@@ -65,6 +73,28 @@ class BagRandomizerTest {
 			assertEquals(expectedCopies, counts[piece],
 					"piece " + Piece.PIECE_NAMES[piece] + " count");
 		}
+	}
+
+	private static void assertBonusCycle(Randomizer randomizer) {
+		boolean[] enabled = standardPieces();
+		randomizer.setState(enabled, 4321L);
+
+		int[] counts = new int[Piece.PIECE_COUNT];
+		for(int i = 0; i < Piece.PIECE_STANDARD_COUNT + 1; i++) {
+			int piece = randomizer.next();
+			assertTrue(enabled[piece], "unexpected disabled piece " + piece);
+			counts[piece]++;
+		}
+
+		int duplicatedPieces = 0;
+		for(int piece = 0; piece < Piece.PIECE_STANDARD_COUNT; piece++) {
+			assertTrue(counts[piece] >= 1,
+					"piece " + Piece.PIECE_NAMES[piece] + " must appear at least once");
+			if(counts[piece] == 2) duplicatedPieces++;
+			else assertEquals(1, counts[piece],
+					"piece " + Piece.PIECE_NAMES[piece] + " count");
+		}
+		assertEquals(1, duplicatedPieces);
 	}
 
 	private static void assertDrawsEnabledPieces(Randomizer randomizer, int draws) {
