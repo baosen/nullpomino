@@ -164,6 +164,34 @@ class NetRoomInfoTest {
 		assertTrue(room.hasSameIPPlayers());
 	}
 
+	@Test
+	void copyConstructorCopiesListContainers() {
+		NetRoomInfo original = new NetRoomInfo();
+		NetPlayerInfo player = player("A", "192.0.2.1");
+		NetChatMessage chat = new NetChatMessage("hello");
+		original.mapList.add("map");
+		original.playerList.add(player);
+		original.playerSeat.add(player);
+		original.playerQueue.add(player);
+		original.playerSeatDead.add(player);
+		original.chatList.add(chat);
+
+		NetRoomInfo copy = new NetRoomInfo(original);
+		original.mapList.clear();
+		original.playerList.clear();
+		original.playerSeat.clear();
+		original.playerQueue.clear();
+		original.playerSeatDead.clear();
+		original.chatList.clear();
+
+		assertEquals(1, copy.mapList.size());
+		assertEquals(1, copy.playerList.size());
+		assertEquals(1, copy.playerSeat.size());
+		assertEquals(1, copy.playerQueue.size());
+		assertEquals(1, copy.playerSeatDead.size());
+		assertEquals(1, copy.chatList.size());
+	}
+
 	private static NetPlayerInfo player(String team, String ip) {
 		NetPlayerInfo player = new NetPlayerInfo();
 		player.strTeam = team;
