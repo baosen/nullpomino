@@ -84,32 +84,14 @@ public class NetUtil {
 	public static String createTripCode(String tripkey, int maxlen) {
 		byte[] bTripKey = stringToShiftJIS(tripkey);
 		byte[] bSaltTemp = new byte[bTripKey.length + 3];
-		for(int i = 0; i < bTripKey.length; i++) {
-			bSaltTemp[i] = bTripKey[i];
-		}
+		System.arraycopy(bTripKey, 0, bSaltTemp, 0, bTripKey.length);
 		bSaltTemp[bTripKey.length + 0] = (byte)'H';
 		bSaltTemp[bTripKey.length + 1] = (byte)'.';
 		bSaltTemp[bTripKey.length + 2] = (byte)'.';
-		byte[] bSalt = new byte[2];
-		bSalt[0] = bSaltTemp[1];
-		bSalt[1] = bSaltTemp[2];
-
-		for(int i = 0; i < bSalt.length; i++) {
-			if((bSalt[i] < (byte)'.') || (bSalt[i] > (byte)'z')) bSalt[i] = (byte)'.';
-			if(bSalt[i] == (byte)':') bSalt[i] = (byte)'A';
-			if(bSalt[i] == (byte)';') bSalt[i] = (byte)'B';
-			if(bSalt[i] == (byte)'<') bSalt[i] = (byte)'C';
-			if(bSalt[i] == (byte)'=') bSalt[i] = (byte)'D';
-			if(bSalt[i] == (byte)'>') bSalt[i] = (byte)'E';
-			if(bSalt[i] == (byte)'?') bSalt[i] = (byte)'F';
-			if(bSalt[i] == (byte)'@') bSalt[i] = (byte)'G';
-			if(bSalt[i] == (byte)'[') bSalt[i] = (byte)'a';
-			if(bSalt[i] == (byte)'\\') bSalt[i] = (byte)'b';
-			if(bSalt[i] == (byte)']') bSalt[i] = (byte)'c';
-			if(bSalt[i] == (byte)'^') bSalt[i] = (byte)'d';
-			if(bSalt[i] == (byte)'_') bSalt[i] = (byte)'e';
-			if(bSalt[i] == (byte)'`') bSalt[i] = (byte)'f';
-		}
+		byte[] bSalt = {
+			normalizeTripcodeSalt(bSaltTemp[1]),
+			normalizeTripcodeSalt(bSaltTemp[2])
+		};
 
 		String strTripCode = Crypt.crypt(bSalt, bTripKey);
 		if(strTripCode.length() > maxlen) {
@@ -117,6 +99,13 @@ public class NetUtil {
 		}
 
 		return strTripCode;
+	}
+
+	private static byte normalizeTripcodeSalt(byte salt) {
+		if((salt < (byte)'.') || (salt > (byte)'z')) return (byte)'.';
+		if((salt >= (byte)':') && (salt <= (byte)'@')) return (byte)((byte)'A' + salt - (byte)':');
+		if((salt >= (byte)'[') && (salt <= (byte)'`')) return (byte)((byte)'a' + salt - (byte)'[');
+		return salt;
 	}
 
 	/**
