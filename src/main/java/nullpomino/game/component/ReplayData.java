@@ -51,10 +51,7 @@ public class ReplayData implements Serializable {
 	 */
 	public void copy(ReplayData r) {
 		reset();
-
-		for(int i = 0; i < r.inputDataArray.size(); i++) {
-			inputDataArray.add(i, r.inputDataArray.get(i));
-		}
+		inputDataArray.addAll(r.inputDataArray);
 	}
 
 	/**
@@ -89,8 +86,7 @@ public class ReplayData implements Serializable {
 	 * @param maxFrame Save frame count (-1Save in all)
 	 */
 	public void writeProperty(CustomProperties p, int id, int maxFrame) {
-		int max = maxFrame;
-		if((maxFrame < 0) || (maxFrame > inputDataArray.size())) max = inputDataArray.size();
+		int max = ((maxFrame < 0) || (maxFrame > inputDataArray.size())) ? inputDataArray.size() : maxFrame;
 
 		for(int i = 0; i < max; i++) {
 			int input = getInputData(i);
