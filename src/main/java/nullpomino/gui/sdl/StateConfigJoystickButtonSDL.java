@@ -24,6 +24,12 @@ public class StateConfigJoystickButtonSDL extends BaseStateSDL {
 	/** Course frame count */
 	protected int frame;
 
+	/** Frames UP has been held in menu mode (for cursor auto-repeat) */
+	protected int upInputState;
+
+	/** Frames DOWN has been held in menu mode (for cursor auto-repeat) */
+	protected int downInputState;
+
 	/** Button settings */
 	protected int buttonmap[];
 
@@ -36,6 +42,8 @@ public class StateConfigJoystickButtonSDL extends BaseStateSDL {
 	protected void reset() {
 		keynum = 4;
 		frame = 0;
+		upInputState = 0;
+		downInputState = 0;
 
 		buttonmap = new int[GameKeySDL.MAX_BUTTON];
 
@@ -111,42 +119,48 @@ public class StateConfigJoystickButtonSDL extends BaseStateSDL {
 	public void update() {
 		MouseInputSDL.mouseInput.update();
 
+		// PageUp/PageDown is edge-detected; poll once per frame so the
+		// shared previous-state stays in sync even during the entry gate.
+		int pageEvent = PageNavigationSDL.checkPageEvent();
+
 		if(frame >= KEYACCEPTFRAME) {
-			// Mouse: hover moves the cursor across the visible rows.
+			// Mouse: hover moves the cursor across the visible rows; click selects.
 			if(MouseInputSDL.mouseInput.isMouseMoved()) {
 				int row = (MouseInputSDL.mouseInput.getMouseY() >> 4) - 5 + 4;
 				if(row >= 4 && row <= 15 && row != keynum) {
 					ResourceHolderSDL.soundManager.play("cursor");
 					keynum = row;
-					frame = 0;
 				}
 			}
 			if(MouseInputSDL.mouseInput.isMouseClicked()) {
 				int row = (MouseInputSDL.mouseInput.getMouseY() >> 4) - 5 + 4;
 				if(row >= 4 && row <= 15) {
 					keynum = row;
-					frame = 0;
 				}
 			}
 
-			// Up
-			if(NullpoMinoSDL.keyPressedState[SDLConstants.SDL_SCANCODE_UP]) {
+			// Track UP/DOWN hold for auto-repeat. Throttling here used to be
+			// "frame = 0 after every move", which gave one cursor step per
+			// KEYACCEPTFRAME (3 steps/sec) and made the menu feel laggy. Use
+			// the same hold counter pattern as StateConfigKeyboardSDL instead.
+			if(NullpoMinoSDL.keyPressedState[SDLConstants.SDL_SCANCODE_UP]) upInputState++;
+			else upInputState = 0;
+			if(NullpoMinoSDL.keyPressedState[SDLConstants.SDL_SCANCODE_DOWN]) downInputState++;
+			else downInputState = 0;
+
+			if(isMenuRepeatKey(upInputState)) {
 				ResourceHolderSDL.soundManager.play("cursor");
 				keynum--;
 				if(keynum < 4) keynum = 15;
-				frame = 0;
 			}
-			// Down
-			else if(NullpoMinoSDL.keyPressedState[SDLConstants.SDL_SCANCODE_DOWN]) {
+			if(isMenuRepeatKey(downInputState)) {
 				ResourceHolderSDL.soundManager.play("cursor");
 				keynum++;
 				if(keynum > 15) keynum = 4;
-				frame = 0;
 			}
-			// Page Up / Page Down
-			int prevKeynum = keynum;
-			keynum = PageNavigationSDL.jumpToEnd(PageNavigationSDL.checkPageEvent(), keynum, 4, 15);
-			if(keynum != prevKeynum) frame = 0;
+
+			keynum = PageNavigationSDL.jumpToEnd(pageEvent, keynum, 4, 15);
+
 			// Delete
 			if(NullpoMinoSDL.keyPressedState[SDLConstants.SDL_SCANCODE_DELETE]) {
 				ResourceHolderSDL.soundManager.play("change");
@@ -184,12 +198,22 @@ public class StateConfigJoystickButtonSDL extends BaseStateSDL {
 					frame = 0;
 				}
 			}
+		} else {
+			// Re-arm hold counters so the first frame after the entry gate
+			// reopens registers as a fresh press rather than mid-repeat.
+			upInputState = 0;
+			downInputState = 0;
 		}
 
 		if(previousJoyPressedState != null) {
 			System.arraycopy(NullpoMinoSDL.joyPressedState[joyNumber], 0, previousJoyPressedState, 0, previousJoyPressedState.length);
 		}
 		frame++;
+	}
+
+	/** Mirrors {@link nullpomino.gui.GameKeyDummy#isMenuRepeatKey} for raw scancode polling. */
+	private static boolean isMenuRepeatKey(int holdFrames) {
+		return (holdFrames == 1) || ((holdFrames >= 25) && (holdFrames % 3 == 0));
 	}
 
 	/*
