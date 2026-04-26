@@ -50,11 +50,10 @@ public class ModeManager {
 	public int getNumberOfModes(boolean netplay) {
 		int count = 0;
 
-		for(int i = 0; i < modelist.size(); i++) {
-			GameMode mode = modelist.get(i);
-
-			if((mode != null) && (mode.isNetplayMode() == netplay))
+		for(GameMode mode : modelist) {
+			if((mode != null) && (mode.isNetplayMode() == netplay)) {
 				count++;
+			}
 		}
 
 		return count;
@@ -80,20 +79,14 @@ public class ModeManager {
 	 * @return Mode nameAn array of
 	 */
 	public String[] getModeNames(boolean netplay) {
-		int num = getNumberOfModes(netplay);
-		String[] strings = new String[num];
-		int j = 0;
-
-		for(int i = 0; i < modelist.size(); i++) {
-			GameMode mode = modelist.get(i);
-
+		ArrayList<String> strings = new ArrayList<String>();
+		for(GameMode mode : modelist) {
 			if((mode != null) && (mode.isNetplayMode() == netplay)) {
-				strings[j] = mode.getName();
-				j++;
+				strings.add(mode.getName());
 			}
 		}
 
-		return strings;
+		return strings.toArray(new String[0]);
 	}
 
 	/**
@@ -102,11 +95,8 @@ public class ModeManager {
 	 * @return Mode name (idIf the incorrect &quot;*INVALID MODE*&quot;)
 	 */
 	public String getName(int id) {
-		try {
-			return modelist.get(id).getName();
-		} catch(Exception e) {
-			return "*INVALID MODE*";
-		}
+		GameMode mode = getMode(id);
+		return (mode == null) ? "*INVALID MODE*" : mode.getName();
 	}
 
 	/**
@@ -118,7 +108,8 @@ public class ModeManager {
 		if(name == null) return -1;
 
 		for(int i = 0; i < modelist.size(); i++) {
-			if(name.equals(modelist.get(i).getName())) {
+			GameMode mode = modelist.get(i);
+			if((mode != null) && name.equals(mode.getName())) {
 				return i;
 			}
 		}
@@ -132,11 +123,8 @@ public class ModeManager {
 	 * @return ModeObject (idIf the incorrectnull)
 	 */
 	public GameMode getMode(int id) {
-		try {
-			return modelist.get(id);
-		} catch(Exception e) {
-			return null;
-		}
+		if((id < 0) || (id >= modelist.size())) return null;
+		return modelist.get(id);
 	}
 
 	/**
@@ -145,11 +133,7 @@ public class ModeManager {
 	 * @return ModeObject (Not foundnull)
 	 */
 	public GameMode getMode(String name) {
-		try {
-			return modelist.get(getIDbyName(name));
-		} catch(Exception e) {
-			return null;
-		}
+		return getMode(getIDbyName(name));
 	}
 
 	/**
@@ -157,15 +141,11 @@ public class ModeManager {
 	 * @param prop Property file
 	 */
 	public void loadGameModes(CustomProperties prop) {
-		int count = 0;
-
-		while(true) {
+		for(int count = 0; ; count++) {
 			// Read the name of a class
 			String name = prop.getProperty(String.valueOf(count), null);
 			if(name == null) return;
 			addGameMode(name);
-
-			count++;
 		}
 	}
 
