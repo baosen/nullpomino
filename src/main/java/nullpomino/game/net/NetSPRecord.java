@@ -332,43 +332,33 @@ public class NetSPRecord implements Serializable {
 	 * @return Short String of stats of the record
 	 */
 	public String getStatRow(int type) {
-		String strRow = "";
-
-		if(type == RANKINGTYPE_GENERIC_SCORE) {
-			strRow += stats.score + ",";
-			strRow += stats.lines + ",";
-			strRow += stats.time;
-		} else if(type == RANKINGTYPE_GENERIC_TIME) {
-			strRow += stats.time + ",";
-			strRow += stats.totalPieceLocked + ",";
-			strRow += stats.pps;
-		} else if(type == RANKINGTYPE_SCORERACE) {
-			strRow += stats.time + ",";
-			strRow += stats.lines + ",";
-			strRow += stats.spl;
-		} else if(type == RANKINGTYPE_DIGRACE) {
-			strRow += stats.time + ",";
-			strRow += stats.lines + ",";
-			strRow += stats.totalPieceLocked;
-		} else if(type == RANKINGTYPE_ULTRA) {
-			strRow += stats.score + ",";
-			strRow += stats.lines + ",";
-			strRow += stats.totalPieceLocked;
-		} else if(type == RANKINGTYPE_COMBORACE) {
-			strRow += stats.maxCombo + ",";
-			strRow += stats.time + ",";
-			strRow += stats.pps;
-		} else if(type == RANKINGTYPE_DIGCHALLENGE) {
-			strRow += stats.score + ",";
-			strRow += stats.lines + ",";
-			strRow += stats.time;
-		} else if(type == RANKINGTYPE_TIMEATTACK) {
-			strRow += stats.lines + ",";
-			strRow += stats.time + ",";
-			strRow += stats.pps + ",";
-			strRow += stats.rollclear;
+		switch(type) {
+		case RANKINGTYPE_GENERIC_SCORE:
+			return statRow(stats.score, stats.lines, stats.time);
+		case RANKINGTYPE_GENERIC_TIME:
+			return statRow(stats.time, stats.totalPieceLocked, stats.pps);
+		case RANKINGTYPE_SCORERACE:
+			return statRow(stats.time, stats.lines, stats.spl);
+		case RANKINGTYPE_DIGRACE:
+			return statRow(stats.time, stats.lines, stats.totalPieceLocked);
+		case RANKINGTYPE_ULTRA:
+			return statRow(stats.score, stats.lines, stats.totalPieceLocked);
+		case RANKINGTYPE_COMBORACE:
+			return statRow(stats.maxCombo, stats.time, stats.pps);
+		case RANKINGTYPE_DIGCHALLENGE:
+			return statRow(stats.score, stats.lines, stats.time);
+		case RANKINGTYPE_TIMEATTACK:
+			return statRow(stats.lines, stats.time, stats.pps, stats.rollclear);
+		default:
+			return "";
 		}
+	}
 
-		return strRow;
+	private static String statRow(Object... values) {
+		String[] strings = new String[values.length];
+		for(int i = 0; i < values.length; i++) {
+			strings[i] = String.valueOf(values[i]);
+		}
+		return String.join(",", strings);
 	}
 }
