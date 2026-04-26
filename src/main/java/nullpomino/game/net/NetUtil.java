@@ -19,6 +19,7 @@ import org.cacas.java.gnu.tools.Crypt;
  */
 public class NetUtil {
 	private static final Charset SHIFT_JIS = Charset.forName("Shift_JIS");
+	private static final int ZIP_BUFFER_SIZE = 1024;
 
 	/**
 	 * Convert byte[] to String (with UTF-8 encoding)
@@ -136,28 +137,22 @@ public class NetUtil {
 	 * @return Compressed byte array (byte[])
 	 */
 	public static byte[] compressByteArray(byte[] input, int level) {
-		// Create the compressor with highest level of compression
 		Deflater compressor = new Deflater(level);
+		try {
+			compressor.setInput(input);
+			compressor.finish();
 
-		// Give the compressor the data to compress
-		compressor.setInput(input);
-		compressor.finish();
+			ByteArrayOutputStream bos = new ByteArrayOutputStream(input.length);
+			byte[] buf = new byte[ZIP_BUFFER_SIZE];
+			while(!compressor.finished()) {
+				int count = compressor.deflate(buf);
+				bos.write(buf, 0, count);
+			}
 
-		// Create an expandable byte array to hold the compressed data.
-		// You cannot use an array that's the same size as the orginal because
-		// there is no guarantee that the compressed data will be smaller than
-		// the uncompressed data.
-		ByteArrayOutputStream bos = new ByteArrayOutputStream(input.length);
-
-		// Compress the data
-		byte[] buf = new byte[1024];
-		while (!compressor.finished()) {
-			int count = compressor.deflate(buf);
-			bos.write(buf, 0, count);
+			return bos.toByteArray();
+		} finally {
+			compressor.end();
 		}
-
-		// Get the compressed data
-		return bos.toByteArray();
 	}
 
 	/**
@@ -166,26 +161,26 @@ public class NetUtil {
 	 * @return Raw byte array (byte[])
 	 */
 	public static byte[] decompressByteArray(byte[] compressedData) {
-		// Create the decompressor and give it the data to compress
 		Inflater decompressor = new Inflater();
-		decompressor.setInput(compressedData);
+		try {
+			decompressor.setInput(compressedData);
 
-		// Create an expandable byte array to hold the decompressed data
-		ByteArrayOutputStream bos = new ByteArrayOutputStream(compressedData.length);
-
-		// Decompress the data
-		byte[] buf = new byte[1024];
-		while (!decompressor.finished()) {
-			try {
+			ByteArrayOutputStream bos = new ByteArrayOutputStream(compressedData.length);
+			byte[] buf = new byte[ZIP_BUFFER_SIZE];
+			while(!decompressor.finished()) {
 				int count = decompressor.inflate(buf);
+				if((count == 0) && decompressor.needsInput() && !decompressor.finished()) {
+					throw new RuntimeException("This byte array is not a valid compressed data");
+				}
 				bos.write(buf, 0, count);
-			} catch (DataFormatException e) {
-				throw new RuntimeException("This byte array is not a valid compressed data", e);
 			}
-		}
 
-		// Get the decompressed data
-		return bos.toByteArray();
+			return bos.toByteArray();
+		} catch (DataFormatException e) {
+			throw new RuntimeException("This byte array is not a valid compressed data", e);
+		} finally {
+			decompressor.end();
+		}
 	}
 
 	/**
