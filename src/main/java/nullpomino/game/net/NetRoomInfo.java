@@ -3,7 +3,9 @@
 package nullpomino.game.net;
 
 import java.io.Serializable;
+import java.util.HashSet;
 import java.util.LinkedList;
+import java.util.Set;
 
 import nullpomino.game.component.RuleOptions;
 
@@ -358,7 +360,7 @@ public class NetRoomInfo implements Serializable {
 	 *            String
 	 */
 	public void importString(String str) {
-		importStringArray(str.split(";"));
+		importStringArray(str.split(";", -1));
 	}
 
 	/**
@@ -421,16 +423,7 @@ public class NetRoomInfo implements Serializable {
 	 * @return String
 	 */
 	public String exportString() {
-		String[] data = exportStringArray();
-		String strResult = "";
-
-		for (int i = 0; i < data.length; i++) {
-			strResult += data[i];
-			if (i < data.length - 1)
-				strResult += ";";
-		}
-
-		return strResult;
+		return String.join(";", exportStringArray());
 	}
 
 	/**
@@ -449,9 +442,8 @@ public class NetRoomInfo implements Serializable {
 	 */
 	public int getNumberOfPlayerSeated() {
 		int count = 0;
-		for (int i = 0; i < playerSeat.size(); i++) {
-			if (playerSeat.get(i) != null)
-				count++;
+		for (NetPlayerInfo pInfo : playerSeat) {
+			if (pInfo != null) count++;
 		}
 		return count;
 	}
@@ -487,20 +479,18 @@ public class NetRoomInfo implements Serializable {
 	 * @return Game seat number(I were packed-1)
 	 */
 	public int joinSeat(NetPlayerInfo pInfo) {
-		if (canJoinSeat()) {
-			exitQueue(pInfo);
+		if (!canJoinSeat()) return -1;
 
-			for (int i = 0; i < playerSeat.size(); i++) {
-				if (playerSeat.get(i) == null) {
-					playerSeat.set(i, pInfo);
-					return i;
-				}
+		exitQueue(pInfo);
+		for (int i = 0; i < playerSeat.size(); i++) {
+			if (playerSeat.get(i) == null) {
+				playerSeat.set(i, pInfo);
+				return i;
 			}
-
-			playerSeat.add(pInfo);
-			return playerSeat.size() - 1;
 		}
-		return -1;
+
+		playerSeat.add(pInfo);
+		return playerSeat.size() - 1;
 	}
 
 	/**
@@ -550,10 +540,7 @@ public class NetRoomInfo implements Serializable {
 	public int getHowManyPlayersReady() {
 		int count = 0;
 		for (NetPlayerInfo pInfo : playerSeat) {
-			if (pInfo != null) {
-				if (pInfo.ready)
-					count++;
-			}
+			if ((pInfo != null) && pInfo.ready) count++;
 		}
 		return count;
 	}
@@ -566,10 +553,7 @@ public class NetRoomInfo implements Serializable {
 	public int getHowManyPlayersPlaying() {
 		int count = 0;
 		for (NetPlayerInfo pInfo : playerSeatNowPlaying) {
-			if (pInfo != null) {
-				if (pInfo.playing && playerSeat.contains(pInfo))
-					count++;
-			}
+			if (isActiveSeatedPlayer(pInfo)) count++;
 		}
 		return count;
 	}
@@ -581,13 +565,9 @@ public class NetRoomInfo implements Serializable {
 	 */
 	public NetPlayerInfo getWinner() {
 		if ((startPlayers >= 2) && (getHowManyPlayersPlaying() < 2)
-				&& (playing == true)) {
+				&& playing) {
 			for (NetPlayerInfo pInfo : playerSeatNowPlaying) {
-				if (pInfo != null) {
-					if (pInfo.playing && pInfo.connected
-							&& playerSeat.contains(pInfo))
-						return pInfo;
-				}
+				if (isConnectedActiveSeatedPlayer(pInfo)) return pInfo;
 			}
 		}
 		return null;
@@ -600,10 +580,9 @@ public class NetRoomInfo implements Serializable {
 	 */
 	public String getWinnerTeam() {
 		if ((startPlayers >= 2) && (getHowManyPlayersPlaying() >= 2)
-				&& (playing == true)) {
+				&& playing) {
 			for (NetPlayerInfo pInfo : playerSeatNowPlaying) {
-				if ((pInfo != null) && pInfo.playing && pInfo.connected
-						&& playerSeat.contains(pInfo)) {
+				if (isConnectedActiveSeatedPlayer(pInfo)) {
 					if (pInfo.strTeam.length() <= 0) {
 						return null;
 					} else {
@@ -623,10 +602,9 @@ public class NetRoomInfo implements Serializable {
 		String teamname = null;
 
 		if ((startPlayers >= 2) && (getHowManyPlayersPlaying() >= 2)
-				&& (playing == true)) {
+				&& playing) {
 			for (NetPlayerInfo pInfo : playerSeatNowPlaying) {
-				if ((pInfo != null) && pInfo.playing && pInfo.connected
-						&& playerSeat.contains(pInfo)) {
+				if (isConnectedActiveSeatedPlayer(pInfo)) {
 					if (pInfo.strTeam.length() <= 0) {
 						return false;
 					} else if (teamname == null) {
@@ -645,16 +623,12 @@ public class NetRoomInfo implements Serializable {
 	 * @return true if it's a team game
 	 */
 	public boolean isTeamGame() {
-		LinkedList<String> teamList = new LinkedList<String>();
+		Set<String> teamList = new HashSet<String>();
 
 		if (startPlayers >= 2) {
 			for (NetPlayerInfo pInfo : playerSeatNowPlaying) {
 				if ((pInfo != null) && (pInfo.strTeam.length() > 0)) {
-					if (teamList.contains(pInfo.strTeam)) {
-						return true;
-					} else {
-						teamList.add(pInfo.strTeam);
-					}
+					if (!teamList.add(pInfo.strTeam)) return true;
 				}
 			}
 		}
@@ -666,16 +640,12 @@ public class NetRoomInfo implements Serializable {
 	 * @return true if 2 or more people have same IP
 	 */
 	public boolean hasSameIPPlayers() {
-		LinkedList<String> ipList = new LinkedList<String>();
+		Set<String> ipList = new HashSet<String>();
 
 		if (startPlayers >= 2) {
 			for (NetPlayerInfo pInfo : playerSeatNowPlaying) {
 				if ((pInfo != null) && (pInfo.strRealIP.length() > 0)) {
-					if (ipList.contains(pInfo.strRealIP)) {
-						return true;
-					} else {
-						ipList.add(pInfo.strRealIP);
-					}
+					if (!ipList.add(pInfo.strRealIP)) return true;
 				}
 			}
 		}
@@ -710,5 +680,13 @@ public class NetRoomInfo implements Serializable {
 		playerQueue.clear();
 		playerSeatDead.clear();
 		chatList.clear();
+	}
+
+	private boolean isActiveSeatedPlayer(NetPlayerInfo pInfo) {
+		return (pInfo != null) && pInfo.playing && playerSeat.contains(pInfo);
+	}
+
+	private boolean isConnectedActiveSeatedPlayer(NetPlayerInfo pInfo) {
+		return isActiveSeatedPlayer(pInfo) && pInfo.connected;
 	}
 }
