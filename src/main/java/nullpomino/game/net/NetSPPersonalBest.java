@@ -64,8 +64,8 @@ public class NetSPPersonalBest implements Serializable {
 	public void copy(NetSPPersonalBest s) {
 		strPlayerName = s.strPlayerName;
 		listRecord = new LinkedList<NetSPRecord>();
-		for(int i = 0; i < s.listRecord.size(); i++) {
-			listRecord.add(new NetSPRecord(s.listRecord.get(i)));
+		for(NetSPRecord record : s.listRecord) {
+			listRecord.add(new NetSPRecord(record));
 		}
 	}
 
@@ -77,8 +77,7 @@ public class NetSPPersonalBest implements Serializable {
 	 * @return NetSPRecord (null if not found)
 	 */
 	public NetSPRecord getRecord(String rule, String mode, int gtype) {
-		for(int i = 0; i < listRecord.size(); i++) {
-			NetSPRecord r = listRecord.get(i);
+		for(NetSPRecord r : listRecord) {
 			if(r.strRuleName.equals(rule) && r.strModeName.equals(mode) && r.gameType == gtype) {
 				return r;
 			}
@@ -131,9 +130,7 @@ public class NetSPPersonalBest implements Serializable {
 		prop.setProperty(strKey + "numRecords", listRecord.size());
 
 		for(int i = 0; i < listRecord.size(); i++) {
-			NetSPRecord record = listRecord.get(i);
-			String strRecordCompressed = NetUtil.compressString(record.exportString());
-			prop.setProperty(strKey + i, strRecordCompressed);
+			prop.setProperty(strKey + i, NetUtil.compressString(listRecord.get(i).exportString()));
 		}
 	}
 
@@ -161,12 +158,11 @@ public class NetSPPersonalBest implements Serializable {
 	 * @return String (Split by ;)
 	 */
 	public String exportListRecord() {
-		String strResult = "";
-		for(int i = 0; i < listRecord.size(); i++) {
-			if(i > 0) strResult += ";";
-			strResult += NetUtil.compressString(listRecord.get(i).exportString());
+		LinkedList<String> records = new LinkedList<String>();
+		for(NetSPRecord record : listRecord) {
+			records.add(NetUtil.compressString(record.exportString()));
 		}
-		return strResult;
+		return String.join(";", records);
 	}
 
 	/**
@@ -174,11 +170,14 @@ public class NetSPPersonalBest implements Serializable {
 	 * @param s String (Split by ;)
 	 */
 	public void importListRecord(String s) {
-		listRecord.clear();
+		if(listRecord == null) listRecord = new LinkedList<NetSPRecord>();
+		else listRecord.clear();
+		if((s == null) || (s.length() <= 0)) return;
 
-		String[] array = s.split(";");
-		for(int i = 0; i < array.length; i++) {
-			String strTemp = NetUtil.decompressString(array[i]);
+		String[] array = s.split(";", -1);
+		for(String compressedRecord : array) {
+			if(compressedRecord.length() <= 0) continue;
+			String strTemp = NetUtil.decompressString(compressedRecord);
 			NetSPRecord record = new NetSPRecord(strTemp);
 			listRecord.add(record);
 		}
@@ -200,15 +199,7 @@ public class NetSPPersonalBest implements Serializable {
 	 * @return String (Split by ;)
 	 */
 	public String exportString() {
-		String[] array = exportStringArray();
-		String result = "";
-
-		for(int i = 0; i < array.length; i++) {
-			if(i > 0) result += ";";
-			result += array[i];
-		}
-
-		return result;
+		return String.join(";", exportStringArray());
 	}
 
 
@@ -217,8 +208,10 @@ public class NetSPPersonalBest implements Serializable {
 	 * @param s String Array (String[8])
 	 */
 	public void importStringArray(String[] s) {
+		if(listRecord == null) listRecord = new LinkedList<NetSPRecord>();
 		if(s.length > 0) strPlayerName = NetUtil.urlDecode(s[0]);
 		if(s.length > 1) importListRecord(s[1]);
+		else listRecord.clear();
 	}
 
 	/**
@@ -226,6 +219,6 @@ public class NetSPPersonalBest implements Serializable {
 	 * @param s String (Split by ;)
 	 */
 	public void importString(String s) {
-		importStringArray(s.split(";"));
+		importStringArray(s.split(";", -1));
 	}
 }
