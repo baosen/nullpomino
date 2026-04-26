@@ -3,6 +3,7 @@
 package nullpomino.game.component;
 
 import java.io.Serializable;
+import java.util.Arrays;
 
 /**
  *  button inputClass to manage the state
@@ -56,6 +57,19 @@ public class Controller implements Serializable {
 							BUTTON_BIT_E = 256,
 							BUTTON_BIT_F = 512;
 
+	private static final int[] BUTTON_BITS = {
+		BUTTON_BIT_UP,
+		BUTTON_BIT_DOWN,
+		BUTTON_BIT_LEFT,
+		BUTTON_BIT_RIGHT,
+		BUTTON_BIT_A,
+		BUTTON_BIT_B,
+		BUTTON_BIT_C,
+		BUTTON_BIT_D,
+		BUTTON_BIT_E,
+		BUTTON_BIT_F
+	};
+
 	/** ButtonIf you hold down thetrue */
 	public boolean[] buttonPress;
 
@@ -90,20 +104,15 @@ public class Controller implements Serializable {
 	 * @param c Copy source
 	 */
 	public void copy(Controller c) {
-		buttonPress = new boolean[BUTTON_COUNT];
-		buttonTime = new int[BUTTON_COUNT];
-
-		for(int i = 0; i < BUTTON_COUNT; i++) {
-			buttonPress[i] = c.buttonPress[i];
-			buttonTime[i] = c.buttonTime[i];
-		}
+		buttonPress = Arrays.copyOf(c.buttonPress, BUTTON_COUNT);
+		buttonTime = Arrays.copyOf(c.buttonTime, BUTTON_COUNT);
 	}
 
 	/**
 	 *  buttonThe state is not pressed all the
 	 */
 	public void clearButtonState() {
-		for(int i = 0; i < BUTTON_COUNT; i++) buttonPress[i] = false;
+		Arrays.fill(buttonPress, false);
 	}
 
 	/**
@@ -140,13 +149,9 @@ public class Controller implements Serializable {
 	 * @return If the cursor movestrue
 	 */
 	public boolean isMenuRepeatKey(int key, boolean enableCButton) {
-		if( (buttonTime[key] == 1) || ((buttonTime[key] >= 25) && (buttonTime[key] % 3 == 0)) ||
-		    ((buttonTime[key] >= 1) && isPress(BUTTON_C) && enableCButton) )
-		{
-			return true;
-		}
-
-		return false;
+		return (buttonTime[key] == 1) ||
+				((buttonTime[key] >= 25) && (buttonTime[key] % 3 == 0)) ||
+				((buttonTime[key] >= 1) && isPress(BUTTON_C) && enableCButton);
 	}
 
 	/**
@@ -156,16 +161,9 @@ public class Controller implements Serializable {
 	public int getButtonBit() {
 		int input = 0;
 
-		if(buttonPress[BUTTON_UP]) input |= BUTTON_BIT_UP;
-		if(buttonPress[BUTTON_DOWN]) input |= BUTTON_BIT_DOWN;
-		if(buttonPress[BUTTON_LEFT]) input |= BUTTON_BIT_LEFT;
-		if(buttonPress[BUTTON_RIGHT]) input |= BUTTON_BIT_RIGHT;
-		if(buttonPress[BUTTON_A]) input |= BUTTON_BIT_A;
-		if(buttonPress[BUTTON_B]) input |= BUTTON_BIT_B;
-		if(buttonPress[BUTTON_C]) input |= BUTTON_BIT_C;
-		if(buttonPress[BUTTON_D]) input |= BUTTON_BIT_D;
-		if(buttonPress[BUTTON_E]) input |= BUTTON_BIT_E;
-		if(buttonPress[BUTTON_F]) input |= BUTTON_BIT_F;
+		for(int i = 0; i < BUTTON_COUNT; i++) {
+			if(buttonPress[i]) input |= BUTTON_BITS[i];
+		}
 
 		return input;
 	}
@@ -177,16 +175,9 @@ public class Controller implements Serializable {
 	public void setButtonBit(int input) {
 		clearButtonState();
 
-		if((input & BUTTON_BIT_UP) != 0) buttonPress[BUTTON_UP] = true;
-		if((input & BUTTON_BIT_DOWN) != 0) buttonPress[BUTTON_DOWN] = true;
-		if((input & BUTTON_BIT_LEFT) != 0) buttonPress[BUTTON_LEFT] = true;
-		if((input & BUTTON_BIT_RIGHT) != 0) buttonPress[BUTTON_RIGHT] = true;
-		if((input & BUTTON_BIT_A) != 0) buttonPress[BUTTON_A] = true;
-		if((input & BUTTON_BIT_B) != 0) buttonPress[BUTTON_B] = true;
-		if((input & BUTTON_BIT_C) != 0) buttonPress[BUTTON_C] = true;
-		if((input & BUTTON_BIT_D) != 0) buttonPress[BUTTON_D] = true;
-		if((input & BUTTON_BIT_E) != 0) buttonPress[BUTTON_E] = true;
-		if((input & BUTTON_BIT_F) != 0) buttonPress[BUTTON_F] = true;
+		for(int i = 0; i < BUTTON_COUNT; i++) {
+			buttonPress[i] = (input & BUTTON_BITS[i]) != 0;
+		}
 	}
 
 	/**
@@ -194,8 +185,7 @@ public class Controller implements Serializable {
 	 */
 	public void updateButtonTime() {
 		for(int i = 0; i < BUTTON_COUNT; i++) {
-			if(buttonPress[i]) buttonTime[i]++;
-			else buttonTime[i] = 0;
+			buttonTime[i] = buttonPress[i] ? buttonTime[i] + 1 : 0;
 		}
 	}
 
