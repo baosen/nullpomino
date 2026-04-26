@@ -755,35 +755,27 @@ public class ScoreAttackMode extends AbstractMode {
 	 */
 	private void updateRanking(int sc, int lv, int time) {
 		rankingRank = checkRanking(sc, lv, time);
-
-		if(rankingRank != -1) {
-			for(int i = RANKING_MAX - 1; i > rankingRank; i--) {
-				rankingScore[i] = rankingScore[i - 1];
-				rankingLevel[i] = rankingLevel[i - 1];
-				rankingTime[i] = rankingTime[i - 1];
-			}
-
-			rankingScore[rankingRank] = sc;
-			rankingLevel[rankingRank] = lv;
-			rankingTime[rankingRank] = time;
-		}
+		RankingHelper.insertAt(rankingRank, RANKING_MAX,
+			(to, from) -> {
+				rankingScore[to] = rankingScore[from];
+				rankingLevel[to] = rankingLevel[from];
+				rankingTime[to] = rankingTime[from];
+			},
+			rank -> {
+				rankingScore[rank] = sc;
+				rankingLevel[rank] = lv;
+				rankingTime[rank] = time;
+			});
 	}
 
 	/**
 	 * This function will check the ranking and returns which place you are. (-1: Out of rank)
 	 */
 	private int checkRanking(int sc, int lv, int time) {
-		for(int i = 0; i < RANKING_MAX; i++) {
-			if(sc > rankingScore[i]) {
-				return i;
-			} else if((sc == rankingScore[i]) && (lv > rankingLevel[i])) {
-				return i;
-			} else if((sc == rankingScore[i]) && (lv == rankingLevel[i]) && (time < rankingTime[i])) {
-				return i;
-			}
-		}
-
-		return -1;
+		return RankingHelper.findRank(RANKING_MAX, i ->
+			(sc > rankingScore[i])
+				|| ((sc == rankingScore[i]) && (lv > rankingLevel[i]))
+				|| ((sc == rankingScore[i]) && (lv == rankingLevel[i]) && (time < rankingTime[i])));
 	}
 
 	/**

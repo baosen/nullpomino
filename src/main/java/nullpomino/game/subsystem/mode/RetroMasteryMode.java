@@ -563,20 +563,17 @@ public class RetroMasteryMode extends AbstractMode {
 	 */
 	private void updateRanking(int sc, int li, int lv, int type) {
 		rankingRank = checkRanking(sc, li, lv, type);
-
-		if(rankingRank != -1) {
-			// Shift the ranking data
-			for(int i = RANKING_MAX - 1; i > rankingRank; i--) {
-				rankingScore[type][i] = rankingScore[type][i - 1];
-				rankingLines[type][i] = rankingLines[type][i - 1];
-				rankingLevel[type][i] = rankingLevel[type][i - 1];
-			}
-
-			// Insert a new data
-			rankingScore[type][rankingRank] = sc;
-			rankingLines[type][rankingRank] = li;
-			rankingLevel[type][rankingRank] = lv;
-		}
+		RankingHelper.insertAt(rankingRank, RANKING_MAX,
+			(to, from) -> {
+				rankingScore[type][to] = rankingScore[type][from];
+				rankingLines[type][to] = rankingLines[type][from];
+				rankingLevel[type][to] = rankingLevel[type][from];
+			},
+			rank -> {
+				rankingScore[type][rank] = sc;
+				rankingLines[type][rank] = li;
+				rankingLevel[type][rank] = lv;
+			});
 	}
 
 	/**
@@ -587,16 +584,10 @@ public class RetroMasteryMode extends AbstractMode {
 	 * @return Place (First place is 0. -1 is Out of Rank)
 	 */
 	private int checkRanking(int sc, int li, int lv, int type) {
-		for(int i = 0; i < RANKING_MAX; i++) {
-			if(sc > rankingScore[type][i]) {
-				return i;
-			} else if((sc == rankingScore[type][i]) && (li > rankingLines[type][i])) {
-				return i;
-			} else if((sc == rankingScore[type][i]) && (li == rankingLines[type][i]) && (lv < rankingLevel[type][i])) {
-				return i;
-			}
-		}
-
-		return -1;
+		return RankingHelper.findRank(RANKING_MAX, i ->
+			(sc > rankingScore[type][i])
+				|| ((sc == rankingScore[type][i]) && (li > rankingLines[type][i]))
+				|| ((sc == rankingScore[type][i]) && (li == rankingLines[type][i])
+					&& (lv < rankingLevel[type][i])));
 	}
 }

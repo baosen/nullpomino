@@ -1010,18 +1010,17 @@ public class TimeAttackMode extends NetDummyMode {
 	 */
 	private void updateRanking(int li, int time, int type, int clear) {
 		rankingRank = checkRanking(li, time, type, clear);
-
-		if(rankingRank != -1) {
-			for(int i = RANKING_MAX - 1; i > rankingRank; i--) {
-				rankingLines[type][i] = rankingLines[type][i - 1];
-				rankingTime[type][i] = rankingTime[type][i - 1];
-				rankingRollclear[type][i] = rankingRollclear[type][i - 1];
-			}
-
-			rankingLines[type][rankingRank] = li;
-			rankingTime[type][rankingRank] = time;
-			rankingRollclear[type][rankingRank] = clear;
-		}
+		RankingHelper.insertAt(rankingRank, RANKING_MAX,
+			(to, from) -> {
+				rankingLines[type][to] = rankingLines[type][from];
+				rankingTime[type][to] = rankingTime[type][from];
+				rankingRollclear[type][to] = rankingRollclear[type][from];
+			},
+			rank -> {
+				rankingLines[type][rank] = li;
+				rankingTime[type][rank] = time;
+				rankingRollclear[type][rank] = clear;
+			});
 	}
 
 	/**
@@ -1033,17 +1032,11 @@ public class TimeAttackMode extends NetDummyMode {
 	 * @return Place (First place is 0. -1 is Out of Rank)
 	 */
 	private int checkRanking(int li, int time, int type, int clear) {
-		for(int i = 0; i < RANKING_MAX; i++) {
-			if(clear > rankingRollclear[type][i]) {
-				return i;
-			} else if((clear == rankingRollclear[type][i]) && (li > rankingLines[type][i])) {
-				return i;
-			} else if((clear == rankingRollclear[type][i]) && (li == rankingLines[type][i]) && (time < rankingTime[type][i])) {
-				return i;
-			}
-		}
-
-		return -1;
+		return RankingHelper.findRank(RANKING_MAX, i ->
+			(clear > rankingRollclear[type][i])
+				|| ((clear == rankingRollclear[type][i]) && (li > rankingLines[type][i]))
+				|| ((clear == rankingRollclear[type][i]) && (li == rankingLines[type][i])
+					&& (time < rankingTime[type][i])));
 	}
 
 	/**

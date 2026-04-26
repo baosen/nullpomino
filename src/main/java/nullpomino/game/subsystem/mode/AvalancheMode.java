@@ -602,18 +602,15 @@ public class AvalancheMode extends Avalanche1PDummyMode {
 	 */
 	private void updateRanking(int sc, int time, int type, int sctype, int colors) {
 		rankingRank = checkRanking(sc, time, type, sctype, colors);
-
-		if(rankingRank != -1) {
-			// Shift down ranking entries
-			for(int i = RANKING_MAX - 1; i > rankingRank; i--) {
-				rankingScore[sctype][colors-3][type][i] = rankingScore[sctype][colors-3][type][i - 1];
-				rankingTime[sctype][colors-3][type][i] = rankingTime[sctype][colors-3][type][i - 1];
-			}
-
-			// Add new data
-			rankingScore[sctype][colors-3][type][rankingRank] = sc;
-			rankingTime[sctype][colors-3][type][rankingRank] = time;
-		}
+		RankingHelper.insertAt(rankingRank, RANKING_MAX,
+			(to, from) -> {
+				rankingScore[sctype][colors-3][type][to] = rankingScore[sctype][colors-3][type][from];
+				rankingTime[sctype][colors-3][type][to] = rankingTime[sctype][colors-3][type][from];
+			},
+			rank -> {
+				rankingScore[sctype][colors-3][type][rank] = sc;
+				rankingTime[sctype][colors-3][type][rank] = time;
+			});
 	}
 
 	/**
@@ -625,24 +622,14 @@ public class AvalancheMode extends Avalanche1PDummyMode {
 	private int checkRanking(int sc, int time, int type, int sctype, int colors) {
 		if (type == 2 && sc < SPRINT_MAX_SCORE[sprintTarget])
 			return -1;
-		for(int i = 0; i < RANKING_MAX; i++) {
-			if (type == 0) {
-				if(sc > rankingScore[sctype][colors-3][type][i]) {
-					return i;
-				} else if((sc == rankingScore[sctype][colors-3][type][i]) && (time < rankingTime[sctype][colors-3][type][i])) {
-					return i;
-				}
-			} else if (type == 1) {
-				if(sc > rankingScore[sctype][colors-3][type][i]) {
-					return i;
-				}
-			} else if (type == 2) {
-				if(time < rankingTime[sctype][colors-3][type+sprintTarget][i] || (rankingTime[sctype][colors-3][type+sprintTarget][i] < 0)) {
-					return i;
-				}
-			}
-		}
-
-		return -1;
+		return RankingHelper.findRank(RANKING_MAX, i ->
+			(type == 0 && (
+				(sc > rankingScore[sctype][colors-3][type][i])
+					|| ((sc == rankingScore[sctype][colors-3][type][i])
+						&& (time < rankingTime[sctype][colors-3][type][i]))))
+			|| (type == 1 && (sc > rankingScore[sctype][colors-3][type][i]))
+			|| (type == 2 && (
+				(time < rankingTime[sctype][colors-3][type+sprintTarget][i])
+					|| (rankingTime[sctype][colors-3][type+sprintTarget][i] < 0))));
 	}
 }
