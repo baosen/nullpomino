@@ -23,14 +23,12 @@ public class IntegerMenuItem extends AbstractMenuItem<Integer> {
 
 	@Override
 	public void save(int playerID, CustomProperties prop, String modeName) {
-		prop.setProperty(modeName + "." + name
-				+ (playerID < 0 ? "" : ".p" + playerID), value);
+		saveValue(playerID, prop, modeName, value);
 	}
 
 	@Override
 	public void load(int playerID, CustomProperties prop, String modeName) {
-		value = prop.getProperty(modeName + "." + name
-				+ (playerID < 0 ? "" : ".p" + playerID), DEFAULT_VALUE);
+		value = loadInt(playerID, prop, modeName);
 	}
 
 	@Override
