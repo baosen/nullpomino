@@ -1,5 +1,6 @@
 package net.omegaboshi.nullpomino.game.subsystem.randomizer;
 
+import java.util.Arrays;
 import java.util.Random;
 
 import nullpomino.game.component.Piece;
@@ -26,18 +27,12 @@ public abstract class Randomizer {
 	}
 
 	public void setPieceEnable(boolean[] pieceEnable) {
-		int piece = 0;
+		int[] enabledPieces = new int[Piece.PIECE_COUNT];
+		int count = 0;
 		for (int i = 0; i < Piece.PIECE_COUNT; i++) {
-			if  (pieceEnable[i]) piece++;
+			if(pieceEnable[i]) enabledPieces[count++] = i;
 		}
-		pieces = new int[piece];
-		piece = 0;
-		for (int i = 0; i < Piece.PIECE_COUNT; i++) {
-			if (pieceEnable[i]) {
-				pieces[piece] = i;
-				piece++;
-			}
-		}
+		pieces = Arrays.copyOf(enabledPieces, count);
 	}
 
 	public void reseed(long seed) {
