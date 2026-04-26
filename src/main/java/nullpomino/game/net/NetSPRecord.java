@@ -209,12 +209,7 @@ public class NetSPRecord implements Serializable {
 	 */
 	public String exportCustomStats() {
 		if((listCustomStats != null) && (listCustomStats.size() > 0)) {
-			String strResult = "";
-			for(int i = 0; i < listCustomStats.size(); i++) {
-				if(i > 0) strResult += ",";
-				strResult += listCustomStats.get(i);
-			}
-			return strResult;
+			return String.join(",", listCustomStats);
 		}
 		return "";
 	}
@@ -229,8 +224,8 @@ public class NetSPRecord implements Serializable {
 		if((s == null) || (s.length() <= 0)) return;
 
 		String[] array = s.split(",");
-		for(int i = 0; i < array.length; i++) {
-			listCustomStats.add(array[i]);
+		for(String customStat : array) {
+			listCustomStats.add(customStat);
 		}
 	}
 
@@ -267,15 +262,7 @@ public class NetSPRecord implements Serializable {
 	 * @return String (Split by ;)
 	 */
 	public String exportString() {
-		String[] array = exportStringArray();
-		String result = "";
-
-		for(int i = 0; i < array.length; i++) {
-			if(i > 0) result += ";";
-			result += array[i];
-		}
-
-		return result;
+		return String.join(";", exportStringArray());
 	}
 
 	/**
@@ -301,7 +288,7 @@ public class NetSPRecord implements Serializable {
 	 * @param s String (Split by ;)
 	 */
 	public void importString(String s) {
-		importStringArray(s.split(";"));
+		importStringArray(s.split(";", -1));
 	}
 
 	/**
@@ -320,11 +307,10 @@ public class NetSPRecord implements Serializable {
 	 * @return Value (null if not found)
 	 */
 	public String getCustomStat(String name) {
-		for(int i = 0; i < listCustomStats.size(); i++) {
-			String strTemp = listCustomStats.get(i);
-			String[] strArray = strTemp.split(";");
+		for(String strTemp : listCustomStats) {
+			String[] strArray = strTemp.split(";", 2);
 
-			if(strArray[0].equals(name)) {
+			if((strArray.length > 1) && strArray[0].equals(name)) {
 				return strArray[1];
 			}
 		}
