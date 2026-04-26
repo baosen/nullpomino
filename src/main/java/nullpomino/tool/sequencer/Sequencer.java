@@ -41,8 +41,8 @@ import org.apache.log4j.PropertyConfigurator;
 
 import nullpomino.game.component.Piece;
 import nullpomino.tool.SwingToolUtil;
+import nullpomino.util.ClassFactory;
 import nullpomino.util.CustomProperties;
-import nullpomino.util.LegacyClassNames;
 import net.omegaboshi.nullpomino.game.subsystem.randomizer.Randomizer;
 
 /**
@@ -363,17 +363,14 @@ public class Sequencer extends JFrame implements ActionListener {
 	}
 
 	public void generate() {
-		Class<?> randomizerClass;
-		Randomizer randomizerObject;
-
 		String name = vectorRandomizer.get(comboboxRandomizer.getSelectedIndex());
 
 		try {
-			randomizerClass = Class.forName(LegacyClassNames.translate(name));
-			randomizerObject = (Randomizer) randomizerClass.newInstance();
+			Randomizer randomizerObject = ClassFactory.create(name, Randomizer.class);
 			randomizerObject.setState(nextPieceEnable, getLongTextField(txtfldSeed));
+			int offset = getIntTextField(txtfldSeqOffset);
 			sequence = new int[getIntTextField(txtfldSeqLength)];
-			for (int i = 0; i < getIntTextField(txtfldSeqOffset); i++) {
+			for (int i = 0; i < offset; i++) {
 				randomizerObject.next();
 			}
 			for (int i = 0; i < sequence.length; i++) {

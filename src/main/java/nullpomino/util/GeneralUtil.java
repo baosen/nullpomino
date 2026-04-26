@@ -198,17 +198,7 @@ public class GeneralUtil {
 	 * @return Randomizer (null if something fails)
 	 */
 	public static Randomizer loadRandomizer(String filename) {
-		Class<?> randomizerClass = null;
-		Randomizer randomizerObject = null;
-
-		try {
-			randomizerClass = Class.forName(LegacyClassNames.translate(filename));
-			randomizerObject = (Randomizer) randomizerClass.newInstance();
-		} catch (Exception e) {
-			log.warn("Failed to load Randomizer from " + filename, e);
-		}
-
-		return randomizerObject;
+		return loadClass(filename, Randomizer.class, "Randomizer");
 	}
 
 	/**
@@ -217,17 +207,7 @@ public class GeneralUtil {
 	 * @return Wallkick (null if something fails)
 	 */
 	public static Wallkick loadWallkick(String filename) {
-		Class<?> wallkickClass = null;
-		Wallkick wallkickObject = null;
-
-		try {
-			wallkickClass = Class.forName(LegacyClassNames.translate(filename));
-			wallkickObject = (Wallkick) wallkickClass.newInstance();
-		} catch (Exception e) {
-			log.warn("Failed to load Wallkick from " + filename, e);
-		}
-
-		return wallkickObject;
+		return loadClass(filename, Wallkick.class, "Wallkick");
 	}
 
 	/**
@@ -236,17 +216,16 @@ public class GeneralUtil {
 	 * @return The instance of AI (null if something fails)
 	 */
 	public static DummyAI loadAIPlayer(String filename) {
-		Class<?> aiClass = null;
-		DummyAI aiObject = null;
+		return loadClass(filename, DummyAI.class, "AIPlayer");
+	}
 
+	private static <T> T loadClass(String filename, Class<T> expectedType, String description) {
 		try {
-			aiClass = Class.forName(LegacyClassNames.translate(filename));
-			aiObject = (DummyAI) aiClass.newInstance();
+			return ClassFactory.create(filename, expectedType);
 		} catch (Exception e) {
-			log.warn("Failed to load AIPlayer from " + filename, e);
+			log.warn("Failed to load " + description + " from " + filename, e);
+			return null;
 		}
-
-		return aiObject;
 	}
 	
 	/**
