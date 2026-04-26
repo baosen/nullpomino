@@ -1,6 +1,7 @@
 package nullpomino.game.net;
 
 import java.io.Serializable;
+import java.util.Iterator;
 import java.util.LinkedList;
 
 import nullpomino.util.CustomProperties;
@@ -146,19 +147,14 @@ public class NetSPRanking implements Serializable {
 	 * @return Number of records removed (0 if not found)
 	 */
 	public int removeRecord(String strPlayerName) {
-		int count = 0;
-
-		LinkedList<NetSPRecord> list = new LinkedList<NetSPRecord>(listRecord);
-		for(int i = 0; i < list.size(); i++) {
-			NetSPRecord r = list.get(i);
-
-			if(r.strPlayerName.equals(strPlayerName)) {
-				listRecord.remove(i);
-				count++;
+		int originalSize = listRecord.size();
+		for(Iterator<NetSPRecord> it = listRecord.iterator(); it.hasNext();) {
+			if(it.next().strPlayerName.equals(strPlayerName)) {
+				it.remove();
 			}
 		}
 
-		return count;
+		return originalSize - listRecord.size();
 	}
 
 	/**
@@ -193,28 +189,23 @@ public class NetSPRanking implements Serializable {
 		removeRecord(r1.strPlayerName);
 
 		// Insert new record
-		LinkedList<NetSPRecord> list = new LinkedList<NetSPRecord>(listRecord);
-		int rank = -1;
+		int rank = listRecord.size();
 
-		for(int i = 0; i < list.size(); i++) {
-			if(r1.compare(rankingType, list.get(i))) {
-				listRecord.add(i, r1);
+		for(int i = 0; i < listRecord.size(); i++) {
+			if(r1.compare(rankingType, listRecord.get(i))) {
 				rank = i;
 				break;
 			}
 		}
-
-		// Couldn't rank in? Add to last.
-		if(rank == -1) {
-			listRecord.add(r1);
-			rank = listRecord.size() - 1;
-		}
+		listRecord.add(rank, r1);
 
 		// Remove anything after maxRecords
-		while(listRecord.size() >= maxRecords) listRecord.removeLast();
+		if(maxRecords >= 0) {
+			while(listRecord.size() > maxRecords) listRecord.removeLast();
+		}
 
 		// Done
-		return (rank >= maxRecords) ? -1 : rank;
+		return ((maxRecords >= 0) && (rank >= maxRecords)) ? -1 : rank;
 	}
 
 	/**
@@ -239,7 +230,7 @@ public class NetSPRanking implements Serializable {
 	public void readProperty(CustomProperties prop) {
 		String strKey = "spranking." + strRuleName + "." + strModeName + "." + gameType + ".";
 		int numRecords = prop.getProperty(strKey + "numRecords", 0);
-		if(numRecords > maxRecords) numRecords = maxRecords;
+		if((maxRecords >= 0) && (numRecords > maxRecords)) numRecords = maxRecords;
 
 		listRecord.clear();
 		for(int i = 0; i < numRecords; i++) {
