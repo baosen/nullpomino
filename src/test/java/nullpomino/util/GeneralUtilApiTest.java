@@ -2,10 +2,15 @@ package nullpomino.util;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.Calendar;
 import java.util.TimeZone;
+
+import nullpomino.game.subsystem.ai.DummyAI;
+import nullpomino.game.subsystem.wallkick.StandardWallkick;
+import net.omegaboshi.nullpomino.game.subsystem.randomizer.MemorylessRandomizer;
 
 import org.junit.jupiter.api.Test;
 
@@ -65,5 +70,22 @@ class GeneralUtilApiTest {
 		onlyS[5] = true; // Z
 		onlyS[3] = true; // O (index depends on Piece IDs but the helper only cares about enable flags)
 		assertNotNull(GeneralUtil.isPieceSZOOnly(onlyS));
+	}
+
+	@Test
+	void pluginLoadersCreateExpectedTypes() {
+		assertTrue(GeneralUtil.loadRandomizer(
+				"net.omegaboshi.nullpomino.game.subsystem.randomizer.MemorylessRandomizer")
+				instanceof MemorylessRandomizer);
+		assertTrue(GeneralUtil.loadWallkick(
+				"mu.nu.nullpo.game.subsystem.wallkick.StandardWallkick")
+				instanceof StandardWallkick);
+		assertTrue(GeneralUtil.loadAIPlayer("nullpomino.game.subsystem.ai.DummyAI")
+				instanceof DummyAI);
+	}
+
+	@Test
+	void pluginLoadersReturnNullWhenClassCannotLoad() {
+		assertNull(GeneralUtil.loadRandomizer("example.DoesNotExist"));
 	}
 }

@@ -163,19 +163,7 @@ public class ModeManager {
 			// Read the name of a class
 			String name = prop.getProperty(String.valueOf(count), null);
 			if(name == null) return;
-
-			Class<?> modeClass;
-			GameMode modeObject;
-
-			try {
-				modeClass = Class.forName(LegacyClassNames.translate(name));
-				modeObject = (GameMode) modeClass.newInstance();
-				modelist.add(modeObject);
-			} catch(ClassNotFoundException e) {
-				log.warn("Mode class " + name + " not found", e);
-			} catch(Exception e) {
-				log.warn("Mode class " + name + " load failed", e);
-			}
+			addGameMode(name);
 
 			count++;
 		}
@@ -186,32 +174,24 @@ public class ModeManager {
 	 * @param bf I read a text fileBufferedReader
 	 */
 	public void loadGameModes(BufferedReader bf) {
-		while(true) {
-			// Read the name of a class
-			String name = null;
-			try {
-				name = bf.readLine();
-			} catch (IOException e) {
-				log.warn("IOException on readLine()", e);
-				return;
+		try {
+			String name;
+			while((name = bf.readLine()) != null) {
+				if(name.length() == 0) return;
+				if(!name.startsWith("#")) addGameMode(name);
 			}
-			if(name == null) return;
-			if(name.length() == 0) return;
+		} catch (IOException e) {
+			log.warn("IOException on readLine()", e);
+		}
+	}
 
-			if(!name.startsWith("#")) {
-				Class<?> modeClass;
-				GameMode modeObject;
-
-				try {
-					modeClass = Class.forName(LegacyClassNames.translate(name));
-					modeObject = (GameMode) modeClass.newInstance();
-					modelist.add(modeObject);
-				} catch(ClassNotFoundException e) {
-					log.warn("Mode class " + name + " not found", e);
-				} catch(Exception e) {
-					log.warn("Mode class " + name + " load failed", e);
-				}
-			}
+	private void addGameMode(String name) {
+		try {
+			modelist.add(ClassFactory.create(name, GameMode.class));
+		} catch(ClassNotFoundException e) {
+			log.warn("Mode class " + name + " not found", e);
+		} catch(Exception e) {
+			log.warn("Mode class " + name + " load failed", e);
 		}
 	}
 }

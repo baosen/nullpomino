@@ -9,8 +9,8 @@ import java.util.ArrayList;
 
 import nullpomino.game.subsystem.ai.AIPlayer;
 import nullpomino.gui.sdl.binding.SDL3;
+import nullpomino.util.ClassFactory;
 import nullpomino.util.GeneralUtil;
-import nullpomino.util.LegacyClassNames;
 
 import org.apache.log4j.Logger;
 
@@ -124,13 +124,10 @@ public class StateConfigAISelectSDL extends BaseStateSDL {
 		String[] aiName = new String[aiPath.length];
 
 		for(int i = 0; i < aiPath.length; i++) {
-			Class<?> aiClass;
-			AIPlayer aiObj;
 			aiName[i] = "(INVALID)";
 
 			try {
-				aiClass = Class.forName(LegacyClassNames.translate(aiPath[i]));
-				aiObj = (AIPlayer) aiClass.newInstance();
+				AIPlayer aiObj = ClassFactory.create(aiPath[i], AIPlayer.class);
 				aiName[i] = aiObj.getName();
 			} catch(ClassNotFoundException e) {
 				log.warn("AI class " + aiPath[i] + " not found", e);
