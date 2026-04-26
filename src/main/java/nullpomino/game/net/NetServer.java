@@ -1238,20 +1238,12 @@ public class NetServer {
 		// Previous incomplete packet buffer (null if none are present)
 		StringBuilder notCompletePacketBuffer = notCompletePacketMap.remove(socketChannel);
 
-		// The new packet buffer
-		StringBuilder packetBuffer = new StringBuilder();
-		if(notCompletePacketBuffer != null) packetBuffer.append(notCompletePacketBuffer);
-		packetBuffer.append(message);
-
-		int index;
-		while((index = packetBuffer.indexOf("\n")) != -1) {
-			String msgNow = packetBuffer.substring(0, index);
-			processPacket(socketChannel, msgNow);
-			packetBuffer = packetBuffer.replace(0, index+1, "");
-		}
+		StringBuilder packetBuffer = NetUtil.processPacketBuffer(
+				notCompletePacketBuffer, message,
+				msgNow -> processPacket(socketChannel, msgNow));
 
 		// Place new incomplete packet buffer
-		if(packetBuffer.length() > 0) {
+		if(packetBuffer != null) {
 			notCompletePacketMap.put(socketChannel, packetBuffer);
 		}
 	}
