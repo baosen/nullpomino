@@ -96,9 +96,24 @@ public abstract class AbstractMode implements GameMode {
 			receiver.drawMenuFont(engine, playerID, 0, i << 1, menuItem.displayName, menuItem.color);
 			if (menuCursor == i && !engine.owner.replayMode)
 				receiver.drawMenuFont(engine, playerID, 0, (i << 1) + 1, "b" + menuItem.getValueString(), true);
-			else 
+			else
 				receiver.drawMenuFont(engine, playerID, 1, (i << 1) + 1, menuItem.getValueString());
 		}
+	}
+
+	@Override
+	public int getMenuCursor() {
+		return menuCursor;
+	}
+
+	@Override
+	public void setMenuCursor(int cursor) {
+		menuCursor = cursor;
+	}
+
+	@Override
+	public int getMenuItemCount() {
+		return menu.isEmpty() ? -1 : menu.size();
 	}
 
 	/**

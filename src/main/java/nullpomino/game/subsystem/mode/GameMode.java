@@ -211,6 +211,31 @@ public interface GameMode {
 	}
 
 	/**
+	 * Current cursor position in the pre-game settings menu, or -1 if the
+	 * mode doesn't expose one. Frontends use this for mouse hover/click on
+	 * the SETTING screen.
+	 */
+	public default int getMenuCursor() {
+		return -1;
+	}
+
+	/**
+	 * Set the cursor position in the pre-game settings menu. Default
+	 * implementation is a no-op for modes that don't track a cursor.
+	 */
+	public default void setMenuCursor(int cursor) {
+	}
+
+	/**
+	 * Number of items in the pre-game settings menu, or -1 if the mode
+	 * doesn't expose a count. Frontends use this to bound mouse hover so
+	 * pointing below the last item doesn't drive the cursor off the end.
+	 */
+	public default int getMenuItemCount() {
+		return -1;
+	}
+
+	/**
 	 * Render Ready->Go screen.
 	 * @param engine GameEngine
 	 * @param playerID Player ID
