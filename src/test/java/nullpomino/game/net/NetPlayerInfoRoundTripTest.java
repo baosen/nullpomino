@@ -49,4 +49,24 @@ class NetPlayerInfoRoundTripTest {
 		assertEquals(original.winCountNow, imported.winCountNow);
 		assertEquals(original.spPersonalBest.exportString(), imported.spPersonalBest.exportString());
 	}
+
+	@Test
+	void copyConstructorCopiesArraysWithoutSharing() {
+		NetPlayerInfo original = new NetPlayerInfo();
+		original.rating = new int[] {1000, 1100, 1200, 1300};
+		original.ratingBefore = new int[] {900, 1000, 1100, 1200};
+		original.playCount = new int[] {10, 20, 30, 40};
+		original.winCount = new int[] {1, 2, 3, 4};
+
+		NetPlayerInfo copy = new NetPlayerInfo(original);
+		original.rating[0] = 1;
+		original.ratingBefore[0] = 2;
+		original.playCount[0] = 3;
+		original.winCount[0] = 4;
+
+		assertArrayEquals(new int[] {1000, 1100, 1200, 1300}, copy.rating);
+		assertArrayEquals(new int[] {900, 1000, 1100, 1200}, copy.ratingBefore);
+		assertArrayEquals(new int[] {10, 20, 30, 40}, copy.playCount);
+		assertArrayEquals(new int[] {1, 2, 3, 4}, copy.winCount);
+	}
 }
