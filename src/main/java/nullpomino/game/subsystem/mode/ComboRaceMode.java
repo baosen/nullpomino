@@ -838,34 +838,25 @@ public class ComboRaceMode extends NetDummyMode {
 	 */
 	private void updateRanking(int maxcombo, int time) {
 		rankingRank = checkRanking(maxcombo, time);
-
-		if(rankingRank != -1) {
-			// Shift down ranking entries
-			for(int i = RANKING_MAX - 1; i > rankingRank; i--) {
-				rankingCombo[goaltype][i] = rankingCombo[goaltype][i - 1];
-				rankingTime[goaltype][i] = rankingTime[goaltype][i - 1];
-			}
-
-			// Add new data
-			rankingCombo[goaltype][rankingRank] = maxcombo;
-			rankingTime[goaltype][rankingRank] = time;
-		}
+		RankingHelper.insertAt(rankingRank, RANKING_MAX,
+			(to, from) -> {
+				rankingCombo[goaltype][to] = rankingCombo[goaltype][from];
+				rankingTime[goaltype][to] = rankingTime[goaltype][from];
+			},
+			rank -> {
+				rankingCombo[goaltype][rank] = maxcombo;
+				rankingTime[goaltype][rank] = time;
+			});
 	}
 
 	/**
 	 * This function will check the ranking and returns which place you are. (-1: Out of rank)
 	 */
 	private int checkRanking(int maxcombo, int time) {
-		for(int i = 0; i < RANKING_MAX; i++) {
-			if(maxcombo > rankingCombo[goaltype][i]) {
-				return i;
-			} else if ((maxcombo == rankingCombo[goaltype][i]) && (time >= 0) &&
-					((time < rankingTime[goaltype][i]) || (rankingTime[goaltype][i] == -1))) {
-				return i;
-			}
-		}
-
-		return -1;
+		return RankingHelper.findRank(RANKING_MAX, i ->
+			(maxcombo > rankingCombo[goaltype][i])
+				|| ((maxcombo == rankingCombo[goaltype][i]) && (time >= 0)
+					&& ((time < rankingTime[goaltype][i]) || (rankingTime[goaltype][i] == -1))));
 	}
 
 	/**

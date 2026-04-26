@@ -590,20 +590,17 @@ public class DigRaceMode extends NetDummyMode {
 	 */
 	private void updateRanking(int time, int lines, int piece) {
 		rankingRank = checkRanking(time, lines, piece);
-
-		if(rankingRank != -1) {
-			// Shift down ranking entries
-			for(int i = RANKING_MAX - 1; i > rankingRank; i--) {
-				rankingTime[goaltype][i] = rankingTime[goaltype][i - 1];
-				rankingLines[goaltype][i] = rankingLines[goaltype][i - 1];
-				rankingPiece[goaltype][i] = rankingPiece[goaltype][i - 1];
-			}
-
-			// Add new data
-			rankingTime[goaltype][rankingRank] = time;
-			rankingLines[goaltype][rankingRank] = lines;
-			rankingPiece[goaltype][rankingRank] = piece;
-		}
+		RankingHelper.insertAt(rankingRank, RANKING_MAX,
+			(to, from) -> {
+				rankingTime[goaltype][to] = rankingTime[goaltype][from];
+				rankingLines[goaltype][to] = rankingLines[goaltype][from];
+				rankingPiece[goaltype][to] = rankingPiece[goaltype][from];
+			},
+			rank -> {
+				rankingTime[goaltype][rank] = time;
+				rankingLines[goaltype][rank] = lines;
+				rankingPiece[goaltype][rank] = piece;
+			});
 	}
 
 	/**
@@ -613,17 +610,11 @@ public class DigRaceMode extends NetDummyMode {
 	 * @return Position (-1 if unranked)
 	 */
 	private int checkRanking(int time, int lines, int piece) {
-		for(int i = 0; i < RANKING_MAX; i++) {
-			if((time < rankingTime[goaltype][i]) || (rankingTime[goaltype][i] < 0)) {
-				return i;
-			} else if((time == rankingTime[goaltype][i]) && (lines < rankingLines[goaltype][i])) {
-				return i;
-			} else if((time == rankingTime[goaltype][i]) && (lines == rankingLines[goaltype][i]) && (piece < rankingPiece[goaltype][i])) {
-				return i;
-			}
-		}
-
-		return -1;
+		return RankingHelper.findRank(RANKING_MAX, i ->
+			(time < rankingTime[goaltype][i]) || (rankingTime[goaltype][i] < 0)
+				|| ((time == rankingTime[goaltype][i]) && (lines < rankingLines[goaltype][i]))
+				|| ((time == rankingTime[goaltype][i]) && (lines == rankingLines[goaltype][i])
+					&& (piece < rankingPiece[goaltype][i])));
 	}
 
 	/**
