@@ -1,6 +1,7 @@
 package nullpomino.util;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -8,6 +9,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import java.util.Calendar;
 import java.util.TimeZone;
 
+import nullpomino.game.component.Piece;
 import nullpomino.game.subsystem.ai.DummyAI;
 import nullpomino.game.subsystem.wallkick.StandardWallkick;
 import net.omegaboshi.nullpomino.game.subsystem.randomizer.MemorylessRandomizer;
@@ -66,10 +68,33 @@ class GeneralUtilApiTest {
 	@Test
 	void isPieceSZOOnlyRecognisesSZO() {
 		boolean[] onlyS = new boolean[8];
-		onlyS[1] = true; // S
-		onlyS[5] = true; // Z
-		onlyS[3] = true; // O (index depends on Piece IDs but the helper only cares about enable flags)
-		assertNotNull(GeneralUtil.isPieceSZOOnly(onlyS));
+		onlyS[Piece.PIECE_S] = true;
+		onlyS[Piece.PIECE_Z] = true;
+		onlyS[Piece.PIECE_O] = true;
+		assertTrue(GeneralUtil.isPieceSZOOnly(onlyS));
+
+		onlyS[Piece.PIECE_T] = true;
+		assertTrue(!GeneralUtil.isPieceSZOOnly(onlyS));
+		assertTrue(!GeneralUtil.isPieceSZOOnly(null));
+	}
+
+	@Test
+	void createNextPieceArrayParsesSingleDigitsAndDefaultsInvalidCharactersToI() {
+		assertArrayEquals(new int[] {
+				Piece.PIECE_I,
+				Piece.PIECE_L,
+				Piece.PIECE_O,
+				Piece.PIECE_I,
+				9
+		}, GeneralUtil.createNextPieceArrayFromNumberString("012x9"));
+		assertNull(GeneralUtil.createNextPieceArrayFromNumberString(""));
+	}
+
+	@Test
+	void stringCombineJoinsFromStartIndex() {
+		assertEquals("user for reason", GeneralUtil.StringCombine(
+				new String[] {"ban", "user", "for", "reason"}, " ", 1));
+		assertEquals("", GeneralUtil.StringCombine(new String[] {"only"}, " ", 1));
 	}
 
 	@Test
