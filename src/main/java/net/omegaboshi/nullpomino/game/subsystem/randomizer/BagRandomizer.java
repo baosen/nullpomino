@@ -4,6 +4,7 @@ public class BagRandomizer extends Randomizer {
 
 	int[] bag;
 	int pt;
+	int dealLength;
 
 	public BagRandomizer() {
 		super();
@@ -14,16 +15,17 @@ public class BagRandomizer extends Randomizer {
 	}
 
 	public void init() {
-		bag = new int[pieces.length];
+		bag = new int[bagSize()];
 		pt = 0;
-		for (int i = 0; i < pieces.length; i++) {
-			bag[i] = pieces[i];
+		dealLength = dealLength();
+		for (int i = 0; i < bag.length; i++) {
+			bag[i] = pieces[i % pieces.length];
 		}
 		shuffle();
 	}
 
 	public void shuffle() {
-		for (int i = pieces.length; i > 1; i--) {
+		for (int i = bag.length; i > 1; i--) {
 			int j = r.nextInt(i);
 			int temp = bag[i-1];
 			bag[i-1] = bag[j];
@@ -34,10 +36,18 @@ public class BagRandomizer extends Randomizer {
 	public int next() {
 		int id = bag[pt];
 		pt++;
-		if (pt == pieces.length) {
+		if (pt == dealLength) {
 			pt = 0;
 			shuffle();
 		}
 		return id;
+	}
+
+	protected int bagSize() {
+		return pieces.length;
+	}
+
+	protected int dealLength() {
+		return bag.length;
 	}
 }
