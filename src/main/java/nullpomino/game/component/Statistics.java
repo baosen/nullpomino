@@ -414,7 +414,7 @@ public class Statistics implements Serializable {
 	 * @param s String (Split by ;)
 	 */
 	public void importString(String s) {
-		importStringArray(s.split(";"));
+		importStringArray(s.split(";", -1));
 	}
 
 	/**
@@ -469,12 +469,6 @@ public class Statistics implements Serializable {
 	 * @return String (Split by ;)
 	 */
 	public String exportString() {
-		String[] array = exportStringArray();
-		String result = "";
-		for(int i = 0; i < array.length; i++) {
-			if(i > 0) result += ";";
-			result += array[i];
-		}
-		return result;
+		return String.join(";", exportStringArray());
 	}
 }
