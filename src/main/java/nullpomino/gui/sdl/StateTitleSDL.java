@@ -10,7 +10,7 @@ import nullpomino.gui.sdl.binding.SDL3;
  */
 public class StateTitleSDL extends DummyMenuChooseStateSDL {
 	/** Strings for menu choices */
-	private static final String[] CHOICES = {"START", "REPLAY", "NETPLAY", "OPTIONS", "EXIT"};
+	private static final String[] CHOICES = {"PLAY", "REPLAY", "NETPLAY", "OPTIONS", "EXIT"};
 
 	/** UI Text identifier Strings */
 	private static final String[] UI_TEXT = {
