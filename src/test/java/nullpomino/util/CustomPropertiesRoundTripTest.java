@@ -1,6 +1,7 @@
 package nullpomino.util;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import org.junit.jupiter.api.Test;
@@ -27,6 +28,7 @@ class CustomPropertiesRoundTripTest {
 		CustomProperties p = new CustomProperties();
 		p.setProperty("l", 1234567890123L);
 		assertEquals(1234567890123L, p.getProperty("l", 0L));
+		assertEquals(0L, p.getProperty("missing", 0L));
 	}
 
 	@Test
@@ -34,6 +36,7 @@ class CustomPropertiesRoundTripTest {
 		CustomProperties p = new CustomProperties();
 		p.setProperty("f", 6.5f);
 		assertEquals(6.5f, p.getProperty("f", 0f));
+		assertEquals(0f, p.getProperty("missing", 0f));
 	}
 
 	@Test
@@ -41,6 +44,7 @@ class CustomPropertiesRoundTripTest {
 		CustomProperties p = new CustomProperties();
 		p.setProperty("d", 3.141592653589793);
 		assertEquals(3.141592653589793, p.getProperty("d", 0.0));
+		assertEquals(0.0, p.getProperty("missing", 0.0));
 	}
 
 	@Test
@@ -50,13 +54,19 @@ class CustomPropertiesRoundTripTest {
 		assertEquals(true, p.getProperty("b", false));
 		p.setProperty("b", false);
 		assertEquals(false, p.getProperty("b", true));
+		assertEquals(true, p.getProperty("missing", true));
+		p.setProperty("b", "not-a-boolean");
+		assertEquals(false, p.getProperty("b", true));
 	}
 
 	@Test
-	void stringFallsBackToDefaultOnMalformed() {
+	void numericGettersFallBackToDefaultOnMalformed() {
 		CustomProperties p = new CustomProperties();
 		p.setProperty("bad", "not-a-number");
 		assertEquals(7, p.getProperty("bad", 7));
+		assertEquals(7L, p.getProperty("bad", 7L));
+		assertEquals(7f, p.getProperty("bad", 7f));
+		assertEquals(7.0, p.getProperty("bad", 7.0));
 	}
 
 	@Test
@@ -72,5 +82,12 @@ class CustomPropertiesRoundTripTest {
 		assertEquals("Nullpo Mino", decoded.getProperty("name"));
 		assertEquals("テスト", decoded.getProperty("unicode"));
 		assertEquals(true, decoded.getProperty("enabled", false));
+	}
+
+	@Test
+	void decodeReturnsFalseForMalformedUrlEncoding() {
+		CustomProperties decoded = new CustomProperties();
+
+		assertFalse(decoded.decode("%"));
 	}
 }
