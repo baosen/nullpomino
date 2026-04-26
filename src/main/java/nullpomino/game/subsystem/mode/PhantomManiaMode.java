@@ -1030,39 +1030,31 @@ public class PhantomManiaMode extends AbstractMode {
 	 */
 	private void updateRanking(int gr, int lv, int time, int clear) {
 		rankingRank = checkRanking(gr, lv, time, clear);
-
-		if(rankingRank != -1) {
-			for(int i = RANKING_MAX - 1; i > rankingRank; i--) {
-				rankingGrade[i] = rankingGrade[i - 1];
-				rankingLevel[i] = rankingLevel[i - 1];
-				rankingTime[i] = rankingTime[i - 1];
-				rankingRollclear[i] = rankingRollclear[i - 1];
-			}
-
-			rankingGrade[rankingRank] = gr;
-			rankingLevel[rankingRank] = lv;
-			rankingTime[rankingRank] = time;
-			rankingRollclear[rankingRank] = clear;
-		}
+		RankingHelper.insertAt(rankingRank, RANKING_MAX,
+			(to, from) -> {
+				rankingGrade[to] = rankingGrade[from];
+				rankingLevel[to] = rankingLevel[from];
+				rankingTime[to] = rankingTime[from];
+				rankingRollclear[to] = rankingRollclear[from];
+			},
+			rank -> {
+				rankingGrade[rank] = gr;
+				rankingLevel[rank] = lv;
+				rankingTime[rank] = time;
+				rankingRollclear[rank] = clear;
+			});
 	}
 
 	/**
 	 * This function will check the ranking and returns which place you are. (-1: Out of rank)
 	 */
 	private int checkRanking(int gr, int lv, int time, int clear) {
-		for(int i = 0; i < RANKING_MAX; i++) {
-			if(clear > rankingRollclear[i]) {
-				return i;
-			} else if((clear == rankingRollclear[i]) && (gr > rankingGrade[i])) {
-				return i;
-			} else if((clear == rankingRollclear[i]) && (gr == rankingGrade[i]) && (lv > rankingLevel[i])) {
-				return i;
-			} else if((clear == rankingRollclear[i]) && (gr == rankingGrade[i]) && (lv == rankingLevel[i]) && (time < rankingTime[i])) {
-				return i;
-			}
-		}
-
-		return -1;
+		return RankingHelper.findRank(RANKING_MAX, i ->
+			(clear > rankingRollclear[i])
+				|| ((clear == rankingRollclear[i]) && (gr > rankingGrade[i]))
+				|| ((clear == rankingRollclear[i]) && (gr == rankingGrade[i]) && (lv > rankingLevel[i]))
+				|| ((clear == rankingRollclear[i]) && (gr == rankingGrade[i])
+					&& (lv == rankingLevel[i]) && (time < rankingTime[i])));
 	}
 
 	/**

@@ -847,19 +847,17 @@ public class UltraMode extends NetDummyMode {
 	 */
 	private void updateRanking(int sc, int li) {
 		for(int i = 0; i < RANKING_TYPE; i++) {
-			rankingRank[i] = checkRanking(sc, li, i);
-
-			if(rankingRank[i] != -1) {
-				// Shift down ranking entries
-				for(int j = RANKING_MAX - 1; j > rankingRank[i]; j--) {
-					rankingScore[goaltype][i][j] = rankingScore[goaltype][i][j - 1];
-					rankingLines[goaltype][i][j] = rankingLines[goaltype][i][j - 1];
-				}
-
-				// Add new data
-				rankingScore[goaltype][i][rankingRank[i]] = sc;
-				rankingLines[goaltype][i][rankingRank[i]] = li;
-			}
+			final int rankingType = i;
+			rankingRank[rankingType] = checkRanking(sc, li, rankingType);
+			RankingHelper.insertAt(rankingRank[rankingType], RANKING_MAX,
+				(to, from) -> {
+					rankingScore[goaltype][rankingType][to] = rankingScore[goaltype][rankingType][from];
+					rankingLines[goaltype][rankingType][to] = rankingLines[goaltype][rankingType][from];
+				},
+				rank -> {
+					rankingScore[goaltype][rankingType][rank] = sc;
+					rankingLines[goaltype][rankingType][rank] = li;
+				});
 		}
 	}
 
@@ -871,23 +869,14 @@ public class UltraMode extends NetDummyMode {
 	 * @return Position (-1 if unranked)
 	 */
 	private int checkRanking(int sc, int li, int rankingtype) {
-		for(int i = 0; i < RANKING_MAX; i++) {
-			if(rankingtype == 0) {
-				if(sc > rankingScore[goaltype][rankingtype][i]) {
-					return i;
-				} else if((sc == rankingScore[goaltype][rankingtype][i]) && (li > rankingLines[goaltype][rankingtype][i])) {
-					return i;
-				}
-			} else {
-				if(li > rankingLines[goaltype][rankingtype][i]) {
-					return i;
-				} else if((li == rankingLines[goaltype][rankingtype][i]) && (sc > rankingScore[goaltype][rankingtype][i])) {
-					return i;
-				}
-			}
-		}
-
-		return -1;
+		return RankingHelper.findRank(RANKING_MAX, i ->
+			(rankingtype == 0)
+				? (sc > rankingScore[goaltype][rankingtype][i])
+					|| ((sc == rankingScore[goaltype][rankingtype][i])
+						&& (li > rankingLines[goaltype][rankingtype][i]))
+				: (li > rankingLines[goaltype][rankingtype][i])
+					|| ((li == rankingLines[goaltype][rankingtype][i])
+						&& (sc > rankingScore[goaltype][rankingtype][i])));
 	}
 
 	/**

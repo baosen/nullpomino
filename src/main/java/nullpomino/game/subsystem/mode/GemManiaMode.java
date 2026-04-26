@@ -1623,22 +1623,19 @@ public class GemManiaMode extends AbstractMode {
 	 */
 	private void updateRanking(int type, int stg, int clper, int time, int clear) {
 		rankingRank = checkRanking(type, stg, clper, time, clear);
-
-		if(rankingRank != -1) {
-			// Shift down ranking entries
-			for(int i = RANKING_MAX - 1; i > rankingRank; i--) {
-				rankingStage[type][i] = rankingStage[type][i - 1];
-				rankingClearPer[type][i] = rankingClearPer[type][i - 1];
-				rankingTime[type][i] = rankingTime[type][i - 1];
-				rankingAllClear[type][i] = rankingAllClear[type][i - 1];
-			}
-
-			// Add new data
-			rankingStage[type][rankingRank] = stg;
-			rankingClearPer[type][rankingRank] = clper;
-			rankingTime[type][rankingRank] = time;
-			rankingAllClear[type][rankingRank] = clear;
-		}
+		RankingHelper.insertAt(rankingRank, RANKING_MAX,
+			(to, from) -> {
+				rankingStage[type][to] = rankingStage[type][from];
+				rankingClearPer[type][to] = rankingClearPer[type][from];
+				rankingTime[type][to] = rankingTime[type][from];
+				rankingAllClear[type][to] = rankingAllClear[type][from];
+			},
+			rank -> {
+				rankingStage[type][rank] = stg;
+				rankingClearPer[type][rank] = clper;
+				rankingTime[type][rank] = time;
+				rankingAllClear[type][rank] = clear;
+			});
 	}
 
 	/**
@@ -1651,19 +1648,12 @@ public class GemManiaMode extends AbstractMode {
 	 * @return Position (-1 if unranked)
 	 */
 	private int checkRanking(int type, int stg, int clper, int time, int clear) {
-		for(int i = 0; i < RANKING_MAX; i++) {
-			if(clear > rankingAllClear[type][i]) {
-				return i;
-			} else if((clear == rankingAllClear[type][i]) && (stg > rankingStage[type][i])) {
-				return i;
-			} else if((clear == rankingAllClear[type][i]) && (stg == rankingStage[type][i]) && (clper > rankingClearPer[type][i])) {
-				return i;
-			} else if((clear == rankingAllClear[type][i]) && (stg == rankingStage[type][i]) && (clper == rankingClearPer[type][i]) &&
-			          (time < rankingTime[type][i]))
-			{
-				return i;
-			}
-		}
-		return -1;
+		return RankingHelper.findRank(RANKING_MAX, i ->
+			(clear > rankingAllClear[type][i])
+				|| ((clear == rankingAllClear[type][i]) && (stg > rankingStage[type][i]))
+				|| ((clear == rankingAllClear[type][i]) && (stg == rankingStage[type][i])
+					&& (clper > rankingClearPer[type][i]))
+				|| ((clear == rankingAllClear[type][i]) && (stg == rankingStage[type][i])
+					&& (clper == rankingClearPer[type][i]) && (time < rankingTime[type][i])));
 	}
 }

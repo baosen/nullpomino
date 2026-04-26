@@ -715,20 +715,17 @@ public class SquareMode extends AbstractMode {
 	 */
 	private void updateRanking(int sc, int time, int sq, int type) {
 		rankingRank = checkRanking(sc, time, sq, type);
-
-		if(rankingRank != -1) {
-			// Shift the old records
-			for(int i = RANKING_MAX - 1; i > rankingRank; i--) {
-				rankingScore[type][i] = rankingScore[type][i - 1];
-				rankingTime[type][i] = rankingTime[type][i - 1];
-				rankingSquares[type][i] = rankingSquares[type][i - 1];
-			}
-
-			// Register new record
-			rankingScore[type][rankingRank] = sc;
-			rankingTime[type][rankingRank] = time;
-			rankingSquares[type][rankingRank] = sq;
-		}
+		RankingHelper.insertAt(rankingRank, RANKING_MAX,
+			(to, from) -> {
+				rankingScore[type][to] = rankingScore[type][from];
+				rankingTime[type][to] = rankingTime[type][from];
+				rankingSquares[type][to] = rankingSquares[type][from];
+			},
+			rank -> {
+				rankingScore[type][rank] = sc;
+				rankingTime[type][rank] = time;
+				rankingSquares[type][rank] = sq;
+			});
 	}
 
 	/**
@@ -740,33 +737,17 @@ public class SquareMode extends AbstractMode {
 	 * @return Place (-1: Out of rank)
 	 */
 	private int checkRanking(int sc, int time, int sq, int type) {
-		for(int i = 0; i < RANKING_MAX; i++) {
-			if (gametype == 0) {
-				// Marathon
-				if(sc > rankingScore[type][i]) {
-					return i;
-				} else if((sc == rankingScore[type][i]) && (sq > rankingSquares[type][i])) {
-					return i;
-				} else if((sc == rankingScore[type][i]) && (sq == rankingSquares[type][i]) && (time < rankingTime[type][i])) {
-					return i;
-				}
-			} else if (gametype == 1 && time >= ULTRA_MAX_TIME) {
-				// Ultra
-				if(sc > rankingScore[type][i]) {
-					return i;
-				} else if((sc == rankingScore[type][i]) && (sq > rankingSquares[type][i])) {
-					return i;
-				}
-			} else if (gametype == 2 && sc >= SPRINT_MAX_SCORE) {
-				// Sprint
-				if((time < rankingTime[type][i]) || (rankingTime[type][i] < 0)) {
-					return i;
-				} else if((time == rankingTime[type][i]) && (sq > rankingSquares[type][i])) {
-					return i;
-				}
-			}
-		}
-
-		return -1;
+		return RankingHelper.findRank(RANKING_MAX, i ->
+			(gametype == 0 && (
+				(sc > rankingScore[type][i])
+					|| ((sc == rankingScore[type][i]) && (sq > rankingSquares[type][i]))
+					|| ((sc == rankingScore[type][i]) && (sq == rankingSquares[type][i])
+						&& (time < rankingTime[type][i]))))
+			|| (gametype == 1 && time >= ULTRA_MAX_TIME && (
+				(sc > rankingScore[type][i])
+					|| ((sc == rankingScore[type][i]) && (sq > rankingSquares[type][i]))))
+			|| (gametype == 2 && sc >= SPRINT_MAX_SCORE && (
+				(time < rankingTime[type][i]) || (rankingTime[type][i] < 0)
+					|| ((time == rankingTime[type][i]) && (sq > rankingSquares[type][i])))));
 	}
 }
