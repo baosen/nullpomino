@@ -109,7 +109,26 @@ public class StateConfigJoystickButtonSDL extends BaseStateSDL {
 	 */
 	@Override
 	public void update() {
+		MouseInputSDL.mouseInput.update();
+
 		if(frame >= KEYACCEPTFRAME) {
+			// Mouse: hover moves the cursor across the visible rows.
+			if(MouseInputSDL.mouseInput.isMouseMoved()) {
+				int row = (MouseInputSDL.mouseInput.getMouseY() >> 4) - 5 + 4;
+				if(row >= 4 && row <= 15 && row != keynum) {
+					ResourceHolderSDL.soundManager.play("cursor");
+					keynum = row;
+					frame = 0;
+				}
+			}
+			if(MouseInputSDL.mouseInput.isMouseClicked()) {
+				int row = (MouseInputSDL.mouseInput.getMouseY() >> 4) - 5 + 4;
+				if(row >= 4 && row <= 15) {
+					keynum = row;
+					frame = 0;
+				}
+			}
+
 			// Up
 			if(NullpoMinoSDL.keyPressedState[SDLConstants.SDL_SCANCODE_UP]) {
 				ResourceHolderSDL.soundManager.play("cursor");
@@ -134,8 +153,11 @@ public class StateConfigJoystickButtonSDL extends BaseStateSDL {
 				buttonmap[keynum] = -1;
 				frame = 0;
 			}
-			// Backspace
-			else if(NullpoMinoSDL.keyPressedState[SDLConstants.SDL_SCANCODE_BACKSPACE]) {
+			// Backspace / Escape / mouse back / right-click
+			else if(NullpoMinoSDL.keyPressedState[SDLConstants.SDL_SCANCODE_BACKSPACE]
+					|| NullpoMinoSDL.keyPressedState[SDLConstants.SDL_SCANCODE_ESCAPE]
+					|| MouseInputSDL.mouseInput.isMouseBackClicked()
+					|| MouseInputSDL.mouseInput.isMouseRightClicked()) {
 				NullpoMinoSDL.goBack();
 				return;
 			}

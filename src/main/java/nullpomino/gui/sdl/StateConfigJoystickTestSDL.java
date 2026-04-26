@@ -103,9 +103,16 @@ public class StateConfigJoystickTestSDL extends BaseStateSDL {
 	 */
 	@Override
 	public void update() {
+		MouseInputSDL.mouseInput.update();
+
 		if(frame >= KEYACCEPTFRAME) {
-			// Backspace & Enter/Return
-			if(NullpoMinoSDL.keyPressedState[SDLConstants.SDL_SCANCODE_BACKSPACE] || NullpoMinoSDL.keyPressedState[SDLConstants.SDL_SCANCODE_RETURN]) {
+			// Backspace, Enter/Return, Escape, mouse back / right-click → exit
+			if(NullpoMinoSDL.keyPressedState[SDLConstants.SDL_SCANCODE_BACKSPACE]
+					|| NullpoMinoSDL.keyPressedState[SDLConstants.SDL_SCANCODE_RETURN]
+					|| NullpoMinoSDL.keyPressedState[SDLConstants.SDL_SCANCODE_ESCAPE]
+					|| MouseInputSDL.mouseInput.isMouseClicked()
+					|| MouseInputSDL.mouseInput.isMouseBackClicked()
+					|| MouseInputSDL.mouseInput.isMouseRightClicked()) {
 				NullpoMinoSDL.goBack();
 				return;
 			}

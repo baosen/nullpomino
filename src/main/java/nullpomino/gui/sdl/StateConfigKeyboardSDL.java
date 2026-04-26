@@ -156,6 +156,9 @@ public class StateConfigKeyboardSDL extends BaseStateSDL {
 		// Always poll page nav so edge detection stays in sync during key-set mode
 		int pageEvent = PageNavigationSDL.checkPageEvent();
 
+		// Track mouse so click + hover can drive the cursor in menu mode.
+		MouseInputSDL.mouseInput.update();
+
 		if(frame >= KEYACCEPTFRAME) {
 			if(keyConfigRestFrame > 0) {
 				// Key-set mode
@@ -173,6 +176,22 @@ public class StateConfigKeyboardSDL extends BaseStateSDL {
 
 				keyConfigRestFrame--;
 			} else {
+				// Mouse: hover moves cursor across the visible rows; click acts like Enter.
+				boolean mouseConfirm = false;
+				if(MouseInputSDL.mouseInput.isMouseMoved()) {
+					int row = (MouseInputSDL.mouseInput.getMouseY() >> 4) - 3;
+					if(row >= 0 && row <= NUM_KEYS && row != keynum) {
+						ResourceHolderSDL.soundManager.play("cursor");
+						keynum = row;
+					}
+				}
+				if(MouseInputSDL.mouseInput.isMouseClicked()) {
+					int row = (MouseInputSDL.mouseInput.getMouseY() >> 4) - 3;
+					if(row >= 0 && row <= NUM_KEYS) {
+						keynum = row;
+						mouseConfirm = true;
+					}
+				}
 				// Menu mode: track UP/DOWN hold for auto-repeat
 				if(NullpoMinoSDL.keyPressedState[SDLConstants.SDL_SCANCODE_UP]) upInputState++;
 				else upInputState = 0;
@@ -195,8 +214,8 @@ public class StateConfigKeyboardSDL extends BaseStateSDL {
 				keynum = PageNavigationSDL.jumpToEnd(pageEvent, keynum, 0, NUM_KEYS);
 				if(keynum != prevKeynum) frame = 0;
 
-				// Enter
-				if(NullpoMinoSDL.keyPressedState[SDLConstants.SDL_SCANCODE_RETURN]) {
+				// Enter (or mouse click on a row)
+				if(NullpoMinoSDL.keyPressedState[SDLConstants.SDL_SCANCODE_RETURN] || mouseConfirm) {
 					ResourceHolderSDL.soundManager.play("decide");
 
 					if(keynum >= NUM_KEYS) {
@@ -226,9 +245,11 @@ public class StateConfigKeyboardSDL extends BaseStateSDL {
 					}
 				}
 
-				// Backspace / Escape
+				// Backspace / Escape / mouse back / right-click
 				if(NullpoMinoSDL.keyPressedState[SDLConstants.SDL_SCANCODE_BACKSPACE]
-						|| NullpoMinoSDL.keyPressedState[SDLConstants.SDL_SCANCODE_ESCAPE]) {
+						|| NullpoMinoSDL.keyPressedState[SDLConstants.SDL_SCANCODE_ESCAPE]
+						|| MouseInputSDL.mouseInput.isMouseBackClicked()
+						|| MouseInputSDL.mouseInput.isMouseRightClicked()) {
 					NullpoMinoSDL.goBack();
 					return;
 				}
