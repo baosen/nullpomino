@@ -844,20 +844,17 @@ public class GradeManiaMode extends AbstractMode {
 	 */
 	private void updateRanking(int gr, int lv, int time) {
 		rankingRank = checkRanking(gr, lv, time);
-
-		if(rankingRank != -1) {
-			// Shift down ranking entries
-			for(int i = RANKING_MAX - 1; i > rankingRank; i--) {
-				rankingGrade[i] = rankingGrade[i - 1];
-				rankingLevel[i] = rankingLevel[i - 1];
-				rankingTime[i] = rankingTime[i - 1];
-			}
-
-			// Add new data
-			rankingGrade[rankingRank] = gr;
-			rankingLevel[rankingRank] = lv;
-			rankingTime[rankingRank] = time;
-		}
+		RankingHelper.insertAt(rankingRank, RANKING_MAX,
+			(to, from) -> {
+				rankingGrade[to] = rankingGrade[from];
+				rankingLevel[to] = rankingLevel[from];
+				rankingTime[to] = rankingTime[from];
+			},
+			rank -> {
+				rankingGrade[rank] = gr;
+				rankingLevel[rank] = lv;
+				rankingTime[rank] = time;
+			});
 	}
 
 	/**
@@ -868,17 +865,10 @@ public class GradeManiaMode extends AbstractMode {
 	 * @return Position (-1 if unranked)
 	 */
 	private int checkRanking(int gr, int lv, int time) {
-		for(int i = 0; i < RANKING_MAX; i++) {
-			if(gr > rankingGrade[i]) {
-				return i;
-			} else if((gr == rankingGrade[i]) && (lv > rankingLevel[i])) {
-				return i;
-			} else if((gr == rankingGrade[i]) && (lv == rankingLevel[i]) && (time < rankingTime[i])) {
-				return i;
-			}
-		}
-
-		return -1;
+		return RankingHelper.findRank(RANKING_MAX, i ->
+			(gr > rankingGrade[i])
+				|| ((gr == rankingGrade[i]) && (lv > rankingLevel[i]))
+				|| ((gr == rankingGrade[i]) && (lv == rankingLevel[i]) && (time < rankingTime[i])));
 	}
 
 	/**

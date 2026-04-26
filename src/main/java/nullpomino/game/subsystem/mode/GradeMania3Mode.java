@@ -1752,22 +1752,19 @@ public class GradeMania3Mode extends AbstractGradeMode {
 	 */
 	private void updateRanking(int gr, int lv, int time, int clear, int type) {
 		rankingRank = checkRanking(gr, lv, time, clear, type);
-
-		if(rankingRank != -1) {
-			// Shift down ranking entries
-			for(int i = RANKING_MAX - 1; i > rankingRank; i--) {
-				rankingGrade[i][type] = rankingGrade[i - 1][type];
-				rankingLevel[i][type] = rankingLevel[i - 1][type];
-				rankingTime[i][type] = rankingTime[i - 1][type];
-				rankingRollclear[i][type] = rankingRollclear[i - 1][type];
-			}
-
-			// Add new data
-			rankingGrade[rankingRank][type] = gr;
-			rankingLevel[rankingRank][type] = lv;
-			rankingTime[rankingRank][type] = time;
-			rankingRollclear[rankingRank][type] = clear;
-		}
+		RankingHelper.insertAt(rankingRank, RANKING_MAX,
+			(to, from) -> {
+				rankingGrade[to][type] = rankingGrade[from][type];
+				rankingLevel[to][type] = rankingLevel[from][type];
+				rankingTime[to][type] = rankingTime[from][type];
+				rankingRollclear[to][type] = rankingRollclear[from][type];
+			},
+			rank -> {
+				rankingGrade[rank][type] = gr;
+				rankingLevel[rank][type] = lv;
+				rankingTime[rank][type] = time;
+				rankingRollclear[rank][type] = clear;
+			});
 	}
 
 	/**
@@ -1778,21 +1775,13 @@ public class GradeMania3Mode extends AbstractGradeMode {
 	 * @return Position (-1 if unranked)
 	 */
 	private int checkRanking(int gr, int lv, int time, int clear, int type) {
-		for(int i = 0; i < RANKING_MAX; i++) {
-			if(gr > rankingGrade[i][type]) {
-				return i;
-			} else if((gr == rankingGrade[i][type]) && (clear > rankingRollclear[i][type])) {
-				return i;
-			} else if((gr == rankingGrade[i][type]) && (clear == rankingRollclear[i][type]) && (lv > rankingLevel[i][type])) {
-				return i;
-			} else if((gr == rankingGrade[i][type]) && (clear == rankingRollclear[i][type]) && (lv == rankingLevel[i][type]) &&
-					  (time < rankingTime[i][type]))
-			{
-				return i;
-			}
-		}
-
-		return -1;
+		return RankingHelper.findRank(RANKING_MAX, i ->
+			(gr > rankingGrade[i][type])
+				|| ((gr == rankingGrade[i][type]) && (clear > rankingRollclear[i][type]))
+				|| ((gr == rankingGrade[i][type]) && (clear == rankingRollclear[i][type])
+					&& (lv > rankingLevel[i][type]))
+				|| ((gr == rankingGrade[i][type]) && (clear == rankingRollclear[i][type])
+					&& (lv == rankingLevel[i][type]) && (time < rankingTime[i][type])));
 	}
 
 	/**
