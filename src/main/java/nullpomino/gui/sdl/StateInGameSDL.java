@@ -5,6 +5,7 @@ package nullpomino.gui.sdl;
 import org.apache.log4j.Logger;
 
 import nullpomino.game.component.RuleOptions;
+import nullpomino.game.play.GameEngine;
 import nullpomino.game.play.GameManager;
 import nullpomino.game.subsystem.ai.DummyAI;
 import nullpomino.game.subsystem.mode.GameMode;
@@ -355,29 +356,41 @@ public class StateInGameSDL extends BaseStateSDL {
 				ResourceHolderSDL.soundManager.play("cursor");
 			}
 
-			// Click on a menu row: match the x range of the rendered labels
-			// (cursor marker at offsetX+12, text at offsetX+28, widest item
-			// is 8 chars wide → 144 px covers everything). Rows are 16 px
-			// tall starting at offsetY+188.
-			if(MouseInputSDL.mouseInput.isMouseClicked()) {
-				int mx = MouseInputSDL.mouseInput.getMouseX();
-				int my = MouseInputSDL.mouseInput.getMouseY();
-				int offsetX = 0, offsetY = 0;
-				if(gameManager != null && gameManager.engine.length > 0 && gameManager.engine[0] != null) {
-					offsetX = gameManager.receiver.getFieldDisplayPositionX(gameManager.engine[0], 0);
-					offsetY = gameManager.receiver.getFieldDisplayPositionY(gameManager.engine[0], 0);
+			// Cursor marker at offsetX+12, text at offsetX+28, widest item is
+			// 8 chars wide → 144 px covers everything. Rows are 16 px tall
+			// starting at offsetY+188.
+			int pauseOffsetX = 0, pauseOffsetY = 0;
+			if(gameManager != null && gameManager.engine.length > 0 && gameManager.engine[0] != null) {
+				pauseOffsetX = gameManager.receiver.getFieldDisplayPositionX(gameManager.engine[0], 0);
+				pauseOffsetY = gameManager.receiver.getFieldDisplayPositionY(gameManager.engine[0], 0);
+			}
+			int menuLeft = pauseOffsetX + 12;
+			int menuTop = pauseOffsetY + 188;
+			int menuRight = menuLeft + 144;
+			int menuBottom = menuTop + (maxPauseCursor + 1) * 16;
+			int mx = MouseInputSDL.mouseInput.getMouseX();
+			int my = MouseInputSDL.mouseInput.getMouseY();
+
+			// Hover: slide the cursor to the row under the pointer.
+			if(MouseInputSDL.mouseInput.isMouseMoved()
+					&& mx >= menuLeft && mx < menuRight
+					&& my >= menuTop && my < menuBottom) {
+				int row = (my - menuTop) / 16;
+				if(row >= 0 && row <= maxPauseCursor && row != cursor) {
+					cursor = row;
+					ResourceHolderSDL.soundManager.play("cursor");
 				}
-				int menuLeft = offsetX + 12;
-				int menuTop = offsetY + 188;
-				int menuRight = menuLeft + 144;
-				int menuBottom = menuTop + (maxPauseCursor + 1) * 16;
-				if(mx >= menuLeft && mx < menuRight && my >= menuTop && my < menuBottom) {
-					int row = (my - menuTop) / 16;
-					if(row >= 0 && row <= maxPauseCursor) {
-						if(row != cursor) ResourceHolderSDL.soundManager.play("cursor");
-						cursor = row;
-						mouseConfirm = true;
-					}
+			}
+
+			// Click confirms the row under the pointer.
+			if(MouseInputSDL.mouseInput.isMouseClicked()
+					&& mx >= menuLeft && mx < menuRight
+					&& my >= menuTop && my < menuBottom) {
+				int row = (my - menuTop) / 16;
+				if(row >= 0 && row <= maxPauseCursor) {
+					if(row != cursor) ResourceHolderSDL.soundManager.play("cursor");
+					cursor = row;
+					mouseConfirm = true;
 				}
 			}
 
@@ -494,6 +507,35 @@ public class StateInGameSDL extends BaseStateSDL {
 			}
 		}
 
+		// Result screen mouse + Escape input. Slides statc[0] (the
+		// RETRY/END selector) on hover, confirms on click, and treats
+		// Escape / mouse back / right-click as "pick END". Done before
+		// updateAll() so the engine sees the new statc[0] in the same
+		// frame; quitflag is honoured by the "Return to title" check
+		// further down.
+		if(gameManager != null && !pause) {
+			boolean anyResult = false;
+			for(int i = 0; i < gameManager.getPlayers(); i++) {
+				GameEngine engine = gameManager.engine[i];
+				if(engine != null && engine.stat == GameEngine.Status.RESULT) { anyResult = true; break; }
+			}
+			if(anyResult) {
+				MouseInputSDL.mouseInput.update();
+				boolean cancelEnd = NullpoMinoSDL.isEscapePushedThisFrame()
+						|| MouseInputSDL.mouseInput.isMouseBackClicked()
+						|| MouseInputSDL.mouseInput.isMouseRightClicked();
+				for(int i = 0; i < gameManager.getPlayers(); i++) {
+					GameEngine engine = gameManager.engine[i];
+					if(engine == null || engine.stat != GameEngine.Status.RESULT) continue;
+					handleResultMouse(engine, i);
+					if(cancelEnd) {
+						ResourceHolderSDL.soundManager.play("decide");
+						engine.quitflag = true;
+					}
+				}
+			}
+		}
+
 		// Execute game loops
 		if(!pause || (GameKeySDL.gamekey[0].isPushKey(GameKeySDL.BUTTON_FRAMESTEP) && enableframestep)) {
 			if(gameManager != null) {
@@ -524,6 +566,43 @@ public class StateInGameSDL extends BaseStateSDL {
 				NullpoMinoSDL.goBack();
 				return;
 			}
+		}
+	}
+
+	/**
+	 * Mouse input handler for {@link GameEngine.Status#RESULT}. Mirrors the
+	 * coordinates RendererSDL uses to draw the RETRY / END buttons (both at
+	 * y=offsetY+340, RETRY at offsetX+12 width 80, END at offsetX+108 width
+	 * 48). Hover slides statc[0] under the pointer; click confirms by
+	 * setting quitflag (END) or kicking the manager into reset (RETRY) —
+	 * the surrounding update() loop handles both.
+	 */
+	private void handleResultMouse(GameEngine engine, int playerID) {
+		int offsetX = gameManager.receiver.getFieldDisplayPositionX(engine, playerID);
+		int offsetY = gameManager.receiver.getFieldDisplayPositionY(engine, playerID);
+		int rowTop = offsetY + 340;
+		int rowBottom = rowTop + 16;
+		int retryLeft = offsetX + 12, retryRight = retryLeft + 80;
+		int endLeft = offsetX + 108, endRight = endLeft + 48;
+
+		int mx = MouseInputSDL.mouseInput.getMouseX();
+		int my = MouseInputSDL.mouseInput.getMouseY();
+		if(my < rowTop || my >= rowBottom) return;
+
+		int hovered = -1;
+		if(mx >= retryLeft && mx < retryRight) hovered = 0;
+		else if(mx >= endLeft && mx < endRight) hovered = 1;
+		if(hovered < 0) return;
+
+		if(MouseInputSDL.mouseInput.isMouseMoved() && engine.statc[0] != hovered) {
+			engine.statc[0] = hovered;
+			ResourceHolderSDL.soundManager.play("cursor");
+		}
+		if(MouseInputSDL.mouseInput.isMouseClicked()) {
+			engine.statc[0] = hovered;
+			ResourceHolderSDL.soundManager.play("decide");
+			if(hovered == 0) gameManager.reset();
+			else engine.quitflag = true;
 		}
 	}
 }
