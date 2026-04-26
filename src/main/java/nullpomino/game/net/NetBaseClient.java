@@ -120,24 +120,8 @@ public class NetBaseClient extends Thread {
 			while( (threadRunning) && ((size = socket.getInputStream().read(buf)) > 0) ) {
 				String message = new String(buf, 0, size, StandardCharsets.UTF_8);
 
-				// The various processing depending on the received message
-				StringBuilder packetBuffer = new StringBuilder();
-				if(notCompletePacketBuffer != null) packetBuffer.append(notCompletePacketBuffer);
-				packetBuffer.append(message);
-
-				int index;
-				while((index = packetBuffer.indexOf("\n")) != -1) {
-					String msgNow = packetBuffer.substring(0, index);
-					processPacket(msgNow);
-					packetBuffer = packetBuffer.replace(0, index+1, "");
-				}
-
-				// If there is an incomplete packet
-				if(packetBuffer.length() > 0) {
-					notCompletePacketBuffer = packetBuffer;
-				} else {
-					notCompletePacketBuffer = null;
-				}
+				notCompletePacketBuffer = NetUtil.processPacketBuffer(
+						notCompletePacketBuffer, message, this::processPacket);
 			}
 		} catch (Exception e) {
 			log.info("Socket disconnected", e);

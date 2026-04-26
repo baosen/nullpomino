@@ -3,6 +3,7 @@
 package nullpomino.game.net;
 
 import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.net.URLDecoder;
 import java.net.URLEncoder;
 import java.nio.charset.Charset;
@@ -20,6 +21,10 @@ import org.cacas.java.gnu.tools.Crypt;
 public class NetUtil {
 	private static final Charset SHIFT_JIS = Charset.forName("Shift_JIS");
 	private static final int ZIP_BUFFER_SIZE = 1024;
+
+	public interface PacketHandler {
+		void handle(String packet) throws IOException;
+	}
 
 	/**
 	 * Convert byte[] to String (with UTF-8 encoding)
@@ -73,6 +78,21 @@ public class NetUtil {
 	 */
 	public static String shiftJIStoString(byte[] b) {
 		return new String(b, SHIFT_JIS);
+	}
+
+	public static StringBuilder processPacketBuffer(StringBuilder partialPacket,
+			String message, PacketHandler handler) throws IOException {
+		StringBuilder packetBuffer = new StringBuilder();
+		if(partialPacket != null) packetBuffer.append(partialPacket);
+		packetBuffer.append(message);
+
+		int index;
+		while((index = packetBuffer.indexOf("\n")) != -1) {
+			handler.handle(packetBuffer.substring(0, index));
+			packetBuffer.delete(0, index + 1);
+		}
+
+		return packetBuffer.length() > 0 ? packetBuffer : null;
 	}
 
 	/**

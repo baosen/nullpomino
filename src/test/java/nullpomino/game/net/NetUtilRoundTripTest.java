@@ -2,10 +2,14 @@ package nullpomino.game.net;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 import org.junit.jupiter.api.Test;
 
@@ -37,6 +41,31 @@ class NetUtilRoundTripTest {
 		String payload = "テスト";
 		assertArrayEquals(payload.getBytes(Charset.forName("Shift_JIS")), NetUtil.stringToShiftJIS(payload));
 		assertEquals(payload, NetUtil.shiftJIStoString(NetUtil.stringToShiftJIS(payload)));
+	}
+
+	@Test
+	void packetBufferProcessesCompletePacketsAndReturnsTail() throws Exception {
+		List<String> packets = new ArrayList<String>();
+
+		StringBuilder tail = NetUtil.processPacketBuffer(null, "one\ntwo\nthr",
+				packet -> packets.add(packet));
+		assertEquals(Arrays.asList("one", "two"), packets);
+		assertEquals("thr", tail.toString());
+
+		tail = NetUtil.processPacketBuffer(tail, "ee\n", packet -> packets.add(packet));
+		assertEquals(Arrays.asList("one", "two", "three"), packets);
+		assertNull(tail);
+	}
+
+	@Test
+	void packetBufferPreservesEmptyPackets() throws Exception {
+		List<String> packets = new ArrayList<String>();
+
+		StringBuilder tail = NetUtil.processPacketBuffer(null, "alpha\n\nomega",
+				packet -> packets.add(packet));
+
+		assertEquals(Arrays.asList("alpha", ""), packets);
+		assertEquals("omega", tail.toString());
 	}
 
 	@Test
