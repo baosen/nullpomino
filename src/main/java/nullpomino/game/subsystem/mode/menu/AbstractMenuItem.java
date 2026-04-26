@@ -36,4 +36,32 @@ public abstract class AbstractMenuItem<T> {
 
 	public abstract void load(int playerID, CustomProperties prop,
 			String modeName);
+
+	protected final String propertyKey(int playerID, String modeName) {
+		return modeName + "." + name + playerSuffix(playerID);
+	}
+
+	protected final void saveValue(int playerID, CustomProperties prop,
+			String modeName, int value) {
+		prop.setProperty(propertyKey(playerID, modeName), value);
+	}
+
+	protected final void saveValue(int playerID, CustomProperties prop,
+			String modeName, boolean value) {
+		prop.setProperty(propertyKey(playerID, modeName), value);
+	}
+
+	protected final int loadInt(int playerID, CustomProperties prop,
+			String modeName) {
+		return prop.getProperty(propertyKey(playerID, modeName), (Integer) DEFAULT_VALUE);
+	}
+
+	protected final boolean loadBoolean(int playerID, CustomProperties prop,
+			String modeName) {
+		return prop.getProperty(propertyKey(playerID, modeName), (Boolean) DEFAULT_VALUE);
+	}
+
+	private static String playerSuffix(int playerID) {
+		return playerID < 0 ? "" : ".p" + playerID;
+	}
 }
