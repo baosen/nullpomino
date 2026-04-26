@@ -565,6 +565,27 @@ public class StateInGameSDL extends BaseStateSDL {
 			}
 		}
 
+		// Mouse back button while a replay is playing acts like Escape /
+		// BUTTON_GIVEUP — return to the previous screen. Skipped when an
+		// engine is in SETTING or RESULT or the game is paused, since those
+		// branches above already consume the click for their own cancel
+		// handling.
+		boolean replayMouseBack = false;
+		if(gameManager != null && gameManager.replayMode && !gameManager.replayRerecord && !pause) {
+			boolean engineBusy = false;
+			for(int i = 0; i < gameManager.getPlayers(); i++) {
+				GameEngine engine = gameManager.engine[i];
+				if(engine != null && (engine.stat == GameEngine.Status.RESULT || engine.stat == GameEngine.Status.SETTING)) {
+					engineBusy = true;
+					break;
+				}
+			}
+			if(!engineBusy) {
+				MouseInputSDL.mouseInput.update();
+				replayMouseBack = MouseInputSDL.mouseInput.isMouseBackClicked();
+			}
+		}
+
 		if(gameManager != null) {
 			// Retry button
 			if(GameKeySDL.gamekey[0].isPushKey(GameKeySDL.BUTTON_RETRY) || GameKeySDL.gamekey[1].isPushKey(GameKeySDL.BUTTON_RETRY)) {
@@ -576,7 +597,8 @@ public class StateInGameSDL extends BaseStateSDL {
 			// Return to title
 			if(gameManager.getQuitFlag() ||
 			   GameKeySDL.gamekey[0].isPushKey(GameKeySDL.BUTTON_GIVEUP) ||
-			   GameKeySDL.gamekey[1].isPushKey(GameKeySDL.BUTTON_GIVEUP))
+			   GameKeySDL.gamekey[1].isPushKey(GameKeySDL.BUTTON_GIVEUP) ||
+			   replayMouseBack)
 			{
 				ResourceHolderSDL.bgmStop();
 				NullpoMinoSDL.goBack();
