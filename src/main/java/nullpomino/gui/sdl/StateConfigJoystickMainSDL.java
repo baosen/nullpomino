@@ -192,5 +192,8 @@ public class StateConfigJoystickMainSDL extends BaseStateSDL {
 			loadConfig(NullpoMinoSDL.propConfig);
 			NullpoMinoSDL.goBack();
 		}
+		else if(MouseInputSDL.mouseInput.isMouseForwardClicked()) {
+			NullpoMinoSDL.goForward();
+		}
 	}
 }

@@ -116,6 +116,10 @@ public class StateConfigJoystickTestSDL extends BaseStateSDL {
 				NullpoMinoSDL.goBack();
 				return;
 			}
+			else if(MouseInputSDL.mouseInput.isMouseForwardClicked()) {
+				NullpoMinoSDL.goForward();
+				return;
+			}
 			// Joystick input
 			else if(previousJoyPressedState != null) {
 				int key = getPressedKeyNumber(previousJoyPressedState, NullpoMinoSDL.joyPressedState[joyNumber]);

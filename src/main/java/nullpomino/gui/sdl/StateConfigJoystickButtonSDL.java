@@ -173,6 +173,10 @@ public class StateConfigJoystickButtonSDL extends BaseStateSDL {
 				NullpoMinoSDL.goBack();
 				return;
 			}
+			else if(MouseInputSDL.mouseInput.isMouseForwardClicked()) {
+				NullpoMinoSDL.goForward();
+				return;
+			}
 			// Enter/Return
 			else if(NullpoMinoSDL.keyPressedState[SDLConstants.SDL_SCANCODE_RETURN]) {
 				ResourceHolderSDL.soundManager.play("decide");

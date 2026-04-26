@@ -145,6 +145,10 @@ public class StateNetServerSelectSDL extends BaseStateSDL {
 			if(adding) cancelAddServer();
 			else { NullpoMinoSDL.goBack(); return; }
 		}
+		if(!adding && MouseInputSDL.mouseInput.isMouseForwardClicked()) {
+			NullpoMinoSDL.goForward();
+			return;
+		}
 
 		if(adding) {
 			if(addServerInput.update(mx, my, clicked)) setFocus(addServerInput);

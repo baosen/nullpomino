@@ -193,6 +193,10 @@ public class StateNetRuleChangeSDL extends BaseStateSDL {
 			NullpoMinoSDL.goBack();
 			return;
 		}
+		if(MouseInputSDL.mouseInput.isMouseForwardClicked()) {
+			NullpoMinoSDL.goForward();
+			return;
+		}
 
 		int prevTab = tabStrip.getActiveTab();
 		tabStrip.update(mx, my, clicked);
