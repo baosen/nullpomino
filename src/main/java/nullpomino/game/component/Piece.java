@@ -3,6 +3,7 @@
 package nullpomino.game.component;
 
 import java.io.Serializable;
+import java.util.Arrays;
 
 /**
  * BlockPeace
@@ -234,16 +235,12 @@ public class Piece implements Serializable {
 		dataY = new int[DIRECTION_COUNT][maxBlock];
 		block = new Block[maxBlock];
 		for(int i = 0; i < maxBlock; i++) block[i] = new Block(p.block[i]);
-		dataOffsetX = new int[DIRECTION_COUNT];
-		dataOffsetY = new int[DIRECTION_COUNT];
+		dataOffsetX = Arrays.copyOf(p.dataOffsetX, DIRECTION_COUNT);
+		dataOffsetY = Arrays.copyOf(p.dataOffsetY, DIRECTION_COUNT);
 
 		for(int i = 0; i < DIRECTION_COUNT; i++) {
-			for(int j = 0; j < maxBlock; j++) {
-				dataX[i][j] = p.dataX[i][j];
-				dataY[i][j] = p.dataY[i][j];
-			}
-			dataOffsetX[i] = p.dataOffsetX[i];
-			dataOffsetY[i] = p.dataOffsetY[i];
+			dataX[i] = Arrays.copyOf(p.dataX[i], maxBlock);
+			dataY[i] = Arrays.copyOf(p.dataY[i], maxBlock);
 		}
 	}
 
