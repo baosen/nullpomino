@@ -5,6 +5,7 @@ package nullpomino.util;
 import java.io.FileInputStream;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.TimeZone;
@@ -224,13 +225,8 @@ public class GeneralUtil {
 	public static String StringCombine(String[] strings, String separator,
 			int startIndex)
 	{
-		StringBuilder res = new StringBuilder();
-		for (int i = startIndex; i<strings.length; i++) {
-			if (i > startIndex) res.append(separator);
-			res.append(strings[i]);
-		}
-		
-		return res.toString();
+		if(startIndex >= strings.length) return "";
+		return String.join(separator, Arrays.copyOfRange(strings, startIndex, strings.length));
 	}
 
 	private static DateFormat calendarFormat(String pattern) {
