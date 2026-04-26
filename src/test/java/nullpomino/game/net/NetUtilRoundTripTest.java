@@ -2,6 +2,7 @@ package nullpomino.game.net;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
@@ -48,6 +49,17 @@ class NetUtilRoundTripTest {
 	@Test
 	void compressRoundTripsEmptyString() {
 		assertEquals("", NetUtil.decompressString(NetUtil.compressString("")));
+	}
+
+	@Test
+	void byteArrayCompressionRoundTripsEmptyInput() {
+		assertArrayEquals(new byte[0], NetUtil.decompressByteArray(NetUtil.compressByteArray(new byte[0])));
+	}
+
+	@Test
+	void decompressRejectsInvalidCompressedBytes() {
+		assertThrows(RuntimeException.class, () -> NetUtil.decompressByteArray(new byte[0]));
+		assertThrows(RuntimeException.class, () -> NetUtil.decompressByteArray(new byte[] {1, 2, 3}));
 	}
 
 	@Test
