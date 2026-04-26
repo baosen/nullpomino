@@ -24,6 +24,8 @@ public class GeneralUtil {
 	/** Log */
 	static Logger log = Logger.getLogger(GeneralUtil.class);
 
+	private static final TimeZone GMT = TimeZone.getTimeZone("GMT");
+
 	/**
 	 * Converts play time into a String
 	 * @param t Play time
@@ -41,8 +43,7 @@ public class GeneralUtil {
 	 * @return ON if b is true, OFF if b is false
 	 */
 	public static String getONorOFF(boolean b) {
-		if(b == true) return "ON";
-		return "OFF";
+		return b ? "ON" : "OFF";
 	}
 
 	/**
@@ -51,8 +52,7 @@ public class GeneralUtil {
 	 * @return ○ if b is true, × if b is false
 	 */
 	public static String getOorX(boolean b) {
-		if(b == true) return "c";
-		return "e";
+		return b ? "c" : "e";
 	}
 
 	/**
@@ -60,10 +60,7 @@ public class GeneralUtil {
 	 * @return Replay's filename
 	 */
 	public static String getReplayFilename() {
-		Calendar c = Calendar.getInstance();
-		DateFormat dfm = new SimpleDateFormat("yyyy_MM_dd_HH_mm_ss");
-		String filename = dfm.format(c.getTime()) + ".rep";
-		return filename;
+		return new SimpleDateFormat("yyyy_MM_dd_HH_mm_ss").format(Calendar.getInstance().getTime()) + ".rep";
 	}
 
 	/**
@@ -72,8 +69,7 @@ public class GeneralUtil {
 	 * @return Date and Time String
 	 */
 	public static String getCalendarString(Calendar c) {
-		DateFormat dfm = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-		return dfm.format(c.getTime());
+		return calendarFormat("yyyy-MM-dd HH:mm:ss").format(c.getTime());
 	}
 
 	/**
@@ -83,7 +79,7 @@ public class GeneralUtil {
 	 * @return Date and Time String
 	 */
 	public static String getCalendarString(Calendar c, TimeZone z) {
-		DateFormat dfm = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+		DateFormat dfm = calendarFormat("yyyy-MM-dd HH:mm:ss");
 		dfm.setTimeZone(z);
 		return dfm.format(c.getTime());
 	}
@@ -93,7 +89,7 @@ public class GeneralUtil {
 	 * @return Calendar String (Each field is separated with a hyphen '-')
 	 */
 	public static String exportCalendarString() {
-		Calendar c = Calendar.getInstance(TimeZone.getTimeZone("GMT"));
+		Calendar c = Calendar.getInstance(GMT);
 		return exportCalendarString(c);
 	}
 
@@ -103,8 +99,8 @@ public class GeneralUtil {
 	 * @return Calendar String (Each field is separated with a hyphen '-')
 	 */
 	public static String exportCalendarString(Calendar c) {
-		DateFormat dfm = new SimpleDateFormat("yyyy-MM-dd-HH-mm-ss");
-		dfm.setTimeZone(TimeZone.getTimeZone("GMT"));
+		DateFormat dfm = calendarFormat("yyyy-MM-dd-HH-mm-ss");
+		dfm.setTimeZone(GMT);
 		return dfm.format(c.getTime());
 	}
 
@@ -114,10 +110,10 @@ public class GeneralUtil {
 	 * @return Calendar (null if fails)
 	 */
 	public static Calendar importCalendarString(String s) {
-		DateFormat dfm = new SimpleDateFormat("yyyy-MM-dd-HH-mm-ss");
-		dfm.setTimeZone(TimeZone.getTimeZone("GMT"));
+		DateFormat dfm = calendarFormat("yyyy-MM-dd-HH-mm-ss");
+		dfm.setTimeZone(GMT);
 
-		Calendar c = Calendar.getInstance(TimeZone.getTimeZone("GMT"));
+		Calendar c = Calendar.getInstance(GMT);
 
 		try {
 			Date date = dfm.parse(s);
@@ -138,7 +134,7 @@ public class GeneralUtil {
 		if(pieceEnable == null) return false;
 
 		for(int i = 0; i < pieceEnable.length; i++) {
-			if((pieceEnable[i] == true) && (i != Piece.PIECE_S) && (i != Piece.PIECE_Z) && (i != Piece.PIECE_O))
+			if(pieceEnable[i] && !isSZOPiece(i))
 				return false;
 		}
 
@@ -156,15 +152,7 @@ public class GeneralUtil {
 
 		int[] nextArray = new int[len];
 		for(int i = 0; i < len; i++) {
-			int pieceID = Piece.PIECE_I;
-
-			try {
-				pieceID = Integer.parseInt(strSrc.substring(i, i + 1));
-			} catch (NumberFormatException e) {}
-
-			if((pieceID < 0) || (pieceID >= Piece.PIECE_COUNT)) pieceID = Piece.PIECE_I;
-
-			nextArray[i] = pieceID;
+			nextArray[i] = pieceIdFromDigit(strSrc.charAt(i));
 		}
 
 		return nextArray;
@@ -178,10 +166,8 @@ public class GeneralUtil {
 	public static RuleOptions loadRule(String filename) {
 		CustomProperties prop = new CustomProperties();
 
-		try {
-			FileInputStream in = new FileInputStream(filename);
+		try (FileInputStream in = new FileInputStream(filename)) {
 			prop.load(in);
-			in.close();
 		} catch (Exception e) {
 			log.warn("Failed to load rule from " + filename, e);
 		}
@@ -238,13 +224,28 @@ public class GeneralUtil {
 	public static String StringCombine(String[] strings, String separator,
 			int startIndex)
 	{
-		String res = "";
+		StringBuilder res = new StringBuilder();
 		for (int i = startIndex; i<strings.length; i++) {
-			res+= strings[i];
-			if (i != strings.length-1)
-				res+= separator;
+			if (i > startIndex) res.append(separator);
+			res.append(strings[i]);
 		}
 		
-		return res;
+		return res.toString();
+	}
+
+	private static DateFormat calendarFormat(String pattern) {
+		return new SimpleDateFormat(pattern);
+	}
+
+	private static boolean isSZOPiece(int pieceID) {
+		return (pieceID == Piece.PIECE_S) || (pieceID == Piece.PIECE_Z) || (pieceID == Piece.PIECE_O);
+	}
+
+	private static int pieceIdFromDigit(char value) {
+		if((value < '0') || (value > '9')) return Piece.PIECE_I;
+
+		int pieceID = value - '0';
+		if(pieceID >= Piece.PIECE_COUNT) return Piece.PIECE_I;
+		return pieceID;
 	}
 }
