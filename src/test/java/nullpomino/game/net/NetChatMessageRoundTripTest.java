@@ -43,6 +43,26 @@ class NetChatMessageRoundTripTest {
 		assertEquals("", imported.strMessage);
 	}
 
+	@Test
+	void constructorsLayerMessagePlayerAndRoomFields() {
+		NetPlayerInfo player = new NetPlayerInfo();
+		player.uid = 7;
+		player.strName = "Player";
+		player.strRealHost = "real.host";
+		NetRoomInfo room = new NetRoomInfo();
+		room.roomID = 3;
+		room.strName = "Room";
+
+		NetChatMessage message = new NetChatMessage("hello", player, room);
+
+		assertEquals("hello", message.strMessage);
+		assertEquals(player.uid, message.uid);
+		assertEquals(player.strName, message.strUserName);
+		assertEquals(player.strRealHost, message.strHost);
+		assertEquals(room.roomID, message.roomID);
+		assertEquals(room.strName, message.strRoomName);
+	}
+
 	private static NetChatMessage messageWithFixedTimestamp() {
 		NetChatMessage message = new NetChatMessage();
 		message.timestamp = Calendar.getInstance(TimeZone.getTimeZone("GMT"));

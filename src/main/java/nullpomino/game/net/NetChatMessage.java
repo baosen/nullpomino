@@ -50,7 +50,7 @@ public class NetChatMessage implements Serializable {
 	 * @param msg Message
 	 */
 	public NetChatMessage(String msg) {
-		reset();
+		this();
 		strMessage = msg;
 	}
 
@@ -60,8 +60,7 @@ public class NetChatMessage implements Serializable {
 	 * @param pInfo Player Info
 	 */
 	public NetChatMessage(String msg, NetPlayerInfo pInfo) {
-		reset();
-		strMessage = msg;
+		this(msg);
 		uid = pInfo.uid;
 		strUserName = pInfo.strName;
 		strHost = pInfo.strRealHost;
@@ -74,11 +73,7 @@ public class NetChatMessage implements Serializable {
 	 * @param roomInfo Room Info
 	 */
 	public NetChatMessage(String msg, NetPlayerInfo pInfo, NetRoomInfo roomInfo) {
-		reset();
-		strMessage = msg;
-		uid = pInfo.uid;
-		strUserName = pInfo.strName;
-		strHost = pInfo.strRealHost;
+		this(msg, pInfo);
 		roomID = roomInfo.roomID;
 		strRoomName = roomInfo.strName;
 	}
