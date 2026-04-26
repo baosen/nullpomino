@@ -51,8 +51,12 @@ public class StateTitleSDL extends DummyMenuChooseStateSDL {
 
 		NormalFontSDL.printTTFFont(16, 432, NullpoMinoSDL.getUIText(UI_TEXT[cursor]));
 
-		String buildString = GameManager.getCommitHash() + " " + (GameManager.isDevBuild() ? "DEBUG" : "RELEASE");
-		NormalFontSDL.printFontGrid(40 - buildString.length() - 1, 28, buildString, NormalFontSDL.COLOR_ORANGE);
+		// Bitmap font has no lowercase or hex digits a–f, so render via TTF.
+		// Right-aligned to one grid cell from the screen edge to mirror the
+		// margin the old version string used.
+		String buildString = GameManager.getCommitHash() + " (" + (GameManager.isDevBuild() ? "debug" : "release") + ")";
+		int buildWidth = NormalFontSDL.getTTFStringWidth(buildString);
+		NormalFontSDL.printTTFFont(640 - 16 - buildWidth, 448, buildString, NormalFontSDL.COLOR_ORANGE);
 	}
 
 	@Override
