@@ -61,80 +61,78 @@ public class NetSPRecord implements Serializable {
 		Statistics s1 = r1.stats;
 		Statistics s2 = r2.stats;
 
-		if(type == RANKINGTYPE_GENERIC_SCORE) {
-			if(s1.score > s2.score) {
-				return true;
-			} else if((s1.score == s2.score) && (s1.lines > s2.lines)) {
-				return true;
-			} else if((s1.score == s2.score) && (s1.lines == s2.lines) && (s1.time < s2.time)) {
-				return true;
-			}
-		} else if(type == RANKINGTYPE_GENERIC_TIME) {
-			if(s1.time < s2.time) {
-				return true;
-			} else if((s1.time == s2.time) && (s1.totalPieceLocked < s2.totalPieceLocked)) {
-				return true;
-			} else if((s1.time == s2.time) && (s1.totalPieceLocked == s2.totalPieceLocked) && (s1.pps > s2.pps)) {
-				return true;
-			}
-		} else if(type == RANKINGTYPE_SCORERACE) {
-			if(s1.time < s2.time) {
-				return true;
-			} else if((s1.time == s2.time) && (s1.lines < s2.lines)) {
-				return true;
-			} else if((s1.time == s2.time) && (s1.lines == s2.lines) && (s1.spl > s2.spl)) {
-				return true;
-			}
-		} else if(type == RANKINGTYPE_DIGRACE) {
-			if(s1.time < s2.time) {
-				return true;
-			} else if((s1.time == s2.time) && (s1.lines < s2.lines)) {
-				return true;
-			} else if((s1.time == s2.time) && (s1.lines == s2.lines) && (s1.totalPieceLocked < s2.totalPieceLocked)) {
-				return true;
-			}
-		} else if(type == RANKINGTYPE_ULTRA) {
-			if(s1.score > s2.score) {
-				return true;
-			} else if((s1.score == s2.score) && (s1.lines > s2.lines)) {
-				return true;
-			} else if((s1.score == s2.score) && (s1.lines == s2.lines) && (s1.totalPieceLocked < s2.totalPieceLocked)) {
-				return true;
-			}
-		} else if(type == RANKINGTYPE_COMBORACE) {
-			if(s1.maxCombo > s2.maxCombo) {
-				return true;
-			} else if((s1.maxCombo == s2.maxCombo) && (s1.time < s2.time)) {
-				return true;
-			} else if((s1.maxCombo == s2.maxCombo) && (s1.time == s2.time) && (s1.pps > s2.pps)) {
-				return true;
-			}
-		} else if(type == RANKINGTYPE_DIGCHALLENGE) {
-			if(s1.score > s2.score) {
-				return true;
-			} else if((s1.score == s2.score) && (s1.lines > s2.lines)) {
-				return true;
-			} else if((s1.score == s2.score) && (s1.lines == s2.lines) && (s1.time > s2.time)) {
-				return true;
-			}
-		} else if(type == RANKINGTYPE_TIMEATTACK) {
-			// Cap the line count at 150 or 200
+		switch(type) {
+		case RANKINGTYPE_GENERIC_SCORE:
+			return isBetter(
+					higher(s1.score, s2.score),
+					higher(s1.lines, s2.lines),
+					lower(s1.time, s2.time));
+		case RANKINGTYPE_GENERIC_TIME:
+			return isBetter(
+					lower(s1.time, s2.time),
+					lower(s1.totalPieceLocked, s2.totalPieceLocked),
+					higher(s1.pps, s2.pps));
+		case RANKINGTYPE_SCORERACE:
+			return isBetter(
+					lower(s1.time, s2.time),
+					lower(s1.lines, s2.lines),
+					higher(s1.spl, s2.spl));
+		case RANKINGTYPE_DIGRACE:
+			return isBetter(
+					lower(s1.time, s2.time),
+					lower(s1.lines, s2.lines),
+					lower(s1.totalPieceLocked, s2.totalPieceLocked));
+		case RANKINGTYPE_ULTRA:
+			return isBetter(
+					higher(s1.score, s2.score),
+					higher(s1.lines, s2.lines),
+					lower(s1.totalPieceLocked, s2.totalPieceLocked));
+		case RANKINGTYPE_COMBORACE:
+			return isBetter(
+					higher(s1.maxCombo, s2.maxCombo),
+					lower(s1.time, s2.time),
+					higher(s1.pps, s2.pps));
+		case RANKINGTYPE_DIGCHALLENGE:
+			return isBetter(
+					higher(s1.score, s2.score),
+					higher(s1.lines, s2.lines),
+					higher(s1.time, s2.time));
+		case RANKINGTYPE_TIMEATTACK:
 			int maxLines = (r1.gameType >= 5) ? 200 : 150;
 			int l1 = Math.min(s1.lines, maxLines);
 			int l2 = Math.min(s2.lines, maxLines);
-
-			if(s1.rollclear > s2.rollclear) {
-				return true;
-			} else if((s1.rollclear == s2.rollclear) && (l1 > l2)) {
-				return true;
-			} else if((s1.rollclear == s2.rollclear) && (l1 == l2) && (s1.time < s2.time)) {
-				return true;
-			} else if((s1.rollclear == s2.rollclear) && (l1 == l2) && (s1.time == s2.time) && (s1.pps > s2.pps)) {
-				return true;
-			}
+			return isBetter(
+					higher(s1.rollclear, s2.rollclear),
+					higher(l1, l2),
+					lower(s1.time, s2.time),
+					higher(s1.pps, s2.pps));
+		default:
+			return false;
 		}
+	}
 
+	private static boolean isBetter(int... comparisons) {
+		for(int comparison : comparisons) {
+			if(comparison > 0) return true;
+			if(comparison < 0) return false;
+		}
 		return false;
+	}
+
+	private static int higher(int a, int b) {
+		return Integer.compare(a, b);
+	}
+
+	private static int lower(int a, int b) {
+		return Integer.compare(b, a);
+	}
+
+	private static int higher(float a, float b) {
+		return Float.compare(a, b);
+	}
+
+	private static int higher(double a, double b) {
+		return Double.compare(a, b);
 	}
 
 	/**
