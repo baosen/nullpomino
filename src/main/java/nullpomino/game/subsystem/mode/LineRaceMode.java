@@ -500,20 +500,17 @@ public class LineRaceMode extends NetDummyMode {
 	 */
 	private void updateRanking(int time, int piece, float pps) {
 		rankingRank = checkRanking(time, piece, pps);
-
-		if(rankingRank != -1) {
-			// Shift down ranking entries
-			for(int i = RANKING_MAX - 1; i > rankingRank; i--) {
-				rankingTime[goaltype][i] = rankingTime[goaltype][i - 1];
-				rankingPiece[goaltype][i] = rankingPiece[goaltype][i - 1];
-				rankingPPS[goaltype][i] = rankingPPS[goaltype][i - 1];
-			}
-
-			// Add new data
-			rankingTime[goaltype][rankingRank] = time;
-			rankingPiece[goaltype][rankingRank] = piece;
-			rankingPPS[goaltype][rankingRank] = pps;
-		}
+		RankingHelper.insertAt(rankingRank, RANKING_MAX,
+			(to, from) -> {
+				rankingTime[goaltype][to] = rankingTime[goaltype][from];
+				rankingPiece[goaltype][to] = rankingPiece[goaltype][from];
+				rankingPPS[goaltype][to] = rankingPPS[goaltype][from];
+			},
+			rank -> {
+				rankingTime[goaltype][rank] = time;
+				rankingPiece[goaltype][rank] = piece;
+				rankingPPS[goaltype][rank] = pps;
+			});
 	}
 
 	/**
@@ -523,17 +520,12 @@ public class LineRaceMode extends NetDummyMode {
 	 * @return Position (-1 if unranked)
 	 */
 	private int checkRanking(int time, int piece, float pps) {
-		for(int i = 0; i < RANKING_MAX; i++) {
-			if((time < rankingTime[goaltype][i]) || (rankingTime[goaltype][i] < 0)) {
-				return i;
-			} else if((time == rankingTime[goaltype][i]) && ((piece < rankingPiece[goaltype][i]) || (rankingPiece[goaltype][i] == 0))) {
-				return i;
-			} else if((time == rankingTime[goaltype][i]) && (piece == rankingPiece[goaltype][i]) && (pps > rankingPPS[goaltype][i])) {
-				return i;
-			}
-		}
-
-		return -1;
+		return RankingHelper.findRank(RANKING_MAX, i ->
+			(time < rankingTime[goaltype][i]) || (rankingTime[goaltype][i] < 0)
+				|| ((time == rankingTime[goaltype][i])
+					&& ((piece < rankingPiece[goaltype][i]) || (rankingPiece[goaltype][i] == 0)))
+				|| ((time == rankingTime[goaltype][i]) && (piece == rankingPiece[goaltype][i])
+					&& (pps > rankingPPS[goaltype][i])));
 	}
 
 	/**

@@ -28,6 +28,17 @@ class RankingHelperTest {
 	}
 
 	@Test
+	void findRankReturnsUnrankedSentinelWhenPredicateNeverMatches() {
+		int rank = RankingHelper.findRank(3, new RankingHelper.RankPredicate() {
+			public boolean beats(int i) {
+				return false;
+			}
+		});
+
+		assertEquals(-1, rank);
+	}
+
+	@Test
 	void insertAtShiftsLowerEntriesAndWritesRecord() {
 		final int[] scores = {1000, 900, 800};
 		final int[] lines = {40, 35, 30};
