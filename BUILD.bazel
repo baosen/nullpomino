@@ -10,7 +10,10 @@ java_binary(
     name = "NullpoMinoSDL",
     main_class = "nullpomino.gui.sdl.NullpoMinoSDL",
     jvm_flags = ["--enable-native-access=ALL-UNNAMED"],
-    runtime_deps = ["//src/main/java:core"],
+    runtime_deps = [
+        "//src/main/java:core",
+        "//src/main/java:poochy_ai",
+    ],
 )
 
 java_binary(
