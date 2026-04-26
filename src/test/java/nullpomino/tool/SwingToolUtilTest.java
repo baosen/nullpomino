@@ -56,4 +56,12 @@ class SwingToolUtilTest {
 		assertEquals("file", url.getProtocol());
 		assertTrue(url.getPath().endsWith("/config/list/randomizer.lst"), url.toString());
 	}
+
+	@Test
+	void fileUrlAcceptsAbsolutePaths() throws Exception {
+		Path file = tempDir.resolve("sample.lst");
+		URL url = SwingToolUtil.fileUrl(file.toString());
+
+		assertEquals(file.toUri().toURL(), url);
+	}
 }
