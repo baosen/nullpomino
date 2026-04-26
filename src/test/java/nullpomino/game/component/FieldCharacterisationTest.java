@@ -127,6 +127,26 @@ class FieldCharacterisationTest {
 		for (int i = 0; i < colors.length; i++) {
 			assertEquals(colors[i], dst.getBlockColor(i, 19),
 				"round-trip must preserve color at (" + i + ",19); encoded=" + encoded);
-		}
+			}
+	}
+
+	@Test
+	void attrFieldToStringRoundTripPreservesColorsAndAttributes() {
+		Field src = newField();
+		Block block = new Block(Block.BLOCK_COLOR_RED);
+		block.attribute = Block.BLOCK_ATTRIBUTE_VISIBLE
+				| Block.BLOCK_ATTRIBUTE_OUTLINE
+				| Block.BLOCK_ATTRIBUTE_GARBAGE;
+		src.setBlock(4, 19, block);
+
+		String encoded = src.attrFieldToString();
+		Field dst = newField();
+		dst.attrStringToField(encoded, 0);
+
+		assertEquals(Block.BLOCK_COLOR_RED, dst.getBlockColor(4, 19));
+		assertTrue(dst.getBlock(4, 19).getAttribute(Block.BLOCK_ATTRIBUTE_VISIBLE));
+		assertTrue(dst.getBlock(4, 19).getAttribute(Block.BLOCK_ATTRIBUTE_OUTLINE));
+		assertTrue(dst.getBlock(4, 19).getAttribute(Block.BLOCK_ATTRIBUTE_GARBAGE));
+		assertEquals(Block.BLOCK_COLOR_NONE, dst.getBlockColor(5, 19));
 	}
 }
