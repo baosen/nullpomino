@@ -2,6 +2,11 @@
 // SPDX-License-Identifier: BSD-3-Clause
 package nullpomino.game.play;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+
 import nullpomino.game.component.BGMStatus;
 import nullpomino.game.component.BackgroundStatus;
 import nullpomino.game.event.EventReceiver;
@@ -100,6 +105,55 @@ public class GameManager {
 	 */
 	public static boolean isDevBuild() {
 		return DEV_BUILD;
+	}
+
+	/** Cached short commit hash, resolved lazily from the working tree's .git dir. */
+	private static String cachedCommitHash;
+
+	/**
+	 * Get the short git commit hash of the running build, or "unknown" if it
+	 * can't be resolved (e.g. running from a packaged jar without a .git dir
+	 * alongside it).
+	 */
+	public static String getCommitHash() {
+		String cached = cachedCommitHash;
+		if(cached != null) return cached;
+		String resolved = resolveCommitHash();
+		cachedCommitHash = resolved;
+		return resolved;
+	}
+
+	private static String resolveCommitHash() {
+		try {
+			Path head = Paths.get(".git", "HEAD");
+			if(!Files.isRegularFile(head)) return "unknown";
+			String contents = new String(Files.readAllBytes(head)).trim();
+			String hash = contents.startsWith("ref:")
+				? readRef(contents.substring(4).trim())
+				: contents;
+			if(hash == null || hash.length() < 7) return "unknown";
+			return hash.substring(0, 7);
+		} catch(IOException e) {
+			return "unknown";
+		}
+	}
+
+	private static String readRef(String refName) throws IOException {
+		// Loose ref first, then packed-refs as a fallback.
+		Path refPath = Paths.get(".git", refName.split("/"));
+		if(Files.isRegularFile(refPath)) {
+			return new String(Files.readAllBytes(refPath)).trim();
+		}
+		Path packed = Paths.get(".git", "packed-refs");
+		if(!Files.isRegularFile(packed)) return null;
+		for(String line : Files.readAllLines(packed)) {
+			if(line.isEmpty() || line.startsWith("#") || line.startsWith("^")) continue;
+			int sp = line.indexOf(' ');
+			if(sp > 0 && refName.equals(line.substring(sp + 1).trim())) {
+				return line.substring(0, sp).trim();
+			}
+		}
+		return null;
 	}
 
 	/**
