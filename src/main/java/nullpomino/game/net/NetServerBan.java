@@ -25,6 +25,17 @@ public class NetServerBan {
 
 	public static final int BANLENGTH_TOTAL = 7;
 
+	private static final TimeZone GMT = TimeZone.getTimeZone("GMT");
+	private static final int[] BAN_CALENDAR_FIELDS = {
+		Calendar.HOUR,
+		Calendar.HOUR,
+		Calendar.HOUR,
+		Calendar.WEEK_OF_MONTH,
+		Calendar.MONTH,
+		Calendar.YEAR
+	};
+	private static final int[] BAN_CALENDAR_AMOUNTS = {1, 6, 24, 1, 1, 1};
+
 	/**
 	 * Empty Constructor
 	 */
@@ -46,7 +57,7 @@ public class NetServerBan {
 	 */
 	public NetServerBan(String addr, int banLength) {
 		this.addr = addr;
-		startDate = Calendar.getInstance(TimeZone.getTimeZone("GMT"));
+		startDate = Calendar.getInstance(GMT);
 		this.banLength = banLength;
 	}
 
@@ -55,16 +66,10 @@ public class NetServerBan {
 	 * @return the end date or null
 	 */
 	public Calendar getEndDate() {
+		if((banLength < 0) || (banLength >= BANLENGTH_PERMANENT)) return null;
+
 		Calendar res = (Calendar) startDate.clone();
-		switch (banLength) {
-			case BANLENGTH_1HOUR: res.add(Calendar.HOUR, 1); break;
-			case BANLENGTH_6HOURS: res.add(Calendar.HOUR, 6); break;
-			case BANLENGTH_24HOURS: res.add(Calendar.HOUR, 24); break;
-			case BANLENGTH_1WEEK: res.add(Calendar.WEEK_OF_MONTH, 1); break;
-			case BANLENGTH_1MONTH: res.add(Calendar.MONTH, 1); break;
-			case BANLENGTH_1YEAR: res.add(Calendar.YEAR, 1); break;
-			default: res = null;
-		}
+		res.add(BAN_CALENDAR_FIELDS[banLength], BAN_CALENDAR_AMOUNTS[banLength]);
 		return res;
 	}
 
@@ -74,11 +79,7 @@ public class NetServerBan {
 	 */
 	public boolean isExpired() {
 		Calendar endDate = getEndDate();
-		if (endDate == null) {
-			return false;
-		} else {
-			return Calendar.getInstance(TimeZone.getTimeZone("GMT")).after(getEndDate());
-		}
+		return (endDate != null) && Calendar.getInstance(GMT).after(endDate);
 	}
 
 	/**

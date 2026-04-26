@@ -2,6 +2,7 @@ package nullpomino.game.net;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.Calendar;
@@ -45,7 +46,30 @@ class NetServerBanRoundTripTest {
 	void permanentBanHasNullEndDate() {
 		NetServerBan ban = new NetServerBan("10.0.0.1");
 		assertEquals(NetServerBan.BANLENGTH_PERMANENT, ban.banLength);
-		assertEquals(null, ban.getEndDate());
+		assertNull(ban.getEndDate());
 		assertTrue(!ban.isExpired());
+	}
+
+	@Test
+	void temporaryBanLengthsMapToExpectedCalendarOffsets() {
+		assertEndDateOffset(NetServerBan.BANLENGTH_1HOUR, Calendar.HOUR, 1);
+		assertEndDateOffset(NetServerBan.BANLENGTH_6HOURS, Calendar.HOUR, 6);
+		assertEndDateOffset(NetServerBan.BANLENGTH_24HOURS, Calendar.HOUR, 24);
+		assertEndDateOffset(NetServerBan.BANLENGTH_1WEEK, Calendar.WEEK_OF_MONTH, 1);
+		assertEndDateOffset(NetServerBan.BANLENGTH_1MONTH, Calendar.MONTH, 1);
+		assertEndDateOffset(NetServerBan.BANLENGTH_1YEAR, Calendar.YEAR, 1);
+	}
+
+	private static void assertEndDateOffset(int banLength, int calendarField, int amount) {
+		Calendar fixed = Calendar.getInstance(TimeZone.getTimeZone("GMT"));
+		fixed.set(2026, Calendar.JANUARY, 1, 0, 0, 0);
+		fixed.set(Calendar.MILLISECOND, 0);
+
+		NetServerBan ban = new NetServerBan("203.0.113.1", banLength);
+		ban.startDate = fixed;
+
+		Calendar expected = (Calendar) fixed.clone();
+		expected.add(calendarField, amount);
+		assertEquals(expected.getTimeInMillis(), ban.getEndDate().getTimeInMillis());
 	}
 }
