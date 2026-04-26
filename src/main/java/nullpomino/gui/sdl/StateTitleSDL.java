@@ -51,8 +51,8 @@ public class StateTitleSDL extends DummyMenuChooseStateSDL {
 
 		NormalFontSDL.printTTFFont(16, 432, NullpoMinoSDL.getUIText(UI_TEXT[cursor]));
 
-		String versionString = GameManager.getVersionString();
-		NormalFontSDL.printFontGrid(40 - versionString.length() - 1, 28, versionString, NormalFontSDL.COLOR_ORANGE);
+		String buildString = GameManager.getCommitHash() + " " + (GameManager.isDevBuild() ? "DEBUG" : "RELEASE");
+		NormalFontSDL.printFontGrid(40 - buildString.length() - 1, 28, buildString, NormalFontSDL.COLOR_ORANGE);
 	}
 
 	@Override
