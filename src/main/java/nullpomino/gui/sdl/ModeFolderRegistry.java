@@ -20,7 +20,12 @@ public final class ModeFolderRegistry {
 
 	public record Folder(String name, List<String> modes) {}
 
-	/** Top-level mode list shown immediately under PLAY, in cursor order. */
+	/**
+	 * Top-level mode list shown immediately under PLAY, in cursor order. These
+	 * are the "popular modes" — the legacy {@code modefolder.lst} kept them
+	 * under a commented-out {@code #:POPULAR MODES} header so the parser
+	 * treated them as the unfoldered top level.
+	 */
 	public static final List<String> TOP_LEVEL = List.of(
 			"MARATHON",
 			"LINE RACE",
