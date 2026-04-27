@@ -5,8 +5,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertSame;
 
-import java.io.BufferedReader;
-import java.io.StringReader;
+import java.util.List;
 
 import nullpomino.game.play.GameEngine;
 import nullpomino.game.play.GameManager;
@@ -64,29 +63,14 @@ class ModeManagerTest {
 	}
 
 	@Test
-	void loadGameModesFromPropertiesInstantiatesListedClasses() {
-		CustomProperties props = new CustomProperties();
-		props.setProperty("0", LoadableMode.class.getName());
+	void loadGameModesFromClassListInstantiatesEachEntry() {
 		ModeManager manager = new ModeManager();
 
-		manager.loadGameModes(props);
+		manager.loadGameModes(List.of(LoadableMode.class, LoadableMode.class));
 
-		assertEquals(1, manager.getSize());
+		assertEquals(2, manager.getSize());
 		assertEquals("loadable", manager.getName(0));
-	}
-
-	@Test
-	void loadGameModesFromReaderSkipsCommentsAndStopsAtBlankLine() {
-		String source = "# comment\n"
-				+ LoadableMode.class.getName() + "\n"
-				+ "\n"
-				+ LoadableMode.class.getName() + "\n";
-		ModeManager manager = new ModeManager();
-
-		manager.loadGameModes(new BufferedReader(new StringReader(source)));
-
-		assertEquals(1, manager.getSize());
-		assertEquals("loadable", manager.getName(0));
+		assertEquals("loadable", manager.getName(1));
 	}
 
 	static final class TestMode implements GameMode {

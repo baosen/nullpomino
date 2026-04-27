@@ -2,11 +2,9 @@
 // SPDX-License-Identifier: BSD-3-Clause
 package nullpomino.gui.sdl;
 
-import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
-import java.io.FileReader;
 import java.io.IOException;
 import java.text.DateFormat;
 import java.text.DecimalFormat;
@@ -30,6 +28,7 @@ import nullpomino.gui.sdl.binding.SDLConstants;
 import nullpomino.gui.sdl.binding.SDLStructs;
 import nullpomino.util.CustomProperties;
 import nullpomino.util.ModeManager;
+import nullpomino.util.ModeRegistry;
 
 import org.apache.log4j.Logger;
 import org.apache.log4j.PropertyConfigurator;
@@ -323,13 +322,7 @@ public class NullpoMinoSDL {
 
 		// Mode read
 		modeManager = new ModeManager();
-		try {
-			BufferedReader txtMode = new BufferedReader(new FileReader("config/list/mode.lst"));
-			modeManager.loadGameModes(txtMode);
-			txtMode.close();
-		} catch (IOException e) {
-			log.error("Failed to load game mode list", e);
-		}
+		modeManager.loadGameModes(ModeRegistry.all());
 
 		// Set default rule selections
 		try {

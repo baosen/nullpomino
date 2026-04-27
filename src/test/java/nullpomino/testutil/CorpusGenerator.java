@@ -1,7 +1,5 @@
 package nullpomino.testutil;
 
-import java.io.BufferedReader;
-import java.io.FileReader;
 import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -18,6 +16,7 @@ import nullpomino.game.subsystem.mode.GameMode;
 import nullpomino.game.subsystem.wallkick.Wallkick;
 import nullpomino.util.GeneralUtil;
 import nullpomino.util.ModeManager;
+import nullpomino.util.ModeRegistry;
 import net.omegaboshi.nullpomino.game.subsystem.randomizer.Randomizer;
 import net.tetrisconcept.poochy.nullpomino.ai.PoochyBot;
 
@@ -44,7 +43,7 @@ import net.tetrisconcept.poochy.nullpomino.ai.PoochyBot;
  *
  * Skipped automatically:
  *   - net modes (isNetplayMode == true; they need a loopback server)
- *   - any mode missing from mode.lst
+ *   - any mode missing from {@link ModeRegistry}
  */
 public final class CorpusGenerator {
 
@@ -81,9 +80,7 @@ public final class CorpusGenerator {
 		List<String> modes = (args.length >= 2) ? Arrays.asList(args).subList(1, args.length) : DEFAULT_MODES;
 
 		ModeManager mm = new ModeManager();
-		try (BufferedReader r = new BufferedReader(new FileReader(base.resolve("config/list/mode.lst").toFile()))) {
-			mm.loadGameModes(r);
-		}
+		mm.loadGameModes(ModeRegistry.all());
 
 		Path rulePath = base.resolve(DEFAULT_RULE);
 		RuleOptions baseRule = GeneralUtil.loadRule(rulePath.toString());

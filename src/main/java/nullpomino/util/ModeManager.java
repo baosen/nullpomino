@@ -2,9 +2,8 @@
 // SPDX-License-Identifier: BSD-3-Clause
 package nullpomino.util;
 
-import java.io.BufferedReader;
-import java.io.IOException;
 import java.util.ArrayList;
+import java.util.List;
 
 import nullpomino.game.subsystem.mode.GameMode;
 
@@ -137,45 +136,21 @@ public class ModeManager {
 	}
 
 	/**
-	 * Property fileGame from the list that was written toMode Read
-	 * @param prop Property file
+	 * Instantiate every class in {@code classes} and append it to the loaded
+	 * mode list. Preserves the input order; a class that fails to instantiate
+	 * is logged and skipped.
 	 */
-	public void loadGameModes(CustomProperties prop) {
-		for(int count = 0; ; count++) {
-			// Read the name of a class
-			String name = prop.getProperty(String.valueOf(count), null);
-			if(name == null) break;
-			addGameMode(name);
+	public void loadGameModes(List<Class<? extends GameMode>> classes) {
+		for(Class<? extends GameMode> clazz : classes) {
+			addGameMode(clazz);
 		}
 	}
 
-	/**
-	 * Game from the list that was written to a text fileMode Read
-	 * @param bf I read a text fileBufferedReader
-	 */
-	public void loadGameModes(BufferedReader bf) {
+	private void addGameMode(Class<? extends GameMode> clazz) {
 		try {
-			String name;
-			while((name = bf.readLine()) != null) {
-				if(name.length() == 0) break;
-				addGameModeUnlessComment(name);
-			}
-		} catch (IOException e) {
-			log.warn("IOException on readLine()", e);
-		}
-	}
-
-	private void addGameModeUnlessComment(String name) {
-		if(!name.startsWith("#")) addGameMode(name);
-	}
-
-	private void addGameMode(String name) {
-		try {
-			modelist.add(ClassFactory.create(name, GameMode.class));
-		} catch(ClassNotFoundException e) {
-			log.warn("Mode class " + name + " not found", e);
+			modelist.add(clazz.getDeclaredConstructor().newInstance());
 		} catch(Exception e) {
-			log.warn("Mode class " + name + " load failed", e);
+			log.warn("Mode class " + clazz.getName() + " load failed", e);
 		}
 	}
 }

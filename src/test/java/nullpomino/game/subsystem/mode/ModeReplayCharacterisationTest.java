@@ -3,8 +3,6 @@ package nullpomino.game.subsystem.mode;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import java.io.BufferedReader;
-import java.io.FileReader;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -17,6 +15,7 @@ import java.util.stream.Stream;
 import nullpomino.testutil.ReplayRunner;
 import nullpomino.testutil.ReplayRunner.Snapshot;
 import nullpomino.util.ModeManager;
+import nullpomino.util.ModeRegistry;
 
 import org.junit.jupiter.api.DynamicTest;
 import org.junit.jupiter.api.TestFactory;
@@ -40,9 +39,7 @@ class ModeReplayCharacterisationTest {
 		assertTrue(Files.isDirectory(REPLAY_ROOT), "replay corpus missing: " + REPLAY_ROOT);
 
 		ModeManager modeManager = new ModeManager();
-		try (BufferedReader r = new BufferedReader(new FileReader("config/list/mode.lst"))) {
-			modeManager.loadGameModes(r);
-		}
+		modeManager.loadGameModes(ModeRegistry.all());
 
 		List<Path> replays = new ArrayList<>();
 		try (Stream<Path> walk = Files.walk(REPLAY_ROOT)) {

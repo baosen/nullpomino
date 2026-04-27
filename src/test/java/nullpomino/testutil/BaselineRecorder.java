@@ -1,7 +1,5 @@
 package nullpomino.testutil;
 
-import java.io.BufferedReader;
-import java.io.FileReader;
 import java.io.IOException;
 import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
@@ -10,6 +8,7 @@ import java.nio.file.Paths;
 import java.util.Properties;
 
 import nullpomino.util.ModeManager;
+import nullpomino.util.ModeRegistry;
 
 /**
  * Re-record the baseline snapshot for every replay under
@@ -35,9 +34,7 @@ public final class BaselineRecorder {
 		Path base = (cwd != null) ? Paths.get(cwd) : Paths.get("").toAbsolutePath();
 
 		ModeManager modeManager = new ModeManager();
-		try (BufferedReader r = new BufferedReader(new FileReader(base.resolve("config/list/mode.lst").toFile()))) {
-			modeManager.loadGameModes(r);
-		}
+		modeManager.loadGameModes(ModeRegistry.all());
 
 		int count = 0;
 		Path replayRoot = base.resolve(REPLAY_ROOT);
