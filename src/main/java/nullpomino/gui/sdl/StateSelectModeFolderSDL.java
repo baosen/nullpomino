@@ -1,20 +1,14 @@
 package nullpomino.gui.sdl;
 
-import java.io.BufferedReader;
-import java.io.FileReader;
-import java.io.IOException;
 import java.util.HashMap;
 import java.util.LinkedList;
 
-import org.apache.log4j.Logger;
+import nullpomino.gui.sdl.ModeFolderRegistry.Folder;
 
 /**
  * Mode folder select (SDL)
  */
 public class StateSelectModeFolderSDL extends DummyMenuScrollStateSDL {
-	/** Log */
-	static Logger log = Logger.getLogger(StateSelectModeFolderSDL.class);
-
 	/** Number of folders in one page */
 	public static final int PAGE_HEIGHT = 24;
 
@@ -42,7 +36,10 @@ public class StateSelectModeFolderSDL extends DummyMenuScrollStateSDL {
 	}
 
 	/**
-	 * Load folder list file
+	 * Populate the folder data from {@link ModeFolderRegistry}. The static
+	 * fields are kept for the existing consumers ({@link StateSelectModeSDL}
+	 * reads them directly); only the source changes from a parsed text file
+	 * to literal Java data.
 	 */
 	public static void loadFolderListFile() {
 		if(listTopLevelModes == null) listTopLevelModes = new LinkedList<String>();
@@ -56,43 +53,11 @@ public class StateSelectModeFolderSDL extends DummyMenuScrollStateSDL {
 
 		strCurrentFolder = NullpoMinoSDL.propGlobal.getProperty("name.folder", "");
 
-		try {
-			BufferedReader in = new BufferedReader(new FileReader("config/list/modefolder.lst"));
-			String strFolder = "";
+		listTopLevelModes.addAll(ModeFolderRegistry.TOP_LEVEL);
 
-			String str;
-			while((str = in.readLine()) != null) {
-				str = str.trim();	// Trim the space
-
-				if(str.startsWith("#")) {
-					// Commment-line. Ignore it.
-				} else if(str.startsWith(":")) {
-					// New folder
-					strFolder = str.substring(1);
-					if(!listFolder.contains(strFolder)) {
-						listFolder.add(strFolder);
-						LinkedList<String> listMode = new LinkedList<String>();
-						mapFolder.put(strFolder, listMode);
-					}
-				} else if(str.length() > 0) {
-					// Mode name
-					if(strFolder.length() == 0) {
-						log.debug("(top-level)." + str);
-						listTopLevelModes.add(str);
-					} else {
-						LinkedList<String> listMode = mapFolder.get(strFolder);
-						if((listMode != null) && !listMode.contains(str)) {
-							log.debug(strFolder + "." + str);
-							listMode.add(str);
-							mapFolder.put(strFolder, listMode);
-						}
-					}
-				}
-			}
-
-			in.close();
-		} catch (IOException e) {
-			log.error("Failed to load mode folder list file", e);
+		for(Folder folder : ModeFolderRegistry.FOLDERS) {
+			listFolder.add(folder.name());
+			mapFolder.put(folder.name(), new LinkedList<String>(folder.modes()));
 		}
 	}
 
