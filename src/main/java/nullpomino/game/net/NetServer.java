@@ -518,82 +518,48 @@ public class NetServer {
 		spDailyLastUpdate = GeneralUtil.importCalendarString(propSPRankingDaily.getProperty("daily.lastupdate", ""));
 		if(spDailyLastUpdate != null) spDailyLastUpdate.setTimeZone(z);
 
-		try {
-			BufferedReader in = new BufferedReader(new FileReader("config/list/netlobby_singlemode.lst"));
+		for(int style = 0; style < GameEngine.MAX_GAMESTYLE; style++) {
+			for(NetSPModeRegistry.Entry entry : NetSPModeRegistry.forStyle(style)) {
+				String strModeName = entry.name();
+				int rankingType = entry.rankingType();
+				int maxGameType = entry.maxGameType();
 
-			String str = null;
-			int style = 0;
+				log.debug("{Mode} Style:" + style + " Name:" + strModeName
+						+ " RankingType:" + rankingType + " MaxGameType:" + maxGameType);
 
-			while((str = in.readLine()) != null) {
-				if((str.length() <= 0) || str.startsWith("#")) {
-					// Empty line or comment line. Ignore it.
-				} else if(str.startsWith(":")) {
-					// Game style tag
-					String strStyle = str.substring(1);
+				spModeList[style].add(strModeName);
 
-					style = -1;
-					for(int i = 0; i < GameEngine.MAX_GAMESTYLE; i++) {
-						if(strStyle.equalsIgnoreCase(GameEngine.GAMESTYLE_NAMES[i])) {
-							style = i;
-							break;
-						}
-					}
-
-					if(style == -1) {
-						log.warn("{StyleChange} Unknown Style:" + str);
-						style = 0;
+				for(int i = 0; i < ruleList[style].size()+1; i++) {
+					String ruleName;
+					if (i < ruleList[style].size()) {
+						RuleOptions ruleOpt = (RuleOptions)ruleList[style].get(i);
+						ruleName = ruleOpt.strRuleName;
 					} else {
-						log.debug("{StyleChange} StyleID:" + style + " StyleName:" + strStyle);
+						ruleName = "any";
 					}
-				} else {
-					// Game mode name
-					String[] strSplit = str.split(",");
-					String strModeName = strSplit[0];
-					int rankingType = 0;
-					int maxGameType = 0;
-					if(strSplit.length > 1) rankingType = Integer.parseInt(strSplit[1]);
-					if(strSplit.length > 2) maxGameType = Integer.parseInt(strSplit[2]);
 
-					log.debug("{Mode} Name:" + strModeName + " RankingType:" + rankingType + " MaxGameType:" + maxGameType);
+					for(int j = 0; j < maxGameType+1; j++) {
+						for(int k = 0; k < 2; k++) {
+							NetSPRanking rankingData = new NetSPRanking();
+							rankingData.strModeName = strModeName;
+							rankingData.strRuleName = ruleName;
+							rankingData.gameType = j;
+							rankingData.rankingType = rankingType;
+							rankingData.style = style;
+							rankingData.maxRecords = maxSPRanking;
 
-					spModeList[style].add(strModeName);
-
-					for(int i = 0; i < ruleList[style].size()+1; i++) {
-						String ruleName;
-						if (i < ruleList[style].size()) {
-							RuleOptions ruleOpt = (RuleOptions)ruleList[style].get(i);
-							ruleName = ruleOpt.strRuleName;
-						} else {
-							ruleName = "any";
-						}
-
-						for(int j = 0; j < maxGameType+1; j++) {
-							for(int k = 0; k < 2; k++) {
-								NetSPRanking rankingData = new NetSPRanking();
-								rankingData.strModeName = strModeName;
-								rankingData.strRuleName = ruleName;
-								rankingData.gameType = j;
-								rankingData.rankingType = rankingType;
-								rankingData.style = style;
-								rankingData.maxRecords = maxSPRanking;
-
-								if(k == 0) {
-									rankingData.readProperty(propSPRankingAlltime);
-									spRankingListAlltime.add(rankingData);
-									log.debug(rankingData.strRuleName + "," + rankingData.strModeName + "," + rankingData.gameType);
-								} else {
-									rankingData.readProperty(propSPRankingDaily);
-									spRankingListDaily.add(rankingData);
-								}
+							if(k == 0) {
+								rankingData.readProperty(propSPRankingAlltime);
+								spRankingListAlltime.add(rankingData);
+								log.debug(rankingData.strRuleName + "," + rankingData.strModeName + "," + rankingData.gameType);
+							} else {
+								rankingData.readProperty(propSPRankingDaily);
+								spRankingListDaily.add(rankingData);
 							}
 						}
 					}
 				}
 			}
-
-			in.close();
-		} catch (Exception e) {
-			log.warn("Failed to load single player mode list", e);
 		}
 	}
 
