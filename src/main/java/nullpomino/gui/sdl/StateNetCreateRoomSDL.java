@@ -15,7 +15,9 @@ import org.apache.log4j.Logger;
 
 import nullpomino.game.net.NetPlayerInfo;
 import nullpomino.game.net.NetRoomInfo;
+import nullpomino.game.net.NetSPModeRegistry;
 import nullpomino.game.net.NetUtil;
+import nullpomino.game.play.GameEngine;
 import nullpomino.gui.net.NetLobbyFrame;
 import nullpomino.gui.net.NetLobbyFrame.RoomCreateMode;
 import nullpomino.gui.sdl.binding.SDL3;
@@ -525,19 +527,25 @@ public class StateNetCreateRoomSDL extends BaseStateSDL {
 	}
 
 	/**
-	 * Load mode names from {@code config/list/netlobby_{multi,single}mode.lst}.
-	 * The file groups modes under {@code :STYLE} section headers and each mode
-	 * line is {@code "modeName,isRace"}. Section markers are skipped and the
-	 * isRace suffix is stripped before returning.
+	 * Mode names for the create-room dropdown. The single-player branch reads
+	 * the registry; the multiplayer branch still reads the legacy .lst file
+	 * and will be migrated in a follow-up commit.
 	 */
 	private String[] loadModeList(RoomCreateMode mode) {
-		String file = (mode == RoomCreateMode.SINGLE_PLAYER)
-				? "config/list/netlobby_singlemode.lst"
-				: "config/list/netlobby_multimode.lst";
 		List<String> list = new ArrayList<String>();
+		if(mode == RoomCreateMode.SINGLE_PLAYER) {
+			for(int style = 0; style < GameEngine.MAX_GAMESTYLE; style++) {
+				for(NetSPModeRegistry.Entry entry : NetSPModeRegistry.forStyle(style)) {
+					list.add(entry.name());
+				}
+			}
+			if(list.isEmpty()) list.add("NET-VS-BATTLE");
+			return list.toArray(new String[list.size()]);
+		}
+
 		BufferedReader in = null;
 		try {
-			in = new BufferedReader(new FileReader(file));
+			in = new BufferedReader(new FileReader("config/list/netlobby_multimode.lst"));
 			String line;
 			while((line = in.readLine()) != null) {
 				line = line.trim();
