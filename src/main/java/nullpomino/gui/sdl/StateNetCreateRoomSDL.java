@@ -5,14 +5,12 @@
 */
 package nullpomino.gui.sdl;
 
-import java.io.BufferedReader;
-import java.io.FileReader;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.log4j.Logger;
 
+import nullpomino.game.net.NetMPModeRegistry;
 import nullpomino.game.net.NetPlayerInfo;
 import nullpomino.game.net.NetRoomInfo;
 import nullpomino.game.net.NetSPModeRegistry;
@@ -527,37 +525,21 @@ public class StateNetCreateRoomSDL extends BaseStateSDL {
 	}
 
 	/**
-	 * Mode names for the create-room dropdown. The single-player branch reads
-	 * the registry; the multiplayer branch still reads the legacy .lst file
-	 * and will be migrated in a follow-up commit.
+	 * Mode names for the create-room dropdown, sourced from the per-gamestyle
+	 * netplay registry that matches the requested room kind.
 	 */
 	private String[] loadModeList(RoomCreateMode mode) {
 		List<String> list = new ArrayList<String>();
-		if(mode == RoomCreateMode.SINGLE_PLAYER) {
-			for(int style = 0; style < GameEngine.MAX_GAMESTYLE; style++) {
+		for(int style = 0; style < GameEngine.MAX_GAMESTYLE; style++) {
+			if(mode == RoomCreateMode.SINGLE_PLAYER) {
 				for(NetSPModeRegistry.Entry entry : NetSPModeRegistry.forStyle(style)) {
 					list.add(entry.name());
 				}
+			} else {
+				for(NetMPModeRegistry.Entry entry : NetMPModeRegistry.forStyle(style)) {
+					list.add(entry.name());
+				}
 			}
-			if(list.isEmpty()) list.add("NET-VS-BATTLE");
-			return list.toArray(new String[list.size()]);
-		}
-
-		BufferedReader in = null;
-		try {
-			in = new BufferedReader(new FileReader("config/list/netlobby_multimode.lst"));
-			String line;
-			while((line = in.readLine()) != null) {
-				line = line.trim();
-				if(line.length() == 0 || line.startsWith("#") || line.startsWith(":")) continue;
-				int comma = line.indexOf(',');
-				list.add(comma == -1 ? line : line.substring(0, comma));
-			}
-		} catch(IOException ignore) {
-			// Fallback: just one default entry so users can create a vs-battle room.
-			list.add("NET-VS-BATTLE");
-		} finally {
-			if(in != null) try { in.close(); } catch(IOException ignore) {}
 		}
 		if(list.isEmpty()) list.add("NET-VS-BATTLE");
 		return list.toArray(new String[list.size()]);

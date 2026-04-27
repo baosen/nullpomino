@@ -343,45 +343,11 @@ public class NetServer {
 			mpModeIsRace[i] = new LinkedList<Boolean>();
 		}
 
-		try {
-			BufferedReader in = new BufferedReader(new FileReader("config/list/netlobby_multimode.lst"));
-
-			String str = null;
-			int style = 0;
-
-			while((str = in.readLine()) != null) {
-				if((str.length() <= 0) || str.startsWith("#")) {
-					// Empty line or comment line. Ignore it.
-				} else if(str.startsWith(":")) {
-					// Game style tag
-					String strStyle = str.substring(1);
-
-					style = -1;
-					for(int i = 0; i < GameEngine.MAX_GAMESTYLE; i++) {
-						if(strStyle.equalsIgnoreCase(GameEngine.GAMESTYLE_NAMES[i])) {
-							style = i;
-							break;
-						}
-					}
-
-					if(style == -1) {
-						style = 0;
-					}
-				} else {
-					// Game mode name
-					String[] strSplit = str.split(",");
-					String strModeName = strSplit[0];
-					boolean isRace = false;
-					if(strSplit.length > 1) isRace = Boolean.parseBoolean(strSplit[1]);
-
-					mpModeList[style].add(strModeName);
-					mpModeIsRace[style].add(isRace);
-				}
+		for(int style = 0; style < GameEngine.MAX_GAMESTYLE; style++) {
+			for(NetMPModeRegistry.Entry entry : NetMPModeRegistry.forStyle(style)) {
+				mpModeList[style].add(entry.name());
+				mpModeIsRace[style].add(entry.isRace());
 			}
-
-			in.close();
-		} catch (Exception e) {
-			log.warn("Failed to load multiplayer mode list", e);
 		}
 
 		// Load leaderboard
