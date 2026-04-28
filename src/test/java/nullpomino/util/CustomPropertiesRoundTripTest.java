@@ -112,4 +112,18 @@ class CustomPropertiesRoundTripTest {
 		assertEquals("Nullpo", properties.getProperty("name"));
 		assertEquals(42, properties.getProperty("value", 0));
 	}
+
+	@Test
+	void storeToFileWritesLoadableProperties() throws IOException {
+		Path file = tempDir.resolve("stored.properties");
+		CustomProperties source = new CustomProperties();
+		source.setProperty("name", "Nullpo");
+		source.setProperty("value", 42);
+
+		source.storeToFile(file.toString(), "test");
+		CustomProperties loaded = CustomProperties.loadFromFile(file.toString());
+
+		assertEquals("Nullpo", loaded.getProperty("name"));
+		assertEquals(42, loaded.getProperty("value", 0));
+	}
 }

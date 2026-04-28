@@ -366,16 +366,12 @@ public class StateNetServerSelectSDL extends BaseStateSDL {
 	}
 
 	private boolean writeObserverConfig(NetLobbyFrame nl) {
-		java.io.FileOutputStream out = null;
 		try {
-			out = new java.io.FileOutputStream("config/setting/netobserver.cfg");
-			nl.propObserver.store(out, "NullpoMino Netplay Observer Config");
+			nl.propObserver.storeToFile("config/setting/netobserver.cfg", "NullpoMino Netplay Observer Config");
 			return true;
 		} catch(java.io.IOException e) {
 			statusLine = "FAILED TO SAVE OBSERVER CONFIG";
 			return false;
-		} finally {
-			if(out != null) try { out.close(); } catch(java.io.IOException ignore) {}
 		}
 	}
 

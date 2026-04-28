@@ -3,7 +3,6 @@
 package nullpomino.gui.sdl;
 
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.text.DateFormat;
 import java.text.DecimalFormat;
@@ -904,18 +903,14 @@ public class NullpoMinoSDL {
 	 */
 	public static void saveConfig() {
 		try {
-			FileOutputStream out = new FileOutputStream("config/setting/sdl.cfg");
-			propConfig.store(out, "NullpoMino SDL-frontend Config");
-			out.close();
+			propConfig.storeToFile("config/setting/sdl.cfg", "NullpoMino SDL-frontend Config");
 			log.debug("Saved SDL-frontend config");
 		} catch(IOException e) {
 			log.error("Failed to save SDL-specific config", e);
 		}
 
 		try {
-			FileOutputStream out = new FileOutputStream("config/setting/global.cfg");
-			propGlobal.store(out, "NullpoMino Global Config");
-			out.close();
+			propGlobal.storeToFile("config/setting/global.cfg", "NullpoMino Global Config");
 			log.debug("Saved global config");
 		} catch(IOException e) {
 			log.error("Failed to save global config", e);

@@ -12,7 +12,6 @@ import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
 import java.awt.image.BufferedImage;
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -1596,9 +1595,7 @@ public class RuleEditor extends JFrame implements ActionListener {
 		CustomProperties prop = new CustomProperties();
 		ruleopt.writeProperty(prop, 0);
 
-		FileOutputStream out = new FileOutputStream(filename);
-		prop.store(out, "NullpoMino RuleData");
-		out.close();
+		prop.storeToFile(filename, "NullpoMino RuleData");
 
 		log.debug("Saved rule file to " + filename);
 	}

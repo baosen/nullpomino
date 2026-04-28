@@ -5,6 +5,7 @@ package nullpomino.util;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.URLDecoder;
 import java.net.URLEncoder;
@@ -26,6 +27,12 @@ public class CustomProperties extends Properties {
 			properties.load(in);
 		}
 		return properties;
+	}
+
+	public void storeToFile(String filename, String comments) throws IOException {
+		try (FileOutputStream out = new FileOutputStream(filename)) {
+			store(out, comments);
+		}
 	}
 
 	public synchronized Object setProperty(String key, int value) {

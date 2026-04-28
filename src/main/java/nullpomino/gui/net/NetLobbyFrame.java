@@ -4,7 +4,6 @@ package nullpomino.gui.net;
 
 import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.FilenameFilter;
 import java.io.IOException;
@@ -629,16 +628,12 @@ public class NetLobbyFrame implements NetMessageListener {
 				String strReplay = NetUtil.decompressString(message[2]);
 				CustomProperties prop = new CustomProperties();
 				prop.decode(strReplay);
-				FileOutputStream out = null;
 				try {
-					out = new FileOutputStream("replay/netreplay.rep");
-					prop.store(out, "NullpoMino NetReplay from " + netPlayerClient.getHost());
+					prop.storeToFile("replay/netreplay.rep", "NullpoMino NetReplay from " + netPlayerClient.getHost());
 					chatLogLobby.appendSystem(getUIText("SysMsg_ReplaySaved"), NormalFontSDL.COLOR_PURPLE);
 					chatLogRoom.appendSystem(getUIText("SysMsg_ReplaySaved"), NormalFontSDL.COLOR_PURPLE);
 				} catch(IOException e) {
 					log.error("Failed to write replay to replay/netreplay.rep", e);
-				} finally {
-					if(out != null) try { out.close(); } catch(IOException ignore) {}
 				}
 			}
 		}
@@ -898,9 +893,7 @@ public class NetLobbyFrame implements NetMessageListener {
 	public void saveConfig() {
 		if(propConfig == null) return;
 		try {
-			FileOutputStream out = new FileOutputStream("config/setting/netlobby.cfg");
-			propConfig.store(out, "NullpoMino NetLobby Config");
-			out.close();
+			propConfig.storeToFile("config/setting/netlobby.cfg", "NullpoMino NetLobby Config");
 		} catch(IOException e) {
 			log.warn("Failed to save netlobby config", e);
 		}
@@ -909,9 +902,7 @@ public class NetLobbyFrame implements NetMessageListener {
 	public void saveGlobalConfig() {
 		if(propGlobal == null) return;
 		try {
-			FileOutputStream out = new FileOutputStream("config/setting/global.cfg");
-			propGlobal.store(out, "NullpoMino Global Config");
-			out.close();
+			propGlobal.storeToFile("config/setting/global.cfg", "NullpoMino Global Config");
 		} catch(IOException e) {
 			log.warn("Failed to save global config", e);
 		}

@@ -8,7 +8,6 @@ import java.awt.event.WindowEvent;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.util.Locale;
@@ -502,8 +501,7 @@ public class AIRanksTool extends JFrame implements ActionListener {
 		ranksAIConfig.setProperty("ranksai.allowhold", allowHoldCheckBox.isSelected());
 		ranksAIConfig.setProperty("ranksai.speedlimit", (Integer)speedLimitField.getValue());
 		try {
-			FileOutputStream out = new FileOutputStream(AIRanksConstants.RANKSAI_CONFIG_FILE);
-			ranksAIConfig.store(out, "Ranks AI Config");
+			ranksAIConfig.storeToFile(AIRanksConstants.RANKSAI_CONFIG_FILE, "Ranks AI Config");
 		} catch (IOException exc) {
 			log.error("Failed to save RanksAI config file", exc);
 
