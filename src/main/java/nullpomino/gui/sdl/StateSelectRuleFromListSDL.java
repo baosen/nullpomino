@@ -2,7 +2,6 @@ package nullpomino.gui.sdl;
 
 import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.HashMap;
@@ -61,10 +60,7 @@ public class StateSelectRuleFromListSDL extends DummyMenuScrollStateSDL {
 					File file = new File(str);
 					if(file.exists() && file.isFile()) {
 						try {
-							FileInputStream ruleIn = new FileInputStream(file);
-							CustomProperties propRule = new CustomProperties();
-							propRule.load(ruleIn);
-							ruleIn.close();
+							CustomProperties propRule = CustomProperties.loadFromFile(file.getPath());
 
 							String strRuleName = propRule.getProperty("0.ruleopt.strRuleName", "");
 							if(strRuleName.length() > 0) {

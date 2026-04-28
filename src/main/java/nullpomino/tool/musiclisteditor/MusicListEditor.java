@@ -8,7 +8,6 @@ import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.HashMap;
@@ -85,26 +84,21 @@ public class MusicListEditor extends JFrame implements ActionListener {
 		// Read configuration file
 		propConfig = new CustomProperties();
 		try {
-			FileInputStream in = new FileInputStream("config/setting/swing.cfg");
-			propConfig.load(in);
-			in.close();
+			propConfig = CustomProperties.loadFromFile("config/setting/swing.cfg");
 		} catch(IOException e) {}
 
 		// Read language file
 		propLangDefault = new CustomProperties();
 		try {
-			FileInputStream in = new FileInputStream("config/lang/musiclisteditor_default.properties");
-			propLangDefault.load(in);
-			in.close();
+			propLangDefault = CustomProperties.loadFromFile("config/lang/musiclisteditor_default.properties");
 		} catch (IOException e) {
 			log.error("Couldn't load default UI language file", e);
 		}
 
 		propLang = new CustomProperties();
 		try {
-			FileInputStream in = new FileInputStream("config/lang/musiclisteditor_" + Locale.getDefault().getCountry() + ".properties");
-			propLang.load(in);
-			in.close();
+			propLang = CustomProperties.loadFromFile(
+					"config/lang/musiclisteditor_" + Locale.getDefault().getCountry() + ".properties");
 		} catch(IOException e) {}
 
 		// Music reading list
@@ -237,9 +231,7 @@ public class MusicListEditor extends JFrame implements ActionListener {
 	private void loadMusicList() {
 		propMusic = new CustomProperties();
 		try {
-			FileInputStream in = new FileInputStream("config/setting/music.cfg");
-			propMusic.load(in);
-			in.close();
+			propMusic = CustomProperties.loadFromFile("config/setting/music.cfg");
 		} catch (IOException e) {}
 	}
 

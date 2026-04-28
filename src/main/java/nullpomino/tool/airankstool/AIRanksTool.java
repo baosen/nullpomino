@@ -128,9 +128,7 @@ public class AIRanksTool extends JFrame implements ActionListener {
 		// Loads Ranks AI property file, to populate the fields
 		CustomProperties propRanksAI = new CustomProperties();
 		try {
-			FileInputStream in = new FileInputStream(AIRanksConstants.RANKSAI_CONFIG_FILE);
-			propRanksAI.load(in);
-			in.close();
+			propRanksAI = CustomProperties.loadFromFile(AIRanksConstants.RANKSAI_CONFIG_FILE);
 		} catch (IOException e) {}
 
 		//Ranks File used
@@ -529,9 +527,7 @@ public class AIRanksTool extends JFrame implements ActionListener {
 		// Load language files
 		propLangDefault = new CustomProperties();
 		try {
-			FileInputStream in = new FileInputStream("config/lang/airankstool_default.properties");
-			propLangDefault.load(in);
-			in.close();
+			propLangDefault = CustomProperties.loadFromFile("config/lang/airankstool_default.properties");
 		} catch (IOException e) {
 			System.err.println("Couldn't load default UI language file");
 			e.printStackTrace();
@@ -539,9 +535,8 @@ public class AIRanksTool extends JFrame implements ActionListener {
 
 		propLang = new CustomProperties();
 		try {
-			FileInputStream in = new FileInputStream("config/lang/airankstool_" + Locale.getDefault().getCountry() + ".properties");
-			propLang.load(in);
-			in.close();
+			propLang = CustomProperties.loadFromFile(
+					"config/lang/airankstool_" + Locale.getDefault().getCountry() + ".properties");
 		} catch(IOException e) {}
 
 		// Start

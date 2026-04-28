@@ -3,7 +3,6 @@
 package nullpomino.gui.sdl;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FilenameFilter;
 import java.io.IOException;
 import java.util.Arrays;
@@ -84,14 +83,13 @@ public class StateReplaySelectSDL extends DummyMenuScrollStateSDL {
 		statsList = new Statistics[list.length];
 
 		for(int i = 0; i < list.length; i++) {
-			CustomProperties prop = new CustomProperties();
-
+			CustomProperties prop;
 			try {
-				FileInputStream in = new FileInputStream(NullpoMinoSDL.propGlobal.getProperty("custom.replay.directory", "replay") + "/" + list[i]);
-				prop.load(in);
-				in.close();
+				prop = CustomProperties.loadFromFile(
+						NullpoMinoSDL.propGlobal.getProperty("custom.replay.directory", "replay") + "/" + list[i]);
 			} catch (IOException e) {
 				log.warn("Failed to load replay file from " + list[i], e);
+				prop = new CustomProperties();
 			}
 
 			modenameList[i] = prop.getProperty("name.mode", "");
@@ -129,12 +127,10 @@ public class StateReplaySelectSDL extends DummyMenuScrollStateSDL {
 	protected boolean onDecide() {
 		ResourceHolderSDL.soundManager.play("decide");
 
-		CustomProperties prop = new CustomProperties();
-
+		CustomProperties prop;
 		try {
-			FileInputStream in = new FileInputStream(NullpoMinoSDL.propGlobal.getProperty("custom.replay.directory", "replay") + "/" + list[cursor]);
-			prop.load(in);
-			in.close();
+			prop = CustomProperties.loadFromFile(
+					NullpoMinoSDL.propGlobal.getProperty("custom.replay.directory", "replay") + "/" + list[cursor]);
 		} catch (IOException e) {
 			log.error("Failed to load replay file from " + list[cursor], e);
 			return true;

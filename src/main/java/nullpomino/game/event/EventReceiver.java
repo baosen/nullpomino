@@ -3,7 +3,6 @@
 package nullpomino.game.event;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 
@@ -807,17 +806,11 @@ public class EventReceiver {
 	 * @return Properties from "config/setting/mode.cfg". null if load fails.
 	 */
 	public CustomProperties loadModeConfig() {
-		CustomProperties propModeConfig = new CustomProperties();
-
 		try {
-			FileInputStream in = new FileInputStream("config/setting/mode.cfg");
-			propModeConfig.load(in);
-			in.close();
+			return CustomProperties.loadFromFile("config/setting/mode.cfg");
 		} catch(IOException e) {
 			return null;
 		}
-
-		return propModeConfig;
 	}
 
 	/**
@@ -840,18 +833,12 @@ public class EventReceiver {
 	 * @return Properties you specified, or null if the file doesn't exist.
 	 */
 	public CustomProperties loadProperties(String filename) {
-		CustomProperties prop = new CustomProperties();
-
 		try {
-			FileInputStream in = new FileInputStream(filename);
-			prop.load(in);
-			in.close();
+			return CustomProperties.loadFromFile(filename);
 		} catch(IOException e) {
 			log.debug("Failed to load custom property file from " + filename, e);
 			return null;
 		}
-
-		return prop;
 	}
 
 	/**

@@ -3,7 +3,6 @@
 package nullpomino.gui.sdl;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.text.DateFormat;
@@ -270,53 +269,41 @@ public class NullpoMinoSDL {
 
 		// Read configuration file
 		try {
-			FileInputStream in = new FileInputStream("config/setting/sdl.cfg");
-			propConfig.load(in);
-			in.close();
+			propConfig = CustomProperties.loadFromFile("config/setting/sdl.cfg");
 		} catch(IOException e) {}
 		try {
-			FileInputStream in = new FileInputStream("config/setting/global.cfg");
-			propGlobal.load(in);
-			in.close();
+			propGlobal = CustomProperties.loadFromFile("config/setting/global.cfg");
 		} catch(IOException e) {}
 		try {
-			FileInputStream in = new FileInputStream("config/setting/music.cfg");
-			propMusic.load(in);
-			in.close();
+			propMusic = CustomProperties.loadFromFile("config/setting/music.cfg");
 		} catch(IOException e) {}
 
 		// Read language file
 		propLangDefault = new CustomProperties();
 		try {
-			FileInputStream in = new FileInputStream("config/lang/sdl_default.properties");
-			propLangDefault.load(in);
-			in.close();
+			propLangDefault = CustomProperties.loadFromFile("config/lang/sdl_default.properties");
 		} catch (IOException e) {
 			log.error("Failed to load default UI language file", e);
 		}
 
 		propLang = new CustomProperties();
 		try {
-			FileInputStream in = new FileInputStream("config/lang/sdl_" + Locale.getDefault().getCountry() + ".properties");
-			propLang.load(in);
-			in.close();
+			propLang = CustomProperties.loadFromFile(
+					"config/lang/sdl_" + Locale.getDefault().getCountry() + ".properties");
 		} catch(IOException e) {}
 
 		// Game mode description
 		propDefaultModeDesc = new CustomProperties();
 		try {
-			FileInputStream in = new FileInputStream("config/lang/modedesc_default.properties");
-			propDefaultModeDesc.load(in);
-			in.close();
+			propDefaultModeDesc = CustomProperties.loadFromFile("config/lang/modedesc_default.properties");
 		} catch(IOException e) {
 			log.error("Couldn't load default mode description file", e);
 		}
 
 		propModeDesc = new CustomProperties();
 		try {
-			FileInputStream in = new FileInputStream("config/lang/modedesc_" + Locale.getDefault().getCountry() + ".properties");
-			propModeDesc.load(in);
-			in.close();
+			propModeDesc = CustomProperties.loadFromFile(
+					"config/lang/modedesc_" + Locale.getDefault().getCountry() + ".properties");
 		} catch(IOException e) {}
 
 		// Mode read
@@ -325,10 +312,8 @@ public class NullpoMinoSDL {
 
 		// Set default rule selections
 		try {
-			CustomProperties propDefaultRule = new CustomProperties();
-			FileInputStream in = new FileInputStream("config/list/global_defaultrule.properties");
-			propDefaultRule.load(in);
-			in.close();
+			CustomProperties propDefaultRule =
+					CustomProperties.loadFromFile("config/list/global_defaultrule.properties");
 
 			for(int pl = 0; pl < 2; pl++)
 				for(int i = 0; i < GameEngine.MAX_GAMESTYLE; i++) {
@@ -942,9 +927,7 @@ public class NullpoMinoSDL {
 	 */
 	public static void loadGlobalConfig() {
 		try {
-			FileInputStream in = new FileInputStream("config/setting/global.cfg");
-			propGlobal.load(in);
-			in.close();
+			propGlobal = CustomProperties.loadFromFile("config/setting/global.cfg");
 		} catch(IOException e) {}
 	}
 
@@ -1174,9 +1157,7 @@ public class NullpoMinoSDL {
 
 		propObserver = new CustomProperties();
 		try {
-			FileInputStream in = new FileInputStream("config/setting/netobserver.cfg");
-			propObserver.load(in);
-			in.close();
+			propObserver = CustomProperties.loadFromFile("config/setting/netobserver.cfg");
 		} catch (IOException e) {}
 
 		if(propObserver.getProperty("observer.enable", false) == false) return;

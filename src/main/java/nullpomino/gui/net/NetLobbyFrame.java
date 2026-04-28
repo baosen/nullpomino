@@ -4,7 +4,6 @@ package nullpomino.gui.net;
 
 import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.FilenameFilter;
@@ -862,18 +861,13 @@ public class NetLobbyFrame implements NetMessageListener {
 			File file = new File("config/rule/" + filename);
 			entry.filename = filename;
 			entry.filepath = file.getPath();
-			CustomProperties prop = new CustomProperties();
-			FileInputStream in = null;
 			try {
-				in = new FileInputStream(file);
-				prop.load(in);
+				CustomProperties prop = CustomProperties.loadFromFile(file.getPath());
 				entry.rulename = prop.getProperty("0.ruleopt.strRuleName", "");
 				entry.style = prop.getProperty("0.ruleopt.style", 0);
 			} catch(Exception e) {
 				entry.rulename = "";
 				entry.style = -1;
-			} finally {
-				if(in != null) try { in.close(); } catch(IOException ignore) {}
 			}
 			ruleEntries.add(entry);
 		}
@@ -965,16 +959,11 @@ public class NetLobbyFrame implements NetMessageListener {
 	// ---------------- Internals ----------------
 
 	private static CustomProperties loadPropsOrEmpty(String path) {
-		CustomProperties prop = new CustomProperties();
-		FileInputStream in = null;
 		try {
-			in = new FileInputStream(path);
-			prop.load(in);
+			return CustomProperties.loadFromFile(path);
 		} catch(IOException ignore) {
-		} finally {
-			if(in != null) try { in.close(); } catch(IOException ignore) {}
+			return new CustomProperties();
 		}
-		return prop;
 	}
 
 	private String formatEnterRoom(NetPlayerInfo pInfo) {
