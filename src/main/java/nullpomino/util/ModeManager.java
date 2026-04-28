@@ -16,8 +16,7 @@ public class ModeManager {
 	/** Log */
 	static Logger log = Logger.getLogger(ModeManager.class);
 
-	/** Mode Dynamic array of */
-	public ArrayList<GameMode> modelist = new ArrayList<GameMode>();
+	private final List<GameMode> modes = new ArrayList<GameMode>();
 
 	/**
 	 * Constructor
@@ -30,7 +29,7 @@ public class ModeManager {
 	 * @param m Copy source
 	 */
 	public ModeManager(ModeManager m) {
-		modelist.addAll(m.modelist);
+		modes.addAll(m.modes);
 	}
 
 	/**
@@ -38,7 +37,7 @@ public class ModeManager {
 	 * @return ModeOfcount(Usually+All net play)
 	 */
 	public int getSize() {
-		return modelist.size();
+		return modes.size();
 	}
 
 	/**
@@ -49,7 +48,7 @@ public class ModeManager {
 	public int getNumberOfModes(boolean netplay) {
 		int count = 0;
 
-		for(GameMode mode : modelist) {
+		for(GameMode mode : modes) {
 			if((mode != null) && (mode.isNetplayMode() == netplay)) {
 				count++;
 			}
@@ -79,7 +78,7 @@ public class ModeManager {
 	 */
 	public String[] getModeNames(boolean netplay) {
 		ArrayList<String> strings = new ArrayList<String>();
-		for(GameMode mode : modelist) {
+		for(GameMode mode : modes) {
 			if((mode != null) && (mode.isNetplayMode() == netplay)) {
 				strings.add(mode.getName());
 			}
@@ -106,8 +105,8 @@ public class ModeManager {
 	public int getIDbyName(String name) {
 		if(name == null) return -1;
 
-		for(int i = 0; i < modelist.size(); i++) {
-			GameMode mode = modelist.get(i);
+		for(int i = 0; i < modes.size(); i++) {
+			GameMode mode = modes.get(i);
 			if((mode != null) && name.equals(mode.getName())) {
 				return i;
 			}
@@ -122,8 +121,8 @@ public class ModeManager {
 	 * @return ModeObject (idIf the incorrectnull)
 	 */
 	public GameMode getMode(int id) {
-		if((id < 0) || (id >= modelist.size())) return null;
-		return modelist.get(id);
+		if((id < 0) || (id >= modes.size())) return null;
+		return modes.get(id);
 	}
 
 	/**
@@ -146,9 +145,13 @@ public class ModeManager {
 		}
 	}
 
+	public void addMode(GameMode mode) {
+		modes.add(mode);
+	}
+
 	private void addGameMode(Class<? extends GameMode> clazz) {
 		try {
-			modelist.add(clazz.getDeclaredConstructor().newInstance());
+			addMode(clazz.getDeclaredConstructor().newInstance());
 		} catch(Exception e) {
 			log.warn("Mode class " + clazz.getName() + " load failed", e);
 		}

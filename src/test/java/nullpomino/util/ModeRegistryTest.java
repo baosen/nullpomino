@@ -32,11 +32,11 @@ class ModeRegistryTest {
 		Set<String> seen = new HashSet<>();
 		for (int i = 0; i < mm.getSize(); i++) {
 			GameMode mode = mm.getMode(i);
-			assertNotNull(mode, "modelist[" + i + "] must not be null");
+			assertNotNull(mode, "mode[" + i + "] must not be null");
 			String name = mode.getName();
 			assertNotNull(name, "mode " + mode.getClass().getName() + " returned null getName()");
 			assertSame(mode, mm.getMode(name),
-					"getMode(\"" + name + "\") must round-trip to the same instance as modelist[" + i + "]");
+					"getMode(\"" + name + "\") must round-trip to the same instance as mode[" + i + "]");
 			if (!seen.add(name)) {
 				throw new AssertionError("duplicate getName() string across modes: " + name);
 			}

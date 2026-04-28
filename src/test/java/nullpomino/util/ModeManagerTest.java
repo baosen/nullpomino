@@ -20,9 +20,9 @@ class ModeManagerTest {
 		ModeManager manager = new ModeManager();
 		TestMode normal = new TestMode("normal", false);
 		TestMode net = new TestMode("net", true);
-		manager.modelist.add(normal);
-		manager.modelist.add(null);
-		manager.modelist.add(net);
+		manager.addMode(normal);
+		manager.addMode(null);
+		manager.addMode(net);
 
 		assertEquals(3, manager.getSize());
 		assertEquals("*INVALID MODE*", manager.getName(-1));
@@ -39,9 +39,9 @@ class ModeManagerTest {
 	@Test
 	void modeNamesFilterByNetplayFlag() {
 		ModeManager manager = new ModeManager();
-		manager.modelist.add(new TestMode("normal-a", false));
-		manager.modelist.add(new TestMode("net-a", true));
-		manager.modelist.add(new TestMode("normal-b", false));
+		manager.addMode(new TestMode("normal-a", false));
+		manager.addMode(new TestMode("net-a", true));
+		manager.addMode(new TestMode("normal-b", false));
 
 		assertEquals(2, manager.getNumberOfModes(false));
 		assertEquals(1, manager.getNumberOfModes(true));
@@ -54,7 +54,7 @@ class ModeManagerTest {
 	void copyConstructorSharesLoadedModeReferences() {
 		ModeManager manager = new ModeManager();
 		TestMode mode = new TestMode("normal", false);
-		manager.modelist.add(mode);
+		manager.addMode(mode);
 
 		ModeManager copy = new ModeManager(manager);
 
