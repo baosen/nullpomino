@@ -3,10 +3,7 @@ package nullpomino.tool;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import java.io.IOException;
 import java.net.URL;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Vector;
 
@@ -17,25 +14,6 @@ class SwingToolUtilTest {
 
 	@TempDir
 	Path tempDir;
-
-	@Test
-	void readNonEmptyLinesStopsAtFirstBlankLine() throws IOException {
-		Path list = tempDir.resolve("sample.lst");
-		Files.write(list, ("first\nsecond\n\nignored\n").getBytes(StandardCharsets.UTF_8));
-
-		Vector<String> lines = SwingToolUtil.readNonEmptyLines(list.toString());
-
-		assertEquals(2, lines.size());
-		assertEquals("first", lines.get(0));
-		assertEquals("second", lines.get(1));
-	}
-
-	@Test
-	void readNonEmptyLinesReturnsEmptyVectorForMissingFile() {
-		Vector<String> lines = SwingToolUtil.readNonEmptyLines(tempDir.resolve("missing.lst").toString());
-
-		assertTrue(lines.isEmpty());
-	}
 
 	@Test
 	void shortClassNamesStripPackagePrefix() {
@@ -51,10 +29,10 @@ class SwingToolUtilTest {
 
 	@Test
 	void fileUrlUsesFileProtocol() throws Exception {
-		URL url = SwingToolUtil.fileUrl("config/list/randomizer.lst");
+		URL url = SwingToolUtil.fileUrl("config/rule/Standard.rul");
 
 		assertEquals("file", url.getProtocol());
-		assertTrue(url.getPath().endsWith("/config/list/randomizer.lst"), url.toString());
+		assertTrue(url.getPath().endsWith("/config/rule/Standard.rul"), url.toString());
 	}
 
 	@Test

@@ -19,4 +19,12 @@ public final class LegacyClassNames {
 		}
 		return className;
 	}
+
+	public static String toLegacy(String className) {
+		if (className == null) return null;
+		if (className.startsWith(CURRENT_PREFIX)) {
+			return LEGACY_PREFIX + className.substring(CURRENT_PREFIX.length());
+		}
+		return className;
+	}
 }

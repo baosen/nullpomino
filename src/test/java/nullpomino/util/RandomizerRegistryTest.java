@@ -1,47 +1,51 @@
 package nullpomino.util;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.List;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import net.omegaboshi.nullpomino.game.subsystem.randomizer.Randomizer;
 
 import org.junit.jupiter.api.DynamicTest;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestFactory;
 
-/**
- * Pins that every FQCN in config/list/randomizer.lst resolves to a
- * concrete net.omegaboshi.*.Randomizer. Guards the Phase 1b deletion
- * of the deprecated nullpomino.game.subsystem.randomizer package —
- * if a randomizer entry secretly depended on that package, loading
- * would fail and this test would catch it before the delete ships.
- */
 class RandomizerRegistryTest {
 
-	private static final Path LIST = Paths.get("config/list/randomizer.lst");
+	@Test
+	void classNamesKeepToolMenuOrder() {
+		assertEquals(List.of(
+				"net.omegaboshi.nullpomino.game.subsystem.randomizer.MemorylessRandomizer",
+				"net.omegaboshi.nullpomino.game.subsystem.randomizer.BagRandomizer",
+				"net.omegaboshi.nullpomino.game.subsystem.randomizer.BagNoSZORandomizer",
+				"net.omegaboshi.nullpomino.game.subsystem.randomizer.BagBonusRandomizer",
+				"net.omegaboshi.nullpomino.game.subsystem.randomizer.BagBonusBagRandomizer",
+				"net.omegaboshi.nullpomino.game.subsystem.randomizer.DoubleBagRandomizer",
+				"net.omegaboshi.nullpomino.game.subsystem.randomizer.NineBagRandomizer",
+				"net.omegaboshi.nullpomino.game.subsystem.randomizer.BagMinusRandomizer",
+				"net.omegaboshi.nullpomino.game.subsystem.randomizer.BagMinusTwoRandomizer",
+				"net.omegaboshi.nullpomino.game.subsystem.randomizer.History4RollsRandomizer",
+				"net.omegaboshi.nullpomino.game.subsystem.randomizer.History6RollsRandomizer",
+				"net.omegaboshi.nullpomino.game.subsystem.randomizer.StrictHistoryRandomizer",
+				"net.omegaboshi.nullpomino.game.subsystem.randomizer.NintendoRandomizer",
+				"net.omegaboshi.nullpomino.game.subsystem.randomizer.GameBoyRandomizer",
+				"net.omegaboshi.nullpomino.game.subsystem.randomizer.LinearDistWeightRandomizer",
+				"net.omegaboshi.nullpomino.game.subsystem.randomizer.QuadraticDistWeightRandomizer",
+				"net.omegaboshi.nullpomino.game.subsystem.randomizer.ExpDistWeightRandomizer",
+				"net.omegaboshi.nullpomino.game.subsystem.randomizer.FixedSequenceRandomizer"),
+				RandomizerRegistry.classNames());
+	}
 
 	@TestFactory
-	Stream<DynamicTest> everyListedRandomizerInstantiates() throws Exception {
-		assertTrue(Files.exists(LIST), "randomizer.lst must be on runfiles path");
+	Stream<DynamicTest> everyRegistryEntryInstantiates() {
+		assertTrue(!RandomizerRegistry.all().isEmpty(), "randomizer registry is empty");
 
-		List<String> names;
-		try (Stream<String> lines = Files.lines(LIST)) {
-			names = lines.map(String::trim)
-					.filter(s -> !s.isEmpty() && !s.startsWith("#"))
-					.collect(Collectors.toList());
-		}
-		assertTrue(!names.isEmpty(), "randomizer.lst is empty");
-
-		return names.stream().map(fqcn -> DynamicTest.dynamicTest(fqcn, () -> {
-			Class<?> cls = Class.forName(fqcn);
+		return RandomizerRegistry.all().stream().map(cls -> DynamicTest.dynamicTest(cls.getName(), () -> {
 			Object instance = cls.getDeclaredConstructor().newInstance();
 			assertTrue(instance instanceof Randomizer,
-					fqcn + " is listed in randomizer.lst but does not implement "
+					cls.getName() + " is listed but does not implement "
 							+ Randomizer.class.getName());
 		}));
 	}
