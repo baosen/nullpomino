@@ -12,6 +12,7 @@ import nullpomino.game.subsystem.ai.DummyAI;
 import nullpomino.game.subsystem.mode.GameMode;
 import nullpomino.game.subsystem.wallkick.Wallkick;
 import nullpomino.gui.sdl.binding.SDL3;
+import nullpomino.gui.sdl.binding.SDLConstants;
 import nullpomino.util.CustomProperties;
 import nullpomino.util.GeneralUtil;
 import net.omegaboshi.nullpomino.game.subsystem.randomizer.Randomizer;
@@ -561,6 +562,17 @@ public class StateInGameSDL extends BaseStateSDL {
 					injectSettingMouseInput(gameManager.engine[0]);
 				}
 
+				// Post-game RESULT screen: wheel and PageUp/PageDown drive
+				// the per-mode page list (FINAL, GRADE MANIA, MARATHON+, ...)
+				// the same way arrow keys do. Done before updateAll() so the
+				// engine sees the synthetic press in the same frame.
+				for(int i = 0; i < Math.min(gameManager.getPlayers(), 2); i++) {
+					GameEngine engine = gameManager.engine[i];
+					if(engine != null && engine.stat == GameEngine.Status.RESULT) {
+						injectResultMouseInput(engine);
+					}
+				}
+
 				for(int i = 0; i <= fastforward; i++) gameManager.updateAll();
 			}
 		}
@@ -671,6 +683,36 @@ public class StateInGameSDL extends BaseStateSDL {
 				|| NullpoMinoSDL.isEscapePushedThisFrame()) {
 			ctrl.buttonPress[Controller.BUTTON_B] = true;
 		}
+	}
+
+	/**
+	 * Synthesize page-flip input on the post-game RESULT screen. Mouse
+	 * wheel and Page Up / Page Down map to BUTTON_UP / BUTTON_DOWN, the
+	 * same buttons the mode's onResult already polls for arrow-key
+	 * pagination. Run after {@code inputStatusUpdate} so we OR onto the
+	 * keyboard state instead of clobbering the player's UP/DOWN press.
+	 */
+	private void injectResultMouseInput(GameEngine engine) {
+		boolean pageUp = NullpoMinoSDL.keyPressedState[SDLConstants.SDL_SCANCODE_PAGEUP];
+		boolean pageDown = NullpoMinoSDL.keyPressedState[SDLConstants.SDL_SCANCODE_PAGEDOWN];
+		applyResultPageInputs(engine.ctrl, (int) NullpoMinoSDL.mouseWheelDelta, pageUp, pageDown);
+	}
+
+	/**
+	 * Pure mapping from wheel / Page Up / Page Down state to
+	 * {@code ctrl.buttonPress[BUTTON_UP/DOWN]}. Hoisted out of
+	 * {@link #injectResultMouseInput} so the keyboard / wheel routing is
+	 * unit-testable without an SDL window. OR semantics: a held arrow key
+	 * already populated by {@code inputStatusUpdate} stays pressed.
+	 *
+	 * <p>One wheel tick = one button press regardless of magnitude, matching
+	 * the SETTING-screen wheel behavior in {@link #injectSettingMouseInput}.
+	 * Result pages only number 2–3 deep, so multi-tick scrolls would skip
+	 * across the whole list in confusing ways.
+	 */
+	static void applyResultPageInputs(Controller ctrl, int wheel, boolean pageUp, boolean pageDown) {
+		if(wheel > 0 || pageUp) ctrl.buttonPress[Controller.BUTTON_UP] = true;
+		if(wheel < 0 || pageDown) ctrl.buttonPress[Controller.BUTTON_DOWN] = true;
 	}
 
 	/**
