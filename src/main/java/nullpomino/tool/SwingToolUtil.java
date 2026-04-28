@@ -2,12 +2,11 @@
 // SPDX-License-Identifier: BSD-3-Clause
 package nullpomino.tool;
 
-import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileReader;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.List;
 import java.util.Vector;
 
 /**
@@ -15,30 +14,6 @@ import java.util.Vector;
  */
 public final class SwingToolUtil {
 	private SwingToolUtil() {
-	}
-
-	/**
-	 * Read a text list into a Vector, preserving the legacy behavior of
-	 * stopping at the first missing or empty line.
-	 */
-	public static Vector<String> readNonEmptyLines(String filename) {
-		Vector<String> lines = new Vector<String>();
-
-		try (BufferedReader in = new BufferedReader(new FileReader(filename))) {
-			String str;
-			while((str = in.readLine()) != null) {
-				if(str.length() <= 0) break;
-				lines.add(str);
-			}
-		} catch(IOException e) {
-			ignoreListReadFailure(e);
-		}
-
-		return lines;
-	}
-
-	private static void ignoreListReadFailure(IOException e) {
-		// Legacy Swing tools treat missing optional list files as empty lists.
 	}
 
 	public static void ignoreOptionalFileLoad(IOException e) {
@@ -53,7 +28,7 @@ public final class SwingToolUtil {
 	 * Strip package prefixes from fully-qualified class names for compact
 	 * combobox display.
 	 */
-	public static Vector<String> shortClassNames(Vector<String> names) {
+	public static Vector<String> shortClassNames(List<String> names) {
 		Vector<String> shortNames = new Vector<String>();
 
 		for(String name : names) {

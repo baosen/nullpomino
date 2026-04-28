@@ -14,8 +14,8 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.util.List;
 import java.util.Locale;
-import java.util.Vector;
 
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
@@ -43,6 +43,7 @@ import nullpomino.game.component.Piece;
 import nullpomino.tool.SwingToolUtil;
 import nullpomino.util.ClassFactory;
 import nullpomino.util.CustomProperties;
+import nullpomino.util.RandomizerRegistry;
 import net.omegaboshi.nullpomino.game.subsystem.randomizer.Randomizer;
 
 /**
@@ -78,7 +79,7 @@ public class Sequencer extends JFrame implements ActionListener {
 	private JComboBox comboboxRandomizer;
 
 	/** Randomizer list */
-	private Vector<String> vectorRandomizer;
+	private List<String> vectorRandomizer;
 
 	/** Generate button */
 	private JButton btnGenerate;
@@ -262,7 +263,7 @@ public class Sequencer extends JFrame implements ActionListener {
 		JLabel lRandomizer = new JLabel(getUIText("Option_Randomizer"));
 		pRandomizer.add(lRandomizer);
 
-		vectorRandomizer = SwingToolUtil.readNonEmptyLines("config/list/randomizer.lst");
+		vectorRandomizer = RandomizerRegistry.classNames();
 		comboboxRandomizer = new JComboBox(SwingToolUtil.shortClassNames(vectorRandomizer));
 		comboboxRandomizer.setPreferredSize(new Dimension(200, 30));
 		comboboxRandomizer.setSelectedIndex(0);

@@ -26,7 +26,20 @@ class LegacyClassNamesTest {
 	}
 
 	@Test
+	void emitsLegacyPrefixForCurrentNames() {
+		assertEquals("mu.nu.nullpo.game.subsystem.wallkick.StandardWallkick",
+				LegacyClassNames.toLegacy("nullpomino.game.subsystem.wallkick.StandardWallkick"));
+	}
+
+	@Test
+	void leavesForeignNamesWhenEmittingLegacyNames() {
+		assertEquals("net.omegaboshi.nullpomino.game.subsystem.randomizer.BagRandomizer",
+				LegacyClassNames.toLegacy("net.omegaboshi.nullpomino.game.subsystem.randomizer.BagRandomizer"));
+	}
+
+	@Test
 	void handlesNull() {
 		assertNull(LegacyClassNames.translate(null));
+		assertNull(LegacyClassNames.toLegacy(null));
 	}
 }

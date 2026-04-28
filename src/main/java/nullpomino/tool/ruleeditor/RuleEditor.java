@@ -17,6 +17,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.List;
 import java.util.Locale;
 import java.util.Vector;
 
@@ -52,6 +53,8 @@ import nullpomino.game.component.RuleOptions;
 import nullpomino.game.play.GameEngine;
 import nullpomino.tool.SwingToolUtil;
 import nullpomino.util.CustomProperties;
+import nullpomino.util.RandomizerRegistry;
+import nullpomino.util.WallkickRegistry;
 
 import org.apache.log4j.Logger;
 import org.apache.log4j.PropertyConfigurator;
@@ -110,7 +113,7 @@ public class RuleEditor extends JFrame implements ActionListener {
 	private JComboBox comboboxRandomizer;
 
 	/** NEXTList of order generation algorithm */
-	private Vector<String> vectorRandomizer;
+	private List<String> vectorRandomizer;
 
 	/** NEXTReset sequence generation algorithm button */
 	private JButton btnResetRandomizer;
@@ -218,7 +221,7 @@ public class RuleEditor extends JFrame implements ActionListener {
 	private JComboBox comboboxWallkickSystem;
 
 	/** WallkickList of Algorithms */
-	private Vector<String> vectorWallkickSystem;
+	private List<String> vectorWallkickSystem;
 
 	/** WallkickReset of the algorithm button */
 	private JButton btnResetWallkickSystem;
@@ -651,7 +654,7 @@ public class RuleEditor extends JFrame implements ActionListener {
 		JLabel lRandomizer = new JLabel(getUIText("Basic_Randomizer"));
 		pRandomizer.add(lRandomizer);
 
-		vectorRandomizer = SwingToolUtil.readNonEmptyLines("config/list/randomizer.lst");
+		vectorRandomizer = RandomizerRegistry.classNames();
 		comboboxRandomizer = new JComboBox(SwingToolUtil.shortClassNames(vectorRandomizer));
 		comboboxRandomizer.setPreferredSize(new Dimension(200, 30));
 		pRandomizer.add(comboboxRandomizer);
@@ -839,7 +842,7 @@ public class RuleEditor extends JFrame implements ActionListener {
 		JLabel lWallkickSystem = new JLabel(getUIText("Rotate_WallkickSystem"));
 		pWallkickSystem.add(lWallkickSystem);
 
-		vectorWallkickSystem = SwingToolUtil.readNonEmptyLines("config/list/wallkick.lst");
+		vectorWallkickSystem = WallkickRegistry.classNames();
 		comboboxWallkickSystem = new JComboBox(SwingToolUtil.shortClassNames(vectorWallkickSystem));
 		comboboxWallkickSystem.setPreferredSize(new Dimension(200, 30));
 		pWallkickSystem.add(comboboxWallkickSystem);
