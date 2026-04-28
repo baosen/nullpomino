@@ -44,7 +44,6 @@ class StateTitleChoicesTest {
 	private Deque<Integer> originalBack;
 	private Deque<Integer> originalForward;
 	private SoundManagerSDL originalSound;
-	private boolean originalIsTopLevel;
 
 	@BeforeEach
 	void setUp() throws Exception {
@@ -54,7 +53,6 @@ class StateTitleChoicesTest {
 		originalBack = snapshot("backStack");
 		originalForward = snapshot("forwardStack");
 		originalSound = ResourceHolderSDL.soundManager;
-		originalIsTopLevel = StateSelectModeSDL.isTopLevel;
 
 		BaseStateSDL[] stubs = new BaseStateSDL[NullpoMinoSDL.STATE_MAX];
 		for(int i = 0; i < stubs.length; i++) stubs[i] = new BaseStateSDL();
@@ -66,7 +64,6 @@ class StateTitleChoicesTest {
 
 		// SoundManagerSDL with mixerLib=null — play() returns early.
 		ResourceHolderSDL.soundManager = new SoundManagerSDL();
-		StateSelectModeSDL.isTopLevel = false;
 	}
 
 	@AfterEach
@@ -77,7 +74,6 @@ class StateTitleChoicesTest {
 		restore("backStack", originalBack);
 		restore("forwardStack", originalForward);
 		ResourceHolderSDL.soundManager = originalSound;
-		StateSelectModeSDL.isTopLevel = originalIsTopLevel;
 	}
 
 	@Test
@@ -107,11 +103,9 @@ class StateTitleChoicesTest {
 	}
 
 	@Test
-	void onDecidePlayEntersSelectModeAtTopLevel() throws Exception {
+	void onDecidePlayEntersSelectMode() throws Exception {
 		invokeOnDecide(0);
 		assertEquals(NullpoMinoSDL.STATE_SELECTMODE, NullpoMinoSDL.currentState);
-		assertTrue(StateSelectModeSDL.isTopLevel,
-				"PLAY entry must mark the mode-select screen as top-level");
 	}
 
 	@Test
