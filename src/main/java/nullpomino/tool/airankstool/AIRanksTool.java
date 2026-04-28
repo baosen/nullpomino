@@ -435,25 +435,18 @@ public class AIRanksTool extends JFrame implements ActionListener {
 				setEnabledBWButtons(false);
 				Ranks ranks = null;
 
-				FileInputStream fis = null;
-				ObjectInputStream in = null;
-
 				if (inputFile.trim().length() == 0)
 					ranks = new Ranks(4, 9);
 				else {
-					try {
-						fis = new FileInputStream(AIRanksConstants.RANKSAI_DIR+inputFile);
-						in = new ObjectInputStream(fis);
+					try (ObjectInputStream in = new ObjectInputStream(
+							new FileInputStream(AIRanksConstants.RANKSAI_DIR+inputFile))) {
 						ranks = (Ranks) in.readObject();
-						in.close();
 					} catch (FileNotFoundException e1) {
 						ranks = new Ranks(4, 9);
 					} catch (IOException e1) {
-						// TODO Auto-generated catch block
 						e1.printStackTrace();
 
 					} catch (ClassNotFoundException e1) {
-						// TODO Auto-generated catch block
 						e1.printStackTrace();
 					}
 

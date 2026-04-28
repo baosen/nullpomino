@@ -145,25 +145,18 @@ public class RanksAI extends DummyAI implements Runnable {
 			if (file!=null && file.trim().length()>0){
 			 inputFile=AIRanksConstants.RANKSAI_DIR+currentRanksFile;
 			}
-			FileInputStream fis = null;
-			ObjectInputStream in = null;
 
 			if (inputFile.trim().length() == 0)
 				ranks=new Ranks(4,9);
 			else {
-				try {
-					fis = new FileInputStream(inputFile);
-					in = new ObjectInputStream(fis);
+				try (ObjectInputStream in = new ObjectInputStream(new FileInputStream(inputFile))) {
 					ranks = (Ranks)in.readObject();
-					in.close();
 
 				} catch (FileNotFoundException e) {
 					ranks=new Ranks(4,9);
 				} catch (IOException e) {
-					// TODO Auto-generated catch block
 					e.printStackTrace();
 				} catch (ClassNotFoundException e) {
-					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
 			}

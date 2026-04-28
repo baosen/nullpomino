@@ -74,7 +74,6 @@ public class RanksIterator extends JDialog implements PropertyChangeListener,Act
         		try {
 					ranksIteratorPart[i].join();
 				} catch (InterruptedException e) {
-					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
         	}
@@ -119,24 +118,18 @@ public class RanksIterator extends JDialog implements PropertyChangeListener,Act
         public Void doInBackground() {
         	progressLabel.setText(AIRanksTool.getUIText("Progress_Note_Load_File"));
 
-        	FileInputStream fis = null;
-        	ObjectInputStream in = null;
         	if (inputFile.trim().length() == 0)
         		ranksFrom=new Ranks(4,9);
         	else {
-        		  try {
-        			fis = new FileInputStream(AIRanksConstants.RANKSAI_DIR+inputFile);
-        			   in = new ObjectInputStream(fis);
+        		  try (ObjectInputStream in = new ObjectInputStream(
+        				  new FileInputStream(AIRanksConstants.RANKSAI_DIR+inputFile))) {
         			   ranksFrom = (Ranks)in.readObject();
-        			   in.close();
 
         		} catch (FileNotFoundException e) {
         			ranksFrom=new Ranks(4,9);
         		} catch (IOException e) {
-        			// TODO Auto-generated catch block
         			e.printStackTrace();
         		} catch (ClassNotFoundException e) {
-        			// TODO Auto-generated catch block
         			e.printStackTrace();
         		}
 
@@ -155,10 +148,8 @@ public class RanksIterator extends JDialog implements PropertyChangeListener,Act
         		 try {
 					oneIteration.get();
 				} catch (InterruptedException e) {
-					// TODO Auto-generated catch block
 					e.printStackTrace();
 				} catch (ExecutionException e) {
-					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
 				if (cancelled){
@@ -181,13 +172,11 @@ public class RanksIterator extends JDialog implements PropertyChangeListener,Act
            	if (!ranksAIDir.exists()){
            		ranksAIDir.mkdirs();
            	}
-               FileOutputStream fos=null;
-               ObjectOutputStream out=null;
-               fos=new FileOutputStream(AIRanksConstants.RANKSAI_DIR+ outputFile);
-               out = new ObjectOutputStream(fos);
-               ranks.freeRanksFrom();
-               out.writeObject(ranks);
-               out.close();
+               try (ObjectOutputStream out = new ObjectOutputStream(
+            		   new FileOutputStream(AIRanksConstants.RANKSAI_DIR+ outputFile))) {
+            	   ranks.freeRanksFrom();
+            	   out.writeObject(ranks);
+               }
 
            } catch(Exception e) {
                e.printStackTrace();
