@@ -19,12 +19,7 @@ public class TimeMenuItem extends IntegerMenuItem {
 
 	@Override
 	public void change(int dir, int fast) {
-		int delta = dir * increment;
-		value += delta;
-		if (value < min)
-			value = max;
-		if (value > max)
-			value = min;
+		changeBy(dir * increment);
 	}
 
 	@Override

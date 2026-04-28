@@ -55,4 +55,28 @@ class MenuItemPersistenceTest {
 		assertEquals(40, integerItem.value);
 		assertEquals(true, booleanItem.value);
 	}
+
+	@Test
+	void integerItemChangeWrapsAcrossBounds() {
+		IntegerMenuItem item = new IntegerMenuItem("level", "LEVEL",
+				EventReceiver.COLOR_BLUE, 0, 0, 2);
+
+		item.change(-1, 0);
+		assertEquals(2, item.value);
+
+		item.change(1, 0);
+		assertEquals(0, item.value);
+	}
+
+	@Test
+	void timeItemChangeUsesIncrementAndSharedBoundsWrapping() {
+		TimeMenuItem item = new TimeMenuItem("time", "TIME",
+				EventReceiver.COLOR_BLUE, 60, 0, 120, 60);
+
+		item.change(1, 0);
+		assertEquals(120, item.value);
+
+		item.change(1, 0);
+		assertEquals(0, item.value);
+	}
 }

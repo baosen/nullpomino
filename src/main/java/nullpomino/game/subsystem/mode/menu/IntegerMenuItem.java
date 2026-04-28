@@ -14,7 +14,11 @@ public class IntegerMenuItem extends AbstractMenuItem<Integer> {
 
 	@Override
 	public void change(int dir, int fast) {
-		value += dir;
+		changeBy(dir);
+	}
+
+	protected final void changeBy(int delta) {
+		value += delta;
 		if (value < min)
 			value = max;
 		if (value > max)
