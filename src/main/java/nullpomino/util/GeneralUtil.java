@@ -2,7 +2,6 @@
 // SPDX-License-Identifier: BSD-3-Clause
 package nullpomino.util;
 
-import java.io.FileInputStream;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Arrays;
@@ -167,8 +166,8 @@ public class GeneralUtil {
 	public static RuleOptions loadRule(String filename) {
 		CustomProperties prop = new CustomProperties();
 
-		try (FileInputStream in = new FileInputStream(filename)) {
-			prop.load(in);
+		try {
+			prop = CustomProperties.loadFromFile(filename);
 		} catch (Exception e) {
 			log.warn("Failed to load rule from " + filename, e);
 		}

@@ -11,7 +11,6 @@ import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
 import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.List;
@@ -108,31 +107,26 @@ public class Sequencer extends JFrame implements ActionListener {
 	 */
 	private void init() {
 		// Load config file
-		propConfig = new CustomProperties();
 		try {
-			FileInputStream in = new FileInputStream("config/setting/swing.cfg");
-			propConfig.load(in);
-			in.close();
+			propConfig = CustomProperties.loadFromFile("config/setting/swing.cfg");
 		} catch(IOException e) {
+			propConfig = new CustomProperties();
 			SwingToolUtil.ignoreOptionalFileLoad(e);
 		}
 
 		// Load UI Language file
-		propLangDefault = new CustomProperties();
 		try {
-			FileInputStream in = new FileInputStream("config/lang/sequencer_default.properties");
-			propLangDefault.load(in);
-			in.close();
+			propLangDefault = CustomProperties.loadFromFile("config/lang/sequencer_default.properties");
 		} catch (IOException e) {
+			propLangDefault = new CustomProperties();
 			log.error("Couldn't load default UI language file", e);
 		}
 
-		propLang = new CustomProperties();
 		try {
-			FileInputStream in = new FileInputStream("config/lang/sequencer_" + Locale.getDefault().getCountry() + ".properties");
-			propLang.load(in);
-			in.close();
+			propLang = CustomProperties.loadFromFile(
+					"config/lang/sequencer_" + Locale.getDefault().getCountry() + ".properties");
 		} catch(IOException e) {
+			propLang = new CustomProperties();
 			SwingToolUtil.ignoreOptionalFileLoad(e);
 		}
 
@@ -299,13 +293,7 @@ public class Sequencer extends JFrame implements ActionListener {
 
 	public CustomProperties load(String filename) throws IOException {
 		log.info("Loading replay file from " + filename);
-		CustomProperties prop = new CustomProperties();
-
-		FileInputStream in = new FileInputStream(filename);
-		prop.load(in);
-		in.close();
-
-		return prop;
+		return CustomProperties.loadFromFile(filename);
 	}
 
 	public void save(String filename) throws IOException {

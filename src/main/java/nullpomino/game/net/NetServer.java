@@ -3,7 +3,6 @@
 package nullpomino.game.net;
 
 import java.io.BufferedReader;
-import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.FileWriter;
@@ -240,9 +239,7 @@ public class NetServer {
 	private static void loadPresetList() {
 		propPresets = new CustomProperties();
 		try {
-			FileInputStream in = new FileInputStream("config/etc/netserver_presets.cfg");
-			propPresets.load(in);
-			in.close();
+			propPresets = CustomProperties.loadFromFile("config/etc/netserver_presets.cfg");
 		} catch (IOException e) {
 			log.warn("Failed to load config file", e);
 		}
@@ -309,10 +306,7 @@ public class NetServer {
 
 						log.debug("{RuleLoad} StyleID:" + style + " RuleFile:" + strTempArray[0] + " SettingID:" + settingID);
 
-						FileInputStream in = new FileInputStream(strTempArray[0]);
-						CustomProperties prop = new CustomProperties();
-						prop.load(in);
-						in.close();
+						CustomProperties prop = CustomProperties.loadFromFile(strTempArray[0]);
 
 						RuleOptions rule = new RuleOptions();
 						rule.readProperty(prop, 0);
@@ -841,9 +835,7 @@ public class NetServer {
 		// Load server config file
 		propServer = new CustomProperties();
 		try {
-			FileInputStream in = new FileInputStream(servcfg);
-			propServer.load(in);
-			in.close();
+			propServer = CustomProperties.loadFromFile(servcfg);
 		} catch (IOException e) {
 			log.warn("Failed to load config file", e);
 		}
@@ -887,40 +879,30 @@ public class NetServer {
 		// Load player data file
 		propPlayerData = new CustomProperties();
 		try {
-			FileInputStream in = new FileInputStream("config/setting/netserver_playerdata.cfg");
-			propPlayerData.load(in);
-			in.close();
+			propPlayerData = CustomProperties.loadFromFile("config/setting/netserver_playerdata.cfg");
 		} catch (IOException e) {}
 
 		// Load multiplayer leaderboard file
 		propMPRanking = new CustomProperties();
 		try {
-			FileInputStream in = new FileInputStream("config/setting/netserver_mpranking.cfg");
-			propMPRanking.load(in);
-			in.close();
+			propMPRanking = CustomProperties.loadFromFile("config/setting/netserver_mpranking.cfg");
 		} catch (IOException e) {}
 
 		// Load single player leaderboard file
 		propSPRankingAlltime = new CustomProperties();
 		try {
-			FileInputStream in = new FileInputStream("config/setting/netserver_spranking.cfg");
-			propSPRankingAlltime.load(in);
-			in.close();
+			propSPRankingAlltime = CustomProperties.loadFromFile("config/setting/netserver_spranking.cfg");
 		} catch (IOException e) {}
 
 		propSPRankingDaily = new CustomProperties();
 		try {
-			FileInputStream in = new FileInputStream("config/setting/netserver_spranking_daily.cfg");
-			propSPRankingDaily.load(in);
-			in.close();
+			propSPRankingDaily = CustomProperties.loadFromFile("config/setting/netserver_spranking_daily.cfg");
 		} catch (IOException e) {}
 
 		// Load single player personal best
 		propSPPersonalBest = new CustomProperties();
 		try {
-			FileInputStream in = new FileInputStream("config/setting/netserver_sppersonalbest.cfg");
-			propSPPersonalBest.load(in);
-			in.close();
+			propSPPersonalBest = CustomProperties.loadFromFile("config/setting/netserver_sppersonalbest.cfg");
 		} catch (IOException e) {}
 
 		// Load settings

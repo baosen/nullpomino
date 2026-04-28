@@ -4,6 +4,7 @@ package nullpomino.util;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.net.URLDecoder;
 import java.net.URLEncoder;
@@ -18,6 +19,14 @@ public class CustomProperties extends Properties {
 	 * Serial version
 	 */
 	private static final long serialVersionUID = 2L;
+
+	public static CustomProperties loadFromFile(String filename) throws IOException {
+		CustomProperties properties = new CustomProperties();
+		try (FileInputStream in = new FileInputStream(filename)) {
+			properties.load(in);
+		}
+		return properties;
+	}
 
 	public synchronized Object setProperty(String key, int value) {
 		return setProperty(key, String.valueOf(value));

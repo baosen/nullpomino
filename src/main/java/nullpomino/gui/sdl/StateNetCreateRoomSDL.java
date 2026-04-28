@@ -873,15 +873,11 @@ public class StateNetCreateRoomSDL extends BaseStateSDL {
 	 */
 	private static String loadAndCompressMapSet(int mapSetID) {
 		String path = "config/map/vsbattle/" + mapSetID + ".map";
-		nullpomino.util.CustomProperties propMap = new nullpomino.util.CustomProperties();
-		java.io.FileInputStream in = null;
+		nullpomino.util.CustomProperties propMap;
 		try {
-			in = new java.io.FileInputStream(path);
-			propMap.load(in);
+			propMap = nullpomino.util.CustomProperties.loadFromFile(path);
 		} catch(java.io.IOException e) {
 			return null;
-		} finally {
-			if(in != null) try { in.close(); } catch(java.io.IOException ignore) {}
 		}
 
 		int maxMap = propMap.getProperty("map.maxMapNumber", 0);

@@ -3,7 +3,6 @@
 package nullpomino.gui.sdl;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FilenameFilter;
 import java.util.Arrays;
 import java.util.LinkedList;
@@ -85,11 +84,8 @@ public class StateConfigRuleSelectSDL extends DummyMenuScrollStateSDL {
 			entry.filename = filelist[i];
 			entry.filepath = file.getPath();
 
-			CustomProperties prop = new CustomProperties();
 			try {
-				FileInputStream in = new FileInputStream("config/rule/" + filelist[i]);
-				prop.load(in);
-				in.close();
+				CustomProperties prop = CustomProperties.loadFromFile("config/rule/" + filelist[i]);
 				entry.rulename = prop.getProperty("0.ruleopt.strRuleName", "");
 				entry.style = prop.getProperty("0.ruleopt.style", 0);
 			} catch (Exception e) {

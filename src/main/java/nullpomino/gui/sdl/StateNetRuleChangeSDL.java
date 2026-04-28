@@ -2,7 +2,6 @@
 // SPDX-License-Identifier: BSD-3-Clause
 package nullpomino.gui.sdl;
 
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.LinkedList;
 
@@ -162,19 +161,14 @@ public class StateNetRuleChangeSDL extends BaseStateSDL {
 	}
 
 	private static RuleOptions loadRule(String filepath) {
-		CustomProperties prop = new CustomProperties();
-		FileInputStream in = null;
 		try {
-			in = new FileInputStream(filepath);
-			prop.load(in);
+			CustomProperties prop = CustomProperties.loadFromFile(filepath);
+			RuleOptions opt = new RuleOptions();
+			opt.readProperty(prop, 0);
+			return opt;
 		} catch(IOException ignore) {
 			return null;
-		} finally {
-			if(in != null) try { in.close(); } catch(IOException ignore) {}
 		}
-		RuleOptions opt = new RuleOptions();
-		opt.readProperty(prop, 0);
-		return opt;
 	}
 
 	@Override

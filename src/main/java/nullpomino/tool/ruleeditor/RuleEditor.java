@@ -12,7 +12,6 @@ import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
 import java.awt.image.BufferedImage;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.MalformedURLException;
@@ -470,31 +469,26 @@ public class RuleEditor extends JFrame implements ActionListener {
 	 */
 	private void init() {
 		// Read configuration file
-		propConfig = new CustomProperties();
 		try {
-			FileInputStream in = new FileInputStream("config/setting/swing.cfg");
-			propConfig.load(in);
-			in.close();
+			propConfig = CustomProperties.loadFromFile("config/setting/swing.cfg");
 		} catch(IOException e) {
+			propConfig = new CustomProperties();
 			SwingToolUtil.ignoreOptionalFileLoad(e);
 		}
 
 		// Read language file
-		propLangDefault = new CustomProperties();
 		try {
-			FileInputStream in = new FileInputStream("config/lang/ruleeditor_default.properties");
-			propLangDefault.load(in);
-			in.close();
+			propLangDefault = CustomProperties.loadFromFile("config/lang/ruleeditor_default.properties");
 		} catch (IOException e) {
+			propLangDefault = new CustomProperties();
 			log.error("Couldn't load default UI language file", e);
 		}
 
-		propLang = new CustomProperties();
 		try {
-			FileInputStream in = new FileInputStream("config/lang/ruleeditor_" + Locale.getDefault().getCountry() + ".properties");
-			propLang.load(in);
-			in.close();
+			propLang = CustomProperties.loadFromFile(
+					"config/lang/ruleeditor_" + Locale.getDefault().getCountry() + ".properties");
 		} catch(IOException e) {
+			propLang = new CustomProperties();
 			SwingToolUtil.ignoreOptionalFileLoad(e);
 		}
 
@@ -1616,11 +1610,7 @@ public class RuleEditor extends JFrame implements ActionListener {
 	 * @throws IOException Failed to loadWhen it was
 	 */
 	public RuleOptions load(String filename) throws IOException {
-		CustomProperties prop = new CustomProperties();
-
-		FileInputStream in = new FileInputStream(filename);
-		prop.load(in);
-		in.close();
+		CustomProperties prop = CustomProperties.loadFromFile(filename);
 
 		RuleOptions ruleopt = new RuleOptions();
 		ruleopt.readProperty(prop, 0);

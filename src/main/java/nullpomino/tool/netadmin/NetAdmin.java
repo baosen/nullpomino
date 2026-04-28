@@ -215,33 +215,25 @@ public class NetAdmin extends JFrame implements ActionListener, NetMessageListen
 		// Load config file
 		propConfig = new CustomProperties();
 		try {
-			FileInputStream in = new FileInputStream("config/setting/netadmin.cfg");
-			propConfig.load(in);
-			in.close();
+			propConfig = CustomProperties.loadFromFile("config/setting/netadmin.cfg");
 		} catch (IOException e) {}
 
 		// Load language files
 		propLangDefault = new CustomProperties();
 		try {
-			FileInputStream in = new FileInputStream("config/lang/netadmin_default.properties");
-			propLangDefault.load(in);
-			in.close();
+			propLangDefault = CustomProperties.loadFromFile("config/lang/netadmin_default.properties");
 		} catch (IOException e) {
 			log.error("Failed to load default UI language file", e);
 		}
 		propLang = new CustomProperties();
 		try {
-			FileInputStream in = new FileInputStream("config/lang/netadmin_" + Locale.getDefault().getCountry() + ".properties");
-			propLang.load(in);
-			in.close();
+			propLang = CustomProperties.loadFromFile(
+					"config/lang/netadmin_" + Locale.getDefault().getCountry() + ".properties");
 		} catch (IOException e) {}
 
 		// Set look&feel
 		try {
-			CustomProperties propSwingConfig = new CustomProperties();
-			FileInputStream in = new FileInputStream("config/setting/swing.cfg");
-			propSwingConfig.load(in);
-			in.close();
+			CustomProperties propSwingConfig = CustomProperties.loadFromFile("config/setting/swing.cfg");
 
 			if(propSwingConfig.getProperty("option.usenativelookandfeel", true) == true) {
 				try {

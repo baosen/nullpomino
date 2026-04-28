@@ -4,7 +4,13 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
 /**
  * Pins the CustomProperties overloads the codebase actually exercises.
@@ -14,6 +20,9 @@ import org.junit.jupiter.api.Test;
  * kept surface (int/long/float/boolean/String) visible.
  */
 class CustomPropertiesRoundTripTest {
+
+	@TempDir
+	Path tempDir;
 
 	@Test
 	void intRoundTrip() {
@@ -91,5 +100,16 @@ class CustomPropertiesRoundTripTest {
 		CustomProperties decoded = new CustomProperties();
 
 		assertFalse(decoded.decode("%"));
+	}
+
+	@Test
+	void loadFromFileReadsProperties() throws IOException {
+		Path file = tempDir.resolve("sample.properties");
+		Files.write(file, "name=Nullpo\nvalue=42\n".getBytes(StandardCharsets.UTF_8));
+
+		CustomProperties properties = CustomProperties.loadFromFile(file.toString());
+
+		assertEquals("Nullpo", properties.getProperty("name"));
+		assertEquals(42, properties.getProperty("value", 0));
 	}
 }
