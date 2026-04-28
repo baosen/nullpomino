@@ -3,7 +3,6 @@
 package nullpomino.tool;
 
 import java.io.File;
-import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.List;
@@ -14,10 +13,6 @@ import java.util.Vector;
  */
 public final class SwingToolUtil {
 	private SwingToolUtil() {
-	}
-
-	public static void ignoreOptionalFileLoad(IOException e) {
-		// Optional user config and locale files are allowed to be absent.
 	}
 
 	public static void ignoreInvalidTextField(Exception e) {

@@ -81,10 +81,7 @@ public class MusicListEditor extends JFrame implements ActionListener {
 	 */
 	private void init() {
 		// Read configuration file
-		propConfig = new CustomProperties();
-		try {
-			propConfig = CustomProperties.loadFromFile("config/setting/swing.cfg");
-		} catch(IOException e) {}
+		propConfig = CustomProperties.loadFromFileOrEmpty("config/setting/swing.cfg");
 
 		// Read language file
 		propLangDefault = new CustomProperties();
@@ -94,11 +91,8 @@ public class MusicListEditor extends JFrame implements ActionListener {
 			log.error("Couldn't load default UI language file", e);
 		}
 
-		propLang = new CustomProperties();
-		try {
-			propLang = CustomProperties.loadFromFile(
-					"config/lang/musiclisteditor_" + Locale.getDefault().getCountry() + ".properties");
-		} catch(IOException e) {}
+		propLang = CustomProperties.loadFromFileOrEmpty(
+				"config/lang/musiclisteditor_" + Locale.getDefault().getCountry() + ".properties");
 
 		// Music reading list
 		loadMusicList();
@@ -228,10 +222,7 @@ public class MusicListEditor extends JFrame implements ActionListener {
 	 * Music reading list
 	 */
 	private void loadMusicList() {
-		propMusic = new CustomProperties();
-		try {
-			propMusic = CustomProperties.loadFromFile("config/setting/music.cfg");
-		} catch (IOException e) {}
+		propMusic = CustomProperties.loadFromFileOrEmpty("config/setting/music.cfg");
 	}
 
 	/**

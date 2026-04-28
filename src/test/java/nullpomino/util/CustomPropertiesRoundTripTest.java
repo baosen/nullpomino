@@ -126,4 +126,12 @@ class CustomPropertiesRoundTripTest {
 		assertEquals("Nullpo", loaded.getProperty("name"));
 		assertEquals(42, loaded.getProperty("value", 0));
 	}
+
+	@Test
+	void loadFromFileOrEmptyReturnsEmptyPropertiesWhenMissing() {
+		CustomProperties properties = CustomProperties.loadFromFileOrEmpty(
+				tempDir.resolve("missing.properties").toString());
+
+		assertTrue(properties.isEmpty());
+	}
 }

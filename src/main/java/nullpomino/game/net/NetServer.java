@@ -871,33 +871,18 @@ public class NetServer {
 		this.port = port;
 
 		// Load player data file
-		propPlayerData = new CustomProperties();
-		try {
-			propPlayerData = CustomProperties.loadFromFile("config/setting/netserver_playerdata.cfg");
-		} catch (IOException e) {}
+		propPlayerData = CustomProperties.loadFromFileOrEmpty("config/setting/netserver_playerdata.cfg");
 
 		// Load multiplayer leaderboard file
-		propMPRanking = new CustomProperties();
-		try {
-			propMPRanking = CustomProperties.loadFromFile("config/setting/netserver_mpranking.cfg");
-		} catch (IOException e) {}
+		propMPRanking = CustomProperties.loadFromFileOrEmpty("config/setting/netserver_mpranking.cfg");
 
 		// Load single player leaderboard file
-		propSPRankingAlltime = new CustomProperties();
-		try {
-			propSPRankingAlltime = CustomProperties.loadFromFile("config/setting/netserver_spranking.cfg");
-		} catch (IOException e) {}
+		propSPRankingAlltime = CustomProperties.loadFromFileOrEmpty("config/setting/netserver_spranking.cfg");
 
-		propSPRankingDaily = new CustomProperties();
-		try {
-			propSPRankingDaily = CustomProperties.loadFromFile("config/setting/netserver_spranking_daily.cfg");
-		} catch (IOException e) {}
+		propSPRankingDaily = CustomProperties.loadFromFileOrEmpty("config/setting/netserver_spranking_daily.cfg");
 
 		// Load single player personal best
-		propSPPersonalBest = new CustomProperties();
-		try {
-			propSPPersonalBest = CustomProperties.loadFromFile("config/setting/netserver_sppersonalbest.cfg");
-		} catch (IOException e) {}
+		propSPPersonalBest = CustomProperties.loadFromFileOrEmpty("config/setting/netserver_sppersonalbest.cfg");
 
 		// Load settings
 		allowDNSAccess = propServer.getProperty("netserver.allowDNSAccess", true);
