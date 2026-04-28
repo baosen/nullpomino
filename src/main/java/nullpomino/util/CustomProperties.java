@@ -29,6 +29,14 @@ public class CustomProperties extends Properties {
 		return properties;
 	}
 
+	public static CustomProperties loadFromFileOrEmpty(String filename) {
+		try {
+			return loadFromFile(filename);
+		} catch(IOException e) {
+			return new CustomProperties();
+		}
+	}
+
 	public void storeToFile(String filename, String comments) throws IOException {
 		try (FileOutputStream out = new FileOutputStream(filename)) {
 			store(out, comments);

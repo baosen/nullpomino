@@ -194,13 +194,15 @@ public class NetLobbyFrame implements NetMessageListener {
 
 	/** Initialize config, localization, rule list, server list. Safe to call once. */
 	public void init() {
-		propConfig = loadPropsOrEmpty("config/setting/netlobby.cfg");
-		propGlobal = loadPropsOrEmpty("config/setting/global.cfg");
-		propObserver = loadPropsOrEmpty("config/setting/netobserver.cfg");
-		propDefaultModeDesc = loadPropsOrEmpty("config/lang/modedesc_default.properties");
-		propModeDesc = loadPropsOrEmpty("config/lang/modedesc_" + Locale.getDefault().getCountry() + ".properties");
-		propLangDefault = loadPropsOrEmpty("config/lang/netlobby_default.properties");
-		propLang = loadPropsOrEmpty("config/lang/netlobby_" + Locale.getDefault().getCountry() + ".properties");
+		propConfig = CustomProperties.loadFromFileOrEmpty("config/setting/netlobby.cfg");
+		propGlobal = CustomProperties.loadFromFileOrEmpty("config/setting/global.cfg");
+		propObserver = CustomProperties.loadFromFileOrEmpty("config/setting/netobserver.cfg");
+		propDefaultModeDesc = CustomProperties.loadFromFileOrEmpty("config/lang/modedesc_default.properties");
+		propModeDesc = CustomProperties.loadFromFileOrEmpty(
+				"config/lang/modedesc_" + Locale.getDefault().getCountry() + ".properties");
+		propLangDefault = CustomProperties.loadFromFileOrEmpty("config/lang/netlobby_default.properties");
+		propLang = CustomProperties.loadFromFileOrEmpty(
+				"config/lang/netlobby_" + Locale.getDefault().getCountry() + ".properties");
 
 		// Chat buffers: larger capacity so history packets from the server don't evict live chat.
 		chatLogLobby.capacity = 600;
@@ -948,14 +950,6 @@ public class NetLobbyFrame implements NetMessageListener {
 	}
 
 	// ---------------- Internals ----------------
-
-	private static CustomProperties loadPropsOrEmpty(String path) {
-		try {
-			return CustomProperties.loadFromFile(path);
-		} catch(IOException ignore) {
-			return new CustomProperties();
-		}
-	}
 
 	private String formatEnterRoom(NetPlayerInfo pInfo) {
 		String name = getPlayerNameWithTripCode(pInfo);

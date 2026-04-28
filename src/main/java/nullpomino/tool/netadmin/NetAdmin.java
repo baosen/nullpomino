@@ -212,10 +212,7 @@ public class NetAdmin extends JFrame implements ActionListener, NetMessageListen
 	 */
 	private void init() {
 		// Load config file
-		propConfig = new CustomProperties();
-		try {
-			propConfig = CustomProperties.loadFromFile("config/setting/netadmin.cfg");
-		} catch (IOException e) {}
+		propConfig = CustomProperties.loadFromFileOrEmpty("config/setting/netadmin.cfg");
 
 		// Load language files
 		propLangDefault = new CustomProperties();
@@ -224,11 +221,8 @@ public class NetAdmin extends JFrame implements ActionListener, NetMessageListen
 		} catch (IOException e) {
 			log.error("Failed to load default UI language file", e);
 		}
-		propLang = new CustomProperties();
-		try {
-			propLang = CustomProperties.loadFromFile(
-					"config/lang/netadmin_" + Locale.getDefault().getCountry() + ".properties");
-		} catch (IOException e) {}
+		propLang = CustomProperties.loadFromFileOrEmpty(
+				"config/lang/netadmin_" + Locale.getDefault().getCountry() + ".properties");
 
 		// Set look&feel
 		try {

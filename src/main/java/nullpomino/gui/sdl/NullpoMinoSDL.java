@@ -262,20 +262,10 @@ public class NullpoMinoSDL {
 		log.info("NullpoMinoSDL Start");
 
 		programArgs = args;
-		propConfig = new CustomProperties();
-		propGlobal = new CustomProperties();
-		propMusic = new CustomProperties();
-
 		// Read configuration file
-		try {
-			propConfig = CustomProperties.loadFromFile("config/setting/sdl.cfg");
-		} catch(IOException e) {}
-		try {
-			propGlobal = CustomProperties.loadFromFile("config/setting/global.cfg");
-		} catch(IOException e) {}
-		try {
-			propMusic = CustomProperties.loadFromFile("config/setting/music.cfg");
-		} catch(IOException e) {}
+		propConfig = CustomProperties.loadFromFileOrEmpty("config/setting/sdl.cfg");
+		propGlobal = CustomProperties.loadFromFileOrEmpty("config/setting/global.cfg");
+		propMusic = CustomProperties.loadFromFileOrEmpty("config/setting/music.cfg");
 
 		// Read language file
 		propLangDefault = new CustomProperties();
@@ -285,11 +275,8 @@ public class NullpoMinoSDL {
 			log.error("Failed to load default UI language file", e);
 		}
 
-		propLang = new CustomProperties();
-		try {
-			propLang = CustomProperties.loadFromFile(
-					"config/lang/sdl_" + Locale.getDefault().getCountry() + ".properties");
-		} catch(IOException e) {}
+		propLang = CustomProperties.loadFromFileOrEmpty(
+				"config/lang/sdl_" + Locale.getDefault().getCountry() + ".properties");
 
 		// Game mode description
 		propDefaultModeDesc = new CustomProperties();
@@ -299,11 +286,8 @@ public class NullpoMinoSDL {
 			log.error("Couldn't load default mode description file", e);
 		}
 
-		propModeDesc = new CustomProperties();
-		try {
-			propModeDesc = CustomProperties.loadFromFile(
-					"config/lang/modedesc_" + Locale.getDefault().getCountry() + ".properties");
-		} catch(IOException e) {}
+		propModeDesc = CustomProperties.loadFromFileOrEmpty(
+				"config/lang/modedesc_" + Locale.getDefault().getCountry() + ".properties");
 
 		// Mode read
 		modeManager = new ModeManager();
@@ -1150,10 +1134,7 @@ public class NullpoMinoSDL {
 	public static void startObserverClient() {
 		log.debug("startObserverClient called");
 
-		propObserver = new CustomProperties();
-		try {
-			propObserver = CustomProperties.loadFromFile("config/setting/netobserver.cfg");
-		} catch (IOException e) {}
+		propObserver = CustomProperties.loadFromFileOrEmpty("config/setting/netobserver.cfg");
 
 		if(propObserver.getProperty("observer.enable", false) == false) return;
 		if((netObserverClient != null) && netObserverClient.isConnected()) return;

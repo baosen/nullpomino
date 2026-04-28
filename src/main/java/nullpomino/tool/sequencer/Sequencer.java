@@ -107,12 +107,7 @@ public class Sequencer extends JFrame implements ActionListener {
 	 */
 	private void init() {
 		// Load config file
-		try {
-			propConfig = CustomProperties.loadFromFile("config/setting/swing.cfg");
-		} catch(IOException e) {
-			propConfig = new CustomProperties();
-			SwingToolUtil.ignoreOptionalFileLoad(e);
-		}
+		propConfig = CustomProperties.loadFromFileOrEmpty("config/setting/swing.cfg");
 
 		// Load UI Language file
 		try {
@@ -122,13 +117,8 @@ public class Sequencer extends JFrame implements ActionListener {
 			log.error("Couldn't load default UI language file", e);
 		}
 
-		try {
-			propLang = CustomProperties.loadFromFile(
-					"config/lang/sequencer_" + Locale.getDefault().getCountry() + ".properties");
-		} catch(IOException e) {
-			propLang = new CustomProperties();
-			SwingToolUtil.ignoreOptionalFileLoad(e);
-		}
+		propLang = CustomProperties.loadFromFileOrEmpty(
+				"config/lang/sequencer_" + Locale.getDefault().getCountry() + ".properties");
 
 		// Set Look&Feel
 		if(propConfig.getProperty("option.usenativelookandfeel", true) == true) {

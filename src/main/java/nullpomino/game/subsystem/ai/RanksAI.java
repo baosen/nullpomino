@@ -132,10 +132,7 @@ public class RanksAI extends DummyAI implements Runnable {
 		thinkRequest = false;
 		thinking = false;
 		threadRunning = false;
-		CustomProperties propRanksAI = new CustomProperties();
-		try {
-			propRanksAI = CustomProperties.loadFromFile(AIRanksConstants.RANKSAI_CONFIG_FILE);
-		} catch (IOException e) {}
+		CustomProperties propRanksAI = CustomProperties.loadFromFileOrEmpty(AIRanksConstants.RANKSAI_CONFIG_FILE);
 		String file=propRanksAI.getProperty("ranksai.file");
 		MAX_PREVIEWS=propRanksAI.getProperty("ranksai.numpreviews", 2);
 		allowHold=propRanksAI.getProperty("ranksai.allowhold", false);

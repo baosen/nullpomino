@@ -468,12 +468,7 @@ public class RuleEditor extends JFrame implements ActionListener {
 	 */
 	private void init() {
 		// Read configuration file
-		try {
-			propConfig = CustomProperties.loadFromFile("config/setting/swing.cfg");
-		} catch(IOException e) {
-			propConfig = new CustomProperties();
-			SwingToolUtil.ignoreOptionalFileLoad(e);
-		}
+		propConfig = CustomProperties.loadFromFileOrEmpty("config/setting/swing.cfg");
 
 		// Read language file
 		try {
@@ -483,13 +478,8 @@ public class RuleEditor extends JFrame implements ActionListener {
 			log.error("Couldn't load default UI language file", e);
 		}
 
-		try {
-			propLang = CustomProperties.loadFromFile(
-					"config/lang/ruleeditor_" + Locale.getDefault().getCountry() + ".properties");
-		} catch(IOException e) {
-			propLang = new CustomProperties();
-			SwingToolUtil.ignoreOptionalFileLoad(e);
-		}
+		propLang = CustomProperties.loadFromFileOrEmpty(
+				"config/lang/ruleeditor_" + Locale.getDefault().getCountry() + ".properties");
 
 		// Look&FeelSetting
 		if(propConfig.getProperty("option.usenativelookandfeel", true) == true) {

@@ -125,10 +125,7 @@ public class AIRanksTool extends JFrame implements ActionListener {
 	private void initUI() {
 
 		// Loads Ranks AI property file, to populate the fields
-		CustomProperties propRanksAI = new CustomProperties();
-		try {
-			propRanksAI = CustomProperties.loadFromFile(AIRanksConstants.RANKSAI_CONFIG_FILE);
-		} catch (IOException e) {}
+		CustomProperties propRanksAI = CustomProperties.loadFromFileOrEmpty(AIRanksConstants.RANKSAI_CONFIG_FILE);
 
 		//Ranks File used
 		String ranksFile=propRanksAI.getProperty("ranksai.file");
@@ -531,11 +528,8 @@ public class AIRanksTool extends JFrame implements ActionListener {
 			e.printStackTrace();
 		}
 
-		propLang = new CustomProperties();
-		try {
-			propLang = CustomProperties.loadFromFile(
-					"config/lang/airankstool_" + Locale.getDefault().getCountry() + ".properties");
-		} catch(IOException e) {}
+		propLang = CustomProperties.loadFromFileOrEmpty(
+				"config/lang/airankstool_" + Locale.getDefault().getCountry() + ".properties");
 
 		// Start
 		new AIRanksTool();
