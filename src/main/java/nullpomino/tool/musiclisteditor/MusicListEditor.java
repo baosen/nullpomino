@@ -8,7 +8,6 @@ import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -241,9 +240,7 @@ public class MusicListEditor extends JFrame implements ActionListener {
 	 */
 	private void saveMusicList() throws IOException {
 		try {
-			FileOutputStream out = new FileOutputStream("config/setting/music.cfg");
-			propMusic.store(out, "NullpoMino Music List");
-			out.close();
+			propMusic.storeToFile("config/setting/music.cfg", "NullpoMino Music List");
 		} catch (IOException e) {
 			log.error("Failed to save music list file", e);
 			throw e;

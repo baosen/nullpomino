@@ -3,7 +3,6 @@
 package nullpomino.game.net;
 
 import java.io.BufferedReader;
-import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -450,9 +449,8 @@ public class NetServer {
 		}
 
 		try {
-			FileOutputStream out = new FileOutputStream("config/setting/netserver_mpranking.cfg");
-			propMPRanking.store(out, "NullpoMino NetServer Multiplayer Leaderboard");
-			out.close();
+			propMPRanking.storeToFile("config/setting/netserver_mpranking.cfg",
+					"NullpoMino NetServer Multiplayer Leaderboard");
 		} catch (IOException e) {
 			log.error("Failed to write multiplayer ranking data", e);
 		}
@@ -613,9 +611,8 @@ public class NetServer {
 			r.writeProperty(propSPRankingAlltime);
 		}
 		try {
-			FileOutputStream out = new FileOutputStream("config/setting/netserver_spranking.cfg");
-			propSPRankingAlltime.store(out, "NullpoMino NetServer Single Player All-time Leaderboard");
-			out.close();
+			propSPRankingAlltime.storeToFile("config/setting/netserver_spranking.cfg",
+					"NullpoMino NetServer Single Player All-time Leaderboard");
 		} catch (IOException e) {
 			log.error("Failed to write single player all-time ranking data", e);
 		}
@@ -625,9 +622,8 @@ public class NetServer {
 			r.writeProperty(propSPRankingDaily);
 		}
 		try {
-			FileOutputStream out = new FileOutputStream("config/setting/netserver_spranking_daily.cfg");
-			propSPRankingDaily.store(out, "NullpoMino NetServer Single Player Daily Leaderboard");
-			out.close();
+			propSPRankingDaily.storeToFile("config/setting/netserver_spranking_daily.cfg",
+					"NullpoMino NetServer Single Player Daily Leaderboard");
 		} catch (IOException e) {
 			log.error("Failed to write single player daily ranking data", e);
 		}
@@ -677,9 +673,7 @@ public class NetServer {
 	 */
 	private static void writePlayerDataToFile() {
 		try {
-			FileOutputStream out = new FileOutputStream("config/setting/netserver_playerdata.cfg");
-			propPlayerData.store(out, "NullpoMino NetServer PlayerData");
-			out.close();
+			propPlayerData.storeToFile("config/setting/netserver_playerdata.cfg", "NullpoMino NetServer PlayerData");
 		} catch (IOException e) {
 			log.error("Failed to write player data", e);
 		}

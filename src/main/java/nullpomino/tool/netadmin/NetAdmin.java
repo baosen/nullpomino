@@ -18,7 +18,6 @@ import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.BufferedReader;
 import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.Base64;
@@ -552,9 +551,7 @@ public class NetAdmin extends JFrame implements ActionListener, NetMessageListen
 		}
 
 		try {
-			FileOutputStream out = new FileOutputStream("config/setting/netadmin.cfg");
-			propConfig.store(out, "NullpoMino NetAdmin Config");
-			out.close();
+			propConfig.storeToFile("config/setting/netadmin.cfg", "NullpoMino NetAdmin Config");
 		} catch (IOException e) {
 			log.warn("Failed to save netlobby config file", e);
 		}

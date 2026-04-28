@@ -3,7 +3,6 @@
 package nullpomino.game.event;
 
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
 
 import org.apache.log4j.Logger;
@@ -819,9 +818,7 @@ public class EventReceiver {
 	 */
 	public void saveModeConfig(CustomProperties modeConfig) {
 		try {
-			FileOutputStream out = new FileOutputStream("config/setting/mode.cfg");
-			modeConfig.store(out, "NullpoMino Mode Config");
-			out.close();
+			modeConfig.storeToFile("config/setting/mode.cfg", "NullpoMino Mode Config");
 		} catch(IOException e) {
 			log.error("Failed to save mode config", e);
 		}
@@ -849,9 +846,7 @@ public class EventReceiver {
 	 */
 	public boolean saveProperties(String filename, CustomProperties prop) {
 		try {
-			FileOutputStream out = new FileOutputStream(filename);
-			prop.store(out, "NullpoMino Custom Property File");
-			out.close();
+			prop.storeToFile(filename, "NullpoMino Custom Property File");
 		} catch(IOException e) {
 			log.debug("Failed to save custom property file to " + filename, e);
 			return false;
@@ -1167,9 +1162,7 @@ public class EventReceiver {
 				}
 			}
 
-			FileOutputStream out = new FileOutputStream(filename);
-			prop.store(new FileOutputStream(filename), "NullpoMino Replay");
-			out.close();
+			prop.storeToFile(filename, "NullpoMino Replay");
 			log.info("Saved replay file: " + filename);
 		} catch(IOException e) {
 			log.error("Couldn't save replay file to " + filename, e);
