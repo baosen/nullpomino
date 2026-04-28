@@ -59,15 +59,14 @@ public class NullpoMinoSDL {
 							STATE_CONFIG_KEYBOARD_NAVI = 15,
 							STATE_CONFIG_KEYBOARD_RESET = 16,
 							STATE_SELECTRULEFROMLIST = 17,
-							STATE_SELECTMODEFOLDER = 18,
-							STATE_NET_SERVERSELECT = 19,
-							STATE_NET_LOBBY = 20,
-							STATE_NET_CREATEROOM = 21,
-							STATE_NET_RANKING = 22,
-							STATE_NET_RULECHANGE = 23;
+							STATE_NET_SERVERSELECT = 18,
+							STATE_NET_LOBBY = 19,
+							STATE_NET_CREATEROOM = 20,
+							STATE_NET_RANKING = 21,
+							STATE_NET_RULECHANGE = 22;
 
 	/** State of the game count */
-	public static final int STATE_MAX = 24;
+	public static final int STATE_MAX = 23;
 
 	public static final int LOGICAL_WIDTH = 640;
 	public static final int LOGICAL_HEIGHT = 480;
@@ -391,7 +390,6 @@ public class NullpoMinoSDL {
 		gameStates[STATE_CONFIG_KEYBOARD_NAVI] = new StateConfigKeyboardNaviSDL();
 		gameStates[STATE_CONFIG_KEYBOARD_RESET] = new StateConfigKeyboardResetSDL();
 		gameStates[STATE_SELECTRULEFROMLIST] = new StateSelectRuleFromListSDL();
-		gameStates[STATE_SELECTMODEFOLDER] = new StateSelectModeFolderSDL();
 		gameStates[STATE_NET_SERVERSELECT] = new StateNetServerSelectSDL();
 		gameStates[STATE_NET_LOBBY] = new StateNetLobbySDL();
 		gameStates[STATE_NET_CREATEROOM] = new StateNetCreateRoomSDL();

@@ -67,7 +67,6 @@ public class StateTitleSDL extends DummyMenuChooseStateSDL {
 
 		switch(cursor) {
 		case 0:
-			StateSelectModeSDL.isTopLevel = true;
 			NullpoMinoSDL.enterState(NullpoMinoSDL.STATE_SELECTMODE);
 			break;
 		case 1:
