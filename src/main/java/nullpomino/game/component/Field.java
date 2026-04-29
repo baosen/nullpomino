@@ -42,6 +42,14 @@ public class Field implements Serializable {
 	/** Attributes of the coordinate (Wall) */
 	public static final int COORD_WALL = 3;
 
+	private static final int[][] T_SPIN_CORNERS = {
+			{0, 0}, {2, 0}, {0, 2}, {2, 2}
+	};
+
+	private static final int[][] BIG_T_SPIN_CORNERS = {
+			{1, 1}, {4, 1}, {1, 4}, {4, 4}
+	};
+
 	/** fieldThe width of the */
 	protected int width;
 
@@ -776,40 +784,7 @@ public class Field implements Serializable {
 	 * @return T-SpinIf it was the terrain to betrue
 	 */
 	public boolean isTSpinSpot(int x, int y, boolean big) {
-		// Sets the coordinates for determining the relative
-		int[] tx = new int[4];
-		int[] ty = new int[4];
-
-		if(big == true) {
-			tx[0] = 1;
-			ty[0] = 1;
-			tx[1] = 4;
-			ty[1] = 1;
-			tx[2] = 1;
-			ty[2] = 4;
-			tx[3] = 4;
-			ty[3] = 4;
-		} else {
-			tx[0] = 0;
-			ty[0] = 0;
-			tx[1] = 2;
-			ty[1] = 0;
-			tx[2] = 0;
-			ty[2] = 2;
-			tx[3] = 2;
-			ty[3] = 2;
-		}
-
-		// Judgment
-		int count = 0;
-
-		for(int i = 0; i < tx.length; i++) {
-			if(getBlockColor(x + tx[i], y + ty[i]) != Block.BLOCK_COLOR_NONE) count++;
-		}
-
-		if(count >= 3) return true;
-
-		return false;
+		return countFilledTCorners(x, y, big) >= 3;
 	}
 
 	/**
@@ -841,40 +816,17 @@ public class Field implements Serializable {
 			if(!getBlockEmptyF(x + 1, y - 1)) return false;
 		}
 
-		// Sets the coordinates for determining the relative
-		int[] tx = new int[4];
-		int[] ty = new int[4];
+		return countFilledTCorners(x, y, big) == 3;
+	}
 
-		if(big == true) {
-			tx[0] = 1;
-			ty[0] = 1;
-			tx[1] = 4;
-			ty[1] = 1;
-			tx[2] = 1;
-			ty[2] = 4;
-			tx[3] = 4;
-			ty[3] = 4;
-		} else {
-			tx[0] = 0;
-			ty[0] = 0;
-			tx[1] = 2;
-			ty[1] = 0;
-			tx[2] = 0;
-			ty[2] = 2;
-			tx[3] = 2;
-			ty[3] = 2;
-		}
-
-		// Judgment
+	private int countFilledTCorners(int x, int y, boolean big) {
 		int count = 0;
-
-		for(int i = 0; i < tx.length; i++) {
-			if(getBlockColor(x + tx[i], y + ty[i]) != Block.BLOCK_COLOR_NONE) count++;
+		for(int[] corner : big ? BIG_T_SPIN_CORNERS : T_SPIN_CORNERS) {
+			if(getBlockColor(x + corner[0], y + corner[1]) != Block.BLOCK_COLOR_NONE) {
+				count++;
+			}
 		}
-
-		if(count == 3) return true;
-
-		return false;
+		return count;
 	}
 
 	/**

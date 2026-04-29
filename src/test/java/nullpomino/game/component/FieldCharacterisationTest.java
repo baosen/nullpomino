@@ -244,4 +244,39 @@ class FieldCharacterisationTest {
 		assertEquals(Block.BLOCK_COLOR_NONE, dst.getBlockColor(1, 1));
 		assertEquals(-1, dst.getBlock(0, 1).elapsedFrames);
 	}
+
+	@Test
+	void tSpinSpotRequiresAtLeastThreeFilledCorners() {
+		Field f = newField();
+		fillTCorners(f, 4, 10, 3);
+
+		assertTrue(f.isTSpinSpot(4, 10, false));
+
+		f.setBlockColor(4, 10, Block.BLOCK_COLOR_NONE);
+		assertFalse(f.isTSpinSpot(4, 10, false));
+	}
+
+	@Test
+	void tSlotRequiresOpenCenterAndExactlyThreeFilledCorners() {
+		Field f = newField();
+		fillTCorners(f, 4, 10, 3);
+
+		assertTrue(f.isTSlot(4, 10, false));
+
+		f.setBlockColor(6, 12, Block.BLOCK_COLOR_RED);
+		assertFalse(f.isTSlot(4, 10, false), "four corners are a T-spin spot but not a T-slot");
+
+		f.setBlockColor(6, 12, Block.BLOCK_COLOR_NONE);
+		f.setBlockColor(5, 11, Block.BLOCK_COLOR_RED);
+		assertFalse(f.isTSlot(4, 10, false), "center cells must stay open");
+	}
+
+	private static void fillTCorners(Field f, int x, int y, int corners) {
+		int[][] offsets = {
+				{0, 0}, {2, 0}, {0, 2}, {2, 2}
+		};
+		for(int i = 0; i < corners; i++) {
+			f.setBlockColor(x + offsets[i][0], y + offsets[i][1], Block.BLOCK_COLOR_RED);
+		}
+	}
 }
