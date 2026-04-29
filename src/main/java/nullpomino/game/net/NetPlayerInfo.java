@@ -17,12 +17,6 @@ public class NetPlayerInfo implements Serializable {
 	private static final long serialVersionUID = 1L;
 
 	private static final int EXPORT_FIELD_COUNT = 27;
-	private static final int RATING_INDEX = 12;
-	private static final int PLAY_COUNT_INDEX = 16;
-	private static final int WIN_COUNT_INDEX = 20;
-	private static final int SP_PERSONAL_BEST_INDEX = 24;
-	private static final int PLAY_COUNT_NOW_INDEX = 25;
-	private static final int WIN_COUNT_NOW_INDEX = 26;
 
 	/** Default rating for multiplayer games */
 	public static final int DEFAULT_MULTIPLAYER_RATING = 1500;
@@ -169,26 +163,27 @@ public class NetPlayerInfo implements Serializable {
 	 * @param pdata String array (String[27])
 	 */
 	public void importStringArray(String[] pdata) {
-		strName = NetUtil.urlDecode(pdata[0]);
-		strCountry = NetUtil.urlDecode(pdata[1]);
-		strHost = NetUtil.urlDecode(pdata[2]);
-		strTeam = NetUtil.urlDecode(pdata[3]);
-		roomID = Integer.parseInt(pdata[4]);
-		uid = Integer.parseInt(pdata[5]);
-		seatID = Integer.parseInt(pdata[6]);
-		queueID = Integer.parseInt(pdata[7]);
-		ready = Boolean.parseBoolean(pdata[8]);
-		playing = Boolean.parseBoolean(pdata[9]);
-		connected = Boolean.parseBoolean(pdata[10]);
-		isTripUse = Boolean.parseBoolean(pdata[11]);
-		readIntArray(pdata, RATING_INDEX, rating);
-		readIntArray(pdata, PLAY_COUNT_INDEX, playCount);
-		readIntArray(pdata, WIN_COUNT_INDEX, winCount);
-		if(pdata.length > SP_PERSONAL_BEST_INDEX) {
-			spPersonalBest.importString(NetUtil.decompressString(pdata[SP_PERSONAL_BEST_INDEX]));
+		NetStringArray.Reader reader = new NetStringArray.Reader(pdata);
+		strName = reader.readEncoded();
+		strCountry = reader.readEncoded();
+		strHost = reader.readEncoded();
+		strTeam = reader.readEncoded();
+		roomID = reader.readInt();
+		uid = reader.readInt();
+		seatID = reader.readInt();
+		queueID = reader.readInt();
+		ready = reader.readBoolean();
+		playing = reader.readBoolean();
+		connected = reader.readBoolean();
+		isTripUse = reader.readBoolean();
+		readIntArray(reader, rating);
+		readIntArray(reader, playCount);
+		readIntArray(reader, winCount);
+		if(reader.hasNext()) {
+			spPersonalBest.importString(NetUtil.decompressString(reader.read()));
 		}
-		if(pdata.length > PLAY_COUNT_NOW_INDEX) playCountNow = Integer.parseInt(pdata[PLAY_COUNT_NOW_INDEX]);
-		if(pdata.length > WIN_COUNT_NOW_INDEX) winCountNow = Integer.parseInt(pdata[WIN_COUNT_NOW_INDEX]);
+		if(reader.hasNext()) playCountNow = reader.readInt();
+		if(reader.hasNext()) winCountNow = reader.readInt();
 	}
 
 	/**
@@ -204,26 +199,26 @@ public class NetPlayerInfo implements Serializable {
 	 * @return String array (String[27])
 	 */
 	public String[] exportStringArray() {
-		String[] pdata = new String[EXPORT_FIELD_COUNT];
-		pdata[0] = NetUtil.urlEncode(strName);
-		pdata[1] = NetUtil.urlEncode(strCountry);
-		pdata[2] = NetUtil.urlEncode(strHost);
-		pdata[3] = NetUtil.urlEncode(strTeam);
-		pdata[4] = Integer.toString(roomID);
-		pdata[5] = Integer.toString(uid);
-		pdata[6] = Integer.toString(seatID);
-		pdata[7] = Integer.toString(queueID);
-		pdata[8] = Boolean.toString(ready);
-		pdata[9] = Boolean.toString(playing);
-		pdata[10] = Boolean.toString(connected);
-		pdata[11] = Boolean.toString(isTripUse);
-		writeIntArray(pdata, RATING_INDEX, rating);
-		writeIntArray(pdata, PLAY_COUNT_INDEX, playCount);
-		writeIntArray(pdata, WIN_COUNT_INDEX, winCount);
-		pdata[SP_PERSONAL_BEST_INDEX] = NetUtil.compressString(spPersonalBest.exportString());
-		pdata[PLAY_COUNT_NOW_INDEX] = Integer.toString(playCountNow);
-		pdata[WIN_COUNT_NOW_INDEX] = Integer.toString(winCountNow);
-		return pdata;
+		NetStringArray.Writer writer = new NetStringArray.Writer(EXPORT_FIELD_COUNT);
+		writer.writeEncoded(strName);
+		writer.writeEncoded(strCountry);
+		writer.writeEncoded(strHost);
+		writer.writeEncoded(strTeam);
+		writer.write(roomID);
+		writer.write(uid);
+		writer.write(seatID);
+		writer.write(queueID);
+		writer.write(ready);
+		writer.write(playing);
+		writer.write(connected);
+		writer.write(isTripUse);
+		writeIntArray(writer, rating);
+		writeIntArray(writer, playCount);
+		writeIntArray(writer, winCount);
+		writer.write(NetUtil.compressString(spPersonalBest.exportString()));
+		writer.write(playCountNow);
+		writer.write(winCountNow);
+		return writer.values();
 	}
 
 	/**
@@ -234,15 +229,15 @@ public class NetPlayerInfo implements Serializable {
 		return String.join(";", exportStringArray());
 	}
 
-	private static void readIntArray(String[] source, int startIndex, int[] target) {
+	private static void readIntArray(NetStringArray.Reader reader, int[] target) {
 		for(int i = 0; i < target.length; i++) {
-			target[i] = Integer.parseInt(source[startIndex + i]);
+			target[i] = reader.readInt();
 		}
 	}
 
-	private static void writeIntArray(String[] target, int startIndex, int[] source) {
-		for(int i = 0; i < source.length; i++) {
-			target[startIndex + i] = Integer.toString(source[i]);
+	private static void writeIntArray(NetStringArray.Writer writer, int[] source) {
+		for(int value : source) {
+			writer.write(value);
 		}
 	}
 
