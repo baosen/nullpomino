@@ -4,6 +4,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertSame;
 
 import nullpomino.game.component.Statistics;
+import nullpomino.util.CustomProperties;
 
 import org.junit.jupiter.api.Test;
 
@@ -66,6 +67,26 @@ class NetSPRankingTest {
 		assertEquals(2, ranking.listRecord.size());
 		assertSame(dana, ranking.listRecord.get(0));
 		assertSame(alice, ranking.listRecord.get(1));
+	}
+
+	@Test
+	void propertyRoundTripUsesLegacyKeysAndHonorsMaxRecords() {
+		NetSPRanking original = rankingWithMax(10);
+		NetSPRecord alice = record("alice", 100);
+		NetSPRecord bob = record("bob", 90);
+		original.listRecord.add(alice);
+		original.listRecord.add(bob);
+		CustomProperties props = new CustomProperties();
+
+		original.writeProperty(props);
+		assertEquals(2, props.getProperty("spranking.rule.mode.0.numRecords", -1));
+
+		NetSPRanking imported = rankingWithMax(1);
+		imported.readProperty(props);
+
+		assertEquals(1, imported.listRecord.size());
+		assertEquals("alice", imported.listRecord.get(0).strPlayerName);
+		assertEquals(100, imported.listRecord.get(0).stats.score);
 	}
 
 	private static NetSPRanking rankingWithMax(int maxRecords) {
