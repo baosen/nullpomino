@@ -92,10 +92,7 @@ public class NetSPRanking implements Serializable {
 		style = s.style;
 		rankingType = s.rankingType;
 		maxRecords = s.maxRecords;
-		listRecord = new LinkedList<NetSPRecord>();
-		for(int i = 0; i < s.listRecord.size(); i++) {
-			listRecord.add(new NetSPRecord(s.listRecord.get(i)));
-		}
+		listRecord = NetSPRecordList.deepCopy(s.listRecord);
 	}
 
 	/**
@@ -213,14 +210,7 @@ public class NetSPRanking implements Serializable {
 	 * @param prop CustomProperties
 	 */
 	public void writeProperty(CustomProperties prop) {
-		String strKey = "spranking." + strRuleName + "." + strModeName + "." + gameType + ".";
-		prop.setProperty(strKey + "numRecords", listRecord.size());
-
-		for(int i = 0; i < listRecord.size(); i++) {
-			NetSPRecord record = listRecord.get(i);
-			String strRecordCompressed = NetUtil.compressString(record.exportString());
-			prop.setProperty(strKey + i, strRecordCompressed);
-		}
+		NetSPRecordList.writeProperty(prop, propertyKey(), listRecord);
 	}
 
 	/**
@@ -228,19 +218,11 @@ public class NetSPRanking implements Serializable {
 	 * @param prop CustomProperties
 	 */
 	public void readProperty(CustomProperties prop) {
-		String strKey = "spranking." + strRuleName + "." + strModeName + "." + gameType + ".";
-		int numRecords = prop.getProperty(strKey + "numRecords", 0);
-		if((maxRecords >= 0) && (numRecords > maxRecords)) numRecords = maxRecords;
+		NetSPRecordList.readProperty(prop, propertyKey(), listRecord, maxRecords);
+	}
 
-		listRecord.clear();
-		for(int i = 0; i < numRecords; i++) {
-			String strRecordCompressed = prop.getProperty(strKey + i);
-			if(strRecordCompressed != null) {
-				String strRecord = NetUtil.decompressString(strRecordCompressed);
-				NetSPRecord record = new NetSPRecord(strRecord);
-				listRecord.add(record);
-			}
-		}
+	private String propertyKey() {
+		return "spranking." + strRuleName + "." + strModeName + "." + gameType + ".";
 	}
 	
 	/**
