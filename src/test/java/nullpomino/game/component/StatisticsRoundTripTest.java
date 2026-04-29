@@ -20,6 +20,11 @@ class StatisticsRoundTripTest {
 	}
 
 	@Test
+	void exportStringArrayKeepsLegacyFieldCount() {
+		assertEquals(38, new Statistics().exportStringArray().length);
+	}
+
+	@Test
 	void importAcceptsLegacyThirtySevenFieldStringsWithoutRollclear() {
 		Statistics original = populatedStatistics();
 		String[] fields = original.exportStringArray();

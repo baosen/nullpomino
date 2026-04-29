@@ -13,6 +13,8 @@ public class Statistics implements Serializable {
 	/** Serial version ID */
 	private static final long serialVersionUID = -499640168205398295L;
 
+	private static final int EXPORT_FIELD_COUNT = 38;
+
 	/** Total score */
 	public int score;
 
@@ -369,44 +371,45 @@ public class Statistics implements Serializable {
 	 * @param s String Array (String[38])
 	 */
 	public void importStringArray(String[] s) {
-		score = Integer.parseInt(s[0]);
-		scoreFromLineClear = Integer.parseInt(s[1]);
-		scoreFromSoftDrop = Integer.parseInt(s[2]);
-		scoreFromHardDrop = Integer.parseInt(s[3]);
-		scoreFromOtherBonus = Integer.parseInt(s[4]);
-		lines = Integer.parseInt(s[5]);
-		time = Integer.parseInt(s[6]);
-		level = Integer.parseInt(s[7]);
-		levelDispAdd = Integer.parseInt(s[8]);
-		totalPieceLocked = Integer.parseInt(s[9]);
-		totalPieceActiveTime = Integer.parseInt(s[10]);
-		totalPieceMove = Integer.parseInt(s[11]);
-		totalPieceRotate = Integer.parseInt(s[12]);
-		totalSingle = Integer.parseInt(s[13]);
-		totalDouble = Integer.parseInt(s[14]);
-		totalTriple = Integer.parseInt(s[15]);
-		totalFour = Integer.parseInt(s[16]);
-		totalTSpinZeroMini = Integer.parseInt(s[17]);
-		totalTSpinZero = Integer.parseInt(s[18]);
-		totalTSpinSingleMini = Integer.parseInt(s[19]);
-		totalTSpinSingle = Integer.parseInt(s[20]);
-		totalTSpinDoubleMini = Integer.parseInt(s[21]);
-		totalTSpinDouble = Integer.parseInt(s[22]);
-		totalTSpinTriple = Integer.parseInt(s[23]);
-		totalB2BFour = Integer.parseInt(s[24]);
-		totalB2BTSpin = Integer.parseInt(s[25]);
-		totalHoldUsed = Integer.parseInt(s[26]);
-		maxCombo = Integer.parseInt(s[27]);
-		spl = Double.parseDouble(s[28]);
-		spm = Double.parseDouble(s[29]);
-		sps = Double.parseDouble(s[30]);
-		lpm = Float.parseFloat(s[31]);
-		lps = Float.parseFloat(s[32]);
-		ppm = Float.parseFloat(s[33]);
-		pps = Float.parseFloat(s[34]);
-		gamerate = Float.parseFloat(s[35]);
-		maxChain = Integer.parseInt(s[36]);
-		if(s.length > 37) rollclear = Integer.parseInt(s[37]);
+		FieldReader reader = new FieldReader(s);
+		score = reader.readInt();
+		scoreFromLineClear = reader.readInt();
+		scoreFromSoftDrop = reader.readInt();
+		scoreFromHardDrop = reader.readInt();
+		scoreFromOtherBonus = reader.readInt();
+		lines = reader.readInt();
+		time = reader.readInt();
+		level = reader.readInt();
+		levelDispAdd = reader.readInt();
+		totalPieceLocked = reader.readInt();
+		totalPieceActiveTime = reader.readInt();
+		totalPieceMove = reader.readInt();
+		totalPieceRotate = reader.readInt();
+		totalSingle = reader.readInt();
+		totalDouble = reader.readInt();
+		totalTriple = reader.readInt();
+		totalFour = reader.readInt();
+		totalTSpinZeroMini = reader.readInt();
+		totalTSpinZero = reader.readInt();
+		totalTSpinSingleMini = reader.readInt();
+		totalTSpinSingle = reader.readInt();
+		totalTSpinDoubleMini = reader.readInt();
+		totalTSpinDouble = reader.readInt();
+		totalTSpinTriple = reader.readInt();
+		totalB2BFour = reader.readInt();
+		totalB2BTSpin = reader.readInt();
+		totalHoldUsed = reader.readInt();
+		maxCombo = reader.readInt();
+		spl = reader.readDouble();
+		spm = reader.readDouble();
+		sps = reader.readDouble();
+		lpm = reader.readFloat();
+		lps = reader.readFloat();
+		ppm = reader.readFloat();
+		pps = reader.readFloat();
+		gamerate = reader.readFloat();
+		maxChain = reader.readInt();
+		if(reader.hasNext()) rollclear = reader.readInt();
 	}
 
 	/**
@@ -422,46 +425,46 @@ public class Statistics implements Serializable {
 	 * @return String Array (String[38])
 	 */
 	public String[] exportStringArray() {
-		String[] s = new String[38];
-		s[0] = Integer.toString(score);
-		s[1] = Integer.toString(scoreFromLineClear);
-		s[2] = Integer.toString(scoreFromSoftDrop);
-		s[3] = Integer.toString(scoreFromHardDrop);
-		s[4] = Integer.toString(scoreFromOtherBonus);
-		s[5] = Integer.toString(lines);
-		s[6] = Integer.toString(time);
-		s[7] = Integer.toString(level);
-		s[8] = Integer.toString(levelDispAdd);
-		s[9] = Integer.toString(totalPieceLocked);
-		s[10] = Integer.toString(totalPieceActiveTime);
-		s[11] = Integer.toString(totalPieceMove);
-		s[12] = Integer.toString(totalPieceRotate);
-		s[13] = Integer.toString(totalSingle);
-		s[14] = Integer.toString(totalDouble);
-		s[15] = Integer.toString(totalTriple);
-		s[16] = Integer.toString(totalFour);
-		s[17] = Integer.toString(totalTSpinZeroMini);
-		s[18] = Integer.toString(totalTSpinZero);
-		s[19] = Integer.toString(totalTSpinSingleMini);
-		s[20] = Integer.toString(totalTSpinSingle);
-		s[21] = Integer.toString(totalTSpinDoubleMini);
-		s[22] = Integer.toString(totalTSpinDouble);
-		s[23] = Integer.toString(totalTSpinTriple);
-		s[24] = Integer.toString(totalB2BFour);
-		s[25] = Integer.toString(totalB2BTSpin);
-		s[26] = Integer.toString(totalHoldUsed);
-		s[27] = Integer.toString(maxCombo);
-		s[28] = Double.toString(spl);
-		s[29] = Double.toString(spm);
-		s[30] = Double.toString(sps);
-		s[31] = Float.toString(lpm);
-		s[32] = Float.toString(lps);
-		s[33] = Float.toString(ppm);
-		s[34] = Float.toString(pps);
-		s[35] = Float.toString(gamerate);
-		s[36] = Integer.toString(maxChain);
-		s[37] = Integer.toString(rollclear);
-		return s;
+		FieldWriter writer = new FieldWriter(EXPORT_FIELD_COUNT);
+		writer.write(score);
+		writer.write(scoreFromLineClear);
+		writer.write(scoreFromSoftDrop);
+		writer.write(scoreFromHardDrop);
+		writer.write(scoreFromOtherBonus);
+		writer.write(lines);
+		writer.write(time);
+		writer.write(level);
+		writer.write(levelDispAdd);
+		writer.write(totalPieceLocked);
+		writer.write(totalPieceActiveTime);
+		writer.write(totalPieceMove);
+		writer.write(totalPieceRotate);
+		writer.write(totalSingle);
+		writer.write(totalDouble);
+		writer.write(totalTriple);
+		writer.write(totalFour);
+		writer.write(totalTSpinZeroMini);
+		writer.write(totalTSpinZero);
+		writer.write(totalTSpinSingleMini);
+		writer.write(totalTSpinSingle);
+		writer.write(totalTSpinDoubleMini);
+		writer.write(totalTSpinDouble);
+		writer.write(totalTSpinTriple);
+		writer.write(totalB2BFour);
+		writer.write(totalB2BTSpin);
+		writer.write(totalHoldUsed);
+		writer.write(maxCombo);
+		writer.write(spl);
+		writer.write(spm);
+		writer.write(sps);
+		writer.write(lpm);
+		writer.write(lps);
+		writer.write(ppm);
+		writer.write(pps);
+		writer.write(gamerate);
+		writer.write(maxChain);
+		writer.write(rollclear);
+		return writer.values();
 	}
 
 	/**
@@ -470,5 +473,63 @@ public class Statistics implements Serializable {
 	 */
 	public String exportString() {
 		return String.join(";", exportStringArray());
+	}
+
+	private static final class FieldReader {
+		private final String[] values;
+		private int index;
+
+		FieldReader(String[] values) {
+			this.values = values;
+		}
+
+		boolean hasNext() {
+			return index < values.length;
+		}
+
+		int readInt() {
+			return Integer.parseInt(read());
+		}
+
+		double readDouble() {
+			return Double.parseDouble(read());
+		}
+
+		float readFloat() {
+			return Float.parseFloat(read());
+		}
+
+		private String read() {
+			return values[index++];
+		}
+	}
+
+	private static final class FieldWriter {
+		private final String[] values;
+		private int index;
+
+		FieldWriter(int size) {
+			values = new String[size];
+		}
+
+		void write(int value) {
+			write(Integer.toString(value));
+		}
+
+		void write(double value) {
+			write(Double.toString(value));
+		}
+
+		void write(float value) {
+			write(Float.toString(value));
+		}
+
+		String[] values() {
+			return values;
+		}
+
+		private void write(String value) {
+			values[index++] = value;
+		}
 	}
 }
