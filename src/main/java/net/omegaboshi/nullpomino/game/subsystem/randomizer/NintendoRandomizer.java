@@ -19,9 +19,9 @@ public class NintendoRandomizer extends Randomizer {
 	}
 
 	public int next() {
-		int id = r.nextInt(roll);
+		int id = randomIndex(roll);
 		if (id == prev || id == pieces.length) {
-			id = r.nextInt(pieces.length);
+			id = randomPieceIndex();
 		}
 		prev = id;
 		return pieces[id];

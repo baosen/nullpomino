@@ -12,10 +12,13 @@ import net.omegaboshi.nullpomino.game.subsystem.randomizer.BagBonusRandomizer;
 import net.omegaboshi.nullpomino.game.subsystem.randomizer.BagNoSZORandomizer;
 import net.omegaboshi.nullpomino.game.subsystem.randomizer.BagRandomizer;
 import net.omegaboshi.nullpomino.game.subsystem.randomizer.DoubleBagRandomizer;
+import net.omegaboshi.nullpomino.game.subsystem.randomizer.GameBoyRandomizer;
 import net.omegaboshi.nullpomino.game.subsystem.randomizer.History4RollsRandomizer;
 import net.omegaboshi.nullpomino.game.subsystem.randomizer.History6RollsRandomizer;
 import net.omegaboshi.nullpomino.game.subsystem.randomizer.LinearDistWeightRandomizer;
+import net.omegaboshi.nullpomino.game.subsystem.randomizer.MemorylessRandomizer;
 import net.omegaboshi.nullpomino.game.subsystem.randomizer.NineBagRandomizer;
+import net.omegaboshi.nullpomino.game.subsystem.randomizer.NintendoRandomizer;
 import net.omegaboshi.nullpomino.game.subsystem.randomizer.Randomizer;
 import net.omegaboshi.nullpomino.game.subsystem.randomizer.StrictHistoryRandomizer;
 import nullpomino.game.component.Piece;
@@ -45,6 +48,13 @@ class BagRandomizerTest {
 	void minusBagsWorkAfterDefaultConstructorAndSetState() {
 		assertDrawsEnabledPieces(new BagMinusRandomizer(), Piece.PIECE_STANDARD_COUNT * 3);
 		assertDrawsEnabledPieces(new BagMinusTwoRandomizer(), Piece.PIECE_STANDARD_COUNT * 3);
+	}
+
+	@Test
+	void nonBagRandomizersDrawEnabledPieces() {
+		assertDrawsEnabledPieces(new MemorylessRandomizer(), Piece.PIECE_STANDARD_COUNT * 3);
+		assertDrawsEnabledPieces(new NintendoRandomizer(), Piece.PIECE_STANDARD_COUNT * 3);
+		assertDrawsEnabledPieces(new GameBoyRandomizer(), Piece.PIECE_STANDARD_COUNT * 3);
 	}
 
 	@Test
