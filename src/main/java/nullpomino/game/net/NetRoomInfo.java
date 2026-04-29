@@ -186,6 +186,8 @@ public class NetRoomInfo implements Serializable {
 	/** Chat messages */
 	public LinkedList<NetChatMessage> chatList = new LinkedList<NetChatMessage>();
 
+	private static final int EXPORT_FIELD_COUNT = 43;
+
 	/**
 	 * Constructor
 	 */
@@ -306,49 +308,50 @@ public class NetRoomInfo implements Serializable {
 	 *            StringAn array of(String[43])
 	 */
 	public void importStringArray(String[] rdata) {
-		roomID = Integer.parseInt(rdata[0]);
-		strName = NetUtil.urlDecode(rdata[1]);
-		maxPlayers = Integer.parseInt(rdata[2]);
-		playerSeatedCount = Integer.parseInt(rdata[3]);
-		spectatorCount = Integer.parseInt(rdata[4]);
-		playerListCount = Integer.parseInt(rdata[5]);
-		playing = Boolean.parseBoolean(rdata[6]);
-		ruleLock = Boolean.parseBoolean(rdata[7]);
-		ruleName = NetUtil.urlDecode(rdata[8]);
-		autoStartSeconds = Integer.parseInt(rdata[9]);
-		gravity = Integer.parseInt(rdata[10]);
-		denominator = Integer.parseInt(rdata[11]);
-		are = Integer.parseInt(rdata[12]);
-		areLine = Integer.parseInt(rdata[13]);
-		lineDelay = Integer.parseInt(rdata[14]);
-		lockDelay = Integer.parseInt(rdata[15]);
-		das = Integer.parseInt(rdata[16]);
-		tspinEnableType = Integer.parseInt(rdata[17]);
-		b2b = Boolean.parseBoolean(rdata[18]);
-		combo = Boolean.parseBoolean(rdata[19]);
-		rensaBlock = Boolean.parseBoolean(rdata[20]);
-		counter = Boolean.parseBoolean(rdata[21]);
-		bravo = Boolean.parseBoolean(rdata[22]);
-		reduceLineSend = Boolean.parseBoolean(rdata[23]);
-		hurryupSeconds = Integer.parseInt(rdata[24]);
-		hurryupInterval = Integer.parseInt(rdata[25]);
-		autoStartTNET2 = Boolean.parseBoolean(rdata[26]);
-		disableTimerAfterSomeoneCancelled = Boolean.parseBoolean(rdata[27]);
-		useMap = Boolean.parseBoolean(rdata[28]);
-		useFractionalGarbage = Boolean.parseBoolean(rdata[29]);
-		garbageChangePerAttack = Boolean.parseBoolean(rdata[30]);
-		garbagePercent = Integer.parseInt(rdata[31]);
-		spinCheckType = Integer.parseInt(rdata[32]);
-		tspinEnableEZ = Boolean.parseBoolean(rdata[33]);
-		b2bChunk = Boolean.parseBoolean(rdata[34]);
-		strMode = NetUtil.urlDecode(rdata[35]);
-		singleplayer = Boolean.parseBoolean(rdata[36]);
-		rated = Boolean.parseBoolean(rdata[37]);
-		customRated = Boolean.parseBoolean(rdata[38]);
-		style = Integer.parseInt(rdata[39]);
-		divideChangeRateByPlayers = Boolean.parseBoolean(rdata[40]);
-		if(rdata.length > 41) isTarget = Boolean.parseBoolean(rdata[41]);
-		if(rdata.length > 42) targetTimer = Integer.parseInt(rdata[42]);
+		NetStringArray.Reader reader = new NetStringArray.Reader(rdata);
+		roomID = reader.readInt();
+		strName = reader.readEncoded();
+		maxPlayers = reader.readInt();
+		playerSeatedCount = reader.readInt();
+		spectatorCount = reader.readInt();
+		playerListCount = reader.readInt();
+		playing = reader.readBoolean();
+		ruleLock = reader.readBoolean();
+		ruleName = reader.readEncoded();
+		autoStartSeconds = reader.readInt();
+		gravity = reader.readInt();
+		denominator = reader.readInt();
+		are = reader.readInt();
+		areLine = reader.readInt();
+		lineDelay = reader.readInt();
+		lockDelay = reader.readInt();
+		das = reader.readInt();
+		tspinEnableType = reader.readInt();
+		b2b = reader.readBoolean();
+		combo = reader.readBoolean();
+		rensaBlock = reader.readBoolean();
+		counter = reader.readBoolean();
+		bravo = reader.readBoolean();
+		reduceLineSend = reader.readBoolean();
+		hurryupSeconds = reader.readInt();
+		hurryupInterval = reader.readInt();
+		autoStartTNET2 = reader.readBoolean();
+		disableTimerAfterSomeoneCancelled = reader.readBoolean();
+		useMap = reader.readBoolean();
+		useFractionalGarbage = reader.readBoolean();
+		garbageChangePerAttack = reader.readBoolean();
+		garbagePercent = reader.readInt();
+		spinCheckType = reader.readInt();
+		tspinEnableEZ = reader.readBoolean();
+		b2bChunk = reader.readBoolean();
+		strMode = reader.readEncoded();
+		singleplayer = reader.readBoolean();
+		rated = reader.readBoolean();
+		customRated = reader.readBoolean();
+		style = reader.readInt();
+		divideChangeRateByPlayers = reader.readBoolean();
+		if(reader.hasNext()) isTarget = reader.readBoolean();
+		if(reader.hasNext()) targetTimer = reader.readInt();
 	}
 
 	/**
@@ -367,52 +370,51 @@ public class NetRoomInfo implements Serializable {
 	 * @return StringAn array of(String[43])
 	 */
 	public String[] exportStringArray() {
-		String[] rdata = new String[43];
-		rdata[0] = Integer.toString(roomID);
-		rdata[1] = NetUtil.urlEncode(strName);
-		rdata[2] = Integer.toString(maxPlayers);
-		rdata[3] = Integer.toString(playerSeatedCount);
-		rdata[4] = Integer.toString(spectatorCount);
-		rdata[5] = Integer.toString(playerListCount);
-		rdata[6] = Boolean.toString(playing);
-		rdata[7] = Boolean.toString(ruleLock);
-		rdata[8] = NetUtil.urlEncode(ruleName);
-		rdata[9] = Integer.toString(autoStartSeconds);
-		rdata[10] = Integer.toString(gravity);
-		rdata[11] = Integer.toString(denominator);
-		rdata[12] = Integer.toString(are);
-		rdata[13] = Integer.toString(areLine);
-		rdata[14] = Integer.toString(lineDelay);
-		rdata[15] = Integer.toString(lockDelay);
-		rdata[16] = Integer.toString(das);
-		rdata[17] = Integer.toString(tspinEnableType);
-		rdata[18] = Boolean.toString(b2b);
-		rdata[19] = Boolean.toString(combo);
-		rdata[20] = Boolean.toString(rensaBlock);
-		rdata[21] = Boolean.toString(counter);
-		rdata[22] = Boolean.toString(bravo);
-		rdata[23] = Boolean.toString(reduceLineSend);
-		rdata[24] = Integer.toString(hurryupSeconds);
-		rdata[25] = Integer.toString(hurryupInterval);
-		rdata[26] = Boolean.toString(autoStartTNET2);
-		rdata[27] = Boolean.toString(disableTimerAfterSomeoneCancelled);
-		rdata[28] = Boolean.toString(useMap);
-		rdata[29] = Boolean.toString(useFractionalGarbage);
-		rdata[30] = Boolean.toString(garbageChangePerAttack);
-		rdata[31] = Integer.toString(garbagePercent);
-		rdata[32] = Integer.toString(spinCheckType);
-		rdata[33] = Boolean.toString(tspinEnableEZ);
-		rdata[34] = Boolean.toString(b2bChunk);
-		rdata[35] = NetUtil.urlEncode(strMode);
-		rdata[36] = Boolean.toString(singleplayer);
-		rdata[37] = Boolean.toString(rated);
-		rdata[38] = Boolean.toString(customRated);
-		rdata[39] = Integer.toString(style);
-		rdata[40] = Boolean.toString(divideChangeRateByPlayers);
-		rdata[41] = Boolean.toString(isTarget);
-		rdata[42] = Integer.toString(targetTimer);
-
-		return rdata;
+		NetStringArray.Writer writer = new NetStringArray.Writer(EXPORT_FIELD_COUNT);
+		writer.write(roomID);
+		writer.writeEncoded(strName);
+		writer.write(maxPlayers);
+		writer.write(playerSeatedCount);
+		writer.write(spectatorCount);
+		writer.write(playerListCount);
+		writer.write(playing);
+		writer.write(ruleLock);
+		writer.writeEncoded(ruleName);
+		writer.write(autoStartSeconds);
+		writer.write(gravity);
+		writer.write(denominator);
+		writer.write(are);
+		writer.write(areLine);
+		writer.write(lineDelay);
+		writer.write(lockDelay);
+		writer.write(das);
+		writer.write(tspinEnableType);
+		writer.write(b2b);
+		writer.write(combo);
+		writer.write(rensaBlock);
+		writer.write(counter);
+		writer.write(bravo);
+		writer.write(reduceLineSend);
+		writer.write(hurryupSeconds);
+		writer.write(hurryupInterval);
+		writer.write(autoStartTNET2);
+		writer.write(disableTimerAfterSomeoneCancelled);
+		writer.write(useMap);
+		writer.write(useFractionalGarbage);
+		writer.write(garbageChangePerAttack);
+		writer.write(garbagePercent);
+		writer.write(spinCheckType);
+		writer.write(tspinEnableEZ);
+		writer.write(b2bChunk);
+		writer.writeEncoded(strMode);
+		writer.write(singleplayer);
+		writer.write(rated);
+		writer.write(customRated);
+		writer.write(style);
+		writer.write(divideChangeRateByPlayers);
+		writer.write(isTarget);
+		writer.write(targetTimer);
+		return writer.values();
 	}
 
 	/**
