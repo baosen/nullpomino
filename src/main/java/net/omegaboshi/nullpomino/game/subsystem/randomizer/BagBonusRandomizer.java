@@ -25,13 +25,11 @@ public class BagBonusRandomizer extends Randomizer {
 		bag = new int[baglen];
 		pt = 0;
 		bonus = pieces.length;
-		for (int i = 0; i < pieces.length; i++) {
-			bag[i] = pieces[i];
-		}
+		fillBag(bag);
 	}
 
 	public void shuffle() {
-		shuffleWithBonus(pieces[r.nextInt(pieces.length)]);
+		shuffleWithBonus(randomPiece());
 	}
 
 	protected void shuffleWithBonus(int bonusPiece) {

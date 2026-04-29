@@ -8,9 +8,7 @@ public class StrictHistoryRandomizer extends Randomizer {
 	int id;
 
 	boolean[] curHist;
-	int numDistinctCurHist;
 	int[] notHist;
-	int notHistPos;
 	int histLen;
 
 	public StrictHistoryRandomizer() {
@@ -22,35 +20,36 @@ public class StrictHistoryRandomizer extends Randomizer {
 	}
 
 	public void init() {
-		history = new int[] {Piece.PIECE_S, Piece.PIECE_Z, Piece.PIECE_O, Piece.PIECE_O};
+		history = new int[] {
+				indexOfPiece(Piece.PIECE_S),
+				indexOfPiece(Piece.PIECE_Z),
+				indexOfPiece(Piece.PIECE_O),
+				indexOfPiece(Piece.PIECE_O)
+		};
 		curHist = new boolean[pieces.length];
 		notHist = new int[pieces.length];
-		histLen = Math.min(4,pieces.length-1);
+		histLen = Math.min(4, pieces.length - 1);
 	}
 
 	public int next() {
 		for (int i = 0; i < pieces.length; i++) {
 			curHist[i] = false;
 		}
-		numDistinctCurHist = 0;
 		for (int i = 0; i < histLen; i++) {
-			if (!curHist[history[i]]) {
+			if (history[i] >= 0) {
 				curHist[history[i]] = true;
-				numDistinctCurHist++;
 			}
 		}
-		notHistPos = 0;
+		int notHistPos = 0;
 		for (int i = 0; i < pieces.length; i++) {
 			if (!curHist[i]) {
 				notHist[notHistPos] = i;
 				notHistPos++;
 			}
 		}
-		id = notHist[r.nextInt(notHistPos)];
-		for (int i = histLen-1; i > 0; i--) {
-			history[i] = history[i-1];
-		}
-		history[0] = pieces[id];
+		id = notHist[randomIndex(notHistPos)];
+		shiftRight(history, histLen);
+		history[0] = id;
 		return pieces[id];
 	}
 }

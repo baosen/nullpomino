@@ -17,9 +17,7 @@ public class BagBonusBagRandomizer extends BagBonusRandomizer {
 		initBag();
 		bonusbag = new int[pieces.length];
 		bonuspt = 0;
-		for (int i = 0; i < pieces.length; i++) {
-			bonusbag[i] = pieces[i];
-		}
+		fillBag(bonusbag);
 		shuffleBonus();
 		shuffle();
 	}
@@ -29,12 +27,7 @@ public class BagBonusBagRandomizer extends BagBonusRandomizer {
 	}
 
 	public void shuffleBonus() {
-		for (int i = pieces.length; i > 1; i--) {
-			int j = r.nextInt(i);
-			int temp = bonusbag[i-1];
-			bonusbag[i-1] = bonusbag[j];
-			bonusbag[j] = temp;
-		}
+		shuffle(bonusbag);
 	}
 
 	public int next() {

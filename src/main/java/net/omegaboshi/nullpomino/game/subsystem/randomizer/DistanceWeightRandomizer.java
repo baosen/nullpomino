@@ -26,6 +26,7 @@ public abstract class DistanceWeightRandomizer extends Randomizer {
 			weights[i] = initWeights[pieces[i]];
 		}
 		cumulative = new int[pieces.length];
+		firstPiece = true;
 	}
 
 	public int next() {
@@ -34,7 +35,7 @@ public abstract class DistanceWeightRandomizer extends Randomizer {
 			sum += getWeight(i);
 			cumulative[i] = sum;
 		}
-		id = r.nextInt(sum);
+		id = randomIndex(sum);
 		for (int i = 0; i < pieces.length; i++) {
 			if (id < cumulative[i]) {
 				id = i;

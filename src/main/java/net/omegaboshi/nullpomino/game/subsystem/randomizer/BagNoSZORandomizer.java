@@ -1,7 +1,5 @@
 package net.omegaboshi.nullpomino.game.subsystem.randomizer;
 
-import nullpomino.game.component.Piece;
-
 public class BagNoSZORandomizer extends BagRandomizer {
 
 	boolean firstBag;
@@ -23,7 +21,7 @@ public class BagNoSZORandomizer extends BagRandomizer {
 		if (firstBag && !isPieceSZOOnly()) {
 			do {
 				super.shuffle();
-			} while (bag[0] == Piece.PIECE_O || bag[0] == Piece.PIECE_Z || bag[0] == Piece.PIECE_S);
+			} while (isSZOPiece(bag[0]));
 			firstBag = false;
 		} else {
 			super.shuffle();
