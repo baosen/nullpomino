@@ -2,16 +2,22 @@ package nullpomino.game.subsystem.randomizer;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import net.omegaboshi.nullpomino.game.subsystem.randomizer.BagMinusRandomizer;
 import net.omegaboshi.nullpomino.game.subsystem.randomizer.BagMinusTwoRandomizer;
 import net.omegaboshi.nullpomino.game.subsystem.randomizer.BagBonusBagRandomizer;
 import net.omegaboshi.nullpomino.game.subsystem.randomizer.BagBonusRandomizer;
+import net.omegaboshi.nullpomino.game.subsystem.randomizer.BagNoSZORandomizer;
 import net.omegaboshi.nullpomino.game.subsystem.randomizer.BagRandomizer;
 import net.omegaboshi.nullpomino.game.subsystem.randomizer.DoubleBagRandomizer;
+import net.omegaboshi.nullpomino.game.subsystem.randomizer.History4RollsRandomizer;
+import net.omegaboshi.nullpomino.game.subsystem.randomizer.History6RollsRandomizer;
+import net.omegaboshi.nullpomino.game.subsystem.randomizer.LinearDistWeightRandomizer;
 import net.omegaboshi.nullpomino.game.subsystem.randomizer.NineBagRandomizer;
 import net.omegaboshi.nullpomino.game.subsystem.randomizer.Randomizer;
+import net.omegaboshi.nullpomino.game.subsystem.randomizer.StrictHistoryRandomizer;
 import nullpomino.game.component.Piece;
 
 import org.junit.jupiter.api.Test;
@@ -39,6 +45,43 @@ class BagRandomizerTest {
 	void minusBagsWorkAfterDefaultConstructorAndSetState() {
 		assertDrawsEnabledPieces(new BagMinusRandomizer(), Piece.PIECE_STANDARD_COUNT * 3);
 		assertDrawsEnabledPieces(new BagMinusTwoRandomizer(), Piece.PIECE_STANDARD_COUNT * 3);
+	}
+
+	@Test
+	void noSZOBagsAndLimitedHistoryAvoidSZOOnFirstPieceWhenPossible() {
+		assertFirstPieceNotSZO(new BagNoSZORandomizer());
+		assertFirstPieceNotSZO(new History4RollsRandomizer());
+		assertFirstPieceNotSZO(new History6RollsRandomizer());
+	}
+
+	@Test
+	void strictHistoryWorksWithNonContiguousEnabledPieces() {
+		StrictHistoryRandomizer randomizer = new StrictHistoryRandomizer();
+		boolean[] enabled = new boolean[Piece.PIECE_COUNT];
+		enabled[Piece.PIECE_I] = true;
+		enabled[Piece.PIECE_O] = true;
+		enabled[Piece.PIECE_T] = true;
+		enabled[Piece.PIECE_L3] = true;
+		randomizer.setState(enabled, 1357L);
+
+		for(int i = 0; i < 50; i++) {
+			int piece = randomizer.next();
+			assertTrue(enabled[piece], "unexpected disabled piece " + piece);
+		}
+	}
+
+	@Test
+	void setStateFullyResetsDistanceWeightRandomizers() {
+		boolean[] enabled = standardPieces();
+		LinearDistWeightRandomizer fresh = new LinearDistWeightRandomizer();
+		fresh.setState(enabled, 9876L);
+
+		LinearDistWeightRandomizer reused = new LinearDistWeightRandomizer();
+		reused.setState(enabled, 2468L);
+		draw(reused, Piece.PIECE_STANDARD_COUNT);
+		reused.setState(enabled, 9876L);
+
+		assertArrayEquals(draw(fresh, 20), draw(reused, 20));
 	}
 
 	@Test
@@ -105,6 +148,23 @@ class BagRandomizerTest {
 			int piece = randomizer.next();
 			assertTrue(enabled[piece], "unexpected disabled piece " + piece);
 		}
+	}
+
+	private static void assertFirstPieceNotSZO(Randomizer randomizer) {
+		randomizer.setState(standardPieces(), 1122L);
+		assertFalse(isSZO(randomizer.next()));
+	}
+
+	private static int[] draw(Randomizer randomizer, int draws) {
+		int[] pieces = new int[draws];
+		for(int i = 0; i < pieces.length; i++) {
+			pieces[i] = randomizer.next();
+		}
+		return pieces;
+	}
+
+	private static boolean isSZO(int piece) {
+		return piece == Piece.PIECE_S || piece == Piece.PIECE_Z || piece == Piece.PIECE_O;
 	}
 
 	private static boolean[] standardPieces() {
