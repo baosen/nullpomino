@@ -3,6 +3,8 @@ package nullpomino.game.net;
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
+import java.util.Arrays;
+
 import org.junit.jupiter.api.Test;
 
 class NetPlayerInfoRoundTripTest {
@@ -48,6 +50,27 @@ class NetPlayerInfoRoundTripTest {
 		assertEquals(original.playCountNow, imported.playCountNow);
 		assertEquals(original.winCountNow, imported.winCountNow);
 		assertEquals(original.spPersonalBest.exportString(), imported.spPersonalBest.exportString());
+	}
+
+	@Test
+	void exportStringArrayKeepsLegacyFieldCount() {
+		assertEquals(27, new NetPlayerInfo().exportStringArray().length);
+	}
+
+	@Test
+	void importStringArrayAcceptsLegacyDataWithoutCurrentRoomCounts() {
+		NetPlayerInfo original = new NetPlayerInfo();
+		original.playCountNow = 5;
+		original.winCountNow = 6;
+		String[] legacyFields = Arrays.copyOf(original.exportStringArray(), 25);
+
+		NetPlayerInfo imported = new NetPlayerInfo();
+		imported.playCountNow = 7;
+		imported.winCountNow = 8;
+		imported.importStringArray(legacyFields);
+
+		assertEquals(7, imported.playCountNow);
+		assertEquals(8, imported.winCountNow);
 	}
 
 	@Test

@@ -28,7 +28,7 @@ final class NetStringArray {
 			return Boolean.parseBoolean(read());
 		}
 
-		private String read() {
+		String read() {
 			return values[index++];
 		}
 	}
@@ -57,7 +57,7 @@ final class NetStringArray {
 			return values;
 		}
 
-		private void write(String value) {
+		void write(String value) {
 			values[index++] = value;
 		}
 	}
