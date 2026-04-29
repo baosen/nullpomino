@@ -543,33 +543,16 @@ public class Field implements Serializable {
 	public int checkLine() {
 		int lines = 0;
 
-		if (lastLinesCleared == null){
-			lastLinesCleared = new ArrayList<Block[]>();
-		}
-		lastLinesCleared.clear();
+		resetLastLinesCleared();
 
-		Block[] row = new Block[width];
-
-		for(int i = (hidden_height * -1); i < getHeightWithoutHurryupFloor(); i++) {
-			boolean flag = true;
-
-			for(int j = 0; j < width; j++) {
-				row[j] = new Block(getBlock(j, i));
-				if((getBlockEmpty(j, i) == true) || (getBlock(j, i).getAttribute(Block.BLOCK_ATTRIBUTE_WALL) == true)) {
-					flag = false;
-					break;
-				}
-			}
-
+		for(int i = firstFieldRow(); i < getHeightWithoutHurryupFloor(); i++) {
+			boolean flag = isCompleteLine(i);
 			setLineFlag(i, flag);
 
 			if(flag) {
 				lines++;
-				lastLinesCleared.add(row);
-
-				for(int j = 0; j < width; j++) {
-					getBlock(j, i).setAttribute(Block.BLOCK_ATTRIBUTE_ERASE, true);
-				}
+				rememberClearedLine(i);
+				markLineForErase(i);
 			}
 		}
 
@@ -583,22 +566,44 @@ public class Field implements Serializable {
 	public int checkLineNoFlag() {
 		int lines = 0;
 
-		for(int i = (hidden_height * -1); i < getHeightWithoutHurryupFloor(); i++) {
-			boolean flag = true;
-
-			for(int j = 0; j < width; j++) {
-				if((getBlockEmpty(j, i) == true) || (getBlock(j, i).getAttribute(Block.BLOCK_ATTRIBUTE_WALL) == true)) {
-					flag = false;
-					break;
-				}
-			}
-
-			if(flag) {
+		for(int i = firstFieldRow(); i < getHeightWithoutHurryupFloor(); i++) {
+			if(isCompleteLine(i)) {
 				lines++;
 			}
 		}
 
 		return lines;
+	}
+
+	private void resetLastLinesCleared() {
+		if(lastLinesCleared == null) {
+			lastLinesCleared = new ArrayList<Block[]>();
+		}
+		lastLinesCleared.clear();
+	}
+
+	private boolean isCompleteLine(int y) {
+		for(int x = 0; x < width; x++) {
+			Block block = getBlock(x, y);
+			if(getBlockEmpty(x, y) || block.getAttribute(Block.BLOCK_ATTRIBUTE_WALL)) {
+				return false;
+			}
+		}
+		return true;
+	}
+
+	private void rememberClearedLine(int y) {
+		Block[] row = new Block[width];
+		for(int x = 0; x < width; x++) {
+			row[x] = new Block(getBlock(x, y));
+		}
+		lastLinesCleared.add(row);
+	}
+
+	private void markLineForErase(int y) {
+		for(int x = 0; x < width; x++) {
+			getBlock(x, y).setAttribute(Block.BLOCK_ATTRIBUTE_ERASE, true);
+		}
 	}
 
 	/**
@@ -663,26 +668,10 @@ public class Field implements Serializable {
 		int lines = 0;
 		int y = getHeightWithoutHurryupFloor() - 1;
 
-		for(int i = (hidden_height * -1); i < getHeightWithoutHurryupFloor(); i++) {
+		for(int i = firstFieldRow(); i < getHeightWithoutHurryupFloor(); i++) {
 			if(getLineFlag(y)) {
 				lines++;
-
-				// BlockA1Copied from the rows above
-				for(int k = y; k > (hidden_height * -1); k--) {
-					for(int l = 0; l < width; l++) {
-						Block blk = getBlock(l, k - 1);
-						if(blk == null) blk = new Block();
-						setBlock(l, k, blk);
-						setLineFlag(k, getLineFlag(k - 1));
-					}
-				}
-
-				// Blank to the top
-				for(int l = 0; l < width; l++) {
-					Block blk = new Block();
-					setBlock(l, (hidden_height * -1), blk);
-				}
-				setLineFlag((hidden_height * -1), false);
+				dropRowsAbove(y);
 			} else {
 				y--;
 			}
@@ -697,24 +686,9 @@ public class Field implements Serializable {
 	public void downFloatingBlocksSingleLine() {
 		int y = getHeightWithoutHurryupFloor() - 1;
 
-		for(int i = (hidden_height * -1); i < getHeightWithoutHurryupFloor(); i++) {
+		for(int i = firstFieldRow(); i < getHeightWithoutHurryupFloor(); i++) {
 			if(getLineFlag(y)) {
-				// BlockA1Copied from the rows above
-				for(int k = y; k > (hidden_height * -1); k--) {
-					for(int l = 0; l < width; l++) {
-						Block blk = getBlock(l, k - 1);
-						if(blk == null) blk = new Block();
-						setBlock(l, k, blk);
-						setLineFlag(k, getLineFlag(k - 1));
-					}
-				}
-
-				// Blank to the top
-				for(int l = 0; l < width; l++) {
-					Block blk = new Block();
-					setBlock(l, (hidden_height * -1), blk);
-				}
-				setLineFlag((hidden_height * -1), false);
+				dropRowsAbove(y);
 				return;
 			} else {
 				y--;
@@ -729,11 +703,37 @@ public class Field implements Serializable {
 	public int getLines() {
 		int lines = 0;
 
-		for(int i = (hidden_height * -1); i < getHeightWithoutHurryupFloor(); i++) {
+		for(int i = firstFieldRow(); i < getHeightWithoutHurryupFloor(); i++) {
 			if(getLineFlag(i)) lines++;
 		}
 
 		return lines;
+	}
+
+	private void dropRowsAbove(int y) {
+		for(int k = y; k > firstFieldRow(); k--) {
+			copyRow(k - 1, k);
+		}
+		clearRow(firstFieldRow());
+	}
+
+	private void copyRow(int fromY, int toY) {
+		for(int x = 0; x < width; x++) {
+			Block block = getBlock(x, fromY);
+			setBlock(x, toY, block == null ? new Block() : block);
+		}
+		setLineFlag(toY, getLineFlag(fromY));
+	}
+
+	private void clearRow(int y) {
+		for(int x = 0; x < width; x++) {
+			setBlock(x, y, new Block());
+		}
+		setLineFlag(y, false);
+	}
+
+	private int firstFieldRow() {
+		return hidden_height * -1;
 	}
 
 	/**
@@ -1169,22 +1169,10 @@ public class Field implements Serializable {
 	 */
 	public void pushUp(int lines) {
 		for(int k = 0; k < lines; k++) {
-			for(int i = (hidden_height * -1); i < getHeightWithoutHurryupFloor() - 1; i++) {
-				// BlockA1Copy from the bottom stage
-				for(int j = 0; j < width; j++) {
-					Block blk = getBlock(j, i + 1);
-					if(blk == null) blk = new Block();
-					setBlock(j, i, blk);
-					setLineFlag(i, getLineFlag(i + 1));
-				}
+			for(int i = firstFieldRow(); i < getHeightWithoutHurryupFloor() - 1; i++) {
+				copyRow(i + 1, i);
 			}
-
-			// Blank to the bottom
-			for(int j = 0; j < width; j++) {
-				int y = getHeightWithoutHurryupFloor() - 1;
-				setBlock(j, y, new Block());
-				setLineFlag(y, false);
-			}
+			clearRow(getHeightWithoutHurryupFloor() - 1);
 		}
 	}
 
@@ -1201,21 +1189,10 @@ public class Field implements Serializable {
 	 */
 	public void pushDown(int lines) {
 		for(int k = 0; k < lines; k++) {
-			for(int i = getHeightWithoutHurryupFloor() - 1; i > (hidden_height * -1); i--) {
-				// BlockA1Copied from the rows above
-				for(int j = 0; j < width; j++) {
-					Block blk = getBlock(j, i - 1);
-					if(blk == null) blk = new Block();
-					setBlock(j, i, blk);
-					setLineFlag(i, getLineFlag(i - 1));
-				}
+			for(int i = getHeightWithoutHurryupFloor() - 1; i > firstFieldRow(); i--) {
+				copyRow(i - 1, i);
 			}
-
-			// Blank to the top
-			for(int j = 0; j < width; j++) {
-				setBlock(j, (hidden_height * -1), new Block());
-				setLineFlag((hidden_height * -1), false);
-			}
+			clearRow(firstFieldRow());
 		}
 	}
 
