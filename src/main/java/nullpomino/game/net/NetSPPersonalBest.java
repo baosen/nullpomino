@@ -63,10 +63,7 @@ public class NetSPPersonalBest implements Serializable {
 	 */
 	public void copy(NetSPPersonalBest s) {
 		strPlayerName = s.strPlayerName;
-		listRecord = new LinkedList<NetSPRecord>();
-		for(NetSPRecord record : s.listRecord) {
-			listRecord.add(new NetSPRecord(record));
-		}
+		listRecord = NetSPRecordList.deepCopy(s.listRecord);
 	}
 
 	/**
@@ -126,12 +123,7 @@ public class NetSPPersonalBest implements Serializable {
 	 * @param prop CustomProperties
 	 */
 	public void writeProperty(CustomProperties prop) {
-		String strKey = "sppersonal." + strPlayerName + ".";
-		prop.setProperty(strKey + "numRecords", listRecord.size());
-
-		for(int i = 0; i < listRecord.size(); i++) {
-			prop.setProperty(strKey + i, NetUtil.compressString(listRecord.get(i).exportString()));
-		}
+		NetSPRecordList.writeProperty(prop, propertyKey(), listRecord);
 	}
 
 	/**
@@ -139,18 +131,7 @@ public class NetSPPersonalBest implements Serializable {
 	 * @param prop CustomProperties
 	 */
 	public void readProperty(CustomProperties prop) {
-		String strKey = "sppersonal." + strPlayerName + ".";
-		int numRecords = prop.getProperty(strKey + "numRecords", 0);
-
-		listRecord.clear();
-		for(int i = 0; i < numRecords; i++) {
-			String strRecordCompressed = prop.getProperty(strKey + i);
-			if(strRecordCompressed != null) {
-				String strRecord = NetUtil.decompressString(strRecordCompressed);
-				NetSPRecord record = new NetSPRecord(strRecord);
-				listRecord.add(record);
-			}
-		}
+		NetSPRecordList.readProperty(prop, propertyKey(), listRecord, -1);
 	}
 
 	/**
@@ -158,11 +139,7 @@ public class NetSPPersonalBest implements Serializable {
 	 * @return String (Split by ;)
 	 */
 	public String exportListRecord() {
-		LinkedList<String> records = new LinkedList<String>();
-		for(NetSPRecord record : listRecord) {
-			records.add(NetUtil.compressString(record.exportString()));
-		}
-		return String.join(";", records);
+		return NetSPRecordList.exportCompressedList(listRecord);
 	}
 
 	/**
@@ -171,16 +148,11 @@ public class NetSPPersonalBest implements Serializable {
 	 */
 	public void importListRecord(String s) {
 		if(listRecord == null) listRecord = new LinkedList<NetSPRecord>();
-		else listRecord.clear();
-		if((s == null) || (s.length() <= 0)) return;
+		NetSPRecordList.importCompressedList(s, listRecord);
+	}
 
-		String[] array = s.split(";", -1);
-		for(String compressedRecord : array) {
-			if(compressedRecord.length() <= 0) continue;
-			String strTemp = NetUtil.decompressString(compressedRecord);
-			NetSPRecord record = new NetSPRecord(strTemp);
-			listRecord.add(record);
-		}
+	private String propertyKey() {
+		return "sppersonal." + strPlayerName + ".";
 	}
 
 	/**
