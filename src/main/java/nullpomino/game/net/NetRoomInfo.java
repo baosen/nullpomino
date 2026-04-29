@@ -454,12 +454,7 @@ public class NetRoomInfo implements Serializable {
 	 * @return Game seat number(If you do not have-1)
 	 */
 	public int getPlayerSeatNumber(NetPlayerInfo pInfo) {
-		for (int i = 0; i < playerSeat.size(); i++) {
-			if (playerSeat.get(i) == pInfo) {
-				return i;
-			}
-		}
-		return -1;
+		return playerSeat.indexOf(pInfo);
 	}
 
 	/**
@@ -513,9 +508,9 @@ public class NetRoomInfo implements Serializable {
 	 * @return Waiting number
 	 */
 	public int joinQueue(NetPlayerInfo pInfo) {
-		if (playerQueue.contains(pInfo)) {
-			return playerQueue.indexOf(pInfo);
-		}
+		int index = playerQueue.indexOf(pInfo);
+		if(index != -1) return index;
+
 		playerQueue.add(pInfo);
 		return playerQueue.size() - 1;
 	}
