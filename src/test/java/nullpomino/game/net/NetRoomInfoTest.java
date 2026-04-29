@@ -148,6 +148,23 @@ class NetRoomInfoTest {
 	}
 
 	@Test
+	void playerCountHelpersIgnoreNullSeatsAndInactivePlayers() {
+		NetRoomInfo room = new NetRoomInfo();
+		NetPlayerInfo ready = player("A", "192.0.2.1");
+		NetPlayerInfo inactive = player("B", "192.0.2.2");
+		ready.ready = true;
+		ready.playing = true;
+		room.playerSeat.add(null);
+		room.playerSeat.add(ready);
+		room.playerSeat.add(inactive);
+		room.gameStart();
+
+		assertEquals(2, room.getNumberOfPlayerSeated());
+		assertEquals(1, room.getHowManyPlayersReady());
+		assertEquals(1, room.getHowManyPlayersPlaying());
+	}
+
+	@Test
 	void gameStartCopiesSeatsAndWinnerUsesActiveConnectedSeatedPlayers() {
 		NetRoomInfo room = new NetRoomInfo();
 		NetPlayerInfo winner = player("A", "192.0.2.1");
@@ -185,6 +202,26 @@ class NetRoomInfoTest {
 		assertTrue(room.isTeamWin());
 		assertEquals("A", room.getWinnerTeam());
 		assertTrue(room.hasSameIPPlayers());
+	}
+
+	@Test
+	void teamAndIpDuplicateHelpersIgnoreBlankValues() {
+		NetRoomInfo room = new NetRoomInfo();
+		NetPlayerInfo first = player("", "");
+		NetPlayerInfo second = player("", "");
+		room.joinSeat(first);
+		room.joinSeat(second);
+		room.gameStart();
+		room.playing = true;
+		first.playing = true;
+		first.connected = true;
+		second.playing = true;
+		second.connected = true;
+
+		assertFalse(room.isTeamGame());
+		assertFalse(room.isTeamWin());
+		assertNull(room.getWinnerTeam());
+		assertFalse(room.hasSameIPPlayers());
 	}
 
 	@Test
