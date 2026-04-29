@@ -57,6 +57,33 @@ class MenuItemPersistenceTest {
 	}
 
 	@Test
+	void valueStringFormatsStayStable() {
+		BooleanMenuItem booleanItem = new BooleanMenuItem("big", "BIG",
+				EventReceiver.COLOR_BLUE, false);
+		OnOffMenuItem onOffItem = new OnOffMenuItem("ghost", "GHOST",
+				EventReceiver.COLOR_BLUE, false);
+		OXMenuItem oxItem = new OXMenuItem("spin", "SPIN",
+				EventReceiver.COLOR_BLUE, false);
+		EnumMenuItem enumItem = new EnumMenuItem("goal", "GOAL",
+				EventReceiver.COLOR_BLUE, 1, new String[] {"A", "B"}) {};
+
+		assertEquals("FALSE", booleanItem.getValueString());
+		assertEquals("OFF", onOffItem.getValueString());
+		assertEquals("e", oxItem.getValueString());
+		assertEquals("B", enumItem.getValueString());
+
+		booleanItem.change(1, 0);
+		onOffItem.change(1, 0);
+		oxItem.change(1, 0);
+		enumItem.change(1, 0);
+
+		assertEquals("TRUE", booleanItem.getValueString());
+		assertEquals("ON", onOffItem.getValueString());
+		assertEquals("c", oxItem.getValueString());
+		assertEquals("A", enumItem.getValueString());
+	}
+
+	@Test
 	void integerItemChangeWrapsAcrossBounds() {
 		IntegerMenuItem item = new IntegerMenuItem("level", "LEVEL",
 				EventReceiver.COLOR_BLUE, 0, 0, 2);
