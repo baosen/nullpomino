@@ -3,7 +3,6 @@ package net.omegaboshi.nullpomino.game.subsystem.randomizer;
 public abstract class LimitedHistoryRandomizer extends Randomizer {
 
 	int[] history;
-	int id;
 	int numrolls;
 
 	boolean firstPiece;
@@ -22,21 +21,22 @@ public abstract class LimitedHistoryRandomizer extends Randomizer {
 	}
 
 	public int next() {
+		int selected = 0;
 		if (firstPiece && !isPieceSZOOnly()) {
 			do {
-				id = randomPieceIndex();
-			} while (isSZOPiece(pieces[id]));
+				selected = randomPieceIndex();
+			} while (isSZOPiece(pieces[selected]));
 			firstPiece = false;
 		} else {
 			for (int i = 0; i < numrolls; i++) {
-				id = randomPieceIndex();
-				if (!contains(history, pieces[id])) {
+				selected = randomPieceIndex();
+				if (!contains(history, pieces[selected])) {
 					break;
 				}
 			}
 		}
 		shiftRight(history, history.length);
-		history[0] = pieces[id];
-		return pieces[id];
+		history[0] = pieces[selected];
+		return pieces[selected];
 	}
 }

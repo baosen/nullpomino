@@ -5,7 +5,6 @@ import nullpomino.game.component.Piece;
 public class StrictHistoryRandomizer extends Randomizer {
 
 	int[] history;
-	int id;
 
 	boolean[] curHist;
 	int[] notHist;
@@ -47,7 +46,7 @@ public class StrictHistoryRandomizer extends Randomizer {
 				notHistPos++;
 			}
 		}
-		id = notHist[randomIndex(notHistPos)];
+		int id = notHist[randomIndex(notHistPos)];
 		shiftRight(history, histLen);
 		history[0] = id;
 		return pieces[id];
