@@ -6,6 +6,8 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import java.util.Arrays;
+
 import org.junit.jupiter.api.Test;
 
 class NetRoomInfoTest {
@@ -102,6 +104,27 @@ class NetRoomInfoTest {
 		assertEquals(original.divideChangeRateByPlayers, imported.divideChangeRateByPlayers);
 		assertEquals(original.isTarget, imported.isTarget);
 		assertEquals(original.targetTimer, imported.targetTimer);
+	}
+
+	@Test
+	void exportStringArrayKeepsLegacyFieldCount() {
+		assertEquals(43, new NetRoomInfo().exportStringArray().length);
+	}
+
+	@Test
+	void importStringArrayAcceptsLegacyDataWithoutTargetFields() {
+		NetRoomInfo original = new NetRoomInfo();
+		original.isTarget = true;
+		original.targetTimer = 90;
+		String[] legacyFields = Arrays.copyOf(original.exportStringArray(), 41);
+
+		NetRoomInfo imported = new NetRoomInfo();
+		imported.isTarget = false;
+		imported.targetTimer = 60;
+		imported.importStringArray(legacyFields);
+
+		assertFalse(imported.isTarget);
+		assertEquals(60, imported.targetTimer);
 	}
 
 	@Test
