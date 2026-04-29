@@ -6,6 +6,8 @@ import java.io.Serializable;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.Set;
+import java.util.function.Function;
+import java.util.function.Predicate;
 
 import nullpomino.game.component.RuleOptions;
 
@@ -441,11 +443,7 @@ public class NetRoomInfo implements Serializable {
 	 * @return Those who are in the game now seatcount
 	 */
 	public int getNumberOfPlayerSeated() {
-		int count = 0;
-		for (NetPlayerInfo pInfo : playerSeat) {
-			if (pInfo != null) count++;
-		}
-		return count;
+		return countPlayers(playerSeat, pInfo -> pInfo != null);
 	}
 
 	/**
@@ -538,11 +536,7 @@ public class NetRoomInfo implements Serializable {
 	 * @return Was readyNumber of players
 	 */
 	public int getHowManyPlayersReady() {
-		int count = 0;
-		for (NetPlayerInfo pInfo : playerSeat) {
-			if ((pInfo != null) && pInfo.ready) count++;
-		}
-		return count;
+		return countPlayers(playerSeat, pInfo -> (pInfo != null) && pInfo.ready);
 	}
 
 	/**
@@ -551,11 +545,7 @@ public class NetRoomInfo implements Serializable {
 	 * @return In playNumber of players
 	 */
 	public int getHowManyPlayersPlaying() {
-		int count = 0;
-		for (NetPlayerInfo pInfo : playerSeatNowPlaying) {
-			if (isActiveSeatedPlayer(pInfo)) count++;
-		}
-		return count;
+		return countPlayers(playerSeatNowPlaying, this::isActiveSeatedPlayer);
 	}
 
 	/**
@@ -564,8 +554,7 @@ public class NetRoomInfo implements Serializable {
 	 * @return I survived the lastPlayerInformation(Yet2Or if you live more than, If I do not start the game in the first place isnull)
 	 */
 	public NetPlayerInfo getWinner() {
-		if ((startPlayers >= 2) && (getHowManyPlayersPlaying() < 2)
-				&& playing) {
+		if (isStartedMultiplayerGame() && (getHowManyPlayersPlaying() < 2)) {
 			for (NetPlayerInfo pInfo : playerSeatNowPlaying) {
 				if (isConnectedActiveSeatedPlayer(pInfo)) return pInfo;
 			}
@@ -579,8 +568,7 @@ public class NetRoomInfo implements Serializable {
 	 * @return I survived the lastTeam name
 	 */
 	public String getWinnerTeam() {
-		if ((startPlayers >= 2) && (getHowManyPlayersPlaying() >= 2)
-				&& playing) {
+		if (isStartedMultiplayerGame() && (getHowManyPlayersPlaying() >= 2)) {
 			for (NetPlayerInfo pInfo : playerSeatNowPlaying) {
 				if (isConnectedActiveSeatedPlayer(pInfo)) {
 					if (pInfo.strTeam.length() <= 0) {
@@ -601,8 +589,7 @@ public class NetRoomInfo implements Serializable {
 	public boolean isTeamWin() {
 		String teamname = null;
 
-		if ((startPlayers >= 2) && (getHowManyPlayersPlaying() >= 2)
-				&& playing) {
+		if (isStartedMultiplayerGame() && (getHowManyPlayersPlaying() >= 2)) {
 			for (NetPlayerInfo pInfo : playerSeatNowPlaying) {
 				if (isConnectedActiveSeatedPlayer(pInfo)) {
 					if (pInfo.strTeam.length() <= 0) {
@@ -623,34 +610,14 @@ public class NetRoomInfo implements Serializable {
 	 * @return true if it's a team game
 	 */
 	public boolean isTeamGame() {
-		Set<String> teamList = new HashSet<String>();
-
-		if (startPlayers >= 2) {
-			for (NetPlayerInfo pInfo : playerSeatNowPlaying) {
-				if ((pInfo != null) && (pInfo.strTeam.length() > 0)) {
-					if (!teamList.add(pInfo.strTeam)) return true;
-				}
-			}
-		}
-
-		return false;
+		return hasDuplicateStartedPlayerValue(pInfo -> pInfo.strTeam);
 	}
 
 	/**
 	 * @return true if 2 or more people have same IP
 	 */
 	public boolean hasSameIPPlayers() {
-		Set<String> ipList = new HashSet<String>();
-
-		if (startPlayers >= 2) {
-			for (NetPlayerInfo pInfo : playerSeatNowPlaying) {
-				if ((pInfo != null) && (pInfo.strRealIP.length() > 0)) {
-					if (!ipList.add(pInfo.strRealIP)) return true;
-				}
-			}
-		}
-
-		return false;
+		return hasDuplicateStartedPlayerValue(pInfo -> pInfo.strRealIP);
 	}
 
 	/**
@@ -688,5 +655,31 @@ public class NetRoomInfo implements Serializable {
 
 	private boolean isConnectedActiveSeatedPlayer(NetPlayerInfo pInfo) {
 		return isActiveSeatedPlayer(pInfo) && pInfo.connected;
+	}
+
+	private boolean isStartedMultiplayerGame() {
+		return (startPlayers >= 2) && playing;
+	}
+
+	private static int countPlayers(Iterable<NetPlayerInfo> players,
+			Predicate<NetPlayerInfo> predicate) {
+		int count = 0;
+		for(NetPlayerInfo pInfo : players) {
+			if(predicate.test(pInfo)) count++;
+		}
+		return count;
+	}
+
+	private boolean hasDuplicateStartedPlayerValue(Function<NetPlayerInfo, String> valueFn) {
+		if(startPlayers < 2) return false;
+
+		Set<String> values = new HashSet<String>();
+		for(NetPlayerInfo pInfo : playerSeatNowPlaying) {
+			if(pInfo != null) {
+				String value = valueFn.apply(pInfo);
+				if((value.length() > 0) && !values.add(value)) return true;
+			}
+		}
+		return false;
 	}
 }
