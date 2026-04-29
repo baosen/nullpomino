@@ -88,6 +88,47 @@ class FieldCharacterisationTest {
 	}
 
 	@Test
+	void downFloatingBlocksSingleLineDropsOneFlaggedRow() {
+		Field f = newField();
+		f.setBlockColor(0, 17, Block.BLOCK_COLOR_RED);
+		f.setLineFlag(19, true);
+
+		f.downFloatingBlocksSingleLine();
+
+		assertEquals(Block.BLOCK_COLOR_RED, f.getBlockColor(0, 18));
+		assertEquals(Block.BLOCK_COLOR_NONE, f.getBlockColor(0, 17));
+		assertFalse(f.getLineFlag(19));
+	}
+
+	@Test
+	void pushUpMovesRowsTowardHiddenAreaAndClearsBottom() {
+		Field f = newField();
+		f.setBlockColor(0, 19, Block.BLOCK_COLOR_GREEN);
+		f.setLineFlag(19, true);
+
+		f.pushUp();
+
+		assertEquals(Block.BLOCK_COLOR_GREEN, f.getBlockColor(0, 18));
+		assertTrue(f.getLineFlag(18));
+		assertEquals(Block.BLOCK_COLOR_NONE, f.getBlockColor(0, 19));
+		assertFalse(f.getLineFlag(19));
+	}
+
+	@Test
+	void pushDownMovesRowsTowardBottomAndClearsTop() {
+		Field f = newField();
+		f.setBlockColor(0, 0, Block.BLOCK_COLOR_BLUE);
+		f.setLineFlag(0, true);
+
+		f.pushDown();
+
+		assertEquals(Block.BLOCK_COLOR_BLUE, f.getBlockColor(0, 1));
+		assertTrue(f.getLineFlag(1));
+		assertEquals(Block.BLOCK_COLOR_NONE, f.getBlockColor(0, 0));
+		assertFalse(f.getLineFlag(-f.getHiddenHeight()));
+	}
+
+	@Test
 	void checkLineNoFlagIsCountOnlyAndLeavesFlagsUntouched() {
 		Field f = newField();
 		fillRow(f, 19, Block.BLOCK_COLOR_RED);
