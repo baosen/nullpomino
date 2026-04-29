@@ -19,12 +19,12 @@ public class BooleanMenuItem extends AbstractMenuItem<Boolean> {
 	}
 
 	@Override
-	public void save(int playerID, CustomProperties prop, String modeName) {
-		saveValue(playerID, prop, modeName, value);
+	protected void saveValue(CustomProperties prop, String key, Boolean value) {
+		prop.setProperty(key, value);
 	}
 
 	@Override
-	public void load(int playerID, CustomProperties prop, String modeName) {
-		value = loadBoolean(playerID, prop, modeName);
+	protected Boolean loadValue(CustomProperties prop, String key) {
+		return prop.getProperty(key, DEFAULT_VALUE);
 	}
 }
