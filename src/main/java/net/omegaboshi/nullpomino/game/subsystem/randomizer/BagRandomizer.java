@@ -18,19 +18,12 @@ public class BagRandomizer extends Randomizer {
 		bag = new int[bagSize()];
 		pt = 0;
 		dealLength = dealLength();
-		for (int i = 0; i < bag.length; i++) {
-			bag[i] = pieces[i % pieces.length];
-		}
+		fillBag(bag);
 		shuffle();
 	}
 
 	public void shuffle() {
-		for (int i = bag.length; i > 1; i--) {
-			int j = r.nextInt(i);
-			int temp = bag[i-1];
-			bag[i-1] = bag[j];
-			bag[j] = temp;
-		}
+		shuffle(bag);
 	}
 
 	public int next() {

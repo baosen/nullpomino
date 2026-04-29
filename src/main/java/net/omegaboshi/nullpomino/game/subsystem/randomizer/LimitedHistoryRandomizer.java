@@ -1,7 +1,5 @@
 package net.omegaboshi.nullpomino.game.subsystem.randomizer;
 
-import nullpomino.game.component.Piece;
-
 public abstract class LimitedHistoryRandomizer extends Randomizer {
 
 	int[] history;
@@ -26,20 +24,18 @@ public abstract class LimitedHistoryRandomizer extends Randomizer {
 	public int next() {
 		if (firstPiece && !isPieceSZOOnly()) {
 			do {
-				id = r.nextInt(pieces.length);
-			} while (pieces[id] == Piece.PIECE_O || pieces[id] == Piece.PIECE_Z || pieces[id] == Piece.PIECE_S);
+				id = randomPieceIndex();
+			} while (isSZOPiece(pieces[id]));
 			firstPiece = false;
 		} else {
 			for (int i = 0; i < numrolls; i++) {
-				id = r.nextInt(pieces.length);
-				if (!(pieces[id] == history[0] || pieces[id] == history[1] || pieces[id] == history[2] || pieces[id] == history[3])) {
+				id = randomPieceIndex();
+				if (!contains(history, pieces[id])) {
 					break;
 				}
 			}
 		}
-		for (int i = 3; i > 0; i--) {
-			history[i] = history[i-1];
-		}
+		shiftRight(history, history.length);
 		history[0] = pieces[id];
 		return pieces[id];
 	}
