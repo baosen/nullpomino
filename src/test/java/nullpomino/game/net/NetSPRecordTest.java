@@ -3,6 +3,8 @@ package nullpomino.game.net;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 
+import java.util.Arrays;
+
 import org.junit.jupiter.api.Test;
 
 class NetSPRecordTest {
@@ -44,6 +46,24 @@ class NetSPRecordTest {
 		assertEquals(original.strReplayProp, imported.strReplayProp);
 		assertEquals(original.gameType, imported.gameType);
 		assertEquals(original.style, imported.style);
+		assertEquals("", imported.strTimeStamp);
+	}
+
+	@Test
+	void exportStringArrayKeepsLegacyFieldCount() {
+		assertEquals(9, new NetSPRecord().exportStringArray().length);
+	}
+
+	@Test
+	void importStringArrayAcceptsLegacyDataWithoutTimestamp() {
+		NetSPRecord original = new NetSPRecord();
+		original.strTimeStamp = "2026-04-29";
+		String[] legacyFields = Arrays.copyOf(original.exportStringArray(), 8);
+
+		NetSPRecord imported = new NetSPRecord();
+		imported.strTimeStamp = "old";
+		imported.importStringArray(legacyFields);
+
 		assertEquals("", imported.strTimeStamp);
 	}
 

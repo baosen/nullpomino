@@ -44,6 +44,11 @@ class NetChatMessageRoundTripTest {
 	}
 
 	@Test
+	void exportStringArrayKeepsLegacyFieldCount() {
+		assertEquals(7, messageWithFixedTimestamp().exportStringArray().length);
+	}
+
+	@Test
 	void constructorsLayerMessagePlayerAndRoomFields() {
 		NetPlayerInfo player = new NetPlayerInfo();
 		player.uid = 7;
