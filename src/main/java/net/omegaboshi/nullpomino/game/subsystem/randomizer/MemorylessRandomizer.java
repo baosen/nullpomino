@@ -11,7 +11,7 @@ public class MemorylessRandomizer extends Randomizer {
 	}
 
 	public int next() {
-		return pieces[r.nextInt(pieces.length)];
+		return randomPiece();
 	}
 
 }
