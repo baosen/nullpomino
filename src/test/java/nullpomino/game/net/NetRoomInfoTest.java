@@ -148,6 +148,23 @@ class NetRoomInfoTest {
 	}
 
 	@Test
+	void seatAndQueueIndexHelpersReturnExistingPositions() {
+		NetRoomInfo room = new NetRoomInfo();
+		NetPlayerInfo first = player("A", "192.0.2.1");
+		NetPlayerInfo second = player("B", "192.0.2.2");
+
+		assertEquals(0, room.joinSeat(first));
+		assertEquals(1, room.joinSeat(second));
+		assertEquals(0, room.getPlayerSeatNumber(first));
+		assertEquals(1, room.getPlayerSeatNumber(second));
+		assertEquals(-1, room.getPlayerSeatNumber(player("missing", "192.0.2.3")));
+
+		assertEquals(0, room.joinQueue(first));
+		assertEquals(1, room.joinQueue(second));
+		assertEquals(0, room.joinQueue(first));
+	}
+
+	@Test
 	void playerCountHelpersIgnoreNullSeatsAndInactivePlayers() {
 		NetRoomInfo room = new NetRoomInfo();
 		NetPlayerInfo ready = player("A", "192.0.2.1");
