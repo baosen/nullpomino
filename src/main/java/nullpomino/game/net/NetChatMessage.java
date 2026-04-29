@@ -14,6 +14,8 @@ public class NetChatMessage implements Serializable {
 	/** Serial version */
 	private static final long serialVersionUID = 1L;
 
+	private static final int EXPORT_FIELD_COUNT = 7;
+
 	/** Log */
 	static final Logger log = Logger.getLogger(NetChatMessage.class);
 
@@ -107,13 +109,14 @@ public class NetChatMessage implements Serializable {
 	 * @param s String array (String[7])
 	 */
 	public void importStringArray(String[] s) {
-		uid = Integer.parseInt(s[0]);
-		strUserName = NetUtil.urlDecode(s[1]);
-		strHost = NetUtil.urlDecode(s[2]);
-		roomID = Integer.parseInt(s[3]);
-		strRoomName = NetUtil.urlDecode(s[4]);
-		timestamp = GeneralUtil.importCalendarString(s[5]);
-		strMessage = NetUtil.urlDecode(s[6]);
+		NetStringArray.Reader reader = new NetStringArray.Reader(s);
+		uid = reader.readInt();
+		strUserName = reader.readEncoded();
+		strHost = reader.readEncoded();
+		roomID = reader.readInt();
+		strRoomName = reader.readEncoded();
+		timestamp = GeneralUtil.importCalendarString(reader.read());
+		strMessage = reader.readEncoded();
 	}
 
 	/**
@@ -129,15 +132,15 @@ public class NetChatMessage implements Serializable {
 	 * @return String array (String[7])
 	 */
 	public String[] exportStringArray() {
-		String[] s = new String[7];
-		s[0] = Integer.toString(uid);
-		s[1] = NetUtil.urlEncode(strUserName);
-		s[2] = NetUtil.urlEncode(strHost);
-		s[3] = Integer.toString(roomID);
-		s[4] = NetUtil.urlEncode(strRoomName);
-		s[5] = GeneralUtil.exportCalendarString(timestamp);
-		s[6] = NetUtil.urlEncode(strMessage);
-		return s;
+		NetStringArray.Writer writer = new NetStringArray.Writer(EXPORT_FIELD_COUNT);
+		writer.write(uid);
+		writer.writeEncoded(strUserName);
+		writer.writeEncoded(strHost);
+		writer.write(roomID);
+		writer.writeEncoded(strRoomName);
+		writer.write(GeneralUtil.exportCalendarString(timestamp));
+		writer.writeEncoded(strMessage);
+		return writer.values();
 	}
 
 	/**

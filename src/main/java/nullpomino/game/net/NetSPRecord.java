@@ -13,6 +13,8 @@ public class NetSPRecord implements Serializable {
 	/** serialVersionUID for Serialize */
 	private static final long serialVersionUID = 1L;
 
+	private static final int EXPORT_FIELD_COUNT = 9;
+
 	/** Ranking type constants */
 	public static final int RANKINGTYPE_GENERIC_SCORE = 0,
 							RANKINGTYPE_GENERIC_TIME = 1,
@@ -242,17 +244,17 @@ public class NetSPRecord implements Serializable {
 	 * @return String Array (String[9])
 	 */
 	public String[] exportStringArray() {
-		String[] s = new String[9];
-		s[0] = NetUtil.urlEncode(strPlayerName);
-		s[1] = NetUtil.urlEncode(strModeName);
-		s[2] = NetUtil.urlEncode(strRuleName);
-		s[3] = (stats == null) ? "" : NetUtil.compressString(stats.exportString());
-		s[4] = ((listCustomStats == null) || (listCustomStats.size() <= 0)) ? "" : NetUtil.compressString(exportCustomStats());
-		s[5] = strReplayProp;
-		s[6] = Integer.toString(gameType);
-		s[7] = Integer.toString(style);
-		s[8] = strTimeStamp;
-		return s;
+		NetStringArray.Writer writer = new NetStringArray.Writer(EXPORT_FIELD_COUNT);
+		writer.writeEncoded(strPlayerName);
+		writer.writeEncoded(strModeName);
+		writer.writeEncoded(strRuleName);
+		writer.write((stats == null) ? "" : NetUtil.compressString(stats.exportString()));
+		writer.write(hasCustomStats() ? NetUtil.compressString(exportCustomStats()) : "");
+		writer.write(strReplayProp);
+		writer.write(gameType);
+		writer.write(style);
+		writer.write(strTimeStamp);
+		return writer.values();
 	}
 
 	/**
@@ -268,17 +270,33 @@ public class NetSPRecord implements Serializable {
 	 * @param s String Array (String[9])
 	 */
 	public void importStringArray(String[] s) {
-		strPlayerName = NetUtil.urlDecode(s[0]);
-		strModeName = NetUtil.urlDecode(s[1]);
-		strRuleName = NetUtil.urlDecode(s[2]);
-		if(s[3].length() <= 0) stats = null;
-		else stats = new Statistics(NetUtil.decompressString(s[3]));
-		if(s[4].length() <= 0) listCustomStats = new LinkedList<String>();
-		else importCustomStats(NetUtil.decompressString(s[4]));
-		strReplayProp = s[5];
-		gameType = Integer.parseInt(s[6]);
-		style = Integer.parseInt(s[7]);
-		strTimeStamp = (s.length > 8) ? s[8] : "";
+		NetStringArray.Reader reader = new NetStringArray.Reader(s);
+		strPlayerName = reader.readEncoded();
+		strModeName = reader.readEncoded();
+		strRuleName = reader.readEncoded();
+		stats = importStats(reader.read());
+		importCompressedCustomStats(reader.read());
+		strReplayProp = reader.read();
+		gameType = reader.readInt();
+		style = reader.readInt();
+		strTimeStamp = reader.hasNext() ? reader.read() : "";
+	}
+
+	private boolean hasCustomStats() {
+		return (listCustomStats != null) && (listCustomStats.size() > 0);
+	}
+
+	private static Statistics importStats(String compressedStats) {
+		if(compressedStats.length() <= 0) return null;
+		return new Statistics(NetUtil.decompressString(compressedStats));
+	}
+
+	private void importCompressedCustomStats(String compressedCustomStats) {
+		if(compressedCustomStats.length() <= 0) {
+			listCustomStats = new LinkedList<String>();
+		} else {
+			importCustomStats(NetUtil.decompressString(compressedCustomStats));
+		}
 	}
 
 	/**
