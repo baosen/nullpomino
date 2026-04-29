@@ -7,8 +7,6 @@ public abstract class DistanceWeightRandomizer extends Randomizer {
 	int[] initWeights = {3, 3, 0, 0, 3, 3, 0, 2, 2, 2, 2};
 	int[] weights;
 	int[] cumulative;
-	int sum;
-	int id;
 
 	boolean firstPiece = true;
 
@@ -30,19 +28,20 @@ public abstract class DistanceWeightRandomizer extends Randomizer {
 	}
 
 	public int next() {
-		sum = 0;
+		int sum = 0;
 		for (int i = 0; i < pieces.length; i++) {
 			sum += getWeight(i);
 			cumulative[i] = sum;
 		}
-		id = randomIndex(sum);
+		int roll = randomIndex(sum);
+		int selected = 0;
 		for (int i = 0; i < pieces.length; i++) {
-			if (id < cumulative[i]) {
-				id = i;
+			if (roll < cumulative[i]) {
+				selected = i;
 				break;
 			}
 		}
-		weights[id] = 0;
+		weights[selected] = 0;
 		for (int i = 0; i < pieces.length; i++) {
 			if (firstPiece && pieces[i] == Piece.PIECE_O) {
 				weights[i] = 3;
@@ -51,7 +50,7 @@ public abstract class DistanceWeightRandomizer extends Randomizer {
 			}
 		}
 		firstPiece = false;
-		return pieces[id];
+		return pieces[selected];
 	}
 
 	protected abstract int getWeight(int i);
