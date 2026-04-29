@@ -46,15 +46,7 @@ public class ModeManager {
 	 * @return ModeOfcount
 	 */
 	public int getNumberOfModes(boolean netplay) {
-		int count = 0;
-
-		for(GameMode mode : modes) {
-			if((mode != null) && (mode.isNetplayMode() == netplay)) {
-				count++;
-			}
-		}
-
-		return count;
+		return filteredModes(netplay).size();
 	}
 
 	/**
@@ -77,14 +69,13 @@ public class ModeManager {
 	 * @return Mode nameAn array of
 	 */
 	public String[] getModeNames(boolean netplay) {
-		ArrayList<String> strings = new ArrayList<String>();
-		for(GameMode mode : modes) {
-			if((mode != null) && (mode.isNetplayMode() == netplay)) {
-				strings.add(mode.getName());
-			}
+		List<GameMode> filtered = filteredModes(netplay);
+		String[] strings = new String[filtered.size()];
+		for(int i = 0; i < filtered.size(); i++) {
+			strings[i] = filtered.get(i).getName();
 		}
 
-		return strings.toArray(new String[0]);
+		return strings;
 	}
 
 	/**
@@ -155,5 +146,19 @@ public class ModeManager {
 		} catch(Exception e) {
 			log.warn("Mode class " + clazz.getName() + " load failed", e);
 		}
+	}
+
+	private List<GameMode> filteredModes(boolean netplay) {
+		List<GameMode> filtered = new ArrayList<GameMode>();
+		for(GameMode mode : modes) {
+			if(matchesNetplay(mode, netplay)) {
+				filtered.add(mode);
+			}
+		}
+		return filtered;
+	}
+
+	private static boolean matchesNetplay(GameMode mode, boolean netplay) {
+		return (mode != null) && (mode.isNetplayMode() == netplay);
 	}
 }

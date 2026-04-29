@@ -51,6 +51,19 @@ class ModeManagerTest {
 	}
 
 	@Test
+	void filteredModeCountsAndNamesIgnoreNullEntries() {
+		ModeManager manager = new ModeManager();
+		manager.addMode(null);
+		manager.addMode(new TestMode("normal", false));
+		manager.addMode(new TestMode("net", true));
+
+		assertEquals(1, manager.getNumberOfModes(false));
+		assertEquals(1, manager.getNumberOfModes(true));
+		assertArrayEquals(new String[] {"normal"}, manager.getModeNames(false));
+		assertArrayEquals(new String[] {"net"}, manager.getModeNames(true));
+	}
+
+	@Test
 	void copyConstructorSharesLoadedModeReferences() {
 		ModeManager manager = new ModeManager();
 		TestMode mode = new TestMode("normal", false);
