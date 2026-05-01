@@ -18,7 +18,7 @@ import nullpomino.util.GeneralUtil;
 import nullpomino.util.ModeManager;
 import nullpomino.util.ModeRegistry;
 import net.omegaboshi.nullpomino.game.subsystem.randomizer.Randomizer;
-import nullpomino.ai.PoochyBot;
+import nullpomino.game.ai.PoochyBot;
 
 /**
  * Headless AI-driven replay generator. For each named mode, wires

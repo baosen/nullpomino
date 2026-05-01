@@ -7,7 +7,7 @@ import com.sun.jna.Pointer;
 import nullpomino.game.component.Controller;
 import nullpomino.game.component.RuleOptions;
 import nullpomino.game.play.GameManager;
-import nullpomino.ai.DummyAI;
+import nullpomino.game.ai.DummyAI;
 import nullpomino.game.subsystem.mode.PreviewMode;
 import nullpomino.game.subsystem.wallkick.Wallkick;
 import nullpomino.gui.sdl.binding.SDL3;

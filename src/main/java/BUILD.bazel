@@ -36,13 +36,12 @@ java_library(
 )
 
 # Cyclically-coupled engine + GUI cluster:
-# util <-> subsystem <-> mode <-> gui/net <-> gui/sdl, plus tool/airankstool which
-# is depended on by ai (RanksAI). Cannot be split further without source
+# util <-> game/subsystem <-> mode <-> gui/net <-> gui/sdl, plus tool/airankstool which
+# is depended on by game/ai (RanksAI). Cannot be split further without source
 # refactors to break the cycles.
 java_library(
     name = "core",
     srcs = glob([
-        "nullpomino/ai/*.java",
         "nullpomino/util/*.java",
         "nullpomino/game/**/*.java",
         "nullpomino/gui/*.java",

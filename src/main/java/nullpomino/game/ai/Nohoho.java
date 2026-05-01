@@ -1,4 +1,4 @@
-package nullpomino.ai;
+package nullpomino.game.ai;
 
 import nullpomino.game.component.Controller;
 import nullpomino.game.component.Field;

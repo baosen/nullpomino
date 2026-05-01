@@ -1,6 +1,6 @@
 // SPDX-FileCopyrightText: 2010 NullNoname
 // SPDX-License-Identifier: BSD-3-Clause
-package nullpomino.ai;
+package nullpomino.game.ai;
 
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
