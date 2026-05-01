@@ -4,6 +4,7 @@ package nullpomino.util;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Stream;
 
 import nullpomino.game.subsystem.mode.GameMode;
 
@@ -46,7 +47,7 @@ public class ModeManager {
 	 * @return ModeOfcount
 	 */
 	public int getNumberOfModes(boolean netplay) {
-		return filteredModes(netplay).size();
+		return (int)modesMatching(netplay).count();
 	}
 
 	/**
@@ -54,13 +55,9 @@ public class ModeManager {
 	 * @return Mode nameAn array of
 	 */
 	public String[] getAllModeNames() {
-		String[] strings = new String[getSize()];
-
-		for(int i = 0; i < strings.length; i++) {
-			strings[i] = getName(i);
-		}
-
-		return strings;
+		return modes.stream()
+				.map(mode -> (mode == null) ? "*INVALID MODE*" : mode.getName())
+				.toArray(String[]::new);
 	}
 
 	/**
@@ -69,13 +66,9 @@ public class ModeManager {
 	 * @return Mode nameAn array of
 	 */
 	public String[] getModeNames(boolean netplay) {
-		List<GameMode> filtered = filteredModes(netplay);
-		String[] strings = new String[filtered.size()];
-		for(int i = 0; i < filtered.size(); i++) {
-			strings[i] = filtered.get(i).getName();
-		}
-
-		return strings;
+		return modesMatching(netplay)
+				.map(GameMode::getName)
+				.toArray(String[]::new);
 	}
 
 	/**
@@ -148,14 +141,8 @@ public class ModeManager {
 		}
 	}
 
-	private List<GameMode> filteredModes(boolean netplay) {
-		List<GameMode> filtered = new ArrayList<GameMode>();
-		for(GameMode mode : modes) {
-			if(matchesNetplay(mode, netplay)) {
-				filtered.add(mode);
-			}
-		}
-		return filtered;
+	private Stream<GameMode> modesMatching(boolean netplay) {
+		return modes.stream().filter(mode -> matchesNetplay(mode, netplay));
 	}
 
 	private static boolean matchesNetplay(GameMode mode, boolean netplay) {
