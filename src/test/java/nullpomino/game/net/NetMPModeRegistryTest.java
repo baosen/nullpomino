@@ -10,7 +10,7 @@ import java.util.Set;
 
 import nullpomino.game.net.NetMPModeRegistry.Entry;
 import nullpomino.game.play.GameEngine;
-import nullpomino.game.subsystem.mode.GameMode;
+import nullpomino.game.mode.GameMode;
 import nullpomino.util.ModeManager;
 import nullpomino.util.ModeRegistry;
 

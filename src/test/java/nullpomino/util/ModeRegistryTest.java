@@ -7,7 +7,7 @@ import static org.junit.jupiter.api.Assertions.assertSame;
 import java.util.HashSet;
 import java.util.Set;
 
-import nullpomino.game.subsystem.mode.GameMode;
+import nullpomino.game.mode.GameMode;
 
 import org.junit.jupiter.api.Test;
 

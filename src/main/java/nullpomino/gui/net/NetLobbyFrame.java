@@ -24,7 +24,7 @@ import nullpomino.game.net.NetRoomInfo;
 import nullpomino.game.net.NetUtil;
 import nullpomino.game.play.GameEngine;
 import nullpomino.game.play.GameManager;
-import nullpomino.game.subsystem.mode.NetDummyMode;
+import nullpomino.game.mode.NetDummyMode;
 import nullpomino.gui.sdl.NormalFontSDL;
 import nullpomino.gui.sdl.widget.ChatLogSDL;
 import nullpomino.util.CustomProperties;

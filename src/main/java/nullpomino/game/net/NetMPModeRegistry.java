@@ -11,7 +11,7 @@ import nullpomino.game.play.GameEngine;
  * validation against the registered mode roster.
  *
  * <p>Each entry's {@code name} must match the {@code getName()} string of a
- * registered netplay {@link nullpomino.game.subsystem.mode.GameMode} — i.e.
+ * registered netplay {@link nullpomino.game.mode.GameMode} — i.e.
  * one whose {@code isNetplayMode()} is true; this is enforced by
  * {@code NetMPModeRegistryTest}.
  */

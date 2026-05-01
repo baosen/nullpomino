@@ -2,50 +2,50 @@ package nullpomino.util;
 
 import java.util.List;
 
-import nullpomino.game.subsystem.mode.AvalancheFeverMode;
-import nullpomino.game.subsystem.mode.AvalancheMode;
-import nullpomino.game.subsystem.mode.AvalancheVSBombBattleMode;
-import nullpomino.game.subsystem.mode.AvalancheVSDigRaceMode;
-import nullpomino.game.subsystem.mode.AvalancheVSFeverMode;
-import nullpomino.game.subsystem.mode.AvalancheVSMode;
-import nullpomino.game.subsystem.mode.AvalancheVSSPFMode;
-import nullpomino.game.subsystem.mode.ComboRaceMode;
-import nullpomino.game.subsystem.mode.DigChallengeMode;
-import nullpomino.game.subsystem.mode.DigRaceMode;
-import nullpomino.game.subsystem.mode.ExtremeMode;
-import nullpomino.game.subsystem.mode.FinalMode;
-import nullpomino.game.subsystem.mode.GameMode;
-import nullpomino.game.subsystem.mode.GarbageManiaMode;
-import nullpomino.game.subsystem.mode.GemManiaMode;
-import nullpomino.game.subsystem.mode.GradeMania2Mode;
-import nullpomino.game.subsystem.mode.GradeMania3Mode;
-import nullpomino.game.subsystem.mode.GradeManiaMode;
-import nullpomino.game.subsystem.mode.LineRaceMode;
-import nullpomino.game.subsystem.mode.MarathonMode;
-import nullpomino.game.subsystem.mode.MarathonPlusMode;
-import nullpomino.game.subsystem.mode.NetVSBattleMode;
-import nullpomino.game.subsystem.mode.NetVSDigRaceMode;
-import nullpomino.game.subsystem.mode.NetVSLineRaceMode;
-import nullpomino.game.subsystem.mode.PhantomManiaMode;
-import nullpomino.game.subsystem.mode.PhysicianMode;
-import nullpomino.game.subsystem.mode.PhysicianVSMode;
-import nullpomino.game.subsystem.mode.PracticeMode;
-import nullpomino.game.subsystem.mode.RetroManiaMode;
-import nullpomino.game.subsystem.mode.RetroMarathonMode;
-import nullpomino.game.subsystem.mode.RetroMasteryMode;
-import nullpomino.game.subsystem.mode.SPFMode;
-import nullpomino.game.subsystem.mode.ScoreAttackMode;
-import nullpomino.game.subsystem.mode.ScoreRaceMode;
-import nullpomino.game.subsystem.mode.SpeedMania2Mode;
-import nullpomino.game.subsystem.mode.SpeedManiaMode;
-import nullpomino.game.subsystem.mode.SquareMode;
-import nullpomino.game.subsystem.mode.TechnicianMode;
-import nullpomino.game.subsystem.mode.TimeAttackMode;
-import nullpomino.game.subsystem.mode.ToolVSMapEditMode;
-import nullpomino.game.subsystem.mode.UltraMode;
-import nullpomino.game.subsystem.mode.VSBattleMode;
-import nullpomino.game.subsystem.mode.VSDigRaceMode;
-import nullpomino.game.subsystem.mode.VSLineRaceMode;
+import nullpomino.game.mode.AvalancheFeverMode;
+import nullpomino.game.mode.AvalancheMode;
+import nullpomino.game.mode.AvalancheVSBombBattleMode;
+import nullpomino.game.mode.AvalancheVSDigRaceMode;
+import nullpomino.game.mode.AvalancheVSFeverMode;
+import nullpomino.game.mode.AvalancheVSMode;
+import nullpomino.game.mode.AvalancheVSSPFMode;
+import nullpomino.game.mode.ComboRaceMode;
+import nullpomino.game.mode.DigChallengeMode;
+import nullpomino.game.mode.DigRaceMode;
+import nullpomino.game.mode.ExtremeMode;
+import nullpomino.game.mode.FinalMode;
+import nullpomino.game.mode.GameMode;
+import nullpomino.game.mode.GarbageManiaMode;
+import nullpomino.game.mode.GemManiaMode;
+import nullpomino.game.mode.GradeMania2Mode;
+import nullpomino.game.mode.GradeMania3Mode;
+import nullpomino.game.mode.GradeManiaMode;
+import nullpomino.game.mode.LineRaceMode;
+import nullpomino.game.mode.MarathonMode;
+import nullpomino.game.mode.MarathonPlusMode;
+import nullpomino.game.mode.NetVSBattleMode;
+import nullpomino.game.mode.NetVSDigRaceMode;
+import nullpomino.game.mode.NetVSLineRaceMode;
+import nullpomino.game.mode.PhantomManiaMode;
+import nullpomino.game.mode.PhysicianMode;
+import nullpomino.game.mode.PhysicianVSMode;
+import nullpomino.game.mode.PracticeMode;
+import nullpomino.game.mode.RetroManiaMode;
+import nullpomino.game.mode.RetroMarathonMode;
+import nullpomino.game.mode.RetroMasteryMode;
+import nullpomino.game.mode.SPFMode;
+import nullpomino.game.mode.ScoreAttackMode;
+import nullpomino.game.mode.ScoreRaceMode;
+import nullpomino.game.mode.SpeedMania2Mode;
+import nullpomino.game.mode.SpeedManiaMode;
+import nullpomino.game.mode.SquareMode;
+import nullpomino.game.mode.TechnicianMode;
+import nullpomino.game.mode.TimeAttackMode;
+import nullpomino.game.mode.ToolVSMapEditMode;
+import nullpomino.game.mode.UltraMode;
+import nullpomino.game.mode.VSBattleMode;
+import nullpomino.game.mode.VSDigRaceMode;
+import nullpomino.game.mode.VSLineRaceMode;
 
 /**
  * The roster of every {@link GameMode} the game knows about. Replaces the
@@ -55,7 +55,7 @@ import nullpomino.game.subsystem.mode.VSLineRaceMode;
  *
  * <p>Order matches the legacy file. Both netplay and single-player modes are
  * included; consumers that want only one filter via
- * {@link nullpomino.game.subsystem.mode.GameMode#isNetplayMode()}.
+ * {@link nullpomino.game.mode.GameMode#isNetplayMode()}.
  */
 public final class ModeRegistry {
 	private static final List<Class<? extends GameMode>> MODES = List.of(

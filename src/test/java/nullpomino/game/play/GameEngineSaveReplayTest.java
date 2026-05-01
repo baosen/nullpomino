@@ -114,7 +114,7 @@ class GameEngineSaveReplayTest {
 	}
 
 	private static final class TwoPlayerStubMode
-			implements nullpomino.game.subsystem.mode.GameMode {
+			implements nullpomino.game.mode.GameMode {
 		@Override public String getName() { return "TwoPlayerStub"; }
 		@Override public int getPlayers() { return 2; }
 		@Override public int getGameStyle() { return 0; }

@@ -10,14 +10,14 @@ class LegacyClassNamesTest {
 
 	@Test
 	void rewritesLegacyPrefix() {
-		assertEquals("nullpomino.game.subsystem.wallkick.StandardWallkick",
+		assertEquals("nullpomino.game.wallkick.StandardWallkick",
 				LegacyClassNames.translate("mu.nu.nullpo.game.subsystem.wallkick.StandardWallkick"));
 	}
 
 	@Test
 	void passesThroughCurrentNames() {
-		assertEquals("nullpomino.game.subsystem.wallkick.StandardWallkick",
-				LegacyClassNames.translate("nullpomino.game.subsystem.wallkick.StandardWallkick"));
+		assertEquals("nullpomino.game.wallkick.StandardWallkick",
+				LegacyClassNames.translate("nullpomino.game.wallkick.StandardWallkick"));
 	}
 
 	@Test
@@ -35,7 +35,7 @@ class LegacyClassNamesTest {
 	@Test
 	void emitsLegacyPrefixForCurrentNames() {
 		assertEquals("mu.nu.nullpo.game.subsystem.wallkick.StandardWallkick",
-				LegacyClassNames.toLegacy("nullpomino.game.subsystem.wallkick.StandardWallkick"));
+				LegacyClassNames.toLegacy("nullpomino.game.wallkick.StandardWallkick"));
 	}
 
 	@Test

@@ -7,7 +7,7 @@ import org.junit.jupiter.api.Test;
 
 import nullpomino.game.play.GameEngine;
 import nullpomino.game.play.GameManager;
-import nullpomino.game.subsystem.mode.GameMode;
+import nullpomino.game.mode.GameMode;
 
 /**
  * Pins EventReceiver's display-position arithmetic. The render layer
