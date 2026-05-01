@@ -74,6 +74,16 @@ class NetSPRecordCompareTest {
 	}
 
 	@Test
+	void timeAttackCapsLinesAtTwoHundredForLaterGameTypes() {
+		assertBeats(NetSPRecord.RANKINGTYPE_TIMEATTACK,
+				stats().gameType(5).rollclear(1).lines(200),
+				stats().gameType(5).rollclear(1).lines(199));
+		assertBeats(NetSPRecord.RANKINGTYPE_TIMEATTACK,
+				stats().gameType(5).rollclear(1).lines(200).time(99),
+				stats().gameType(5).rollclear(1).lines(250).time(100));
+	}
+
+	@Test
 	void unknownAndEqualRecordsDoNotBeat() {
 		assertFalse(compare(999, stats(1, 2, 3), stats(1, 2, 3)));
 		assertFalse(compare(NetSPRecord.RANKINGTYPE_GENERIC_SCORE, stats(1, 2, 3), stats(1, 2, 3)));
@@ -143,6 +153,11 @@ class NetSPRecordCompareTest {
 
 		StatBuilder rollclear(int value) {
 			stats.rollclear = value;
+			return this;
+		}
+
+		StatBuilder gameType(int value) {
+			gameType = value;
 			return this;
 		}
 	}
