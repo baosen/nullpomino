@@ -64,7 +64,7 @@ class ModeMenuItemCharacterisationTest {
 	private static void assertMenuDisplayNames(AbstractMode mode, String... displayNames) {
 		assertEquals(displayNames.length, mode.menu.size());
 		for(int i = 0; i < displayNames.length; i++) {
-			AbstractMenuItem item = mode.menu.get(i);
+			AbstractMenuItem<?> item = mode.menu.get(i);
 			assertEquals(displayNames[i], item.displayName, "menu item " + i);
 		}
 	}

@@ -8,6 +8,7 @@ import nullpomino.game.event.EventReceiver;
 import nullpomino.game.play.GameEngine;
 import nullpomino.game.subsystem.mode.menu.IntegerMenuItem;
 import nullpomino.game.subsystem.mode.menu.OnOffMenuItem;
+import nullpomino.game.subsystem.mode.menu.RollLevelMenuItem;
 import nullpomino.util.CustomProperties;
 import nullpomino.util.GeneralUtil;
 
@@ -171,26 +172,13 @@ public class GradeMania2Mode extends AbstractGradeMode {
 
 	public GradeMania2Mode() {
 		propName = "grademania2";
-		startlevel = new IntegerMenuItem("startlevel", "LEVEL", EventReceiver.COLOR_BLUE, 0, 0, 9) {
-			public String getValueString() {
-				if (value == 10)
-					return "ROLL";
-				if (value == 11)
-					return "M-ROLL";
-				return String.valueOf(value * 100);
-			}
-		};
+		startlevel = new RollLevelMenuItem("startlevel", "LEVEL", EventReceiver.COLOR_BLUE, 0, 0, 9);
 		alwaysghost = new OnOffMenuItem("alwaysghost", "FULL GHOST", EventReceiver.COLOR_BLUE, false);
 		always20g = new OnOffMenuItem("always20g", "20G MODE", EventReceiver.COLOR_BLUE, false);
 		lvstopse = new OnOffMenuItem("lvstopse", "LVSTOPSE", EventReceiver.COLOR_BLUE, false);
 		big = new OnOffMenuItem("big", "BIG", EventReceiver.COLOR_BLUE, false);
 		showsectiontime = new OnOffMenuItem("showsectiontime", "SHOW STIME", EventReceiver.COLOR_BLUE, false);
-		menu.add(startlevel);
-		menu.add(alwaysghost);
-		menu.add(always20g);
-		menu.add(lvstopse);
-		menu.add(big);
-		menu.add(showsectiontime);
+		addMenuItems(startlevel, alwaysghost, always20g, lvstopse, big, showsectiontime);
 	}
 
 	/*

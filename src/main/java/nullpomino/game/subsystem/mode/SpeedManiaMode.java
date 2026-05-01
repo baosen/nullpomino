@@ -7,7 +7,9 @@ import nullpomino.game.event.EventReceiver;
 import nullpomino.game.play.GameEngine;
 import nullpomino.game.subsystem.mode.menu.BooleanMenuItem;
 import nullpomino.game.subsystem.mode.menu.IntegerMenuItem;
+import nullpomino.game.subsystem.mode.menu.LevelMenuItem;
 import nullpomino.game.subsystem.mode.menu.OnOffMenuItem;
+import nullpomino.game.subsystem.mode.menu.OptionalTimeMenuItem;
 import nullpomino.game.subsystem.mode.menu.TimeMenuItem;
 import nullpomino.util.CustomProperties;
 import nullpomino.util.GeneralUtil;
@@ -174,24 +176,13 @@ public class SpeedManiaMode extends AbstractMode {
 	public SpeedManiaMode() {
 		propName = "speedmania";
 
-		startlevel = new IntegerMenuItem("startlevel", "LEVEL", EventReceiver.COLOR_BLUE, 0, 0, 9) {
-			public String getValueString() {
-				return String.valueOf(value * 100);
-			}
-		};
+		startlevel = new LevelMenuItem("startlevel", "LEVEL", EventReceiver.COLOR_BLUE, 0, 0, 9);
 		lvstopse = new OnOffMenuItem("lvstopse", "LVSTOPSE", EventReceiver.COLOR_BLUE, false);
 		big = new OnOffMenuItem("big", "BIG", EventReceiver.COLOR_BLUE, false);
 		showsectiontime = new OnOffMenuItem("showsectiontime", "SHOW STIME", EventReceiver.COLOR_BLUE, false);
-		lv500torikan = new TimeMenuItem("lv500torikan", "LV500LIMIT", EventReceiver.COLOR_BLUE, 12300, 0, 72000) {
-			public String getValueString() {
-				return (value == 0) ? "NONE" : GeneralUtil.getTime(value);
-			}
-		};
-		menu.add(startlevel);
-		menu.add(lvstopse);
-		menu.add(showsectiontime);
-		menu.add(big);
-		menu.add(lv500torikan);
+		lv500torikan = new OptionalTimeMenuItem("lv500torikan", "LV500LIMIT",
+				EventReceiver.COLOR_BLUE, 12300, 0, 72000, "NONE");
+		addMenuItems(startlevel, lvstopse, showsectiontime, big, lv500torikan);
 	}
 	/*
 	 * Mode name

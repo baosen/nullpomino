@@ -33,7 +33,7 @@ public abstract class AbstractMode implements GameMode {
 	/** Current state of menu for drawMenu */
 	protected int statcMenu, menuColor, menuY;
 
-	protected ArrayList<AbstractMenuItem> menu;
+	protected ArrayList<AbstractMenuItem<?>> menu;
 	
 	/** Name of mode in properties file */
 	protected String propName;
@@ -50,18 +50,24 @@ public abstract class AbstractMode implements GameMode {
 		menuTime = 0;
 		menuColor = EventReceiver.COLOR_WHITE;
 		menuY = 0;
-		menu = new ArrayList<AbstractMenuItem>();
+		menu = new ArrayList<AbstractMenuItem<?>>();
 		propName = "dummy";
 	}
 
 	protected void loadSetting(CustomProperties prop) {
-		for (AbstractMenuItem item : menu)
+		for (AbstractMenuItem<?> item : menu)
 			item.load(-1, prop, propName);
 	}
 
 	protected void saveSetting(CustomProperties prop) {
-		for (AbstractMenuItem item : menu)
+		for (AbstractMenuItem<?> item : menu)
 			item.save(-1, prop, propName);
+	}
+
+	protected final void addMenuItems(AbstractMenuItem<?>... items) {
+		for(AbstractMenuItem<?> item : items) {
+			menu.add(item);
+		}
 	}
 
 	public String getName() {
@@ -86,7 +92,7 @@ public abstract class AbstractMode implements GameMode {
 
 	public void renderSetting(GameEngine engine, int playerID) {
 		//TODO: Custom page breaks
-		AbstractMenuItem menuItem;
+		AbstractMenuItem<?> menuItem;
 		int pageNum = menuCursor / 10;
 		int pageStart = pageNum * 10;
 		int endPage = Math.min(menu.size(), pageStart+10);
