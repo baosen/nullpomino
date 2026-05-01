@@ -31,8 +31,8 @@ public class AIRanksTester {
 		}
 		long seed=new Random().nextLong();
 
-		randomizer =new History4RollsRandomizer(pieceEnable,seed);
-		randomizer.init();
+		randomizer = new History4RollsRandomizer();
+		randomizer.setState(pieceEnable, seed);
 
 		 pieces=new int[6];
 		for (int i=0;i<6;i++){
@@ -72,4 +72,3 @@ public class AIRanksTester {
 		}
 	}
 }
-

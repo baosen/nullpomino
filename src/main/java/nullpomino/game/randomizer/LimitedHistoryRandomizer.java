@@ -7,15 +7,6 @@ public abstract class LimitedHistoryRandomizer extends Randomizer {
 
 	boolean firstPiece;
 
-	public LimitedHistoryRandomizer() {
-		super();
-	}
-
-	public LimitedHistoryRandomizer(boolean[] pieceEnable, long seed) {
-		super(pieceEnable, seed);
-
-	}
-
 	public void init() {
 		firstPiece = true;
 	}
