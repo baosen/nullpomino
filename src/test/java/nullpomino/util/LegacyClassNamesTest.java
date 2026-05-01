@@ -9,15 +9,37 @@ import org.junit.jupiter.api.Test;
 class LegacyClassNamesTest {
 
 	@Test
-	void rewritesLegacyPrefix() {
+	void rewritesOldWallkickNames() {
 		assertEquals("nullpomino.game.wallkick.StandardWallkick",
 				LegacyClassNames.translate("mu.nu.nullpo.game.subsystem.wallkick.StandardWallkick"));
+		assertEquals("nullpomino.game.wallkick.StandardWallkick",
+				LegacyClassNames.translate("nullpomino.game.subsystem.wallkick.StandardWallkick"));
+	}
+
+	@Test
+	void rewritesOldModeNames() {
+		assertEquals("nullpomino.game.mode.MarathonMode",
+				LegacyClassNames.translate("mu.nu.nullpo.game.subsystem.mode.MarathonMode"));
+		assertEquals("nullpomino.game.mode.MarathonMode",
+				LegacyClassNames.translate("nullpomino.game.subsystem.mode.MarathonMode"));
+	}
+
+	@Test
+	void rewritesOldModeMenuNames() {
+		assertEquals("nullpomino.game.menu.IntegerMenuItem",
+				LegacyClassNames.translate("mu.nu.nullpo.game.subsystem.mode.menu.IntegerMenuItem"));
+		assertEquals("nullpomino.game.menu.IntegerMenuItem",
+				LegacyClassNames.translate("nullpomino.game.subsystem.mode.menu.IntegerMenuItem"));
 	}
 
 	@Test
 	void passesThroughCurrentNames() {
 		assertEquals("nullpomino.game.wallkick.StandardWallkick",
 				LegacyClassNames.translate("nullpomino.game.wallkick.StandardWallkick"));
+		assertEquals("nullpomino.game.mode.MarathonMode",
+				LegacyClassNames.translate("nullpomino.game.mode.MarathonMode"));
+		assertEquals("nullpomino.game.menu.IntegerMenuItem",
+				LegacyClassNames.translate("nullpomino.game.menu.IntegerMenuItem"));
 	}
 
 	@Test
@@ -36,6 +58,10 @@ class LegacyClassNamesTest {
 	void emitsLegacyPrefixForCurrentNames() {
 		assertEquals("mu.nu.nullpo.game.subsystem.wallkick.StandardWallkick",
 				LegacyClassNames.toLegacy("nullpomino.game.wallkick.StandardWallkick"));
+		assertEquals("mu.nu.nullpo.game.subsystem.mode.MarathonMode",
+				LegacyClassNames.toLegacy("nullpomino.game.mode.MarathonMode"));
+		assertEquals("mu.nu.nullpo.game.subsystem.mode.menu.IntegerMenuItem",
+				LegacyClassNames.toLegacy("nullpomino.game.menu.IntegerMenuItem"));
 	}
 
 	@Test
