@@ -1,4 +1,4 @@
-package nullpomino.game.subsystem.randomizer;
+package nullpomino.game.randomizer;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
@@ -6,7 +6,6 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
-import nullpomino.game.randomizer.FixedSequenceRandomizer;
 import nullpomino.game.component.Piece;
 
 import org.junit.jupiter.api.Test;
