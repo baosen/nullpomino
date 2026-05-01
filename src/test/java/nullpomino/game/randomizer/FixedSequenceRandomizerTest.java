@@ -40,6 +40,17 @@ class FixedSequenceRandomizerTest {
 	}
 
 	@Test
+	void unknownCharFallsBackToPieceStandardCount() throws Exception {
+		Path sequenceFile = tempDir.resolve("sequence.txt");
+		Files.write(sequenceFile, "X".getBytes(StandardCharsets.UTF_8));
+
+		FixedSequenceRandomizer randomizer = new FixedSequenceRandomizer(sequenceFile);
+		randomizer.init();
+
+		assertEquals(Piece.PIECE_STANDARD_COUNT, randomizer.next());
+	}
+
+	@Test
 	void initResetsCursorToStartOfSequence() throws Exception {
 		Path sequenceFile = tempDir.resolve("sequence.txt");
 		Files.write(sequenceFile, "LO".getBytes(StandardCharsets.UTF_8));

@@ -97,6 +97,36 @@ class BagRandomizerTest {
 	}
 
 	@Test
+	void bagBonusBagWrapsBonusPointerAfterFullBonusBagCycle() {
+		BagBonusBagRandomizer randomizer = new BagBonusBagRandomizer();
+		boolean[] enabled = standardPieces();
+		randomizer.setState(enabled, 555L);
+
+		// pieces.length = 7, baglen = 8 → bonuspt wraps after 7 × 8 = 56 calls.
+		// Drawing past the wrap exercises the inner shuffleBonus branch in next().
+		for(int i = 0; i < 64; i++) {
+			int piece = randomizer.next();
+			assertTrue(enabled[piece]);
+		}
+	}
+
+	@Test
+	void szoOnlyEnabledShortCircuitsHistoryRandomizerSwapLoop() {
+		boolean[] enabled = new boolean[Piece.PIECE_COUNT];
+		enabled[Piece.PIECE_S] = true;
+		enabled[Piece.PIECE_Z] = true;
+		enabled[Piece.PIECE_O] = true;
+
+		History4RollsRandomizer randomizer = new History4RollsRandomizer();
+		randomizer.setState(enabled, 9999L);
+
+		for(int i = 0; i < 20; i++) {
+			int piece = randomizer.next();
+			assertTrue(isSZO(piece), "expected SZO-only output, got " + piece);
+		}
+	}
+
+	@Test
 	void registryRandomizersConfigureThroughNoArgConstructorAndSetState() throws Exception {
 		boolean[] enabled = standardPieces();
 
