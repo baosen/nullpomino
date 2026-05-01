@@ -1,2 +1,2 @@
 - Use `jj` for VCS.
-- Make and divide into atomic conventional commits, each with descriptive body. When done, do `jj new` to finish on an empty commit.
+- Make and divide into atomic conventional commits, each with descriptive body. When done, finish on an empty commit.
