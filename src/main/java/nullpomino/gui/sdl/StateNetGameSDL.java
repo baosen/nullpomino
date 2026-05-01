@@ -18,7 +18,7 @@ import nullpomino.gui.net.NetLobbyFrame;
 import nullpomino.gui.net.NetLobbyListener;
 import nullpomino.gui.sdl.binding.SDL3;
 import nullpomino.util.GeneralUtil;
-import net.omegaboshi.nullpomino.game.subsystem.randomizer.Randomizer;
+import nullpomino.game.randomizer.Randomizer;
 
 /**
  * Runs the actual netplay game engine inside the SDL main loop.  The lobby UI

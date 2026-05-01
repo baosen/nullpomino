@@ -12,7 +12,7 @@ import java.util.TimeZone;
 import nullpomino.game.component.Piece;
 import nullpomino.game.ai.DummyAI;
 import nullpomino.game.subsystem.wallkick.StandardWallkick;
-import net.omegaboshi.nullpomino.game.subsystem.randomizer.MemorylessRandomizer;
+import nullpomino.game.randomizer.MemorylessRandomizer;
 
 import org.junit.jupiter.api.Test;
 

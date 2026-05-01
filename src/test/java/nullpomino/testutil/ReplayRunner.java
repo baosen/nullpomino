@@ -10,7 +10,7 @@ import nullpomino.game.event.EventReceiver;
 import nullpomino.game.play.GameManager;
 import nullpomino.game.subsystem.mode.GameMode;
 import nullpomino.game.subsystem.wallkick.Wallkick;
-import net.omegaboshi.nullpomino.game.subsystem.randomizer.Randomizer;
+import nullpomino.game.randomizer.Randomizer;
 import nullpomino.util.CustomProperties;
 import nullpomino.util.GeneralUtil;
 import nullpomino.util.ModeManager;

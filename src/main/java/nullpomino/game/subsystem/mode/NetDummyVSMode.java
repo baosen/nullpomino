@@ -16,7 +16,7 @@ import nullpomino.game.play.GameManager;
 import nullpomino.game.subsystem.wallkick.Wallkick;
 import nullpomino.gui.net.NetLobbyFrame;
 import nullpomino.util.GeneralUtil;
-import net.omegaboshi.nullpomino.game.subsystem.randomizer.Randomizer;
+import nullpomino.game.randomizer.Randomizer;
 
 /**
  * Special base class for netplay VS modes. Up to 6 players supported.

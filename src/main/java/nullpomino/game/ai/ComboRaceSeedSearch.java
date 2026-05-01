@@ -5,7 +5,7 @@ import nullpomino.game.component.Piece;
 import nullpomino.game.component.WallkickResult;
 import nullpomino.game.play.GameEngine;
 import nullpomino.game.subsystem.wallkick.StandardWallkick;
-import net.omegaboshi.nullpomino.game.subsystem.randomizer.BagNoSZORandomizer;
+import nullpomino.game.randomizer.BagNoSZORandomizer;
 
 import org.apache.log4j.Logger;
 

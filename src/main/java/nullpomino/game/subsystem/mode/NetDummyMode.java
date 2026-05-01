@@ -6,7 +6,7 @@ import java.util.LinkedList;
 import java.util.TimeZone;
 import java.util.zip.Adler32;
 
-import net.omegaboshi.nullpomino.game.subsystem.randomizer.Randomizer;
+import nullpomino.game.randomizer.Randomizer;
 
 import org.apache.log4j.Logger;
 

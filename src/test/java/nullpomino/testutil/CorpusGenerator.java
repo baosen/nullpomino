@@ -17,7 +17,7 @@ import nullpomino.game.subsystem.wallkick.Wallkick;
 import nullpomino.util.GeneralUtil;
 import nullpomino.util.ModeManager;
 import nullpomino.util.ModeRegistry;
-import net.omegaboshi.nullpomino.game.subsystem.randomizer.Randomizer;
+import nullpomino.game.randomizer.Randomizer;
 import nullpomino.game.ai.PoochyBot;
 
 /**
