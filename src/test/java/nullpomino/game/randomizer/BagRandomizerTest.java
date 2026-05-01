@@ -113,11 +113,16 @@ class BagRandomizerTest {
 	}
 
 	@Test
-	void runtimeStateConstructorsStillSeedAndInitialize() {
+	void directRuntimeRandomizersConfigureThroughNoArgConstructorAndSetState() {
 		boolean[] enabled = standardPieces();
+		MemorylessRandomizer memoryless = new MemorylessRandomizer();
+		History4RollsRandomizer history = new History4RollsRandomizer();
 
-		assertDrawsEnabledPieces(new MemorylessRandomizer(enabled, 1357L), Piece.PIECE_STANDARD_COUNT);
-		assertDrawsEnabledPieces(new History4RollsRandomizer(enabled, 1357L), Piece.PIECE_STANDARD_COUNT);
+		memoryless.setState(enabled, 1357L);
+		history.setState(enabled, 1357L);
+
+		assertDrawsEnabledPieces(memoryless, Piece.PIECE_STANDARD_COUNT);
+		assertDrawsEnabledPieces(history, Piece.PIECE_STANDARD_COUNT);
 	}
 
 	private static void assertCycleCounts(Randomizer randomizer, int expectedCopies) {
