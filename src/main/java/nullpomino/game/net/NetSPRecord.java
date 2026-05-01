@@ -25,6 +25,46 @@ public class NetSPRecord implements Serializable {
 							RANKINGTYPE_DIGCHALLENGE = 6,
 							RANKINGTYPE_TIMEATTACK = 7;
 
+	private static final Ranking[] RANKINGS = {
+			new Ranking((r1, r2) -> isBetter(
+					higher(r1.stats.score, r2.stats.score),
+					higher(r1.stats.lines, r2.stats.lines),
+					lower(r1.stats.time, r2.stats.time)),
+					s -> statRow(s.score, s.lines, s.time)),
+			new Ranking((r1, r2) -> isBetter(
+					lower(r1.stats.time, r2.stats.time),
+					lower(r1.stats.totalPieceLocked, r2.stats.totalPieceLocked),
+					higher(r1.stats.pps, r2.stats.pps)),
+					s -> statRow(s.time, s.totalPieceLocked, s.pps)),
+			new Ranking((r1, r2) -> isBetter(
+					lower(r1.stats.time, r2.stats.time),
+					lower(r1.stats.lines, r2.stats.lines),
+					higher(r1.stats.spl, r2.stats.spl)),
+					s -> statRow(s.time, s.lines, s.spl)),
+			new Ranking((r1, r2) -> isBetter(
+					lower(r1.stats.time, r2.stats.time),
+					lower(r1.stats.lines, r2.stats.lines),
+					lower(r1.stats.totalPieceLocked, r2.stats.totalPieceLocked)),
+					s -> statRow(s.time, s.lines, s.totalPieceLocked)),
+			new Ranking((r1, r2) -> isBetter(
+					higher(r1.stats.score, r2.stats.score),
+					higher(r1.stats.lines, r2.stats.lines),
+					lower(r1.stats.totalPieceLocked, r2.stats.totalPieceLocked)),
+					s -> statRow(s.score, s.lines, s.totalPieceLocked)),
+			new Ranking((r1, r2) -> isBetter(
+					higher(r1.stats.maxCombo, r2.stats.maxCombo),
+					lower(r1.stats.time, r2.stats.time),
+					higher(r1.stats.pps, r2.stats.pps)),
+					s -> statRow(s.maxCombo, s.time, s.pps)),
+			new Ranking((r1, r2) -> isBetter(
+					higher(r1.stats.score, r2.stats.score),
+					higher(r1.stats.lines, r2.stats.lines),
+					higher(r1.stats.time, r2.stats.time)),
+					s -> statRow(s.score, s.lines, s.time)),
+			new Ranking(NetSPRecord::timeAttackIsBetter,
+					s -> statRow(s.lines, s.time, s.pps, s.rollclear)),
+	};
+
 	/** Player Name */
 	public String strPlayerName;
 
@@ -60,57 +100,21 @@ public class NetSPRecord implements Serializable {
 	 * @return <code>true</code> if r1 is better than r2
 	 */
 	public static boolean compareRecords(int type, NetSPRecord r1, NetSPRecord r2) {
-		Statistics s1 = r1.stats;
-		Statistics s2 = r2.stats;
+		Ranking ranking = ranking(type);
+		return (ranking != null) && ranking.isBetter(r1, r2);
+	}
 
-		switch(type) {
-		case RANKINGTYPE_GENERIC_SCORE:
-			return isBetter(
-					higher(s1.score, s2.score),
-					higher(s1.lines, s2.lines),
-					lower(s1.time, s2.time));
-		case RANKINGTYPE_GENERIC_TIME:
-			return isBetter(
-					lower(s1.time, s2.time),
-					lower(s1.totalPieceLocked, s2.totalPieceLocked),
-					higher(s1.pps, s2.pps));
-		case RANKINGTYPE_SCORERACE:
-			return isBetter(
-					lower(s1.time, s2.time),
-					lower(s1.lines, s2.lines),
-					higher(s1.spl, s2.spl));
-		case RANKINGTYPE_DIGRACE:
-			return isBetter(
-					lower(s1.time, s2.time),
-					lower(s1.lines, s2.lines),
-					lower(s1.totalPieceLocked, s2.totalPieceLocked));
-		case RANKINGTYPE_ULTRA:
-			return isBetter(
-					higher(s1.score, s2.score),
-					higher(s1.lines, s2.lines),
-					lower(s1.totalPieceLocked, s2.totalPieceLocked));
-		case RANKINGTYPE_COMBORACE:
-			return isBetter(
-					higher(s1.maxCombo, s2.maxCombo),
-					lower(s1.time, s2.time),
-					higher(s1.pps, s2.pps));
-		case RANKINGTYPE_DIGCHALLENGE:
-			return isBetter(
-					higher(s1.score, s2.score),
-					higher(s1.lines, s2.lines),
-					higher(s1.time, s2.time));
-		case RANKINGTYPE_TIMEATTACK:
-			int maxLines = (r1.gameType >= 5) ? 200 : 150;
-			int l1 = Math.min(s1.lines, maxLines);
-			int l2 = Math.min(s2.lines, maxLines);
-			return isBetter(
-					higher(s1.rollclear, s2.rollclear),
-					higher(l1, l2),
-					lower(s1.time, s2.time),
-					higher(s1.pps, s2.pps));
-		default:
-			return false;
-		}
+	private static Ranking ranking(int type) {
+		return ((type < 0) || (type >= RANKINGS.length)) ? null : RANKINGS[type];
+	}
+
+	private static boolean timeAttackIsBetter(NetSPRecord r1, NetSPRecord r2) {
+		int maxLines = (r1.gameType >= 5) ? 200 : 150;
+		return isBetter(
+				higher(r1.stats.rollclear, r2.stats.rollclear),
+				higher(Math.min(r1.stats.lines, maxLines), Math.min(r2.stats.lines, maxLines)),
+				lower(r1.stats.time, r2.stats.time),
+				higher(r1.stats.pps, r2.stats.pps));
 	}
 
 	private static boolean isBetter(int... comparisons) {
@@ -135,6 +139,26 @@ public class NetSPRecord implements Serializable {
 
 	private static int higher(double a, double b) {
 		return Double.compare(a, b);
+	}
+
+	private record Ranking(RecordRanker ranker, StatRowFormatter rowFormatter) {
+		boolean isBetter(NetSPRecord r1, NetSPRecord r2) {
+			return ranker.isBetter(r1, r2);
+		}
+
+		String statRow(Statistics stats) {
+			return rowFormatter.format(stats);
+		}
+	}
+
+	@FunctionalInterface
+	private interface RecordRanker {
+		boolean isBetter(NetSPRecord r1, NetSPRecord r2);
+	}
+
+	@FunctionalInterface
+	private interface StatRowFormatter {
+		String format(Statistics stats);
 	}
 
 	/**
@@ -350,26 +374,8 @@ public class NetSPRecord implements Serializable {
 	 * @return Short String of stats of the record
 	 */
 	public String getStatRow(int type) {
-		switch(type) {
-		case RANKINGTYPE_GENERIC_SCORE:
-			return statRow(stats.score, stats.lines, stats.time);
-		case RANKINGTYPE_GENERIC_TIME:
-			return statRow(stats.time, stats.totalPieceLocked, stats.pps);
-		case RANKINGTYPE_SCORERACE:
-			return statRow(stats.time, stats.lines, stats.spl);
-		case RANKINGTYPE_DIGRACE:
-			return statRow(stats.time, stats.lines, stats.totalPieceLocked);
-		case RANKINGTYPE_ULTRA:
-			return statRow(stats.score, stats.lines, stats.totalPieceLocked);
-		case RANKINGTYPE_COMBORACE:
-			return statRow(stats.maxCombo, stats.time, stats.pps);
-		case RANKINGTYPE_DIGCHALLENGE:
-			return statRow(stats.score, stats.lines, stats.time);
-		case RANKINGTYPE_TIMEATTACK:
-			return statRow(stats.lines, stats.time, stats.pps, stats.rollclear);
-		default:
-			return "";
-		}
+		Ranking ranking = ranking(type);
+		return (ranking == null) ? "" : ranking.statRow(stats);
 	}
 
 	private static String statRow(Object... values) {
