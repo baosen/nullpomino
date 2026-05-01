@@ -2,10 +2,15 @@ package nullpomino.game.net;
 
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotSame;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
 import java.util.Arrays;
 
 import org.junit.jupiter.api.Test;
+
+import nullpomino.game.component.RuleOptions;
 
 class NetPlayerInfoRoundTripTest {
 
@@ -71,6 +76,56 @@ class NetPlayerInfoRoundTripTest {
 
 		assertEquals(7, imported.playCountNow);
 		assertEquals(8, imported.winCountNow);
+	}
+
+	@Test
+	void stringArrayConstructorImportsAllPlayerWireFields() {
+		NetPlayerInfo source = new NetPlayerInfo();
+		source.strName = "Player";
+		source.uid = 7;
+
+		NetPlayerInfo imported = new NetPlayerInfo(source.exportStringArray());
+
+		assertEquals("Player", imported.strName);
+		assertEquals(7, imported.uid);
+	}
+
+	@Test
+	void copyConstructorClonesRuleOptionsWithoutSharing() {
+		NetPlayerInfo source = new NetPlayerInfo();
+		source.ruleOpt = new RuleOptions();
+		source.ruleOpt.strRuleName = "Original";
+
+		NetPlayerInfo copy = new NetPlayerInfo(source);
+
+		assertNotSame(source.ruleOpt, copy.ruleOpt);
+		assertEquals("Original", copy.ruleOpt.strRuleName);
+		source.ruleOpt.strRuleName = "Mutated";
+		assertEquals("Original", copy.ruleOpt.strRuleName);
+	}
+
+	@Test
+	void resetPlayStateClearsReadyAndPlayingFlags() {
+		NetPlayerInfo player = new NetPlayerInfo();
+		player.ready = true;
+		player.playing = true;
+
+		player.resetPlayState();
+
+		assertFalse(player.ready);
+		assertFalse(player.playing);
+	}
+
+	@Test
+	void deleteClearsRuleOptionReferenceWithoutTouchingPrimitives() {
+		NetPlayerInfo player = new NetPlayerInfo();
+		player.ruleOpt = new RuleOptions();
+		player.uid = 5;
+
+		player.delete();
+
+		assertNull(player.ruleOpt);
+		assertEquals(5, player.uid);
 	}
 
 	@Test
