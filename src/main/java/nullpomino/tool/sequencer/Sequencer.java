@@ -43,7 +43,7 @@ import nullpomino.tool.SwingToolUtil;
 import nullpomino.util.ClassFactory;
 import nullpomino.util.CustomProperties;
 import nullpomino.util.RandomizerRegistry;
-import net.omegaboshi.nullpomino.game.subsystem.randomizer.Randomizer;
+import nullpomino.game.randomizer.Randomizer;
 
 /**
  * NullpoMino Sequence Viewer (Original from NullpoUE build 010210 by Zircean)

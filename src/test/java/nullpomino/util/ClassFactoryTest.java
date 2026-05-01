@@ -5,8 +5,8 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import nullpomino.game.subsystem.wallkick.StandardWallkick;
 import nullpomino.game.subsystem.wallkick.Wallkick;
-import net.omegaboshi.nullpomino.game.subsystem.randomizer.MemorylessRandomizer;
-import net.omegaboshi.nullpomino.game.subsystem.randomizer.Randomizer;
+import nullpomino.game.randomizer.MemorylessRandomizer;
+import nullpomino.game.randomizer.Randomizer;
 
 import org.junit.jupiter.api.Test;
 

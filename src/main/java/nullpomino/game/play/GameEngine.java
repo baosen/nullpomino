@@ -19,8 +19,8 @@ import nullpomino.game.component.WallkickResult;
 import nullpomino.game.ai.DummyAI;
 import nullpomino.game.subsystem.wallkick.Wallkick;
 import nullpomino.util.GeneralUtil;
-import net.omegaboshi.nullpomino.game.subsystem.randomizer.MemorylessRandomizer;
-import net.omegaboshi.nullpomino.game.subsystem.randomizer.Randomizer;
+import nullpomino.game.randomizer.MemorylessRandomizer;
+import nullpomino.game.randomizer.Randomizer;
 
 /**
  * Each player's Game processing

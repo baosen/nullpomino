@@ -2,25 +2,25 @@ package nullpomino.util;
 
 import java.util.List;
 
-import net.omegaboshi.nullpomino.game.subsystem.randomizer.BagBonusBagRandomizer;
-import net.omegaboshi.nullpomino.game.subsystem.randomizer.BagBonusRandomizer;
-import net.omegaboshi.nullpomino.game.subsystem.randomizer.BagMinusRandomizer;
-import net.omegaboshi.nullpomino.game.subsystem.randomizer.BagMinusTwoRandomizer;
-import net.omegaboshi.nullpomino.game.subsystem.randomizer.BagNoSZORandomizer;
-import net.omegaboshi.nullpomino.game.subsystem.randomizer.BagRandomizer;
-import net.omegaboshi.nullpomino.game.subsystem.randomizer.DoubleBagRandomizer;
-import net.omegaboshi.nullpomino.game.subsystem.randomizer.ExpDistWeightRandomizer;
-import net.omegaboshi.nullpomino.game.subsystem.randomizer.FixedSequenceRandomizer;
-import net.omegaboshi.nullpomino.game.subsystem.randomizer.GameBoyRandomizer;
-import net.omegaboshi.nullpomino.game.subsystem.randomizer.History4RollsRandomizer;
-import net.omegaboshi.nullpomino.game.subsystem.randomizer.History6RollsRandomizer;
-import net.omegaboshi.nullpomino.game.subsystem.randomizer.LinearDistWeightRandomizer;
-import net.omegaboshi.nullpomino.game.subsystem.randomizer.MemorylessRandomizer;
-import net.omegaboshi.nullpomino.game.subsystem.randomizer.NineBagRandomizer;
-import net.omegaboshi.nullpomino.game.subsystem.randomizer.NintendoRandomizer;
-import net.omegaboshi.nullpomino.game.subsystem.randomizer.QuadraticDistWeightRandomizer;
-import net.omegaboshi.nullpomino.game.subsystem.randomizer.Randomizer;
-import net.omegaboshi.nullpomino.game.subsystem.randomizer.StrictHistoryRandomizer;
+import nullpomino.game.randomizer.BagBonusBagRandomizer;
+import nullpomino.game.randomizer.BagBonusRandomizer;
+import nullpomino.game.randomizer.BagMinusRandomizer;
+import nullpomino.game.randomizer.BagMinusTwoRandomizer;
+import nullpomino.game.randomizer.BagNoSZORandomizer;
+import nullpomino.game.randomizer.BagRandomizer;
+import nullpomino.game.randomizer.DoubleBagRandomizer;
+import nullpomino.game.randomizer.ExpDistWeightRandomizer;
+import nullpomino.game.randomizer.FixedSequenceRandomizer;
+import nullpomino.game.randomizer.GameBoyRandomizer;
+import nullpomino.game.randomizer.History4RollsRandomizer;
+import nullpomino.game.randomizer.History6RollsRandomizer;
+import nullpomino.game.randomizer.LinearDistWeightRandomizer;
+import nullpomino.game.randomizer.MemorylessRandomizer;
+import nullpomino.game.randomizer.NineBagRandomizer;
+import nullpomino.game.randomizer.NintendoRandomizer;
+import nullpomino.game.randomizer.QuadraticDistWeightRandomizer;
+import nullpomino.game.randomizer.Randomizer;
+import nullpomino.game.randomizer.StrictHistoryRandomizer;
 
 /**
  * Compile-checked randomizer roster for tools that present built-in choices.
@@ -53,6 +53,9 @@ public final class RandomizerRegistry {
 	}
 
 	public static List<String> classNames() {
-		return RANDOMIZERS.stream().map(Class::getName).toList();
+		return RANDOMIZERS.stream()
+				.map(Class::getName)
+				.map(LegacyClassNames::toLegacy)
+				.toList();
 	}
 }

@@ -1,6 +1,7 @@
 package nullpomino.util;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNull;
 
 import org.junit.jupiter.api.Test;
@@ -20,9 +21,15 @@ class LegacyClassNamesTest {
 	}
 
 	@Test
-	void passesThroughForeignNames() {
-		assertEquals("net.omegaboshi.nullpomino.game.subsystem.randomizer.BagRandomizer",
+	void rewritesLegacyRandomizerPrefix() {
+		assertEquals("nullpomino.game.randomizer.BagRandomizer",
 				LegacyClassNames.translate("net.omegaboshi.nullpomino.game.subsystem.randomizer.BagRandomizer"));
+	}
+
+	@Test
+	void passesThroughCurrentRandomizerNames() {
+		assertEquals("nullpomino.game.randomizer.BagRandomizer",
+				LegacyClassNames.translate("nullpomino.game.randomizer.BagRandomizer"));
 	}
 
 	@Test
@@ -32,9 +39,15 @@ class LegacyClassNamesTest {
 	}
 
 	@Test
-	void leavesForeignNamesWhenEmittingLegacyNames() {
+	void emitsLegacyRandomizerPrefixForCurrentRandomizer() {
 		assertEquals("net.omegaboshi.nullpomino.game.subsystem.randomizer.BagRandomizer",
-				LegacyClassNames.toLegacy("net.omegaboshi.nullpomino.game.subsystem.randomizer.BagRandomizer"));
+				LegacyClassNames.toLegacy("nullpomino.game.randomizer.BagRandomizer"));
+	}
+
+	@Test
+	void doesNotApplyGeneralFallbackToRandomizerNames() {
+		String legacy = LegacyClassNames.toLegacy("nullpomino.game.randomizer.BagRandomizer");
+		assertFalse(legacy.startsWith("mu.nu.nullpo."));
 	}
 
 	@Test

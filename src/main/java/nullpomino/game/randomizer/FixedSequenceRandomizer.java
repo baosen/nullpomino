@@ -1,4 +1,4 @@
-package net.omegaboshi.nullpomino.game.subsystem.randomizer;
+package nullpomino.game.randomizer;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;

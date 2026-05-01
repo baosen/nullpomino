@@ -6,7 +6,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
-import net.omegaboshi.nullpomino.game.subsystem.randomizer.FixedSequenceRandomizer;
+import nullpomino.game.randomizer.FixedSequenceRandomizer;
 import nullpomino.game.component.Piece;
 
 import org.junit.jupiter.api.Test;

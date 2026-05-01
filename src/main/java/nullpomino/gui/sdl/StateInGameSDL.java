@@ -15,7 +15,7 @@ import nullpomino.gui.sdl.binding.SDL3;
 import nullpomino.gui.sdl.binding.SDLConstants;
 import nullpomino.util.CustomProperties;
 import nullpomino.util.GeneralUtil;
-import net.omegaboshi.nullpomino.game.subsystem.randomizer.Randomizer;
+import nullpomino.game.randomizer.Randomizer;
 
 /**
  * Game screen state (Local play)

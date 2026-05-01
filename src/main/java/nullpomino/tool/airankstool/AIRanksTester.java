@@ -4,7 +4,7 @@ import java.util.Random;
 
 import nullpomino.game.component.Piece;
 import nullpomino.game.ai.RanksAI;
-import net.omegaboshi.nullpomino.game.subsystem.randomizer.*;
+import nullpomino.game.randomizer.*;
 
 
 public class AIRanksTester {

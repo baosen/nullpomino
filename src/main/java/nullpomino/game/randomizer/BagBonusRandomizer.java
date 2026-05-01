@@ -1,4 +1,4 @@
-package net.omegaboshi.nullpomino.game.subsystem.randomizer;
+package nullpomino.game.randomizer;
 
 public class BagBonusRandomizer extends Randomizer {
 

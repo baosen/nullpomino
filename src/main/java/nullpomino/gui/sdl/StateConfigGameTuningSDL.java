@@ -14,7 +14,7 @@ import nullpomino.gui.sdl.binding.SDL3;
 import nullpomino.gui.sdl.binding.SDLStructs;
 import nullpomino.util.CustomProperties;
 import nullpomino.util.GeneralUtil;
-import net.omegaboshi.nullpomino.game.subsystem.randomizer.Randomizer;
+import nullpomino.game.randomizer.Randomizer;
 
 import org.apache.log4j.Logger;
 

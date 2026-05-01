@@ -15,7 +15,7 @@ import nullpomino.game.component.Piece;
 import nullpomino.game.component.RuleOptions;
 import nullpomino.game.ai.DummyAI;
 import nullpomino.game.subsystem.wallkick.Wallkick;
-import net.omegaboshi.nullpomino.game.subsystem.randomizer.Randomizer;
+import nullpomino.game.randomizer.Randomizer;
 
 /**
  * Generic static utils
