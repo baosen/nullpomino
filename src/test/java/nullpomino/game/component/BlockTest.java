@@ -225,6 +225,25 @@ class BlockTest {
 	}
 
 	@Test
+	void updateRainbowPhaseFromActiveEngineSyncsToStatisticsTime() {
+		// timerActive=true takes the engine.statistics.time path so the
+		// rainbow stays in lockstep with the in-game clock instead of
+		// drifting with frame-by-frame increments.
+		nullpomino.game.play.GameManager gm =
+				new nullpomino.game.play.GameManager(new nullpomino.game.event.EventReceiver());
+		gm.init();
+		nullpomino.game.play.GameEngine eng = gm.engine[0];
+		eng.init();
+		eng.timerActive = true;
+		eng.statistics.time = 42;
+
+		Block.rainbowPhase = 0;
+		Block.updateRainbowPhase(eng);
+
+		assertEquals(42 % 21, Block.rainbowPhase);
+	}
+
+	@Test
 	void gemToNormalColorMapsGemRangeAndPassesOthersThrough() {
 		assertEquals(Block.BLOCK_COLOR_RED, Block.gemToNormalColor(Block.BLOCK_COLOR_GEM_RED));
 		assertEquals(Block.BLOCK_COLOR_PURPLE, Block.gemToNormalColor(Block.BLOCK_COLOR_GEM_PURPLE));
