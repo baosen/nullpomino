@@ -1,11 +1,16 @@
 package nullpomino.game.net;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.Arrays;
 
 import org.junit.jupiter.api.Test;
+
+import nullpomino.util.CustomProperties;
 
 class NetSPRecordTest {
 
@@ -65,6 +70,47 @@ class NetSPRecordTest {
 		imported.importStringArray(legacyFields);
 
 		assertEquals("", imported.strTimeStamp);
+	}
+
+	@Test
+	void stringArrayConstructorImportsAllRecordFields() {
+		NetSPRecord source = new NetSPRecord();
+		source.strPlayerName = "Player";
+		source.strModeName = "Mode";
+		source.strRuleName = "Rule";
+		source.gameType = 4;
+
+		NetSPRecord imported = new NetSPRecord(source.exportStringArray());
+
+		assertEquals("Player", imported.strPlayerName);
+		assertEquals("Mode", imported.strModeName);
+		assertEquals("Rule", imported.strRuleName);
+		assertEquals(4, imported.gameType);
+	}
+
+	@Test
+	void exportCustomStatsReturnsEmptyStringWhenListNullOrEmpty() {
+		NetSPRecord empty = new NetSPRecord();
+		assertEquals("", empty.exportCustomStats());
+
+		empty.listCustomStats = null;
+		assertEquals("", empty.exportCustomStats());
+	}
+
+	@Test
+	void setReplayPropEncodesAndCompressesProvidedProperties() {
+		NetSPRecord record = new NetSPRecord();
+		record.strPlayerName = "Player";
+		CustomProperties replay = new CustomProperties();
+		replay.setProperty("replay.frame", 42);
+
+		record.setReplayProp(replay);
+
+		assertNotNull(record.strReplayProp);
+		assertFalse(record.strReplayProp.isEmpty());
+		String decoded = NetUtil.decompressString(record.strReplayProp);
+		assertTrue(decoded.contains("replay.frame"));
+		assertTrue(decoded.contains("42"));
 	}
 
 	@Test
