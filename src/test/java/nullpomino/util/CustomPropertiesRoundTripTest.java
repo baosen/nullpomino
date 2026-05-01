@@ -134,4 +134,14 @@ class CustomPropertiesRoundTripTest {
 
 		assertTrue(properties.isEmpty());
 	}
+
+	@Test
+	void loadFromFileOrEmptyReadsExistingFile() throws IOException {
+		Path file = tempDir.resolve("existing.properties");
+		Files.write(file, "name=Nullpo\n".getBytes(StandardCharsets.UTF_8));
+
+		CustomProperties properties = CustomProperties.loadFromFileOrEmpty(file.toString());
+
+		assertEquals("Nullpo", properties.getProperty("name"));
+	}
 }
