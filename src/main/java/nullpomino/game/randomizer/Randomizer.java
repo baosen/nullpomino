@@ -10,12 +10,6 @@ public abstract class Randomizer {
 	protected Random r;
 	public int[] pieces;
 
-	public Randomizer() {}
-
-	public Randomizer(boolean[] pieceEnable, long seed) {
-		setState(pieceEnable, seed);
-	}
-
 	public void init() {}
 
 	public abstract int next();
