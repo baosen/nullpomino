@@ -303,7 +303,7 @@ public class NetSPRecord implements Serializable {
 		strReplayProp = reader.read();
 		gameType = reader.readInt();
 		style = reader.readInt();
-		strTimeStamp = reader.hasNext() ? reader.read() : "";
+		strTimeStamp = reader.read("");
 	}
 
 	private boolean hasCustomStats() {

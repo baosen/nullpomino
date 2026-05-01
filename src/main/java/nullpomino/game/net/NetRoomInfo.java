@@ -352,8 +352,8 @@ public class NetRoomInfo implements Serializable {
 		customRated = reader.readBoolean();
 		style = reader.readInt();
 		divideChangeRateByPlayers = reader.readBoolean();
-		if(reader.hasNext()) isTarget = reader.readBoolean();
-		if(reader.hasNext()) targetTimer = reader.readInt();
+		isTarget = reader.readBoolean(isTarget);
+		targetTimer = reader.readInt(targetTimer);
 	}
 
 	/**

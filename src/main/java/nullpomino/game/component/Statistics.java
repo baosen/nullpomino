@@ -409,7 +409,7 @@ public class Statistics implements Serializable {
 		pps = reader.readFloat();
 		gamerate = reader.readFloat();
 		maxChain = reader.readInt();
-		if(reader.hasNext()) rollclear = reader.readInt();
+		rollclear = reader.readInt(rollclear);
 	}
 
 	/**
@@ -489,6 +489,10 @@ public class Statistics implements Serializable {
 
 		int readInt() {
 			return Integer.parseInt(read());
+		}
+
+		int readInt(int defaultValue) {
+			return hasNext() ? readInt() : defaultValue;
 		}
 
 		double readDouble() {
