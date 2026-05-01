@@ -10,14 +10,14 @@ package nullpomino.util;
  *   <li>{@code net.tetrisconcept.poochy.nullpomino.ai.*} (pre-AI-consolidation)</li>
  * </ol>
  * All three target the current layout {@code nullpomino.*}, with the AI sub-packages
- * collapsing to {@code nullpomino.ai.*}.
+ * collapsing to {@code nullpomino.game.ai.*}.
  */
 public final class LegacyClassNames {
 	private static final String LEGACY_PREFIX = "mu.nu.nullpo.";
 	private static final String CURRENT_PREFIX = "nullpomino.";
 	private static final String LEGACY_AI_INTERNAL = "nullpomino.game.subsystem.ai.";
 	private static final String LEGACY_AI_POOCHY = "net.tetrisconcept.poochy.nullpomino.ai.";
-	private static final String CURRENT_AI_PREFIX = "nullpomino.ai.";
+	private static final String CURRENT_AI_PREFIX = "nullpomino.game.ai.";
 
 	private LegacyClassNames() {}
 

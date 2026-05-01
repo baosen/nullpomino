@@ -7,7 +7,7 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
 
-import nullpomino.ai.AIPlayer;
+import nullpomino.game.ai.AIPlayer;
 import nullpomino.gui.sdl.binding.SDL3;
 import nullpomino.util.ClassFactory;
 import nullpomino.util.GeneralUtil;
