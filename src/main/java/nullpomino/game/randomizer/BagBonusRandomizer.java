@@ -7,14 +7,6 @@ public class BagBonusRandomizer extends Randomizer {
 	int pt;
 	int bonus;
 
-	public BagBonusRandomizer() {
-		super();
-	}
-
-	public BagBonusRandomizer(boolean[] pieceEnable, long seed) {
-		super(pieceEnable, seed);
-	}
-
 	public void init() {
 		initBag();
 		shuffle();

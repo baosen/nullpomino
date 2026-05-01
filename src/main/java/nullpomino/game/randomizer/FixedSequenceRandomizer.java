@@ -20,11 +20,6 @@ public class FixedSequenceRandomizer extends Randomizer {
 		this(DEFAULT_SEQUENCE_FILE);
 	}
 
-	public FixedSequenceRandomizer(boolean[] pieceEnable, long seed) {
-		this(DEFAULT_SEQUENCE_FILE);
-		setState(pieceEnable, seed);
-	}
-
 	public FixedSequenceRandomizer(Path sequenceFile) {
 		this.sequenceFile = sequenceFile;
 	}
