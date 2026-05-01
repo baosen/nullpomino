@@ -42,4 +42,9 @@ class SwingToolUtilTest {
 
 		assertEquals(file.toUri().toURL(), url);
 	}
+
+	@Test
+	void ignoreInvalidTextFieldSwallowsException() {
+		SwingToolUtil.ignoreInvalidTextField(new RuntimeException("boom"));
+	}
 }
