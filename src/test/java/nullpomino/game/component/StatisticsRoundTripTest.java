@@ -38,6 +38,20 @@ class StatisticsRoundTripTest {
 		assertEquals(0, imported.rollclear);
 	}
 
+	@Test
+	void legacyImportLeavesExistingRollclearWhenFieldIsMissing() {
+		Statistics original = populatedStatistics();
+		String[] fields = original.exportStringArray();
+		String[] legacyFields = new String[37];
+		System.arraycopy(fields, 0, legacyFields, 0, legacyFields.length);
+		Statistics imported = new Statistics();
+		imported.rollclear = 2;
+
+		imported.importStringArray(legacyFields);
+
+		assertEquals(2, imported.rollclear);
+	}
+
 	private static Statistics populatedStatistics() {
 		Statistics stats = new Statistics();
 		stats.score = 100;
