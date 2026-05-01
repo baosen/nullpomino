@@ -6,6 +6,7 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import nullpomino.game.component.Piece;
+import nullpomino.util.RandomizerRegistry;
 
 import org.junit.jupiter.api.Test;
 
@@ -93,6 +94,30 @@ class BagRandomizerTest {
 				Piece.PIECE_T,
 				Piece.PIECE_L3
 		}, randomizer.pieces);
+	}
+
+	@Test
+	void registryRandomizersConfigureThroughNoArgConstructorAndSetState() throws Exception {
+		boolean[] enabled = standardPieces();
+
+		for(Class<? extends Randomizer> cls : RandomizerRegistry.all()) {
+			Randomizer randomizer = cls.getDeclaredConstructor().newInstance();
+			randomizer.setState(enabled, 2468L);
+
+			for(int i = 0; i < Piece.PIECE_STANDARD_COUNT; i++) {
+				int piece = randomizer.next();
+				assertTrue(enabled[piece],
+						cls.getSimpleName() + " drew disabled piece " + piece);
+			}
+		}
+	}
+
+	@Test
+	void runtimeStateConstructorsStillSeedAndInitialize() {
+		boolean[] enabled = standardPieces();
+
+		assertDrawsEnabledPieces(new MemorylessRandomizer(enabled, 1357L), Piece.PIECE_STANDARD_COUNT);
+		assertDrawsEnabledPieces(new History4RollsRandomizer(enabled, 1357L), Piece.PIECE_STANDARD_COUNT);
 	}
 
 	private static void assertCycleCounts(Randomizer randomizer, int expectedCopies) {
