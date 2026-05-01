@@ -8,23 +8,71 @@ import nullpomino.gui.sdl.binding.SDL3;
  * State of the configuration screen
  */
 public class StateConfigMainMenuSDL extends DummyMenuChooseStateSDL {
-	/** UI Text identifier Strings */
-	private static final String[] UI_TEXT = {
-		"ConfigMainMenu_General",
-		"ConfigMainMenu_Rule",
-		"ConfigMainMenu_GameTuning",
-		"ConfigMainMenu_AI",
-		"ConfigMainMenu_Keyboard",
-		"ConfigMainMenu_KeyboardNavi",
-		"ConfigMainMenu_KeyboardReset",
-		"ConfigMainMenu_Joystick"
+	private static final StatePreparer NO_PREP = (state, player) -> {};
+
+	private static final MenuEntry[] ENTRIES = {
+			new MenuEntry(
+					"[GENERAL OPTIONS]",
+					"ConfigMainMenu_General",
+					NullpoMinoSDL.STATE_CONFIG_GENERAL,
+					false,
+					NO_PREP),
+			new MenuEntry(
+					"[RULE SELECT]",
+					"ConfigMainMenu_Rule",
+					NullpoMinoSDL.STATE_CONFIG_RULESTYLESELECT,
+					true,
+					(state, player) -> ((StateConfigRuleStyleSelectSDL)state).player = player),
+			new MenuEntry(
+					"[GAME TUNING]",
+					"ConfigMainMenu_GameTuning",
+					NullpoMinoSDL.STATE_CONFIG_GAMETUNING,
+					true,
+					(state, player) -> ((StateConfigGameTuningSDL)state).player = player),
+			new MenuEntry(
+					"[AI SETTING]",
+					"ConfigMainMenu_AI",
+					NullpoMinoSDL.STATE_CONFIG_AISELECT,
+					true,
+					(state, player) -> ((StateConfigAISelectSDL)state).player = player),
+			new MenuEntry(
+					"[KEYBOARD SETTING]",
+					"ConfigMainMenu_Keyboard",
+					NullpoMinoSDL.STATE_CONFIG_KEYBOARD,
+					true,
+					(state, player) -> {
+						StateConfigKeyboardSDL keyboard = (StateConfigKeyboardSDL)state;
+						keyboard.player = player;
+						keyboard.isNavSetting = false;
+					}),
+			new MenuEntry(
+					"[KEYBOARD NAVIGATION SETTING]",
+					"ConfigMainMenu_KeyboardNavi",
+					NullpoMinoSDL.STATE_CONFIG_KEYBOARD_NAVI,
+					true,
+					(state, player) -> ((StateConfigKeyboardNaviSDL)state).player = player),
+			new MenuEntry(
+					"[KEYBOARD RESET]",
+					"ConfigMainMenu_KeyboardReset",
+					NullpoMinoSDL.STATE_CONFIG_KEYBOARD_RESET,
+					true,
+					(state, player) -> ((StateConfigKeyboardResetSDL)state).player = player),
+			new MenuEntry(
+					"[JOYSTICK SETTING]",
+					"ConfigMainMenu_Joystick",
+					NullpoMinoSDL.STATE_CONFIG_JOYSTICK_MAIN,
+					true,
+					(state, player) -> ((StateConfigJoystickMainSDL)state).player = player),
 	};
+
+	/** UI Text identifier Strings */
+	private static final String[] UI_TEXT = uiTextKeys();
 
 	/** Player number */
 	protected int player = 0;
 
 	public StateConfigMainMenuSDL () {
-		maxCursor = 7;
+		maxCursor = ENTRIES.length - 1;
 		minChoiceY = 3;
 	}
 
@@ -39,14 +87,9 @@ public class StateConfigMainMenuSDL extends DummyMenuChooseStateSDL {
 
 		NormalFontSDL.printFontGrid(1, 3 + cursor, "b", NormalFontSDL.COLOR_RED);
 
-		NormalFontSDL.printFontGrid(2, 3, "[GENERAL OPTIONS]", (cursor == 0));
-		NormalFontSDL.printFontGrid(2, 4, "[RULE SELECT]:" + (player + 1) + "P", (cursor == 1));
-		NormalFontSDL.printFontGrid(2, 5, "[GAME TUNING]:" + (player + 1) + "P", (cursor == 2));
-		NormalFontSDL.printFontGrid(2, 6, "[AI SETTING]:" + (player + 1) + "P", (cursor == 3));
-		NormalFontSDL.printFontGrid(2, 7, "[KEYBOARD SETTING]:" + (player + 1) + "P", (cursor == 4));
-		NormalFontSDL.printFontGrid(2, 8, "[KEYBOARD NAVIGATION SETTING]:" + (player + 1) + "P", (cursor == 5));
-		NormalFontSDL.printFontGrid(2, 9, "[KEYBOARD RESET]:" + (player + 1) + "P", (cursor == 6));
-		NormalFontSDL.printFontGrid(2, 10, "[JOYSTICK SETTING]:" + (player + 1) + "P", (cursor == 7));
+		for(int i = 0; i < ENTRIES.length; i++) {
+			NormalFontSDL.printFontGrid(2, 3 + i, ENTRIES[i].label(player), cursor == i);
+		}
 
 		NormalFontSDL.printTTFFont(16, 432, NullpoMinoSDL.getUIText(UI_TEXT[cursor]));
 	}
@@ -62,48 +105,7 @@ public class StateConfigMainMenuSDL extends DummyMenuChooseStateSDL {
 	@Override
 	protected boolean onDecide() {
 		ResourceHolderSDL.soundManager.play("decide");
-
-		switch(cursor) {
-		case 0:
-			NullpoMinoSDL.enterState(NullpoMinoSDL.STATE_CONFIG_GENERAL);
-			break;
-		case 1:
-			StateConfigRuleStyleSelectSDL stateR = (StateConfigRuleStyleSelectSDL)NullpoMinoSDL.gameStates[NullpoMinoSDL.STATE_CONFIG_RULESTYLESELECT];
-			stateR.player = player;
-			NullpoMinoSDL.enterState(NullpoMinoSDL.STATE_CONFIG_RULESTYLESELECT);
-			break;
-		case 2:
-			StateConfigGameTuningSDL stateT = (StateConfigGameTuningSDL)NullpoMinoSDL.gameStates[NullpoMinoSDL.STATE_CONFIG_GAMETUNING];
-			stateT.player = player;
-			NullpoMinoSDL.enterState(NullpoMinoSDL.STATE_CONFIG_GAMETUNING);
-			break;
-		case 3:
-			StateConfigAISelectSDL stateA = (StateConfigAISelectSDL)NullpoMinoSDL.gameStates[NullpoMinoSDL.STATE_CONFIG_AISELECT];
-			stateA.player = player;
-			NullpoMinoSDL.enterState(NullpoMinoSDL.STATE_CONFIG_AISELECT);
-			break;
-		case 4:
-			StateConfigKeyboardSDL stateK = (StateConfigKeyboardSDL)NullpoMinoSDL.gameStates[NullpoMinoSDL.STATE_CONFIG_KEYBOARD];
-			stateK.player = player;
-			stateK.isNavSetting = false;
-			NullpoMinoSDL.enterState(NullpoMinoSDL.STATE_CONFIG_KEYBOARD);
-			break;
-		case 5:
-			StateConfigKeyboardNaviSDL stateKN = (StateConfigKeyboardNaviSDL)NullpoMinoSDL.gameStates[NullpoMinoSDL.STATE_CONFIG_KEYBOARD_NAVI];
-			stateKN.player = player;
-			NullpoMinoSDL.enterState(NullpoMinoSDL.STATE_CONFIG_KEYBOARD_NAVI);
-			break;
-		case 6:
-			StateConfigKeyboardResetSDL stateKR = (StateConfigKeyboardResetSDL)NullpoMinoSDL.gameStates[NullpoMinoSDL.STATE_CONFIG_KEYBOARD_RESET];
-			stateKR.player = player;
-			NullpoMinoSDL.enterState(NullpoMinoSDL.STATE_CONFIG_KEYBOARD_RESET);
-			break;
-		case 7:
-			StateConfigJoystickMainSDL stateJ = (StateConfigJoystickMainSDL)NullpoMinoSDL.gameStates[NullpoMinoSDL.STATE_CONFIG_JOYSTICK_MAIN];
-			stateJ.player = player;
-			NullpoMinoSDL.enterState(NullpoMinoSDL.STATE_CONFIG_JOYSTICK_MAIN);
-			break;
-		}
+		ENTRIES[cursor].enter(player);
 		return false;
 	}
 
@@ -111,5 +113,30 @@ public class StateConfigMainMenuSDL extends DummyMenuChooseStateSDL {
 	protected boolean onCancel() {
 		NullpoMinoSDL.goBack();
 		return false;
+	}
+
+	private static String[] uiTextKeys() {
+		String[] keys = new String[ENTRIES.length];
+		for(int i = 0; i < keys.length; i++) {
+			keys[i] = ENTRIES[i].uiTextKey;
+		}
+		return keys;
+	}
+
+	private record MenuEntry(String label, String uiTextKey,
+			int stateID, boolean playerSpecific, StatePreparer preparer) {
+		String label(int player) {
+			return playerSpecific ? label + ":" + (player + 1) + "P" : label;
+		}
+
+		void enter(int player) {
+			preparer.prepare(NullpoMinoSDL.gameStates[stateID], player);
+			NullpoMinoSDL.enterState(stateID);
+		}
+	}
+
+	@FunctionalInterface
+	private interface StatePreparer {
+		void prepare(BaseStateSDL state, int player);
 	}
 }
