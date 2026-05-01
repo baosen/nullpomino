@@ -79,6 +79,12 @@ class LegacyClassNamesTest {
 	}
 
 	@Test
+	void toLegacyPassesUnrelatedClassNamesThrough() {
+		String unrelated = "com.example.foo.Bar";
+		assertEquals(unrelated, LegacyClassNames.toLegacy(unrelated));
+	}
+
+	@Test
 	void passesThroughCurrentAiNames() {
 		assertEquals("nullpomino.game.ai.BasicAI",
 				LegacyClassNames.translate("nullpomino.game.ai.BasicAI"));

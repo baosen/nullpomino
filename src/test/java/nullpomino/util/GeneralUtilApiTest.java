@@ -6,10 +6,17 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.Calendar;
 import java.util.TimeZone;
 
+import org.junit.jupiter.api.io.TempDir;
+
 import nullpomino.game.component.Piece;
+import nullpomino.game.component.RuleOptions;
 import nullpomino.game.ai.DummyAI;
 import nullpomino.game.subsystem.wallkick.StandardWallkick;
 import nullpomino.game.randomizer.MemorylessRandomizer;
@@ -23,6 +30,9 @@ import org.junit.jupiter.api.Test;
  * getNumberOfPiecesCanAppear — all zero-caller per grep.
  */
 class GeneralUtilApiTest {
+
+	@TempDir
+	Path tempDir;
 
 	@Test
 	void getTimeFormatsFramesAsMinutesAndSeconds() {
@@ -115,5 +125,57 @@ class GeneralUtilApiTest {
 	@Test
 	void pluginLoadersReturnNullWhenClassCannotLoad() {
 		assertNull(GeneralUtil.loadRandomizer("example.DoesNotExist"));
+	}
+
+	@Test
+	void getReplayFilenameProducesTimestampedRepFile() {
+		String name = GeneralUtil.getReplayFilename();
+		assertNotNull(name);
+		assertTrue(name.endsWith(".rep"), "expected .rep suffix: " + name);
+		assertTrue(name.matches("\\d{4}_\\d{2}_\\d{2}_\\d{2}_\\d{2}_\\d{2}\\.rep"),
+				"expected yyyy_MM_dd_HH_mm_ss.rep, got " + name);
+	}
+
+	@Test
+	void getCalendarStringWithoutTimezoneRendersUsingDefaultZone() {
+		Calendar fixed = Calendar.getInstance();
+		fixed.set(2026, Calendar.APRIL, 23, 12, 34, 56);
+
+		String s = GeneralUtil.getCalendarString(fixed);
+
+		assertNotNull(s);
+		assertTrue(s.contains("2026"), "expected year in rendered string: " + s);
+	}
+
+	@Test
+	void exportCalendarStringNoArgRendersCurrentInstantInGmt() {
+		String s = GeneralUtil.exportCalendarString();
+
+		assertNotNull(s);
+		assertTrue(s.matches("\\d{4}-\\d{2}-\\d{2}-\\d{2}-\\d{2}-\\d{2}"),
+				"expected yyyy-MM-dd-HH-mm-ss, got " + s);
+	}
+
+	@Test
+	void importCalendarStringReturnsNullForUnparseableInput() {
+		assertNull(GeneralUtil.importCalendarString("not-a-date"));
+	}
+
+	@Test
+	void loadRuleReturnsDefaultRuleOptionsWhenFileMissing() {
+		RuleOptions r = GeneralUtil.loadRule("nope/does/not/exist.rul");
+
+		assertNotNull(r);
+		assertEquals("", r.strRuleName);
+	}
+
+	@Test
+	void loadRuleReadsRuleNameFromExistingFile() throws IOException {
+		Path file = tempDir.resolve("test.rul");
+		Files.write(file, "0.ruleopt.strRuleName=My Rule\n".getBytes(StandardCharsets.UTF_8));
+
+		RuleOptions r = GeneralUtil.loadRule(file.toString());
+
+		assertEquals("My Rule", r.strRuleName);
 	}
 }
