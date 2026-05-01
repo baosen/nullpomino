@@ -3,6 +3,8 @@
 package nullpomino.gui.sdl;
 
 import com.sun.jna.Pointer;
+import com.sun.jna.ptr.FloatByReference;
+import com.sun.jna.ptr.IntByReference;
 
 import nullpomino.gui.sdl.binding.SDL3;
 import nullpomino.gui.sdl.binding.SDL3TTF;
@@ -19,25 +21,28 @@ public class NormalFontSDL {
 	/** Extra TTF-only color — the bitmap font atlas only has rows 0–9. */
 	public static final int COLOR_LIGHTGRAY = 10;
 
+	private static final int[][] FONT_COLORS = {
+			{255, 255, 255},
+			{0, 0, 255},
+			{255, 0, 0},
+			{255, 128, 128},
+			{0, 255, 0},
+			{255, 255, 0},
+			{0, 255, 255},
+			{255, 128, 0},
+			{255, 0, 255},
+			{0, 0, 128},
+			{192, 192, 192},
+	};
+
 	/**
 	 * Get font color as RGB values
 	 * @param fontColor font color constant
 	 * @return int array {r, g, b}
 	 */
 	public static int[] getFontColorRGB(int fontColor) {
-		switch(fontColor) {
-		case COLOR_BLUE:     return new int[]{  0,  0,255};
-		case COLOR_RED:      return new int[]{255,  0,  0};
-		case COLOR_PINK:     return new int[]{255,128,128};
-		case COLOR_GREEN:    return new int[]{  0,255,  0};
-		case COLOR_YELLOW:   return new int[]{255,255,  0};
-		case COLOR_CYAN:     return new int[]{  0,255,255};
-		case COLOR_ORANGE:   return new int[]{255,128,  0};
-		case COLOR_PURPLE:   return new int[]{255,  0,255};
-		case COLOR_DARKBLUE: return new int[]{  0,  0,128};
-		case COLOR_LIGHTGRAY: return new int[]{192,192,192};
-		}
-		return new int[]{255,255,255};
+		if((fontColor < 0) || (fontColor >= FONT_COLORS.length)) fontColor = COLOR_WHITE;
+		return FONT_COLORS[fontColor].clone();
 	}
 
 	/**
@@ -49,44 +54,8 @@ public class NormalFontSDL {
 	 */
 	public static void printTTFFont(int fontX, int fontY, String fontStr, int fontColor) {
 		if(ResourceHolderSDL.ttfFont == null) return;
-		Pointer renderer = NullpoMinoSDL.renderer;
-
-		// Draw shadow
-		SDLStructs.SDL_Color.ByValue shadowColor = new SDLStructs.SDL_Color.ByValue(0, 0, 0);
-		Pointer shadowSurface = SDL3TTF.INSTANCE.TTF_RenderText_Blended(
-			ResourceHolderSDL.ttfFont, fontStr, 0, shadowColor);
-		if(shadowSurface != null) {
-			Pointer shadowTex = SDL3.INSTANCE.SDL_CreateTextureFromSurface(renderer, shadowSurface);
-			SDL3.INSTANCE.SDL_DestroySurface(shadowSurface);
-			if(shadowTex != null) {
-				com.sun.jna.ptr.FloatByReference tw = new com.sun.jna.ptr.FloatByReference();
-				com.sun.jna.ptr.FloatByReference th = new com.sun.jna.ptr.FloatByReference();
-				SDL3.INSTANCE.SDL_GetTextureSize(shadowTex, tw, th);
-				SDL3.INSTANCE.SDL_SetTextureBlendMode(shadowTex, SDLConstants.SDL_BLENDMODE_BLEND);
-				SDLStructs.SDL_FRect dst = new SDLStructs.SDL_FRect(fontX + 1, fontY + 1, tw.getValue(), th.getValue());
-				SDL3.INSTANCE.SDL_RenderTexture(renderer, shadowTex, null, dst);
-				SDL3.INSTANCE.SDL_DestroyTexture(shadowTex);
-			}
-		}
-
-		// Draw text
-		int[] rgb = getFontColorRGB(fontColor);
-		SDLStructs.SDL_Color.ByValue fgColor = new SDLStructs.SDL_Color.ByValue(rgb[0], rgb[1], rgb[2]);
-		Pointer textSurface = SDL3TTF.INSTANCE.TTF_RenderText_Blended(
-			ResourceHolderSDL.ttfFont, fontStr, 0, fgColor);
-		if(textSurface != null) {
-			Pointer textTex = SDL3.INSTANCE.SDL_CreateTextureFromSurface(renderer, textSurface);
-			SDL3.INSTANCE.SDL_DestroySurface(textSurface);
-			if(textTex != null) {
-				com.sun.jna.ptr.FloatByReference tw = new com.sun.jna.ptr.FloatByReference();
-				com.sun.jna.ptr.FloatByReference th = new com.sun.jna.ptr.FloatByReference();
-				SDL3.INSTANCE.SDL_GetTextureSize(textTex, tw, th);
-				SDL3.INSTANCE.SDL_SetTextureBlendMode(textTex, SDLConstants.SDL_BLENDMODE_BLEND);
-				SDLStructs.SDL_FRect dst = new SDLStructs.SDL_FRect(fontX, fontY, tw.getValue(), th.getValue());
-				SDL3.INSTANCE.SDL_RenderTexture(renderer, textTex, null, dst);
-				SDL3.INSTANCE.SDL_DestroyTexture(textTex);
-			}
-		}
+		drawTTFText(fontX + 1, fontY + 1, fontStr, new SDLStructs.SDL_Color.ByValue(0, 0, 0));
+		drawTTFText(fontX, fontY, fontStr, color(fontColor));
 	}
 
 	/**
@@ -104,10 +73,32 @@ public class NormalFontSDL {
 	 */
 	public static int getTTFStringWidth(String fontStr) {
 		if(ResourceHolderSDL.ttfFont == null || fontStr == null) return 0;
-		com.sun.jna.ptr.IntByReference w = new com.sun.jna.ptr.IntByReference();
-		com.sun.jna.ptr.IntByReference h = new com.sun.jna.ptr.IntByReference();
+		IntByReference w = new IntByReference();
+		IntByReference h = new IntByReference();
 		if(!SDL3TTF.INSTANCE.TTF_GetStringSize(ResourceHolderSDL.ttfFont, fontStr, 0, w, h)) return 0;
 		return w.getValue();
+	}
+
+	private static SDLStructs.SDL_Color.ByValue color(int fontColor) {
+		int[] rgb = getFontColorRGB(fontColor);
+		return new SDLStructs.SDL_Color.ByValue(rgb[0], rgb[1], rgb[2]);
+	}
+
+	private static void drawTTFText(int x, int y, String text, SDLStructs.SDL_Color.ByValue color) {
+		Pointer surface = SDL3TTF.INSTANCE.TTF_RenderText_Blended(ResourceHolderSDL.ttfFont, text, 0, color);
+		if(surface == null) return;
+
+		Pointer texture = SDL3.INSTANCE.SDL_CreateTextureFromSurface(NullpoMinoSDL.renderer, surface);
+		SDL3.INSTANCE.SDL_DestroySurface(surface);
+		if(texture == null) return;
+
+		FloatByReference width = new FloatByReference();
+		FloatByReference height = new FloatByReference();
+		SDL3.INSTANCE.SDL_GetTextureSize(texture, width, height);
+		SDL3.INSTANCE.SDL_SetTextureBlendMode(texture, SDLConstants.SDL_BLENDMODE_BLEND);
+		SDLStructs.SDL_FRect dst = new SDLStructs.SDL_FRect(x, y, width.getValue(), height.getValue());
+		SDL3.INSTANCE.SDL_RenderTexture(NullpoMinoSDL.renderer, texture, null, dst);
+		SDL3.INSTANCE.SDL_DestroyTexture(texture);
 	}
 
 	/**
