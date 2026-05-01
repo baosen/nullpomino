@@ -25,6 +25,16 @@ class MenuItemPersistenceTest {
 	}
 
 	@Test
+	void integerItemValueStringRendersCurrentValue() {
+		IntegerMenuItem item = new IntegerMenuItem("startlevel", "LEVEL",
+				EventReceiver.COLOR_BLUE, 0, 0, 20);
+
+		assertEquals("0", item.getValueString());
+		item.value = 7;
+		assertEquals("7", item.getValueString());
+	}
+
+	@Test
 	void booleanItemSavesAndLoadsPlayerLegacyKey() {
 		BooleanMenuItem item = new BooleanMenuItem("big", "BIG",
 				EventReceiver.COLOR_BLUE, false);
