@@ -86,6 +86,17 @@ class ModeManagerTest {
 		assertEquals("loadable", manager.getName(1));
 	}
 
+	@Test
+	void loadGameModesSkipsConstructorThatThrows() {
+		ModeManager manager = new ModeManager();
+
+		manager.loadGameModes(List.of(LoadableMode.class, FailingMode.class, LoadableMode.class));
+
+		assertEquals(2, manager.getSize());
+		assertEquals("loadable", manager.getName(0));
+		assertEquals("loadable", manager.getName(1));
+	}
+
 	static final class TestMode implements GameMode {
 		private final String name;
 		private final boolean netplay;
@@ -118,6 +129,33 @@ class ModeManagerTest {
 
 		public boolean isNetplayMode() {
 			return netplay;
+		}
+	}
+
+	public static final class FailingMode implements GameMode {
+		public FailingMode() {
+			throw new IllegalStateException("intentional load failure");
+		}
+
+		public String getName() {
+			return "failing";
+		}
+
+		public int getPlayers() {
+			return 1;
+		}
+
+		public int getGameStyle() {
+			return 0;
+		}
+
+		public void modeInit(GameManager manager) {
+		}
+
+		public void playerInit(GameEngine engine, int playerID) {
+		}
+
+		public void renderInput(GameEngine engine, int playerID) {
 		}
 	}
 
