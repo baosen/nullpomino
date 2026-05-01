@@ -11,6 +11,7 @@ import nullpomino.ai.AIPlayer;
 import nullpomino.gui.sdl.binding.SDL3;
 import nullpomino.util.ClassFactory;
 import nullpomino.util.GeneralUtil;
+import nullpomino.util.LegacyClassNames;
 
 import org.apache.log4j.Logger;
 
@@ -85,8 +86,9 @@ public class StateConfigAISelectSDL extends BaseStateSDL {
 		aiShowState = NullpoMinoSDL.propGlobal.getProperty(player + ".aiShowState", false);
 
 		aiID = -1;
+		String currentAINormalized = LegacyClassNames.translate(currentAI);
 		for(int i = 0; i < aiPathList.length; i++) {
-			if(currentAI.equals(aiPathList[i])) aiID = i;
+			if(currentAINormalized.equals(LegacyClassNames.translate(aiPathList[i]))) aiID = i;
 		}
 	}
 
