@@ -1905,10 +1905,9 @@ public class GameEngine {
 
 				// NEXTCreate the order of appearance of the piece
 				if(randomizer == null) {
-					randomizer = new MemorylessRandomizer(nextPieceEnable, randSeed);
-				} else {
-					randomizer.setState(nextPieceEnable, randSeed);
+					randomizer = new MemorylessRandomizer();
 				}
+				randomizer.setState(nextPieceEnable, randSeed);
 				nextPieceArrayID = new int[nextPieceArraySize];
 				for (int i = 0; i < nextPieceArraySize; i++) {
 					nextPieceArrayID[i] = randomizer.next();
