@@ -1,26 +1,10 @@
-package nullpomino.game.subsystem.randomizer;
+package nullpomino.game.randomizer;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import nullpomino.game.randomizer.BagMinusRandomizer;
-import nullpomino.game.randomizer.BagMinusTwoRandomizer;
-import nullpomino.game.randomizer.BagBonusBagRandomizer;
-import nullpomino.game.randomizer.BagBonusRandomizer;
-import nullpomino.game.randomizer.BagNoSZORandomizer;
-import nullpomino.game.randomizer.BagRandomizer;
-import nullpomino.game.randomizer.DoubleBagRandomizer;
-import nullpomino.game.randomizer.GameBoyRandomizer;
-import nullpomino.game.randomizer.History4RollsRandomizer;
-import nullpomino.game.randomizer.History6RollsRandomizer;
-import nullpomino.game.randomizer.LinearDistWeightRandomizer;
-import nullpomino.game.randomizer.MemorylessRandomizer;
-import nullpomino.game.randomizer.NineBagRandomizer;
-import nullpomino.game.randomizer.NintendoRandomizer;
-import nullpomino.game.randomizer.Randomizer;
-import nullpomino.game.randomizer.StrictHistoryRandomizer;
 import nullpomino.game.component.Piece;
 
 import org.junit.jupiter.api.Test;
