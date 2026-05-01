@@ -18,7 +18,7 @@ import org.junit.jupiter.api.io.TempDir;
 import nullpomino.game.component.Piece;
 import nullpomino.game.component.RuleOptions;
 import nullpomino.game.ai.DummyAI;
-import nullpomino.game.subsystem.wallkick.StandardWallkick;
+import nullpomino.game.wallkick.StandardWallkick;
 import nullpomino.game.randomizer.MemorylessRandomizer;
 
 import org.junit.jupiter.api.Test;

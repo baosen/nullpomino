@@ -6,7 +6,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Stream;
 
-import nullpomino.game.subsystem.mode.GameMode;
+import nullpomino.game.mode.GameMode;
 
 import org.apache.log4j.Logger;
 

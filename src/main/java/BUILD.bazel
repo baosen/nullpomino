@@ -36,7 +36,7 @@ java_library(
 )
 
 # Cyclically-coupled engine + GUI cluster:
-# util <-> game/subsystem <-> mode <-> gui/net <-> gui/sdl, plus tool/airankstool which
+# util <-> game <-> gui/net <-> gui/sdl, plus tool/airankstool which
 # is depended on by game/ai (RanksAI). Cannot be split further without source
 # refactors to break the cycles.
 java_library(

@@ -2,19 +2,19 @@ package nullpomino.util;
 
 import java.util.List;
 
-import nullpomino.game.subsystem.wallkick.AvalancheClassicWallkick;
-import nullpomino.game.subsystem.wallkick.AvalancheWallkick;
-import nullpomino.game.subsystem.wallkick.ClassicPlusWallkick;
-import nullpomino.game.subsystem.wallkick.ClassicWallkick;
-import nullpomino.game.subsystem.wallkick.DTETWallkick;
-import nullpomino.game.subsystem.wallkick.GBCWallkick;
-import nullpomino.game.subsystem.wallkick.PhysicianWallkick;
-import nullpomino.game.subsystem.wallkick.StandardMild180Wallkick;
-import nullpomino.game.subsystem.wallkick.StandardSymmetricMild180Wallkick;
-import nullpomino.game.subsystem.wallkick.StandardSymmetricWallkick;
-import nullpomino.game.subsystem.wallkick.StandardWallkick;
-import nullpomino.game.subsystem.wallkick.WallOnlyWallkick;
-import nullpomino.game.subsystem.wallkick.Wallkick;
+import nullpomino.game.wallkick.AvalancheClassicWallkick;
+import nullpomino.game.wallkick.AvalancheWallkick;
+import nullpomino.game.wallkick.ClassicPlusWallkick;
+import nullpomino.game.wallkick.ClassicWallkick;
+import nullpomino.game.wallkick.DTETWallkick;
+import nullpomino.game.wallkick.GBCWallkick;
+import nullpomino.game.wallkick.PhysicianWallkick;
+import nullpomino.game.wallkick.StandardMild180Wallkick;
+import nullpomino.game.wallkick.StandardSymmetricMild180Wallkick;
+import nullpomino.game.wallkick.StandardSymmetricWallkick;
+import nullpomino.game.wallkick.StandardWallkick;
+import nullpomino.game.wallkick.WallOnlyWallkick;
+import nullpomino.game.wallkick.Wallkick;
 
 /**
  * Compile-checked wallkick roster for tools that present built-in choices.

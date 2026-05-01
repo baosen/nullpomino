@@ -3,8 +3,8 @@ package nullpomino.util;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import nullpomino.game.subsystem.wallkick.StandardWallkick;
-import nullpomino.game.subsystem.wallkick.Wallkick;
+import nullpomino.game.wallkick.StandardWallkick;
+import nullpomino.game.wallkick.Wallkick;
 import nullpomino.game.randomizer.MemorylessRandomizer;
 import nullpomino.game.randomizer.Randomizer;
 

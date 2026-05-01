@@ -9,8 +9,8 @@ import nullpomino.game.component.RuleOptions;
 import nullpomino.game.play.GameEngine;
 import nullpomino.game.play.GameManager;
 import nullpomino.game.ai.DummyAI;
-import nullpomino.game.subsystem.mode.GameMode;
-import nullpomino.game.subsystem.wallkick.Wallkick;
+import nullpomino.game.mode.GameMode;
+import nullpomino.game.wallkick.Wallkick;
 import nullpomino.gui.sdl.binding.SDL3;
 import nullpomino.gui.sdl.binding.SDLConstants;
 import nullpomino.util.CustomProperties;
@@ -633,7 +633,7 @@ public class StateInGameSDL extends BaseStateSDL {
 	/**
 	 * Synthesize controller input from mouse + Escape on the pre-game
 	 * SETTING screen. Hover updates the mode's cursor directly via
-	 * {@link nullpomino.game.subsystem.mode.GameMode#setMenuCursor};
+	 * {@link nullpomino.game.mode.GameMode#setMenuCursor};
 	 * wheel / click / cancel are OR'd into ctrl.buttonPress[] (which
 	 * inputStatusUpdate just populated from the keyboard) so keyboard and
 	 * mouse can drive the same menu without one clobbering the other.

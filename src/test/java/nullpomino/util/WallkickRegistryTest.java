@@ -6,7 +6,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import java.util.List;
 import java.util.stream.Stream;
 
-import nullpomino.game.subsystem.wallkick.Wallkick;
+import nullpomino.game.wallkick.Wallkick;
 
 import org.junit.jupiter.api.DynamicTest;
 import org.junit.jupiter.api.Test;

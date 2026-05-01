@@ -9,7 +9,7 @@ import java.util.List;
 
 import nullpomino.game.play.GameEngine;
 import nullpomino.game.play.GameManager;
-import nullpomino.game.subsystem.mode.GameMode;
+import nullpomino.game.mode.GameMode;
 
 import org.junit.jupiter.api.Test;
 

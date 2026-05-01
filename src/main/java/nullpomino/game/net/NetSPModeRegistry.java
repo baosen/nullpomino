@@ -11,7 +11,7 @@ import nullpomino.game.play.GameEngine;
  * validation against the registered mode roster.
  *
  * <p>Each entry's {@code name} must match the {@code getName()} string of a
- * registered local {@link nullpomino.game.subsystem.mode.GameMode} — these
+ * registered local {@link nullpomino.game.mode.GameMode} — these
  * modes are played offline, with online ranking overlaid; this is enforced
  * by {@code NetSPModeRegistryTest}.
  */

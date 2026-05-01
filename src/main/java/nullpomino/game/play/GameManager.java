@@ -10,7 +10,7 @@ import java.nio.file.Paths;
 import nullpomino.game.component.BGMStatus;
 import nullpomino.game.component.BackgroundStatus;
 import nullpomino.game.event.EventReceiver;
-import nullpomino.game.subsystem.mode.GameMode;
+import nullpomino.game.mode.GameMode;
 import nullpomino.util.CustomProperties;
 
 import org.apache.log4j.Logger;
