@@ -10,7 +10,7 @@ import nullpomino.game.component.RuleOptions;
 import nullpomino.game.net.NetPlayerClient;
 import nullpomino.game.net.NetRoomInfo;
 import nullpomino.game.play.GameManager;
-import nullpomino.game.subsystem.ai.DummyAI;
+import nullpomino.ai.DummyAI;
 import nullpomino.game.subsystem.mode.GameMode;
 import nullpomino.game.subsystem.mode.NetDummyMode;
 import nullpomino.game.subsystem.wallkick.Wallkick;

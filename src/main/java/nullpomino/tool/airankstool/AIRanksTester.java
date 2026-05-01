@@ -3,7 +3,7 @@ package nullpomino.tool.airankstool;
 import java.util.Random;
 
 import nullpomino.game.component.Piece;
-import nullpomino.game.subsystem.ai.RanksAI;
+import nullpomino.ai.RanksAI;
 import net.omegaboshi.nullpomino.game.subsystem.randomizer.*;
 
 

@@ -1,11 +1,10 @@
-package net.tetrisconcept.poochy.nullpomino.ai;
+package nullpomino.ai;
 
 import nullpomino.game.component.Controller;
 import nullpomino.game.component.Field;
 import nullpomino.game.component.Piece;
 import nullpomino.game.play.GameEngine;
 import nullpomino.game.play.GameManager;
-import nullpomino.game.subsystem.ai.DummyAI;
 
 import org.apache.log4j.Logger;
 

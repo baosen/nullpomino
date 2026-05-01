@@ -1,6 +1,6 @@
 // SPDX-FileCopyrightText: 2010 NullNoname
 // SPDX-License-Identifier: BSD-3-Clause
-package nullpomino.game.subsystem.ai;
+package nullpomino.ai;
 
 import nullpomino.game.component.Field;
 import nullpomino.game.component.Piece;

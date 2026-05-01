@@ -42,4 +42,34 @@ class LegacyClassNamesTest {
 		assertNull(LegacyClassNames.translate(null));
 		assertNull(LegacyClassNames.toLegacy(null));
 	}
+
+	@Test
+	void rewritesLegacyAiInternalPrefix() {
+		assertEquals("nullpomino.ai.BasicAI",
+				LegacyClassNames.translate("nullpomino.game.subsystem.ai.BasicAI"));
+	}
+
+	@Test
+	void rewritesLegacyAiPoochyPrefix() {
+		assertEquals("nullpomino.ai.PoochyBot",
+				LegacyClassNames.translate("net.tetrisconcept.poochy.nullpomino.ai.PoochyBot"));
+	}
+
+	@Test
+	void rewritesDoubleLegacyAiPrefix() {
+		assertEquals("nullpomino.ai.BasicAI",
+				LegacyClassNames.translate("mu.nu.nullpo.game.subsystem.ai.BasicAI"));
+		assertEquals("nullpomino.ai.RanksAI",
+				LegacyClassNames.translate("mu.nu.nullpo.game.subsystem.ai.RanksAI"));
+		assertEquals("nullpomino.ai.TSpinAI",
+				LegacyClassNames.translate("mu.nu.nullpo.game.subsystem.ai.TSpinAI"));
+	}
+
+	@Test
+	void passesThroughCurrentAiNames() {
+		assertEquals("nullpomino.ai.BasicAI",
+				LegacyClassNames.translate("nullpomino.ai.BasicAI"));
+		assertEquals("nullpomino.ai.PoochyBot",
+				LegacyClassNames.translate("nullpomino.ai.PoochyBot"));
+	}
 }

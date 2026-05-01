@@ -8,7 +8,7 @@ import nullpomino.game.component.Controller;
 import nullpomino.game.component.RuleOptions;
 import nullpomino.game.play.GameEngine;
 import nullpomino.game.play.GameManager;
-import nullpomino.game.subsystem.ai.DummyAI;
+import nullpomino.ai.DummyAI;
 import nullpomino.game.subsystem.mode.GameMode;
 import nullpomino.game.subsystem.wallkick.Wallkick;
 import nullpomino.gui.sdl.binding.SDL3;

@@ -10,7 +10,7 @@ import java.util.Calendar;
 import java.util.TimeZone;
 
 import nullpomino.game.component.Piece;
-import nullpomino.game.subsystem.ai.DummyAI;
+import nullpomino.ai.DummyAI;
 import nullpomino.game.subsystem.wallkick.StandardWallkick;
 import net.omegaboshi.nullpomino.game.subsystem.randomizer.MemorylessRandomizer;
 
@@ -105,7 +105,10 @@ class GeneralUtilApiTest {
 		assertTrue(GeneralUtil.loadWallkick(
 				"mu.nu.nullpo.game.subsystem.wallkick.StandardWallkick")
 				instanceof StandardWallkick);
+		assertTrue(GeneralUtil.loadAIPlayer("nullpomino.ai.DummyAI") instanceof DummyAI);
 		assertTrue(GeneralUtil.loadAIPlayer("nullpomino.game.subsystem.ai.DummyAI")
+				instanceof DummyAI);
+		assertTrue(GeneralUtil.loadAIPlayer("mu.nu.nullpo.game.subsystem.ai.DummyAI")
 				instanceof DummyAI);
 	}
 
