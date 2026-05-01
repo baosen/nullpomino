@@ -786,6 +786,18 @@ public class NullpoMinoSDL {
 		return id != STATE_INGAME && id != STATE_NETGAME;
 	}
 
+	private static boolean isStateId(int id) {
+		return (id >= 0) && (id < STATE_MAX);
+	}
+
+	private static boolean hasCurrentState() {
+		return isStateId(currentState);
+	}
+
+	private static void pushCurrent(Deque<Integer> stack) {
+		if(hasCurrentState()) stack.push(currentState);
+	}
+
 	/**
 	 * Switch state, pushing the outgoing state onto the back stack so
 	 * {@link #goBack()} can return here later.
@@ -796,9 +808,7 @@ public class NullpoMinoSDL {
 			quit = true;
 			return;
 		}
-		if((currentState >= 0) && (currentState < STATE_MAX)) {
-			backStack.push(currentState);
-		}
+		pushCurrent(backStack);
 		forwardStack.clear();
 		doTransition(id);
 	}
@@ -814,7 +824,7 @@ public class NullpoMinoSDL {
 			quit = true;
 			return;
 		}
-		if((currentState >= 0) && (currentState < STATE_MAX) && isForwardSafe(currentState)) {
+		if(hasCurrentState() && isForwardSafe(currentState)) {
 			forwardStack.push(currentState);
 		}
 		doTransition(backStack.pop());
@@ -831,9 +841,7 @@ public class NullpoMinoSDL {
 		if(forwardStack.isEmpty()) return;
 		int id = forwardStack.pop();
 		if(!isForwardSafe(id)) return;
-		if((currentState >= 0) && (currentState < STATE_MAX)) {
-			backStack.push(currentState);
-		}
+		pushCurrent(backStack);
 		doTransition(id);
 	}
 
@@ -860,26 +868,32 @@ public class NullpoMinoSDL {
 	 * {@link #backStack} — callers are responsible for push/pop/clear.
 	 */
 	private static void doTransition(int id) {
-		if((currentState >= 0) && (currentState < STATE_MAX) && (gameStates[currentState] != null)) {
-			gameStates[currentState].leave();
+		BaseStateSDL previous = hasCurrentState() ? gameStates[currentState] : null;
+		if(previous != null) previous.leave();
+
+		BaseStateSDL next = stateForTransition(id);
+		if(next == null) return;
+
+		currentState = id;
+		next.enter();
+		// Tell menu screens they were just entered, so the next mouse-
+		// hover check snaps the cursor to the row under the pointer
+		// without waiting for a movement event. Done here (after
+		// enter()) rather than in the base class enter() so subclasses
+		// that override enter() without chaining to super still pick
+		// it up.
+		if (next instanceof DummyMenuChooseStateSDL) {
+			((DummyMenuChooseStateSDL) next).justEntered = true;
 		}
-		if((id >= 0) && (id < STATE_MAX) && (gameStates[id] != null)) {
-			currentState = id;
-			gameStates[currentState].enter();
-			// Tell menu screens they were just entered, so the next mouse-
-			// hover check snaps the cursor to the row under the pointer
-			// without waiting for a movement event. Done here (after
-			// enter()) rather than in the base class enter() so subclasses
-			// that override enter() without chaining to super still pick
-			// it up.
-			if (gameStates[currentState] instanceof DummyMenuChooseStateSDL) {
-				((DummyMenuChooseStateSDL) gameStates[currentState]).justEntered = true;
-			}
-		} else if(id < 0) {
+	}
+
+	private static BaseStateSDL stateForTransition(int id) {
+		if(id < 0) {
 			quit = true;
-		} else {
-			throw new NullPointerException("Game state #" + id + " is null");
+			return null;
 		}
+		if(isStateId(id) && (gameStates[id] != null)) return gameStates[id];
+		throw new NullPointerException("Game state #" + id + " is null");
 	}
 
 	/**
