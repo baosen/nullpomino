@@ -179,11 +179,12 @@ public class NetPlayerInfo implements Serializable {
 		readIntArray(reader, rating);
 		readIntArray(reader, playCount);
 		readIntArray(reader, winCount);
-		if(reader.hasNext()) {
-			spPersonalBest.importString(NetUtil.decompressString(reader.read()));
+		String compressedPersonalBest = reader.read(null);
+		if(compressedPersonalBest != null) {
+			spPersonalBest.importString(NetUtil.decompressString(compressedPersonalBest));
 		}
-		if(reader.hasNext()) playCountNow = reader.readInt();
-		if(reader.hasNext()) winCountNow = reader.readInt();
+		playCountNow = reader.readInt(playCountNow);
+		winCountNow = reader.readInt(winCountNow);
 	}
 
 	/**

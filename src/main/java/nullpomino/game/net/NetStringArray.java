@@ -24,12 +24,24 @@ final class NetStringArray {
 			return Integer.parseInt(read());
 		}
 
+		int readInt(int defaultValue) {
+			return hasNext() ? readInt() : defaultValue;
+		}
+
 		boolean readBoolean() {
 			return Boolean.parseBoolean(read());
 		}
 
+		boolean readBoolean(boolean defaultValue) {
+			return hasNext() ? readBoolean() : defaultValue;
+		}
+
 		String read() {
 			return values[index++];
+		}
+
+		String read(String defaultValue) {
+			return hasNext() ? read() : defaultValue;
 		}
 	}
 
