@@ -10,14 +10,6 @@ public class StrictHistoryRandomizer extends Randomizer {
 	int[] notHist;
 	int histLen;
 
-	public StrictHistoryRandomizer() {
-		super();
-	}
-
-	public StrictHistoryRandomizer(boolean[] pieceEnable, long seed) {
-		super(pieceEnable, seed);
-	}
-
 	public void init() {
 		history = new int[] {
 				indexOfPiece(Piece.PIECE_S),

@@ -6,14 +6,6 @@ public class BagRandomizer extends Randomizer {
 	int pt;
 	int dealLength;
 
-	public BagRandomizer() {
-		super();
-	}
-
-	public BagRandomizer(boolean[] pieceEnable, long seed) {
-		super(pieceEnable, seed);
-	}
-
 	public void init() {
 		bag = new int[bagSize()];
 		pt = 0;

@@ -10,14 +10,6 @@ public abstract class DistanceWeightRandomizer extends Randomizer {
 
 	boolean firstPiece = true;
 
-	public DistanceWeightRandomizer() {
-		super();
-	}
-
-	public DistanceWeightRandomizer(boolean[] pieceEnable, long seed) {
-		super(pieceEnable, seed);
-	}
-
 	public void init() {
 		weights = new int[pieces.length];
 		for (int i = 0; i < pieces.length; i++) {

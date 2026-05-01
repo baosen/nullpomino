@@ -2,14 +2,6 @@ package nullpomino.game.randomizer;
 
 public class ExpDistWeightRandomizer extends DistanceWeightRandomizer {
 
-	public ExpDistWeightRandomizer() {
-		super();
-	}
-
-	public ExpDistWeightRandomizer(boolean[] pieceEnable, long seed) {
-		super(pieceEnable, seed);
-	}
-
 	public int getWeight(int i) {
 		if (weights[i] == 0) {
 			return 0;
