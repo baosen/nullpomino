@@ -13,7 +13,7 @@ import org.apache.log4j.Logger;
 
 import nullpomino.game.component.Piece;
 import nullpomino.game.component.RuleOptions;
-import nullpomino.game.subsystem.ai.DummyAI;
+import nullpomino.ai.DummyAI;
 import nullpomino.game.subsystem.wallkick.Wallkick;
 import net.omegaboshi.nullpomino.game.subsystem.randomizer.Randomizer;
 

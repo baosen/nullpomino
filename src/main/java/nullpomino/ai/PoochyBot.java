@@ -1,4 +1,4 @@
-package net.tetrisconcept.poochy.nullpomino.ai;
+package nullpomino.ai;
 
 import nullpomino.game.component.Controller;
 import nullpomino.game.component.Field;
@@ -8,7 +8,6 @@ import nullpomino.game.component.WallkickResult;
 import nullpomino.game.event.EventReceiver;
 import nullpomino.game.play.GameEngine;
 import nullpomino.game.play.GameManager;
-import nullpomino.game.subsystem.ai.DummyAI;
 import nullpomino.util.GeneralUtil;
 
 import org.apache.log4j.Logger;

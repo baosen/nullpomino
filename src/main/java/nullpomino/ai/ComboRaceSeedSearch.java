@@ -1,10 +1,9 @@
-package net.tetrisconcept.poochy.nullpomino.ai;
+package nullpomino.ai;
 
 import nullpomino.game.component.Field;
 import nullpomino.game.component.Piece;
 import nullpomino.game.component.WallkickResult;
 import nullpomino.game.play.GameEngine;
-import nullpomino.game.subsystem.ai.DummyAI;
 import nullpomino.game.subsystem.wallkick.StandardWallkick;
 import net.omegaboshi.nullpomino.game.subsystem.randomizer.BagNoSZORandomizer;
 

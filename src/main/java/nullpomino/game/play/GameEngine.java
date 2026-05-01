@@ -16,7 +16,7 @@ import nullpomino.game.component.RuleOptions;
 import nullpomino.game.component.SpeedParam;
 import nullpomino.game.component.Statistics;
 import nullpomino.game.component.WallkickResult;
-import nullpomino.game.subsystem.ai.DummyAI;
+import nullpomino.ai.DummyAI;
 import nullpomino.game.subsystem.wallkick.Wallkick;
 import nullpomino.util.GeneralUtil;
 import net.omegaboshi.nullpomino.game.subsystem.randomizer.MemorylessRandomizer;

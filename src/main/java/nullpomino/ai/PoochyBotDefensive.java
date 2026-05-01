@@ -1,4 +1,4 @@
-package net.tetrisconcept.poochy.nullpomino.ai;
+package nullpomino.ai;
 
 import nullpomino.game.component.Field;
 import nullpomino.game.component.Piece;

@@ -37,11 +37,12 @@ java_library(
 
 # Cyclically-coupled engine + GUI cluster:
 # util <-> subsystem <-> mode <-> gui/net <-> gui/sdl, plus tool/airankstool which
-# is depended on by subsystem/ai (RanksAI). Cannot be split further without source
+# is depended on by ai (RanksAI). Cannot be split further without source
 # refactors to break the cycles.
 java_library(
     name = "core",
     srcs = glob([
+        "nullpomino/ai/*.java",
         "nullpomino/util/*.java",
         "nullpomino/game/**/*.java",
         "nullpomino/gui/*.java",
@@ -58,17 +59,6 @@ java_library(
         ":sdl_binding",
         ":unix_crypt",
         JNA,
-        LOG4J,
-    ],
-)
-
-java_library(
-    name = "poochy_ai",
-    srcs = glob(["net/tetrisconcept/poochy/nullpomino/ai/*.java"]),
-    javacopts = JAVACOPTS,
-    visibility = ["//visibility:public"],
-    deps = [
-        ":core",
         LOG4J,
     ],
 )
@@ -128,7 +118,6 @@ java_library(
     exports = [
         ":core",
         ":crypto",
-        ":poochy_ai",
         ":sdl_binding",
         ":swing_tool_util",
         ":tool_musiclisteditor",
