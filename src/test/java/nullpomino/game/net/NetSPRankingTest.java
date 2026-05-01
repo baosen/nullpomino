@@ -1,7 +1,13 @@
 package nullpomino.game.net;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotSame;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+import java.util.LinkedList;
 
 import nullpomino.game.component.Statistics;
 import nullpomino.util.CustomProperties;
@@ -87,6 +93,111 @@ class NetSPRankingTest {
 		assertEquals(1, imported.listRecord.size());
 		assertEquals("alice", imported.listRecord.get(0).strPlayerName);
 		assertEquals(100, imported.listRecord.get(0).stats.score);
+	}
+
+	@Test
+	void defaultConstructorAppliesResetValues() {
+		NetSPRanking r = new NetSPRanking();
+
+		assertEquals("", r.strModeName);
+		assertEquals("", r.strRuleName);
+		assertEquals(0, r.gameType);
+		assertEquals(0, r.style);
+		assertEquals(0, r.rankingType);
+		assertEquals(100, r.maxRecords);
+		assertEquals(0, r.listRecord.size());
+	}
+
+	@Test
+	void copyConstructorAndCopyMethodCloneRecordListIndependently() {
+		NetSPRanking source = rankingWithMax(10);
+		source.listRecord.add(record("alice", 100));
+
+		NetSPRanking ctorCopy = new NetSPRanking(source);
+		assertNotSame(source.listRecord, ctorCopy.listRecord);
+		assertEquals(1, ctorCopy.listRecord.size());
+		source.listRecord.get(0).stats.score = 9999;
+		assertEquals(100, ctorCopy.listRecord.get(0).stats.score);
+
+		NetSPRanking copyMethod = new NetSPRanking();
+		copyMethod.copy(source);
+		assertNotSame(source.listRecord, copyMethod.listRecord);
+		assertEquals(source.strModeName, copyMethod.strModeName);
+		assertEquals(source.maxRecords, copyMethod.maxRecords);
+	}
+
+	@Test
+	void getRecordAndIndexOfFindByNameOrPlayerInfo() {
+		NetSPRanking ranking = rankingWithMax(10);
+		ranking.listRecord.add(record("alice", 100));
+		ranking.listRecord.add(record("bob", 90));
+
+		assertEquals(1, ranking.indexOf("bob"));
+		assertEquals(-1, ranking.indexOf("dana"));
+		assertEquals("alice", ranking.getRecord("alice").strPlayerName);
+		assertNull(ranking.getRecord("dana"));
+
+		NetPlayerInfo player = new NetPlayerInfo();
+		player.strName = "bob";
+		assertEquals(1, ranking.indexOf(player));
+		assertEquals("bob", ranking.getRecord(player).strPlayerName);
+	}
+
+	@Test
+	void removeRecordByPlayerInfoDelegatesToNameLookup() {
+		NetSPRanking ranking = rankingWithMax(10);
+		ranking.listRecord.add(record("alice", 100));
+		ranking.listRecord.add(record("bob", 90));
+		NetPlayerInfo player = new NetPlayerInfo();
+		player.strName = "alice";
+
+		assertEquals(1, ranking.removeRecord(player));
+		assertEquals(1, ranking.listRecord.size());
+		assertSame("bob", ranking.listRecord.get(0).strPlayerName);
+	}
+
+	@Test
+	void isNewRecordReturnsTrueOnFirstSubmissionOrBetter() {
+		NetSPRanking ranking = rankingWithMax(10);
+		NetSPRecord alice = record("alice", 100);
+
+		assertTrue(ranking.isNewRecord(alice));
+		ranking.listRecord.add(alice);
+
+		NetSPRecord better = record("alice", 200);
+		assertTrue(ranking.isNewRecord(better));
+
+		NetSPRecord worse = record("alice", 50);
+		assertFalse(ranking.isNewRecord(worse));
+	}
+
+	@Test
+	void mergeRankingsCombinesRecordsAcrossSourceRankings() {
+		NetSPRanking r1 = rankingWithMax(10);
+		r1.listRecord.add(record("alice", 100));
+		r1.listRecord.add(record("bob", 90));
+		NetSPRanking r2 = rankingWithMax(10);
+		r2.listRecord.add(record("carol", 80));
+		LinkedList<NetSPRanking> rankings = new LinkedList<>();
+		rankings.add(r1);
+		rankings.add(r2);
+
+		NetSPRanking merged = NetSPRanking.mergeRankings(rankings);
+
+		assertEquals(3, merged.listRecord.size());
+		assertNotNullElement(merged, "alice");
+		assertNotNullElement(merged, "bob");
+		assertNotNullElement(merged, "carol");
+	}
+
+	@Test
+	void mergeRankingsReturnsNullForNullOrEmptyInput() {
+		assertNull(NetSPRanking.mergeRankings(null));
+		assertNull(NetSPRanking.mergeRankings(new LinkedList<>()));
+	}
+
+	private static void assertNotNullElement(NetSPRanking ranking, String name) {
+		assertSame(name, ranking.getRecord(name).strPlayerName);
 	}
 
 	private static NetSPRanking rankingWithMax(int maxRecords) {
