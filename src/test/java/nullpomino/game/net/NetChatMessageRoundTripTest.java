@@ -1,6 +1,7 @@
 package nullpomino.game.net;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
 import java.util.Calendar;
 import java.util.TimeZone;
@@ -66,6 +67,45 @@ class NetChatMessageRoundTripTest {
 		assertEquals(player.strRealHost, message.strHost);
 		assertEquals(room.roomID, message.roomID);
 		assertEquals(room.strName, message.strRoomName);
+	}
+
+	@Test
+	void deleteResetsAllFieldsToNullOrSentinelDefaults() {
+		NetChatMessage message = messageWithFixedTimestamp();
+		message.uid = 7;
+		message.strUserName = "Player";
+		message.strHost = "host";
+		message.roomID = 3;
+		message.strRoomName = "Room";
+		message.strMessage = "hi";
+
+		message.delete();
+
+		assertEquals(-1, message.uid);
+		assertNull(message.strUserName);
+		assertNull(message.strHost);
+		assertEquals(-1, message.roomID);
+		assertNull(message.strRoomName);
+		assertNull(message.timestamp);
+		assertNull(message.strMessage);
+	}
+
+	@Test
+	void outputLogRunsForLobbyAndRoomVariants() {
+		NetChatMessage lobby = messageWithFixedTimestamp();
+		lobby.uid = 1;
+		lobby.strUserName = "alice";
+		lobby.roomID = -1;
+		lobby.strMessage = "lobby chat";
+		lobby.outputLog();
+
+		NetChatMessage room = messageWithFixedTimestamp();
+		room.uid = 2;
+		room.strUserName = "bob";
+		room.roomID = 5;
+		room.strRoomName = "Room A";
+		room.strMessage = "room chat";
+		room.outputLog();
 	}
 
 	private static NetChatMessage messageWithFixedTimestamp() {
