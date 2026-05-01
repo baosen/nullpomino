@@ -2,11 +2,14 @@ package nullpomino.game.net;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotSame;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.Arrays;
+
+import nullpomino.game.component.RuleOptions;
 
 import org.junit.jupiter.api.Test;
 
@@ -267,6 +270,148 @@ class NetRoomInfoTest {
 		assertEquals(1, copy.playerQueue.size());
 		assertEquals(1, copy.playerSeatDead.size());
 		assertEquals(1, copy.chatList.size());
+	}
+
+	@Test
+	void stringArrayConstructorImportsRoomWireFields() {
+		NetRoomInfo source = new NetRoomInfo();
+		source.roomID = 42;
+		source.strName = "Hello";
+		source.maxPlayers = 6;
+
+		NetRoomInfo imported = new NetRoomInfo(source.exportStringArray());
+
+		assertEquals(42, imported.roomID);
+		assertEquals("Hello", imported.strName);
+		assertEquals(6, imported.maxPlayers);
+	}
+
+	@Test
+	void copyDeepCopiesRuleOptionsWhenPresent() {
+		NetRoomInfo source = new NetRoomInfo();
+		source.ruleOpt = new RuleOptions();
+		source.ruleOpt.strRuleName = "Original";
+
+		NetRoomInfo copy = new NetRoomInfo(source);
+
+		assertNotSame(source.ruleOpt, copy.ruleOpt);
+		assertEquals("Original", copy.ruleOpt.strRuleName);
+	}
+
+	@Test
+	void getWinnerReturnsLoneSurvivorOfStartedMultiplayerGame() {
+		NetRoomInfo room = new NetRoomInfo();
+		room.startPlayers = 2;
+		room.playing = true;
+		NetPlayerInfo alive = activePlayer("A", "1");
+		NetPlayerInfo dead = activePlayer("B", "2");
+		dead.playing = false;
+		room.playerSeat.add(alive);
+		room.playerSeat.add(dead);
+		// Iterate dead first so the for-loop completes the dead iteration
+		// before returning on alive — this exercises the loop's continuation
+		// edge as well as the return.
+		room.playerSeatNowPlaying.add(dead);
+		room.playerSeatNowPlaying.add(alive);
+
+		assertSame(alive, room.getWinner());
+	}
+
+	@Test
+	void getWinnerReturnsNullWhenGameNotStartedOrManySurvivors() {
+		NetRoomInfo notStarted = new NetRoomInfo();
+		notStarted.startPlayers = 1;
+		assertNull(notStarted.getWinner());
+
+		NetRoomInfo manyAlive = new NetRoomInfo();
+		manyAlive.startPlayers = 2;
+		manyAlive.playing = true;
+		NetPlayerInfo a = activePlayer("A", "1");
+		NetPlayerInfo b = activePlayer("B", "2");
+		manyAlive.playerSeat.add(a);
+		manyAlive.playerSeat.add(b);
+		manyAlive.playerSeatNowPlaying.add(a);
+		manyAlive.playerSeatNowPlaying.add(b);
+
+		assertNull(manyAlive.getWinner());
+	}
+
+	@Test
+	void getWinnerTeamReturnsNullWhenSurvivorHasEmptyTeam() {
+		NetRoomInfo room = startedMultiplayerRoomWithTwoPlayers();
+		// Indices 0 is the spectator; 1 and 2 are the active players.
+		room.playerSeatNowPlaying.get(1).strTeam = "Red";
+		assertEquals("Red", room.getWinnerTeam());
+
+		NetRoomInfo emptyTeams = startedMultiplayerRoomWithTwoPlayers();
+		emptyTeams.playerSeatNowPlaying.get(1).strTeam = "";
+		assertNull(emptyTeams.getWinnerTeam());
+	}
+
+	@Test
+	void isTeamWinFalseWhenAnySurvivorHasNoTeamOrTeamsDiffer() {
+		NetRoomInfo noTeam = startedMultiplayerRoomWithTwoPlayers();
+		noTeam.playerSeatNowPlaying.get(1).strTeam = "";
+		assertFalse(noTeam.isTeamWin());
+
+		NetRoomInfo split = startedMultiplayerRoomWithTwoPlayers();
+		split.playerSeatNowPlaying.get(1).strTeam = "Red";
+		split.playerSeatNowPlaying.get(2).strTeam = "Blue";
+		assertFalse(split.isTeamWin());
+
+		NetRoomInfo unified = startedMultiplayerRoomWithTwoPlayers();
+		unified.playerSeatNowPlaying.get(1).strTeam = "Red";
+		unified.playerSeatNowPlaying.get(2).strTeam = "Red";
+		assertTrue(unified.isTeamWin());
+	}
+
+	@Test
+	void deleteClearsRuleOptionsAndAllPlayerLists() {
+		NetRoomInfo room = new NetRoomInfo();
+		room.ruleOpt = new RuleOptions();
+		room.mapList.add("map");
+		room.playerList.add(activePlayer("X", "1"));
+		room.playerSeat.add(activePlayer("Y", "2"));
+		room.playerSeatNowPlaying.add(activePlayer("Z", "3"));
+		room.playerQueue.add(activePlayer("Q", "4"));
+		room.playerSeatDead.add(activePlayer("D", "5"));
+		room.chatList.add(new NetChatMessage());
+
+		room.delete();
+
+		assertNull(room.ruleOpt);
+		assertEquals(0, room.mapList.size());
+		assertEquals(0, room.playerList.size());
+		assertEquals(0, room.playerSeat.size());
+		assertEquals(0, room.playerSeatNowPlaying.size());
+		assertEquals(0, room.playerQueue.size());
+		assertEquals(0, room.playerSeatDead.size());
+		assertEquals(0, room.chatList.size());
+	}
+
+	private static NetRoomInfo startedMultiplayerRoomWithTwoPlayers() {
+		NetRoomInfo room = new NetRoomInfo();
+		room.startPlayers = 2;
+		room.playing = true;
+		NetPlayerInfo a = activePlayer("Red", "1");
+		NetPlayerInfo b = activePlayer("Red", "2");
+		// Non-active spectator at the front of playerSeatNowPlaying so the
+		// for loop in getWinnerTeam / isTeamWin completes one iteration
+		// without short-circuiting on the first element.
+		NetPlayerInfo spectator = player("Anything", "99");
+		room.playerSeat.add(a);
+		room.playerSeat.add(b);
+		room.playerSeatNowPlaying.add(spectator);
+		room.playerSeatNowPlaying.add(a);
+		room.playerSeatNowPlaying.add(b);
+		return room;
+	}
+
+	private static NetPlayerInfo activePlayer(String team, String ip) {
+		NetPlayerInfo p = player(team, ip);
+		p.playing = true;
+		p.connected = true;
+		return p;
 	}
 
 	private static NetPlayerInfo player(String team, String ip) {
