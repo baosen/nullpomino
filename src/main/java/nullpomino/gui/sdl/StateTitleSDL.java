@@ -17,8 +17,18 @@ public class StateTitleSDL extends DummyMenuChooseStateSDL {
         "Title_Start", "Title_Replay", "Title_NetPlay", "Title_Config", "Title_Exit"
 	};
 
+	private static final int EXIT_CURSOR = 4;
+
+	private static final int[] DESTINATIONS = {
+			NullpoMinoSDL.STATE_SELECTMODE,
+			NullpoMinoSDL.STATE_REPLAYSELECT,
+			NullpoMinoSDL.STATE_NET_SERVERSELECT,
+			NullpoMinoSDL.STATE_CONFIG_MAINMENU,
+			-1
+	};
+
 	public StateTitleSDL () {
-		maxCursor = 4;
+		maxCursor = CHOICES.length - 1;
 		minChoiceY = 3;
 	}
 
@@ -63,25 +73,8 @@ public class StateTitleSDL extends DummyMenuChooseStateSDL {
 	protected boolean onDecide() {
 		// Skip the decide sound when quitting so it doesn't get cut off mid-
 		// playback as the program tears down audio on its way out.
-		if(cursor != 4) ResourceHolderSDL.soundManager.play("decide");
-
-		switch(cursor) {
-		case 0:
-			NullpoMinoSDL.enterState(NullpoMinoSDL.STATE_SELECTMODE);
-			break;
-		case 1:
-			NullpoMinoSDL.enterState(NullpoMinoSDL.STATE_REPLAYSELECT);
-			break;
-		case 2:
-			NullpoMinoSDL.enterState(NullpoMinoSDL.STATE_NET_SERVERSELECT);
-			break;
-		case 3:
-			NullpoMinoSDL.enterState(NullpoMinoSDL.STATE_CONFIG_MAINMENU);
-			break;
-		case 4:
-			NullpoMinoSDL.enterState(-1);
-			break;
-		}
+		if(cursor != EXIT_CURSOR) ResourceHolderSDL.soundManager.play("decide");
+		NullpoMinoSDL.enterState(DESTINATIONS[cursor]);
 		return false;
 	}
 
