@@ -7,6 +7,7 @@ import nullpomino.game.event.EventReceiver;
 import nullpomino.game.play.GameEngine;
 import nullpomino.game.subsystem.mode.menu.BooleanMenuItem;
 import nullpomino.game.subsystem.mode.menu.IntegerMenuItem;
+import nullpomino.game.subsystem.mode.menu.LevelMenuItem;
 import nullpomino.game.subsystem.mode.menu.OnOffMenuItem;
 import nullpomino.util.CustomProperties;
 import nullpomino.util.GeneralUtil;
@@ -199,18 +200,11 @@ public class PhantomManiaMode extends AbstractMode {
 	{
 		propName = "phantommania";
 
-		startlevel = new IntegerMenuItem("startlevel", "LEVEL", EventReceiver.COLOR_BLUE, 0, 0, 9) {
-			public String getValueString() {
-				return String.valueOf(value * 100);
-			}
-		};
+		startlevel = new LevelMenuItem("startlevel", "LEVEL", EventReceiver.COLOR_BLUE, 0, 0, 9);
 		lvstopse = new OnOffMenuItem("lvstopse", "LVSTOPSE", EventReceiver.COLOR_BLUE, false);
 		big = new OnOffMenuItem("big", "BIG", EventReceiver.COLOR_BLUE, false);
 		showsectiontime = new OnOffMenuItem("showsectiontime", "SHOW STIME", EventReceiver.COLOR_BLUE, false);
-		menu.add(startlevel);
-		menu.add(lvstopse);
-		menu.add(showsectiontime);
-		menu.add(big);
+		addMenuItems(startlevel, lvstopse, showsectiontime, big);
 	}
 	/**
 	 * Returns the name of this mode
