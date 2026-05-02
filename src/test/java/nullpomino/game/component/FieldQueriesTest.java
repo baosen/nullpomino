@@ -353,6 +353,41 @@ class FieldQueriesTest {
 	}
 
 	@Test
+	void getTSlotLineClearAllReturnsTwoForFieldWithOneTSlotAndBothSideRowsFilled() {
+		Field f = newField();
+		// Three corners at (4,10),(6,10),(4,12) — classic T-spin double setup
+		f.setBlockColor(4, 10, Block.BLOCK_COLOR_RED);
+		f.setBlockColor(6, 10, Block.BLOCK_COLOR_RED);
+		f.setBlockColor(4, 12, Block.BLOCK_COLOR_RED);
+		// Fill rows 11 and 12 outside the T-span (columns 0-3 and 7-9)
+		for (int x = 0; x < f.getWidth(); x++) {
+			if (x < 4 || x >= 7) {
+				f.setBlockColor(x, 11, Block.BLOCK_COLOR_BLUE);
+				f.setBlockColor(x, 12, Block.BLOCK_COLOR_BLUE);
+			}
+		}
+
+		int total = f.getTSlotLineClearAll(false);
+		assertEquals(2, total, "one T-spin double contributes 2 to the total");
+	}
+
+	@Test
+	void getSecretGradeIgnoresRowsWithGapsOutsideHoleColumn() {
+		// height=20 → at i=19, holeLoc=0
+		// Row 19 has holeLoc=0 empty, block above (0,18) filled, but column 5 also empty
+		// → rowCheck becomes false → row doesn't count
+		Field f = newField();
+		for (int x = 1; x < f.getWidth(); x++) {
+			if (x != 5) {
+				f.setBlockColor(x, 19, Block.BLOCK_COLOR_RED);
+			}
+		}
+		f.setBlockColor(0, 18, Block.BLOCK_COLOR_RED);  // above-hole block
+
+		assertEquals(0, f.getSecretGrade(), "row with extra gap must not count");
+	}
+
+	@Test
 	void getLastLinesAsTGMAttackReplacesLastCommitWithEmptyBlocks() {
 		Field f = newField();
 		f.lastLinesCleared = new ArrayList<Block[]>();

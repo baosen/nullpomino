@@ -300,6 +300,40 @@ class FieldCharacterisationTest {
 		assertFalse(f.isTSlot(5, 10, true), "big-mode slot must be blocked when (x+2,y+2) is occupied");
 	}
 
+	@Test
+	void copyConstructorPreservesBlockColorsAndDimensions() {
+		Field src = new Field(10, 20, 3, true);
+		src.setBlockColor(0, 19, Block.BLOCK_COLOR_RED);
+		src.setBlockColor(5, 10, Block.BLOCK_COLOR_BLUE);
+
+		Field dst = new Field(src);
+
+		assertEquals(Block.BLOCK_COLOR_RED, dst.getBlockColor(0, 19));
+		assertEquals(Block.BLOCK_COLOR_BLUE, dst.getBlockColor(5, 10));
+		assertEquals(Block.BLOCK_COLOR_NONE, dst.getBlockColor(1, 19));
+		assertEquals(src.getWidth(), dst.getWidth());
+		assertEquals(src.getHeight(), dst.getHeight());
+		assertEquals(src.getHiddenHeight(), dst.getHiddenHeight());
+	}
+
+	@Test
+	void getCoordAttributeDistinguishesFiveCoordTypes() {
+		// Non-ceiling field: y < 0 with hidden_height = 3 → HIDDEN for y=-1..-3, VANISH for y<-3
+		Field open = new Field(10, 20, 3, false);
+		assertEquals(Field.COORD_NORMAL,  open.getCoordAttribute(0, 0),   "top visible row");
+		assertEquals(Field.COORD_NORMAL,  open.getCoordAttribute(5, 10),  "middle of field");
+		assertEquals(Field.COORD_WALL,    open.getCoordAttribute(-1, 0),  "x < 0");
+		assertEquals(Field.COORD_WALL,    open.getCoordAttribute(10, 0),  "x >= width");
+		assertEquals(Field.COORD_WALL,    open.getCoordAttribute(0, 20),  "y >= height");
+		assertEquals(Field.COORD_HIDDEN,  open.getCoordAttribute(0, -1),  "first hidden row");
+		assertEquals(Field.COORD_HIDDEN,  open.getCoordAttribute(0, -3),  "last hidden row");
+		assertEquals(Field.COORD_VANISH,  open.getCoordAttribute(0, -4),  "beyond hidden area");
+
+		// Ceiling field: y < 0 → COORD_WALL regardless of hidden_height
+		Field ceiling = new Field(10, 20, 3, true);
+		assertEquals(Field.COORD_WALL, ceiling.getCoordAttribute(0, -1), "ceiling blocks hidden access");
+	}
+
 	private static void fillTCorners(Field f, int x, int y, int corners) {
 		int[][] offsets = {
 				{0, 0}, {2, 0}, {0, 2}, {2, 2}

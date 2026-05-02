@@ -498,4 +498,42 @@ class FieldClearAndCascadeTest {
 				"CONNECT_LEFT on block right of erased+CONNECT_RIGHT block must be cleared");
 		assertTrue(right.getAttribute(Block.BLOCK_ATTRIBUTE_BROKEN));
 	}
+
+	@Test
+	void checkLineColorDecrementsHardCounterInsteadOfMarkingEraseForHardBlock() {
+		Field f = newField();
+		// 4-cell horizontal run with one hard block (hard=1)
+		for (int x = 0; x < 4; x++) {
+			f.setBlockColor(x, 19, Block.BLOCK_COLOR_RED);
+		}
+		Block hard = f.getBlock(2, 19);
+		hard.hard = 1;
+
+		// flag=true triggers the erase/hard-counter path
+		int total = f.checkLineColor(4, true, false, false);
+
+		assertEquals(4, total);
+		// Hard block: counter decremented, ERASE not set
+		assertEquals(0, hard.hard, "hard counter must be decremented");
+		assertFalse(hard.getAttribute(Block.BLOCK_ATTRIBUTE_ERASE),
+				"hard block must not receive ERASE when hard > 0");
+		// Normal block: ERASE is set
+		assertTrue(f.getBlock(0, 19).getAttribute(Block.BLOCK_ATTRIBUTE_ERASE));
+	}
+
+	@Test
+	void checkLineColorIncrementsGemsClearedForGemBlocksInRun() {
+		Field f = newField();
+		// 4-cell run mixing one gem and three normals
+		f.setBlockColor(0, 19, Block.BLOCK_COLOR_GEM_RED);
+		f.setBlockColor(1, 19, Block.BLOCK_COLOR_RED);
+		f.setBlockColor(2, 19, Block.BLOCK_COLOR_RED);
+		f.setBlockColor(3, 19, Block.BLOCK_COLOR_RED);
+
+		// gemSame=true so the gem counts as RED
+		int total = f.checkLineColor(4, true, false, true);
+
+		assertEquals(4, total);
+		assertEquals(1, f.gemsCleared, "gemsCleared must be incremented for the gem block");
+	}
 }
