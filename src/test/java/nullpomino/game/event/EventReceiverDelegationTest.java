@@ -225,4 +225,28 @@ class EventReceiverDelegationTest {
 	void saveReplayTwoArgEmptyStubAcceptsNullArguments() {
 		new EventReceiver().saveReplay(null, null);
 	}
+
+	@Test
+	void saveReplayThreeArgWritesFileToFolderForNonNetplayMode() throws IOException {
+		nullpomino.game.play.GameManager gm = new nullpomino.game.play.GameManager(new EventReceiver());
+		gm.mode = new nullpomino.game.mode.ScoreRaceMode();
+		nullpomino.util.CustomProperties prop = new nullpomino.util.CustomProperties();
+		prop.setProperty("test.key", "test.value");
+
+		new EventReceiver().saveReplay(gm, prop, tempDir.toString());
+
+		// At least one file should have been created inside the temp folder
+		assertTrue(Files.list(tempDir).findAny().isPresent(),
+				"saveReplay must write a replay file into the folder");
+	}
+
+	@Test
+	void saveReplayThreeArgSwallowsIOExceptionWhenFolderUnwritable() throws IOException {
+		nullpomino.game.play.GameManager gm = new nullpomino.game.play.GameManager(new EventReceiver());
+		gm.mode = new nullpomino.game.mode.ScoreRaceMode();
+		// Use a path whose parent does not exist to trigger IOException
+		new EventReceiver().saveReplay(gm, new nullpomino.util.CustomProperties(),
+				tempDir.resolve("nonexistent/sub").toString());
+		// If we reach here, the catch block swallowed the exception as expected
+	}
 }
