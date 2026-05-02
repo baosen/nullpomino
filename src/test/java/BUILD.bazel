@@ -33,6 +33,7 @@ java_test(
         ":testutil",
         "//src/main/java:nullpomino",
         "@maven//:org_junit_jupiter_junit_jupiter_api",
+        "@maven//:net_java_dev_jna_jna",
     ],
     runtime_deps = [
         "@maven//:org_junit_jupiter_junit_jupiter_engine",

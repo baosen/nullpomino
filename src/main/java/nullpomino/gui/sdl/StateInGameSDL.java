@@ -247,7 +247,9 @@ public class StateInGameSDL extends BaseStateSDL {
 	 */
 	@Override
 	public void leave() {
-		gameManager.shutdown();
+		if(gameManager != null) {
+			gameManager.shutdown();
+		}
 		gameManager = null;
 		NullpoMinoSDL.disableAutoInputUpdate = false;
 		NullpoMinoSDL.isInGame = false;
