@@ -423,4 +423,79 @@ class FieldClearAndCascadeTest {
 				after == Block.BLOCK_COLOR_GREEN || after == Block.BLOCK_COLOR_PURPLE,
 				"after shuffleColors with a 2-entry palette, RED must remap to one of the entries; got " + after);
 	}
+
+	@Test
+	void clearLineColorClearsConnectDownAttributeOnAdjacentBlock() {
+		Field f = newField();
+		// Row 18: erased block connected downward; row 19: adjacent block below
+		f.setBlockColor(5, 18, Block.BLOCK_COLOR_RED);
+		f.setBlockColor(5, 19, Block.BLOCK_COLOR_RED);
+		Block top = f.getBlock(5, 18);
+		Block bot = f.getBlock(5, 19);
+		top.setAttribute(Block.BLOCK_ATTRIBUTE_ERASE, true);
+		top.setAttribute(Block.BLOCK_ATTRIBUTE_CONNECT_DOWN, true);
+		bot.setAttribute(Block.BLOCK_ATTRIBUTE_CONNECT_UP, true);
+
+		f.clearLineColor(1, false, false);
+
+		assertFalse(bot.getAttribute(Block.BLOCK_ATTRIBUTE_CONNECT_UP),
+				"CONNECT_UP on block below erased+CONNECT_DOWN block must be cleared");
+		assertTrue(bot.getAttribute(Block.BLOCK_ATTRIBUTE_BROKEN),
+				"BROKEN must be set on block below erased+CONNECT_DOWN block");
+	}
+
+	@Test
+	void clearLineColorClearsConnectUpAttributeOnAdjacentBlock() {
+		Field f = newField();
+		f.setBlockColor(5, 19, Block.BLOCK_COLOR_RED);
+		f.setBlockColor(5, 18, Block.BLOCK_COLOR_RED);
+		Block bot = f.getBlock(5, 19);
+		Block top = f.getBlock(5, 18);
+		bot.setAttribute(Block.BLOCK_ATTRIBUTE_ERASE, true);
+		bot.setAttribute(Block.BLOCK_ATTRIBUTE_CONNECT_UP, true);
+		top.setAttribute(Block.BLOCK_ATTRIBUTE_CONNECT_DOWN, true);
+
+		f.clearLineColor(1, false, false);
+
+		assertFalse(top.getAttribute(Block.BLOCK_ATTRIBUTE_CONNECT_DOWN),
+				"CONNECT_DOWN on block above erased+CONNECT_UP block must be cleared");
+		assertTrue(top.getAttribute(Block.BLOCK_ATTRIBUTE_BROKEN),
+				"BROKEN must be set on block above erased+CONNECT_UP block");
+	}
+
+	@Test
+	void clearLineColorClearsConnectLeftAttributeOnAdjacentBlock() {
+		Field f = newField();
+		f.setBlockColor(5, 19, Block.BLOCK_COLOR_RED);
+		f.setBlockColor(4, 19, Block.BLOCK_COLOR_RED);
+		Block right = f.getBlock(5, 19);
+		Block left  = f.getBlock(4, 19);
+		right.setAttribute(Block.BLOCK_ATTRIBUTE_ERASE, true);
+		right.setAttribute(Block.BLOCK_ATTRIBUTE_CONNECT_LEFT, true);
+		left.setAttribute(Block.BLOCK_ATTRIBUTE_CONNECT_RIGHT, true);
+
+		f.clearLineColor(1, false, false);
+
+		assertFalse(left.getAttribute(Block.BLOCK_ATTRIBUTE_CONNECT_RIGHT),
+				"CONNECT_RIGHT on block left of erased+CONNECT_LEFT block must be cleared");
+		assertTrue(left.getAttribute(Block.BLOCK_ATTRIBUTE_BROKEN));
+	}
+
+	@Test
+	void clearLineColorClearsConnectRightAttributeOnAdjacentBlock() {
+		Field f = newField();
+		f.setBlockColor(5, 19, Block.BLOCK_COLOR_RED);
+		f.setBlockColor(6, 19, Block.BLOCK_COLOR_RED);
+		Block left  = f.getBlock(5, 19);
+		Block right = f.getBlock(6, 19);
+		left.setAttribute(Block.BLOCK_ATTRIBUTE_ERASE, true);
+		left.setAttribute(Block.BLOCK_ATTRIBUTE_CONNECT_RIGHT, true);
+		right.setAttribute(Block.BLOCK_ATTRIBUTE_CONNECT_LEFT, true);
+
+		f.clearLineColor(1, false, false);
+
+		assertFalse(right.getAttribute(Block.BLOCK_ATTRIBUTE_CONNECT_LEFT),
+				"CONNECT_LEFT on block right of erased+CONNECT_RIGHT block must be cleared");
+		assertTrue(right.getAttribute(Block.BLOCK_ATTRIBUTE_BROKEN));
+	}
 }

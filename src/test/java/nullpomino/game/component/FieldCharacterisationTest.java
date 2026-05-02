@@ -271,6 +271,35 @@ class FieldCharacterisationTest {
 		assertFalse(f.isTSlot(4, 10, false), "center cells must stay open");
 	}
 
+	@Test
+	void clearLineDecrementsHardCounterAndKeepsLineFlagClearWhenHardBlockPresent() {
+		Field f = newField();
+		fillRow(f, 19, Block.BLOCK_COLOR_RED);
+		// Give one block a hard counter of 1 — it should survive the first clear
+		Block hard = f.getBlock(0, 19);
+		hard.hard = 1;
+		f.checkLine();  // marks row 19 for clearing
+
+		int cleared = f.clearLine();
+
+		// clearLine increments the count before processing blocks, so still returns 1
+		assertEquals(1, cleared);
+		// Line flag must be unset (hard block cleared it via the hard-counter branch)
+		assertFalse(f.getLineFlag(19));
+		// The hard block's counter was decremented
+		assertEquals(0, hard.hard);
+	}
+
+	@Test
+	void isTSlotReturnsFalseForBigModeWhenCenterIsOccupied() {
+		Field f = newField();
+		// In big mode the pivot is at (x+1, y+1) and (x+2, y+2) must be empty.
+		// Fill (x+2, y+2) = (7, 12) to trigger the false-return on line 800.
+		f.setBlockColor(7, 12, Block.BLOCK_COLOR_RED);
+
+		assertFalse(f.isTSlot(5, 10, true), "big-mode slot must be blocked when (x+2,y+2) is occupied");
+	}
+
 	private static void fillTCorners(Field f, int x, int y, int corners) {
 		int[][] offsets = {
 				{0, 0}, {2, 0}, {0, 2}, {2, 2}
