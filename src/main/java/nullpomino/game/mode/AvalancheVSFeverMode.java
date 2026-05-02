@@ -625,9 +625,9 @@ public class AvalancheVSFeverMode extends AvalancheVSDummyMode {
 	 */
 	@Override
 	public void saveReplay(GameEngine engine, int playerID, CustomProperties prop) {
-		saveOtherSetting(engine, owner.replayProp);
-		savePreset(engine, owner.replayProp, -1 - playerID, "digrace");
+		saveOtherSetting(engine, prop);
+		savePreset(engine, prop, -1 - playerID, "digrace");
 
-		owner.replayProp.setProperty("avalanchevsfever.version", version);
+		prop.setProperty("avalanchevsfever.version", version);
 	}
 }

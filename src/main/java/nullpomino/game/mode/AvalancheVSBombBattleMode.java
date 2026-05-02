@@ -616,13 +616,13 @@ public class AvalancheVSBombBattleMode extends AvalancheVSDummyMode {
 	 */
 	@Override
 	public void saveReplay(GameEngine engine, int playerID, CustomProperties prop) {
-		saveOtherSetting(engine, owner.replayProp);
-		savePreset(engine, owner.replayProp, -1 - playerID, "bombbattle");
+		saveOtherSetting(engine, prop);
+		savePreset(engine, prop, -1 - playerID, "bombbattle");
 
 		if(useMap[playerID] && (fldBackup[playerID] != null)) {
-			saveMap(fldBackup[playerID], owner.replayProp, playerID);
+			saveMap(fldBackup[playerID], prop, playerID);
 		}
 
-		owner.replayProp.setProperty("avalanchevs.version", version);
+		prop.setProperty("avalanchevs.version", version);
 	}
 }

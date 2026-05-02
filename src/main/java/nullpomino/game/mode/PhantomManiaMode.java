@@ -975,8 +975,8 @@ public class PhantomManiaMode extends AbstractMode {
 	 */
 	@Override
 	public void saveReplay(GameEngine engine, int playerID, CustomProperties prop) {
-		saveSetting(owner.replayProp);
-		owner.replayProp.setProperty("phantommania.version", version);
+		saveSetting(prop);
+		prop.setProperty("phantommania.version", version);
 
 		if((owner.replayMode == false) && (startlevel.value == 0) && (!big.value) && (engine.ai == null)) {
 			updateRanking(grade, engine.statistics.level, engine.statistics.time, rollclear);

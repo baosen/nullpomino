@@ -1145,15 +1145,15 @@ public class AvalancheVSMode extends AvalancheVSDummyMode {
 	 */
 	@Override
 	public void saveReplay(GameEngine engine, int playerID, CustomProperties prop) {
-		saveOtherSetting(engine, owner.replayProp);
-		savePreset(engine, owner.replayProp, -1 - playerID, "");
+		saveOtherSetting(engine, prop);
+		savePreset(engine, prop, -1 - playerID, "");
 		if (xyzzy == 573)
-			owner.replayProp.setProperty("avalanchevs.debugcheatenable", true);
+			prop.setProperty("avalanchevs.debugcheatenable", true);
 
 		if(useMap[playerID] && (fldBackup[playerID] != null)) {
-			saveMap(fldBackup[playerID], owner.replayProp, playerID);
+			saveMap(fldBackup[playerID], prop, playerID);
 		}
 
-		owner.replayProp.setProperty("avalanchevs.version", version);
+		prop.setProperty("avalanchevs.version", version);
 	}
 }

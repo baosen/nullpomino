@@ -878,13 +878,13 @@ public class PhysicianVSMode extends AbstractMode {
 	 */
 	@Override
 	public void saveReplay(GameEngine engine, int playerID, CustomProperties prop) {
-		saveOtherSetting(engine, owner.replayProp);
-		savePreset(engine, owner.replayProp, -1 - playerID);
+		saveOtherSetting(engine, prop);
+		savePreset(engine, prop, -1 - playerID);
 
 		if(useMap[playerID] && (fldBackup[playerID] != null)) {
-			saveMap(fldBackup[playerID], owner.replayProp, playerID);
+			saveMap(fldBackup[playerID], prop, playerID);
 		}
 
-		owner.replayProp.setProperty("physicianvs.version", version);
+		prop.setProperty("physicianvs.version", version);
 	}
 }

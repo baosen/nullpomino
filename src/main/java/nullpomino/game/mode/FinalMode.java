@@ -895,8 +895,8 @@ public class FinalMode extends AbstractMode {
 	 */
 	@Override
 	public void saveReplay(GameEngine engine, int playerID, CustomProperties prop) {
-		saveSetting(owner.replayProp);
-		owner.replayProp.setProperty("final.version", version);
+		saveSetting(prop);
+		prop.setProperty("final.version", version);
 
 		// Updates leaderboard and best section time records
 		if((owner.replayMode == false) && (startlevel == 0) && (big == false) && (engine.ai == null)) {
