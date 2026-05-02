@@ -536,4 +536,151 @@ class FieldClearAndCascadeTest {
 		assertEquals(4, total);
 		assertEquals(1, f.gemsCleared, "gemsCleared must be incremented for the gem block");
 	}
+
+	@Test
+	void allClearColorWithGemSameTrueConvertsGemTargetToNormalColor() {
+		// Covers Field line 1863: targetColor = Block.gemToNormalColor(targetColor)
+		// GEM_RED (9) normalises to RED (2), so all RED blocks are cleared.
+		Field f = newField();
+		f.setBlockColor(0, 19, Block.BLOCK_COLOR_RED);
+		f.setBlockColor(5, 10, Block.BLOCK_COLOR_RED);
+		f.setBlockColor(7, 5, Block.BLOCK_COLOR_BLUE);
+
+		int cleared = f.allClearColor(Block.BLOCK_COLOR_GEM_RED, false, true);
+
+		assertEquals(2, cleared, "GEM_RED target with gemSame=true must clear all RED blocks");
+		assertEquals(Block.BLOCK_COLOR_NONE, f.getBlockColor(0, 19));
+		assertEquals(Block.BLOCK_COLOR_NONE, f.getBlockColor(5, 10));
+		assertEquals(Block.BLOCK_COLOR_BLUE, f.getBlockColor(7, 5), "blue unaffected");
+	}
+
+	@Test
+	void allClearColorWithFlagTrueMarksBlocksWithEraseAttributeRatherThanRemoving() {
+		// Covers Field line 1871: getBlock(x, y).setAttribute(BLOCK_ATTRIBUTE_ERASE, true)
+		Field f = newField();
+		f.setBlockColor(0, 19, Block.BLOCK_COLOR_RED);
+		f.setBlockColor(5, 10, Block.BLOCK_COLOR_RED);
+
+		int marked = f.allClearColor(Block.BLOCK_COLOR_RED, true, false);
+
+		assertEquals(2, marked);
+		// flag=true: ERASE attribute set, color kept
+		assertTrue(f.getBlock(0, 19).getAttribute(Block.BLOCK_ATTRIBUTE_ERASE),
+				"flag=true must set ERASE on each matching block");
+		assertEquals(Block.BLOCK_COLOR_RED, f.getBlockColor(0, 19),
+				"flag=true must not clear the block color");
+	}
+
+	@Test
+	void doCascadeGravityClearsConnectionFlagsOnIgnoreBlocklinkBlock() {
+		// Covers Field lines 1937-1940: the IGNORE_BLOCKLINK branch that disconnects
+		// a falling block from its neighbours.
+		Field f = newField();
+		f.setBlockColor(5, 10, Block.BLOCK_COLOR_RED);
+		Block blk = f.getBlock(5, 10);
+		blk.setAttribute(Block.BLOCK_ATTRIBUTE_IGNORE_BLOCKLINK, true);
+		blk.setAttribute(Block.BLOCK_ATTRIBUTE_CONNECT_LEFT, true);
+		blk.setAttribute(Block.BLOCK_ATTRIBUTE_CONNECT_RIGHT, true);
+
+		boolean changed = f.doCascadeGravity();
+
+		assertTrue(changed);
+		assertEquals(Block.BLOCK_COLOR_RED, f.getBlockColor(5, 11), "block dropped one row");
+		assertFalse(f.getBlock(5, 11).getAttribute(Block.BLOCK_ATTRIBUTE_CONNECT_LEFT),
+				"IGNORE_BLOCKLINK: CONNECT_LEFT cleared on fall");
+		assertFalse(f.getBlock(5, 11).getAttribute(Block.BLOCK_ATTRIBUTE_CONNECT_RIGHT),
+				"IGNORE_BLOCKLINK: CONNECT_RIGHT cleared on fall");
+	}
+
+	@Test
+	void doCascadeSlowClearsConnectionFlagsOnIgnoreBlocklinkBlock() {
+		// Covers Field lines 2009-2012: the same IGNORE_BLOCKLINK branch in the slow
+		// cascade variant.
+		Field f = newField();
+		f.setBlockColor(5, 10, Block.BLOCK_COLOR_RED);
+		Block blk = f.getBlock(5, 10);
+		blk.setAttribute(Block.BLOCK_ATTRIBUTE_IGNORE_BLOCKLINK, true);
+		blk.setAttribute(Block.BLOCK_ATTRIBUTE_CONNECT_UP, true);
+		blk.setAttribute(Block.BLOCK_ATTRIBUTE_CONNECT_DOWN, true);
+
+		boolean changed = f.doCascadeSlow();
+
+		assertTrue(changed);
+		assertEquals(Block.BLOCK_COLOR_RED, f.getBlockColor(5, 11), "block dropped one row");
+		assertFalse(f.getBlock(5, 11).getAttribute(Block.BLOCK_ATTRIBUTE_CONNECT_UP),
+				"IGNORE_BLOCKLINK: CONNECT_UP cleared on slow-cascade fall");
+		assertFalse(f.getBlock(5, 11).getAttribute(Block.BLOCK_ATTRIBUTE_CONNECT_DOWN),
+				"IGNORE_BLOCKLINK: CONNECT_DOWN cleared on slow-cascade fall");
+	}
+
+	@Test
+	void doCascadeSlowReturnsFalseWhenBlockCannotFall() {
+		// Covers Field line 1988: fall = false when a block in the linked group is
+		// blocked (wall directly below).
+		Field f = newField();
+		f.setBlockColor(5, 19, Block.BLOCK_COLOR_RED);  // already on the floor
+
+		assertFalse(f.doCascadeSlow(), "block on the floor must not trigger a fall");
+		assertEquals(Block.BLOCK_COLOR_RED, f.getBlockColor(5, 19), "block must stay put");
+	}
+
+	@Test
+	void clearColorIgnoresHiddenRowBlockWhenIgnoreHiddenIsTrue() {
+		// Covers Field line 1817: return 0 when ignoreHidden=true and y < 0 in the
+		// private recursive clearColor.
+		Field f = newField();   // hidden_height = 3, so y=-1 is valid hidden row
+		f.setBlockColor(5, -1, Block.BLOCK_COLOR_RED);
+
+		int cleared = f.clearColor(5, -1, false, false, false, true);
+
+		assertEquals(0, cleared, "ignoreHidden=true must skip hidden-area cells");
+		assertEquals(Block.BLOCK_COLOR_RED, f.getBlockColor(5, -1), "hidden block left untouched");
+	}
+
+	@Test
+	void clearColorDecrementsHardCounterInsteadOfErasingNonFlaggedHardBlock() {
+		// Covers Field line 1842: b.hard-- when flag=false and the block is hard.
+		Field f = newField();
+		f.setBlockColor(5, 19, Block.BLOCK_COLOR_RED);
+		Block b = f.getBlock(5, 19);
+		b.hard = 1;
+
+		int cleared = f.clearColor(5, 19, false, false, false, false);
+
+		assertEquals(1, cleared, "hard block contributes to the cluster size");
+		assertEquals(Block.BLOCK_COLOR_RED, f.getBlockColor(5, 19), "hard block color unchanged");
+		assertEquals(0, b.hard, "hard counter decremented from 1 to 0");
+	}
+
+	@Test
+	void clearColorWithGarbageClearClearsAdjacentGarbageBlock() {
+		// Covers Field lines 1825, 1835: when garbageClear=true and a garbage block
+		// is adjacent to the same-color cluster, its color is set to NONE even though
+		// it doesn't count toward the cluster total.
+		Field f = newField();
+		f.setBlockColor(5, 19, Block.BLOCK_COLOR_RED);
+		f.setBlockColor(6, 19, Block.BLOCK_COLOR_GRAY);
+		f.getBlock(6, 19).setAttribute(Block.BLOCK_ATTRIBUTE_GARBAGE, true);
+
+		int cleared = f.clearColor(5, 19, false, true, false, false);
+
+		assertEquals(1, cleared, "garbage block does not count toward cleared total");
+		assertEquals(Block.BLOCK_COLOR_NONE, f.getBlockColor(5, 19), "same-color block cleared");
+		assertEquals(Block.BLOCK_COLOR_NONE, f.getBlockColor(6, 19), "adjacent garbage block cleared");
+	}
+
+	@Test
+	void clearColorWithGarbageClearAndFlagSetMarksAdjacentGarbageWithErase() {
+		// Covers Field lines 1827-1830: flag=true path for adjacent garbage blocks.
+		Field f = newField();
+		f.setBlockColor(5, 19, Block.BLOCK_COLOR_RED);
+		f.setBlockColor(6, 19, Block.BLOCK_COLOR_GRAY);
+		Block garbage = f.getBlock(6, 19);
+		garbage.setAttribute(Block.BLOCK_ATTRIBUTE_GARBAGE, true);
+
+		f.clearColor(5, 19, true, true, false, false);
+
+		assertTrue(garbage.getAttribute(Block.BLOCK_ATTRIBUTE_ERASE),
+				"flag=true + garbageClear: adjacent garbage block marked ERASE");
+	}
 }

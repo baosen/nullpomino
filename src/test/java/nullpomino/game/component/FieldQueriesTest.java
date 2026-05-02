@@ -499,6 +499,23 @@ class FieldQueriesTest {
 	}
 
 	@Test
+	void setBlockLinkByColorConnectsHorizontalSameColorNeighbors() {
+		// Covers Field lines 2133-2134 (CONNECT_LEFT) and 2139-2140 (CONNECT_RIGHT)
+		// in setBlockLinkByColorSub — the horizontal-neighbour branches that are only
+		// reached when two same-color blocks share a row.
+		Field f = newField();
+		f.setBlockColor(3, 19, Block.BLOCK_COLOR_RED);
+		f.setBlockColor(4, 19, Block.BLOCK_COLOR_RED);
+
+		f.setBlockLinkByColor(3, 19);
+
+		assertTrue(f.getBlock(3, 19).getAttribute(Block.BLOCK_ATTRIBUTE_CONNECT_RIGHT),
+				"left block must connect right to its same-color neighbour");
+		assertTrue(f.getBlock(4, 19).getAttribute(Block.BLOCK_ATTRIBUTE_CONNECT_LEFT),
+				"right block must connect left back to the originating cell");
+	}
+
+	@Test
 	void setBlockLinkBrokenWalksConnectedNormalBlocks() {
 		Field f = newField();
 		f.setBlockColor(3, 18, Block.BLOCK_COLOR_RED);
