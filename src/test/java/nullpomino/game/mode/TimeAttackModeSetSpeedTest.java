@@ -216,6 +216,23 @@ class TimeAttackModeSetSpeedTest {
 	}
 
 	@Test
+	void normal200GoaltypeUsesNormal200Table() throws Exception {
+		// NORMAL200 (goaltype 5): tableNormal200[0][0]=25, [1][0]=25, [2][0]=30, [3][0]=15.
+		TimeAttackMode mode = new TimeAttackMode();
+		GameEngine engine = freshEngine(mode);
+		setInt(mode, "goaltype", 5);
+		engine.statistics.level = 0;
+
+		invokeSetSpeed(mode, engine);
+
+		assertEquals(25, engine.speed.are, "tableNormal200[0][0]=25");
+		assertEquals(25, engine.speed.areLine, "areLine mirrors are for NORMAL200");
+		assertEquals(25, engine.speed.lineDelay, "tableNormal200[1][0]=25");
+		assertEquals(30, engine.speed.lockDelay, "tableNormal200[2][0]=30");
+		assertEquals(15, engine.speed.das, "tableNormal200[3][0]=15");
+	}
+
+	@Test
 	void basicGoaltypeUsesSixtyDenominatorAndBasicTable() throws Exception {
 		// BASIC (goaltype 7): denominator = 60 (not 256).
 		// At level 5: tableBasic[0][5]=26, [1][5]=25, [2][5]=26, [3][5]=15.

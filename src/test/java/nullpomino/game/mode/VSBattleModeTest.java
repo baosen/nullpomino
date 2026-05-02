@@ -1,7 +1,9 @@
 package nullpomino.game.mode;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
@@ -129,6 +131,70 @@ class VSBattleModeTest {
 		assertEquals(999, prop.getProperty("vsbattle.gravity.1", -1));
 	}
 
+	@Test
+	void saveOtherSettingWritesAllFieldsUnderVSBattlePrefix() throws Exception {
+		VSBattleMode mode = new VSBattleMode();
+		GameEngine engine = freshEngine(mode);
+		setIntArray(mode, "garbagePercent")[0] = 80;
+		setIntArray(mode, "garbageType")[0] = 1;
+
+		CustomProperties prop = new CustomProperties();
+		invokeSaveOther(mode, engine, prop);
+
+		assertEquals(80, prop.getProperty("vsbattle.garbagePercent.p0", -1));
+		assertEquals(1, prop.getProperty("vsbattle.garbageType.p0", -1));
+	}
+
+	@Test
+	void saveAndLoadOtherSettingRoundTripForPlayer0() throws Exception {
+		VSBattleMode source = new VSBattleMode();
+		GameEngine sourceEngine = freshEngine(source);
+		setIntArray(source, "garbagePercent")[0] = 65;
+		setBoolArray(source, "garbageCounter")[0] = false;
+
+		CustomProperties prop = new CustomProperties();
+		invokeSaveOther(source, sourceEngine, prop);
+
+		VSBattleMode dest = new VSBattleMode();
+		GameEngine destEngine = freshEngine(dest);
+		invokeLoadOther(dest, destEngine, prop);
+
+		assertEquals(65, getIntArray(dest, "garbagePercent")[0]);
+		assertFalse(getBoolArray(dest, "garbageCounter")[0]);
+	}
+
+	@Test
+	void loadOtherSettingLegacyVersionUsesGlobalKeyForGarbageType() throws Exception {
+		// version < 5 reads 'vsbattle.garbageType' (no player suffix) — legacy format
+		VSBattleMode mode = new VSBattleMode();
+		GameEngine engine = freshEngine(mode);
+		setIntField(mode, "version", 0);
+
+		CustomProperties prop = new CustomProperties();
+		prop.setProperty("vsbattle.garbageType", 1);  // GARBAGE_TYPE_NOCHANGE_ONE_RISE
+
+		invokeLoadOther(mode, engine, prop);
+
+		assertEquals(1, getIntArray(mode, "garbageType")[0],
+				"legacy key 'vsbattle.garbageType' (no player suffix) must be read when version < 5");
+	}
+
+	@Test
+	void loadOtherSettingLegacyVersionConvertsEnableB2BFlagToB2bType() throws Exception {
+		// version < 5 reads boolean 'vsbattle.enableB2B.p<n>' and maps false -> b2bType=0
+		VSBattleMode mode = new VSBattleMode();
+		GameEngine engine = freshEngine(mode);
+		setIntField(mode, "version", 0);
+
+		CustomProperties prop = new CustomProperties();
+		prop.setProperty("vsbattle.enableB2B.p0", false);
+
+		invokeLoadOther(mode, engine, prop);
+
+		assertEquals(0, getIntArray(mode, "b2bType")[0],
+				"false enableB2B maps to b2bType=0 in legacy format");
+	}
+
 	private static GameEngine freshEngine(VSBattleMode mode) {
 		GameManager manager = new GameManager(new EventReceiver());
 		manager.mode = mode;
@@ -151,5 +217,59 @@ class VSBattleModeTest {
 				"savePreset", GameEngine.class, CustomProperties.class, int.class);
 		m.setAccessible(true);
 		m.invoke(mode, engine, prop, preset);
+	}
+
+	private static void invokeLoadOther(VSBattleMode mode, GameEngine engine,
+			CustomProperties prop) throws Exception {
+		Method m = VSBattleMode.class.getDeclaredMethod(
+				"loadOtherSetting", GameEngine.class, CustomProperties.class);
+		m.setAccessible(true);
+		m.invoke(mode, engine, prop);
+	}
+
+	private static void invokeSaveOther(VSBattleMode mode, GameEngine engine,
+			CustomProperties prop) throws Exception {
+		Method m = VSBattleMode.class.getDeclaredMethod(
+				"saveOtherSetting", GameEngine.class, CustomProperties.class);
+		m.setAccessible(true);
+		m.invoke(mode, engine, prop);
+	}
+
+	private static int[] setIntArray(Object obj, String name) throws Exception {
+		Field f = findField(obj.getClass(), name);
+		f.setAccessible(true);
+		return (int[]) f.get(obj);
+	}
+
+	private static int[] getIntArray(Object obj, String name) throws Exception {
+		return setIntArray(obj, name);
+	}
+
+	private static boolean[] setBoolArray(Object obj, String name) throws Exception {
+		Field f = findField(obj.getClass(), name);
+		f.setAccessible(true);
+		return (boolean[]) f.get(obj);
+	}
+
+	private static boolean[] getBoolArray(Object obj, String name) throws Exception {
+		return setBoolArray(obj, name);
+	}
+
+	private static void setIntField(Object obj, String name, int value) throws Exception {
+		Field f = findField(obj.getClass(), name);
+		f.setAccessible(true);
+		f.setInt(obj, value);
+	}
+
+	private static Field findField(Class<?> cls, String name) throws NoSuchFieldException {
+		Class<?> c = cls;
+		while(c != null) {
+			try {
+				return c.getDeclaredField(name);
+			} catch(NoSuchFieldException e) {
+				c = c.getSuperclass();
+			}
+		}
+		throw new NoSuchFieldException(name);
 	}
 }

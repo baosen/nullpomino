@@ -1,9 +1,12 @@
 package nullpomino.game.mode;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
+
+import nullpomino.util.CustomProperties;
 
 import nullpomino.game.event.EventReceiver;
 import nullpomino.game.play.GameEngine;
@@ -105,6 +108,30 @@ class AvalancheModeRankingTest {
 	// updateRanking
 	// -----------------------------------------------------------------------
 
+	// -----------------------------------------------------------------------
+	// saveRanking — writes every score/time entry under the ruleName prefix
+	// -----------------------------------------------------------------------
+
+	@Test
+	void saveRankingWritesScoreAndTimeUnderRuleNamePrefix() throws Exception {
+		AvalancheMode mode = new AvalancheMode();
+		freshEngine(mode);
+
+		int[][][][] rScore = (int[][][][]) readField(mode, "rankingScore");
+		int[][][][] rTime  = (int[][][][]) readField(mode, "rankingTime");
+		// sctype=0, colors-3=0 (3 colors), gametype=0, rank=0
+		rScore[0][0][0][0] = 99999;
+		rTime[0][0][0][0]  = 54321;
+
+		CustomProperties prop = new CustomProperties();
+		invokeSaveRanking(mode, prop, "TESTRULE");
+
+		assertEquals(99999, prop.getProperty("avalanche.ranking.TESTRULE.scoretype0.3colors.0.score.0", -1));
+		assertEquals(54321, prop.getProperty("avalanche.ranking.TESTRULE.scoretype0.3colors.0.time.0", -1));
+		assertNotEquals(-1, prop.getProperty("avalanche.ranking.TESTRULE.scoretype0.3colors.0.score.9", -1),
+				"saveRanking must write all RANKING_MAX entries");
+	}
+
 	@Test
 	void updateRankingInsertsAtRank0AndShiftsExistingForType0() throws Exception {
 		AvalancheMode mode = new AvalancheMode();
@@ -168,6 +195,14 @@ class AvalancheModeRankingTest {
 			}
 		}
 		throw new NoSuchFieldException(name);
+	}
+
+	private static void invokeSaveRanking(AvalancheMode mode, CustomProperties prop, String ruleName)
+			throws Exception {
+		Method m = AvalancheMode.class.getDeclaredMethod(
+				"saveRanking", CustomProperties.class, String.class);
+		m.setAccessible(true);
+		m.invoke(mode, prop, ruleName);
 	}
 
 	private static int invokeCheckRanking(AvalancheMode mode, int sc, int time, int type, int sctype, int colors)
