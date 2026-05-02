@@ -1,0 +1,174 @@
+package nullpomino.gui.sdl;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+
+import java.lang.reflect.Field;
+import java.lang.reflect.Method;
+
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
+/**
+ * Pins the headless slice of {@link StateConfigJoystickButtonSDL}: the
+ * KEYACCEPTFRAME constant, reset() seeding from the player's GameKeySDL
+ * buttonmap and from joyUseNumber / joyMaxButton, the no-joystick
+ * branch that leaves previousJoyPressedState null, and
+ * getPressedKeyNumber's first-difference scan.
+ */
+class StateConfigJoystickButtonSDLTest {
+
+	private GameKeySDL[] originalGameKey;
+	private int[] originalJoyUseNumber;
+	private int[] originalJoyMaxButton;
+
+	@BeforeEach
+	void setUp() {
+		originalGameKey = GameKeySDL.gamekey;
+		originalJoyUseNumber = NullpoMinoSDL.joyUseNumber;
+		originalJoyMaxButton = NullpoMinoSDL.joyMaxButton;
+		GameKeySDL.initGlobalGameKeySDL();
+		NullpoMinoSDL.joyUseNumber = new int[] {-1, -1};
+		NullpoMinoSDL.joyMaxButton = new int[0];
+	}
+
+	@AfterEach
+	void tearDown() {
+		GameKeySDL.gamekey = originalGameKey;
+		NullpoMinoSDL.joyUseNumber = originalJoyUseNumber;
+		NullpoMinoSDL.joyMaxButton = originalJoyMaxButton;
+	}
+
+	@Test
+	void keyacceptframeIsTwentyFrames() {
+		assertEquals(20, StateConfigJoystickButtonSDL.KEYACCEPTFRAME);
+	}
+
+	@Test
+	void resetLeavesPreviousJoyPressedStateNullWhenNoJoystickIsBound() throws Exception {
+		StateConfigJoystickButtonSDL state = new StateConfigJoystickButtonSDL();
+		state.player = 0;
+		// joyUseNumber[0] stays at -1 -> no joystick.
+
+		invokeReset(state);
+
+		assertNull(readField(state, "previousJoyPressedState"),
+				"joyNumber = -1 means render() shows 'NO JOYSTICK' and the "
+						+ "press-state buffer stays null");
+		assertEquals(-1, readInt(state, "joyNumber"));
+	}
+
+	@Test
+	void resetAllocatesPreviousJoyPressedStateAtJoystickButtonCount() throws Exception {
+		// Simulate joystick 0 with 8 buttons in slot 0; player 1 picks it.
+		NullpoMinoSDL.joyMaxButton = new int[] {8};
+		NullpoMinoSDL.joyUseNumber = new int[] {-1, 0};
+
+		StateConfigJoystickButtonSDL state = new StateConfigJoystickButtonSDL();
+		state.player = 1;
+
+		invokeReset(state);
+
+		boolean[] previous = (boolean[]) readField(state, "previousJoyPressedState");
+		assertNotNull(previous);
+		assertEquals(8, previous.length, "buffer size matches joyMaxButton[joyNumber]");
+		assertEquals(0, readInt(state, "joyNumber"));
+	}
+
+	@Test
+	void resetCopiesGameKeyButtonmapIntoTheLocalDraft() throws Exception {
+		// Spoil player 0's buttonmap so we can prove reset() pulls it in.
+		for(int i = 0; i < GameKeySDL.MAX_BUTTON; i++) {
+			GameKeySDL.gamekey[0].buttonmap[i] = 50 + i;
+		}
+
+		StateConfigJoystickButtonSDL state = new StateConfigJoystickButtonSDL();
+		state.player = 0;
+
+		invokeReset(state);
+
+		int[] buttonmap = (int[]) readField(state, "buttonmap");
+		assertEquals(GameKeySDL.MAX_BUTTON, buttonmap.length);
+		for(int i = 0; i < buttonmap.length; i++) {
+			assertEquals(50 + i, buttonmap[i],
+					"reset() must snapshot gamekey[player].buttonmap so the "
+							+ "user can cancel without losing it");
+		}
+	}
+
+	@Test
+	void resetSeedsKeynumAtFourSoTheCursorStartsOnButtonA() throws Exception {
+		// First configurable row is 'A (L/R-ROT)' at keynum=4. Anything else
+		// would render the cursor on the no-op rows above.
+		StateConfigJoystickButtonSDL state = new StateConfigJoystickButtonSDL();
+		state.player = 0;
+
+		invokeReset(state);
+
+		assertEquals(4, readInt(state, "keynum"));
+		assertEquals(0, readInt(state, "frame"));
+		assertEquals(0, readInt(state, "upInputState"));
+		assertEquals(0, readInt(state, "downInputState"));
+	}
+
+	@Test
+	void getPressedKeyNumberReturnsMinusOneWhenStatesAgree() throws Exception {
+		StateConfigJoystickButtonSDL state = new StateConfigJoystickButtonSDL();
+		boolean[] prev = new boolean[6];
+		boolean[] now = new boolean[6];
+
+		assertEquals(-1, invokeGetPressedKeyNumber(state, prev, now));
+	}
+
+	@Test
+	void getPressedKeyNumberReturnsLowestDifferingIndex() throws Exception {
+		StateConfigJoystickButtonSDL state = new StateConfigJoystickButtonSDL();
+		boolean[] prev = new boolean[8];
+		boolean[] now = new boolean[8];
+		now[2] = true;
+		now[5] = true;
+
+		assertEquals(2, invokeGetPressedKeyNumber(state, prev, now));
+	}
+
+	@Test
+	void getPressedKeyNumberDetectsReleasesAsWell() throws Exception {
+		// Releases (now=false where prev=true) also count as "first difference"
+		// — the user un-pressing a button is still an event the loop wants to
+		// see; it just won't be saved into buttonmap because the caller checks
+		// for now[i] before storing.
+		StateConfigJoystickButtonSDL state = new StateConfigJoystickButtonSDL();
+		boolean[] prev = new boolean[] {false, true, true};
+		boolean[] now  = new boolean[] {false, true, false};
+
+		assertEquals(2, invokeGetPressedKeyNumber(state, prev, now));
+	}
+
+	private static int readInt(Object instance, String name) throws Exception {
+		Field f = instance.getClass().getDeclaredField(name);
+		f.setAccessible(true);
+		return f.getInt(instance);
+	}
+
+	private static Object readField(Object instance, String name) throws Exception {
+		Field f = instance.getClass().getDeclaredField(name);
+		f.setAccessible(true);
+		return f.get(instance);
+	}
+
+	private static void invokeReset(StateConfigJoystickButtonSDL state) throws Exception {
+		Method m = StateConfigJoystickButtonSDL.class.getDeclaredMethod("reset");
+		m.setAccessible(true);
+		m.invoke(state);
+	}
+
+	private static int invokeGetPressedKeyNumber(StateConfigJoystickButtonSDL state,
+			boolean[] prev, boolean[] now) throws Exception {
+		Method m = StateConfigJoystickButtonSDL.class.getDeclaredMethod(
+				"getPressedKeyNumber", boolean[].class, boolean[].class);
+		m.setAccessible(true);
+		return (int) m.invoke(state, prev, now);
+	}
+}
