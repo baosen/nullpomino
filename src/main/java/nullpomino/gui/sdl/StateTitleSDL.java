@@ -53,7 +53,7 @@ public class StateTitleSDL extends DummyMenuChooseStateSDL {
 	public void render() {
 		SDL3.INSTANCE.SDL_RenderTexture(NullpoMinoSDL.renderer, ResourceHolderSDL.imgTitle, null, null);
 
-		NormalFontSDL.printFontGrid(1, 1, "NULLPOMINO++", NormalFontSDL.COLOR_ORANGE);
+		NormalFontSDL.printFontGrid(1, 1, "NULLPOMINO+", NormalFontSDL.COLOR_ORANGE);
 
 		NormalFontSDL.printFontGrid(1, 3 + cursor, "b", NormalFontSDL.COLOR_RED);
 
