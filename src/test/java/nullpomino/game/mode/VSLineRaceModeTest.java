@@ -1,7 +1,10 @@
 package nullpomino.game.mode;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 
 import nullpomino.game.event.EventReceiver;
@@ -31,6 +34,45 @@ class VSLineRaceModeTest {
 	@Test
 	void modeIsTetrominoStyle() {
 		assertEquals(GameEngine.GAMESTYLE_TETROMINO, new VSLineRaceMode().getGameStyle());
+	}
+
+	@Test
+	void isVSModeReturnsTrue() {
+		assertTrue(new VSLineRaceMode().isVSMode());
+	}
+
+	@Test
+	void loadOtherSettingReadsDefaultsWhenPropertyIsEmpty() throws Exception {
+		VSLineRaceMode mode = new VSLineRaceMode();
+		GameEngine engine = freshEngine(mode);
+
+		invokeLoadOther(mode, engine, new CustomProperties());
+
+		assertEquals(40, getIntArray(mode, "goalLines")[0]);
+		assertEquals(0, getIntField(mode, "bgmno"));
+		assertFalse(getBoolArray(mode, "big")[0]);
+		assertTrue(getBoolArray(mode, "enableSE")[0]);
+		assertEquals(0, getIntArray(mode, "presetNumber")[0]);
+	}
+
+	@Test
+	void saveAndLoadOtherSettingRoundTripForPlayer0() throws Exception {
+		VSLineRaceMode source = new VSLineRaceMode();
+		GameEngine sourceEngine = freshEngine(source);
+		getIntArray(source, "goalLines")[0] = 30;
+		getBoolArray(source, "big")[0] = true;
+
+		CustomProperties prop = new CustomProperties();
+		invokeSaveOther(source, sourceEngine, prop);
+
+		assertEquals(30, prop.getProperty("vslinerace.goalLines.p0", -1));
+
+		VSLineRaceMode dest = new VSLineRaceMode();
+		GameEngine destEngine = freshEngine(dest);
+		invokeLoadOther(dest, destEngine, prop);
+
+		assertEquals(30, getIntArray(dest, "goalLines")[0]);
+		assertTrue(getBoolArray(dest, "big")[0]);
 	}
 
 	@Test
@@ -142,5 +184,51 @@ class VSLineRaceModeTest {
 				"savePreset", GameEngine.class, CustomProperties.class, int.class);
 		m.setAccessible(true);
 		m.invoke(mode, engine, prop, preset);
+	}
+
+	private static void invokeLoadOther(VSLineRaceMode mode, GameEngine engine,
+			CustomProperties prop) throws Exception {
+		Method m = VSLineRaceMode.class.getDeclaredMethod(
+				"loadOtherSetting", GameEngine.class, CustomProperties.class);
+		m.setAccessible(true);
+		m.invoke(mode, engine, prop);
+	}
+
+	private static void invokeSaveOther(VSLineRaceMode mode, GameEngine engine,
+			CustomProperties prop) throws Exception {
+		Method m = VSLineRaceMode.class.getDeclaredMethod(
+				"saveOtherSetting", GameEngine.class, CustomProperties.class);
+		m.setAccessible(true);
+		m.invoke(mode, engine, prop);
+	}
+
+	private static int[] getIntArray(Object obj, String name) throws Exception {
+		Field f = findField(obj.getClass(), name);
+		f.setAccessible(true);
+		return (int[]) f.get(obj);
+	}
+
+	private static boolean[] getBoolArray(Object obj, String name) throws Exception {
+		Field f = findField(obj.getClass(), name);
+		f.setAccessible(true);
+		return (boolean[]) f.get(obj);
+	}
+
+	private static int getIntField(Object obj, String name) throws Exception {
+		Field f = findField(obj.getClass(), name);
+		f.setAccessible(true);
+		return f.getInt(obj);
+	}
+
+	private static Field findField(Class<?> cls, String name) throws NoSuchFieldException {
+		Class<?> c = cls;
+		while(c != null) {
+			try {
+				return c.getDeclaredField(name);
+			} catch(NoSuchFieldException e) {
+				c = c.getSuperclass();
+			}
+		}
+		throw new NoSuchFieldException(name);
 	}
 }
