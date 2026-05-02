@@ -301,6 +301,30 @@ class FieldCharacterisationTest {
 	}
 
 	@Test
+	void downFloatingBlocksSingleLineIsNoOpWhenNoFlagIsSet() {
+		// When no row is flagged the loop completes without returning — covers the
+		// method's closing brace (the "no-op / fell off the end" path).
+		Field f = newField();
+		f.setBlockColor(0, 10, Block.BLOCK_COLOR_RED);
+		f.downFloatingBlocksSingleLine();
+		assertEquals(Block.BLOCK_COLOR_RED, f.getBlockColor(0, 10),
+				"block must not move when no line flag is set");
+	}
+
+	@Test
+	void clearLineSkipsNullBlocksInFlaggedRow() {
+		// setBlock(x, y, null) plants a null entry; clearLine must hit the
+		// 'if (b == null) continue;' guard and not throw.
+		Field f = newField();
+		fillRow(f, 19, Block.BLOCK_COLOR_RED);
+		f.setBlock(5, 19, null);
+		f.setLineFlag(19, true);  // flag manually — col 5 is null so checkLine won't flag it
+
+		int cleared = f.clearLine();
+		assertEquals(1, cleared, "the flagged row still counts toward the clear total");
+	}
+
+	@Test
 	void copyConstructorPreservesBlockColorsAndDimensions() {
 		Field src = new Field(10, 20, 3, true);
 		src.setBlockColor(0, 19, Block.BLOCK_COLOR_RED);

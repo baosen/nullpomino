@@ -372,6 +372,53 @@ class FieldQueriesTest {
 	}
 
 	@Test
+	void getTSlotLineClearWithGapInSideRowReducesCountToOne() {
+		// T-slot at (4,10) with 3 corners.  Row 11 sides fully filled, but row 12
+		// has a gap at column 0 — getBlockEmptyF(0, 12) returns true and sets
+		// lineflag[1]=false (the "gap in side row" branch).  Result = 1.
+		Field f = newField();
+		f.setBlockColor(4, 10, Block.BLOCK_COLOR_RED);
+		f.setBlockColor(6, 10, Block.BLOCK_COLOR_RED);
+		f.setBlockColor(4, 12, Block.BLOCK_COLOR_RED);
+		// Fill row 11 sides completely
+		for (int x = 0; x < f.getWidth(); x++) {
+			if (x < 4 || x >= 7) {
+				f.setBlockColor(x, 11, Block.BLOCK_COLOR_BLUE);
+			}
+		}
+		// Fill row 12 sides but leave column 0 empty → gap triggers lineflag[1]=false
+		for (int x = 1; x < f.getWidth(); x++) {
+			if (x < 4 || x >= 7) {
+				f.setBlockColor(x, 12, Block.BLOCK_COLOR_BLUE);
+			}
+		}
+
+		assertEquals(1, f.getTSlotLineClear(4, 10, false),
+				"gap in the side of row 12 must reduce the clear count to 1");
+	}
+
+	@Test
+	void getTSlotLineClearAllWithMinimumFiltersOutSlotsBelow() {
+		// Same double-clear setup as above; minimum=2 passes the guard so
+		// 'result += temp' (the minimum-met branch) is exercised.
+		Field f = newField();
+		f.setBlockColor(4, 10, Block.BLOCK_COLOR_RED);
+		f.setBlockColor(6, 10, Block.BLOCK_COLOR_RED);
+		f.setBlockColor(4, 12, Block.BLOCK_COLOR_RED);
+		for (int x = 0; x < f.getWidth(); x++) {
+			if (x < 4 || x >= 7) {
+				f.setBlockColor(x, 11, Block.BLOCK_COLOR_BLUE);
+				f.setBlockColor(x, 12, Block.BLOCK_COLOR_BLUE);
+			}
+		}
+
+		assertEquals(2, f.getTSlotLineClearAll(false, 2),
+				"slot with 2 clear lines meets minimum=2 and must be counted");
+		assertEquals(0, f.getTSlotLineClearAll(false, 3),
+				"slot with 2 lines does not meet minimum=3 and must not be counted");
+	}
+
+	@Test
 	void getSecretGradeIgnoresRowsWithGapsOutsideHoleColumn() {
 		// height=20 → at i=19, holeLoc=0
 		// Row 19 has holeLoc=0 empty, block above (0,18) filled, but column 5 also empty
