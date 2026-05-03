@@ -255,10 +255,20 @@ public class NetServer {
 		log.info("Loaded " + ratedInfoList.size() + " presets.");
 	}
 
+	/** Default path to the rated-game rule list file. */
+	private static final String DEFAULT_RULELIST_PATH = "config/etc/netserver_rulelist.lst";
+
 	/**
-	 * Load rated-game rule list
+	 * Load rated-game rule list from the default path.
 	 */
 	private static void loadRuleList() {
+		loadRuleList(DEFAULT_RULELIST_PATH);
+	}
+
+	/**
+	 * Load rated-game rule list from the given path.
+	 */
+	private static void loadRuleList(String path) {
 		log.info("Loading Rule List...");
 
 		ruleList = new LinkedList[GameEngine.MAX_GAMESTYLE];
@@ -269,7 +279,7 @@ public class NetServer {
 		}
 
 		try {
-			BufferedReader txtRuleList = new BufferedReader(new FileReader("config/etc/netserver_rulelist.lst"));
+			BufferedReader txtRuleList = new BufferedReader(new FileReader(path));
 			int style = 0;
 
 			String str = null;
