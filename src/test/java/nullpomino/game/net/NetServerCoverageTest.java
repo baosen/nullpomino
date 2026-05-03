@@ -13,7 +13,9 @@ import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandles;
 import java.lang.invoke.MethodType;
 import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.nio.channels.Selector;
 import java.nio.channels.SocketChannel;
 import java.util.Calendar;
 import java.util.HashMap;
@@ -1008,5 +1010,993 @@ class NetServerCoverageTest {
         Method m = NetServer.class.getDeclaredMethod("broadcast", String.class);
         m.setAccessible(true);
         m.invoke(server, "hello");
+    }
+
+    // ==================================================================
+    // Helpers for reflection-based tests
+    // ==================================================================
+
+    /** Open a real Selector and set it on the server so send() calls don't NPE. */
+    private void setSelector() throws Exception {
+        Field f = NetServer.class.getDeclaredField("selector");
+        f.setAccessible(true);
+        if (f.get(server) == null) {
+            f.set(server, Selector.open());
+        }
+    }
+
+    /** Add a player to the server's in-memory data structures. */
+    private NetPlayerInfo addPlayerToServer(SocketChannel ch, String name, int uid) throws Exception {
+        NetPlayerInfo p = new NetPlayerInfo();
+        p.strName = name;
+        p.uid = uid;
+        p.roomID = -1;
+        p.connected = true;
+        p.playing = false;
+        p.isTripUse = false;
+        p.ruleOpt = new RuleOptions();
+        @SuppressWarnings("unchecked")
+        Map<SocketChannel, NetPlayerInfo> infoMap = getInstanceField(server, "playerInfoMap");
+        infoMap.put(ch, p);
+        @SuppressWarnings("unchecked")
+        LinkedList<SocketChannel> chList = getInstanceField(server, "channelList");
+        chList.add(ch);
+        return p;
+    }
+
+    /** Invoke processPacket and unwrap InvocationTargetException. */
+    private void callProcessPacket(SocketChannel ch, String msg) throws Throwable {
+        Method m = NetServer.class.getDeclaredMethod("processPacket", SocketChannel.class, String.class);
+        m.setAccessible(true);
+        try {
+            m.invoke(server, ch, msg);
+        } catch (InvocationTargetException e) {
+            throw e.getCause();
+        }
+    }
+
+    // ==================================================================
+    // getHostAddress
+    // ==================================================================
+
+    @Test
+    void getHostAddressWithNullReturnsEmpty() throws Throwable {
+        Method m = NetServer.class.getDeclaredMethod("getHostAddress", SocketChannel.class);
+        m.setAccessible(true);
+        String result = (String) m.invoke(null, (SocketChannel) null);
+        assertEquals("", result);
+    }
+
+    @Test
+    void getHostAddressWithDisconnectedSocketReturnsAddress() throws Throwable {
+        Method m = NetServer.class.getDeclaredMethod("getHostAddress", SocketChannel.class);
+        m.setAccessible(true);
+        try (SocketChannel ch = SocketChannel.open()) {
+            String result = (String) m.invoke(null, ch);
+            assertNotNull(result);
+        }
+    }
+
+    // ==================================================================
+    // mpRankingIndexOf
+    // ==================================================================
+
+    @Test
+    void mpRankingIndexOfNullPlayerReturnsMinusOne() throws Throwable {
+        Method m = NetServer.class.getDeclaredMethod("mpRankingIndexOf", int.class, NetPlayerInfo.class);
+        m.setAccessible(true);
+        int result = (int) m.invoke(null, 0, (NetPlayerInfo) null);
+        assertEquals(-1, result);
+    }
+
+    @Test
+    void mpRankingIndexOfNullNameReturnsMinusOne() throws Throwable {
+        Method m = NetServer.class.getDeclaredMethod("mpRankingIndexOf", int.class, String.class);
+        m.setAccessible(true);
+        int result = (int) m.invoke(null, 0, (String) null);
+        assertEquals(-1, result);
+    }
+
+    @Test
+    void mpRankingIndexOfExistingPlayerByObjectReturnsIndex() throws Throwable {
+        LinkedList<NetPlayerInfo> list = getMpRankingList(0);
+        NetPlayerInfo p = new NetPlayerInfo();
+        p.strName = "TargetPlayer";
+        list.add(p);
+
+        Method m = NetServer.class.getDeclaredMethod("mpRankingIndexOf", int.class, NetPlayerInfo.class);
+        m.setAccessible(true);
+        int result = (int) m.invoke(null, 0, p);
+        assertEquals(0, result);
+    }
+
+    @Test
+    void mpRankingIndexOfExistingPlayerByNameReturnsIndex() throws Throwable {
+        LinkedList<NetPlayerInfo> list = getMpRankingList(0);
+        NetPlayerInfo p = new NetPlayerInfo();
+        p.strName = "TargetPlayer";
+        list.add(p);
+
+        Method m = NetServer.class.getDeclaredMethod("mpRankingIndexOf", int.class, String.class);
+        m.setAccessible(true);
+        int result = (int) m.invoke(null, 0, "TargetPlayer");
+        assertEquals(0, result);
+    }
+
+    @Test
+    void mpRankingIndexOfNonExistingPlayerReturnsMinusOne() throws Throwable {
+        Method m = NetServer.class.getDeclaredMethod("mpRankingIndexOf", int.class, NetPlayerInfo.class);
+        m.setAccessible(true);
+        NetPlayerInfo p = new NetPlayerInfo();
+        p.strName = "NotPresent";
+        int result = (int) m.invoke(null, 0, p);
+        assertEquals(-1, result);
+    }
+
+    // ==================================================================
+    // mpRankingUpdate
+    // ==================================================================
+
+    @Test
+    void mpRankingUpdateInsertsIntoEmptyList() throws Throwable {
+        LinkedList<NetPlayerInfo> list = getMpRankingList(0);
+        NetPlayerInfo p = new NetPlayerInfo();
+        p.strName = "FirstPlayer";
+        p.rating[0] = 1500;
+
+        Method m = NetServer.class.getDeclaredMethod("mpRankingUpdate", int.class, NetPlayerInfo.class);
+        m.setAccessible(true);
+        int place = (int) m.invoke(null, 0, p);
+
+        assertEquals(0, place);
+        assertEquals(1, list.size());
+        assertSame(p, list.get(0));
+    }
+
+    @Test
+    void mpRankingUpdateInsertsAtCorrectRankPosition() throws Throwable {
+        LinkedList<NetPlayerInfo> list = getMpRankingList(0);
+
+        NetPlayerInfo low = new NetPlayerInfo();
+        low.strName = "LowPlayer";
+        low.rating[0] = 1000;
+        list.add(low);
+
+        NetPlayerInfo high = new NetPlayerInfo();
+        high.strName = "HighPlayer";
+        high.rating[0] = 2000;
+
+        Method m = NetServer.class.getDeclaredMethod("mpRankingUpdate", int.class, NetPlayerInfo.class);
+        m.setAccessible(true);
+        int place = (int) m.invoke(null, 0, high);
+
+        assertEquals(0, place);  // inserted at front
+        assertEquals(2, list.size());
+        assertSame(high, list.get(0));
+        assertSame(low, list.get(1));
+    }
+
+    @Test
+    void mpRankingUpdateInsertsAtEndWhenLowestRating() throws Throwable {
+        LinkedList<NetPlayerInfo> list = getMpRankingList(0);
+
+        NetPlayerInfo high = new NetPlayerInfo();
+        high.strName = "HighPlayer";
+        high.rating[0] = 2000;
+        list.add(high);
+
+        NetPlayerInfo low = new NetPlayerInfo();
+        low.strName = "LowPlayer";
+        low.rating[0] = 1000;
+
+        Method m = NetServer.class.getDeclaredMethod("mpRankingUpdate", int.class, NetPlayerInfo.class);
+        m.setAccessible(true);
+        int place = (int) m.invoke(null, 0, low);
+
+        assertEquals(1, place);  // inserted at end
+        assertEquals(2, list.size());
+        assertSame(high, list.get(0));
+        assertSame(low, list.get(1));
+    }
+
+    @Test
+    void mpRankingUpdateReplacesExistingEntry() throws Throwable {
+        LinkedList<NetPlayerInfo> list = getMpRankingList(0);
+
+        NetPlayerInfo existing = new NetPlayerInfo();
+        existing.strName = "DuplicatePlayer";
+        existing.rating[0] = 1500;
+        list.add(existing);
+
+        NetPlayerInfo newer = new NetPlayerInfo();
+        newer.strName = "DuplicatePlayer";
+        newer.rating[0] = 1800;
+
+        Method m = NetServer.class.getDeclaredMethod("mpRankingUpdate", int.class, NetPlayerInfo.class);
+        m.setAccessible(true);
+        int place = (int) m.invoke(null, 0, newer);
+
+        assertEquals(0, place);
+        assertEquals(1, list.size());  // old entry removed
+        assertSame(newer, list.get(0));
+    }
+
+    // ==================================================================
+    // getRatedRule
+    // ==================================================================
+
+    @Test
+    void getRatedRuleWithMatchingNameReturnsRule() throws Throwable {
+        // getRatedRule is an instance method (no 'static')
+        MethodHandles.Lookup lookup =
+                MethodHandles.privateLookupIn(NetServer.class, MethodHandles.lookup());
+        MethodHandle mh = lookup.findVirtual(NetServer.class, "getRatedRule",
+                MethodType.methodType(RuleOptions.class, int.class, String.class));
+        RuleOptions result = (RuleOptions) mh.invokeExact(server, 0, "Standard");
+        assertNotNull(result);
+        assertEquals("Standard", result.strRuleName);
+    }
+
+    @Test
+    void getRatedRuleWithNonMatchingNameReturnsNull() throws Throwable {
+        MethodHandles.Lookup lookup =
+                MethodHandles.privateLookupIn(NetServer.class, MethodHandles.lookup());
+        MethodHandle mh = lookup.findVirtual(NetServer.class, "getRatedRule",
+                MethodType.methodType(RuleOptions.class, int.class, String.class));
+        RuleOptions result = (RuleOptions) mh.invokeExact(server, 0, "__NonExistent__");
+        assertNull(result);
+    }
+
+    @Test
+    void getRatedRuleWithNullNameReturnsNull() throws Throwable {
+        MethodHandles.Lookup lookup =
+                MethodHandles.privateLookupIn(NetServer.class, MethodHandles.lookup());
+        MethodHandle mh = lookup.findVirtual(NetServer.class, "getRatedRule",
+                MethodType.methodType(RuleOptions.class, int.class, String.class));
+        RuleOptions result = (RuleOptions) mh.invokeExact(server, 0, (String) null);
+        assertNull(result);
+    }
+
+    // ==================================================================
+    // rankDelta / expectedScore / maxDelta
+    // ==================================================================
+
+    @Test
+    void expectedScoreWithEqualRatingsReturnsHalf() throws Throwable {
+        Method m = NetServer.class.getDeclaredMethod("expectedScore", double.class, double.class);
+        m.setAccessible(true);
+        double score = (double) m.invoke(server, 1500.0, 1500.0);
+        assertEquals(0.5, score, 0.001);
+    }
+
+    @Test
+    void expectedScoreWithHigherRatingGivesHigherExpectation() throws Throwable {
+        Method m = NetServer.class.getDeclaredMethod("expectedScore", double.class, double.class);
+        m.setAccessible(true);
+        double score = (double) m.invoke(server, 1600.0, 1500.0);
+        assertTrue(score > 0.5);
+    }
+
+    @Test
+    void maxDeltaWithProvisionalGamesReturnsBonus() throws Throwable {
+        // ratingProvisionalGames = 50, ratingNormalMaxDiff = 16
+        // maxDelta(5) = 16 + 400/(5+3) = 16 + 50 = 66
+        Method m = NetServer.class.getDeclaredMethod("maxDelta", int.class);
+        m.setAccessible(true);
+        double delta = (double) m.invoke(server, 5);
+        assertEquals(66.0, delta, 0.001);
+    }
+
+    @Test
+    void maxDeltaWithManyGamesReturnsNormal() throws Throwable {
+        // playedGames > 50 => returns ratingNormalMaxDiff = 16
+        Method m = NetServer.class.getDeclaredMethod("maxDelta", int.class);
+        m.setAccessible(true);
+        double delta = (double) m.invoke(server, 100);
+        assertEquals(16.0, delta, 0.001);
+    }
+
+    @Test
+    void rankDeltaWinIncreasesRating() throws Throwable {
+        Method m = NetServer.class.getDeclaredMethod("rankDelta", int.class, double.class, double.class, double.class);
+        m.setAccessible(true);
+        // playedGames=100 (post-provisional), myRank=1500, oppRank=1500, win(1)
+        // expectedScore(1500,1500)=0.5, maxDelta(100)=16, delta=16*(1-0.5)=8.0
+        double delta = (double) m.invoke(server, 100, 1500.0, 1500.0, 1.0);
+        assertEquals(8.0, delta, 0.001);
+    }
+
+    @Test
+    void rankDeltaLossDecreasesRating() throws Throwable {
+        Method m = NetServer.class.getDeclaredMethod("rankDelta", int.class, double.class, double.class, double.class);
+        m.setAccessible(true);
+        // playedGames=100, myRank=1500, oppRank=1500, loss(0)
+        // expectedScore(1500,1500)=0.5, maxDelta(100)=16, delta=16*(0-0.5)=-8.0
+        double delta = (double) m.invoke(server, 100, 1500.0, 1500.0, 0.0);
+        assertEquals(-8.0, delta, 0.001);
+    }
+
+    // ==================================================================
+    // getPlayerDataFromProperty
+    // ==================================================================
+
+    @Test
+    void getPlayerDataFromPropertyWithTripLoadsData() throws Throwable {
+        // Set up propPlayerData
+        CustomProperties data = new CustomProperties();
+        data.setProperty("p.rating.0.TripPlayer", "1800");
+        data.setProperty("p.playCount.0.TripPlayer", "50");
+        data.setProperty("p.winCount.0.TripPlayer", "30");
+        setStaticField("propPlayerData", data);
+
+        NetPlayerInfo p = new NetPlayerInfo();
+        p.strName = "TripPlayer";
+        p.isTripUse = true;
+
+        Method m = NetServer.class.getDeclaredMethod("getPlayerDataFromProperty", NetPlayerInfo.class);
+        m.setAccessible(true);
+        m.invoke(null, p);
+
+        assertEquals(1800, p.rating[0]);
+        assertEquals(50, p.playCount[0]);
+        assertEquals(30, p.winCount[0]);
+    }
+
+    @Test
+    void getPlayerDataFromPropertyWithoutTripUsesDefaults() throws Throwable {
+        NetPlayerInfo p = new NetPlayerInfo();
+        p.strName = "NonTripPlayer";
+        p.isTripUse = false;
+
+        Method m = NetServer.class.getDeclaredMethod("getPlayerDataFromProperty", NetPlayerInfo.class);
+        m.setAccessible(true);
+        m.invoke(null, p);
+
+        assertEquals(NetPlayerInfo.DEFAULT_MULTIPLAYER_RATING, p.rating[0]);
+        assertEquals(0, p.playCount[0]);
+        assertEquals(0, p.winCount[0]);
+    }
+
+    // ==================================================================
+    // setPlayerDataToProperty
+    // ==================================================================
+
+    @Test
+    void setPlayerDataToPropertyWithTripSavesData() throws Throwable {
+        CustomProperties data = new CustomProperties();
+        setStaticField("propPlayerData", data);
+
+        NetPlayerInfo p = new NetPlayerInfo();
+        p.strName = "TripPlayer";
+        p.isTripUse = true;
+        p.rating[0] = 2000;
+        p.playCount[0] = 100;
+        p.winCount[0] = 60;
+
+        Method m = NetServer.class.getDeclaredMethod("setPlayerDataToProperty", NetPlayerInfo.class);
+        m.setAccessible(true);
+        m.invoke(null, p);
+
+        assertEquals("2000", data.getProperty("p.rating.0.TripPlayer"));
+        assertEquals("100", data.getProperty("p.playCount.0.TripPlayer"));
+        assertEquals("60", data.getProperty("p.winCount.0.TripPlayer"));
+    }
+
+    @Test
+    void setPlayerDataToPropertyWithoutTripDoesNothing() throws Throwable {
+        CustomProperties data = new CustomProperties();
+        setStaticField("propPlayerData", data);
+
+        NetPlayerInfo p = new NetPlayerInfo();
+        p.strName = "NonTripPlayer";
+        p.isTripUse = false;
+
+        Method m = NetServer.class.getDeclaredMethod("setPlayerDataToProperty", NetPlayerInfo.class);
+        m.setAccessible(true);
+        m.invoke(null, p);
+
+        assertNull(data.getProperty("p.rating.0.NonTripPlayer"));
+    }
+
+    // ==================================================================
+    // getSPRanking / getSPRankingAllRules
+    // ==================================================================
+
+    @Test
+    void getSPRankingFoundReturnsRanking() throws Throwable {
+        LinkedList<NetSPRanking> alltime = new LinkedList<NetSPRanking>();
+        NetSPRanking r = new NetSPRanking("TestMode", "TestRule", 0, 0,
+                NetSPRecord.RANKINGTYPE_GENERIC_SCORE, 100);
+        alltime.add(r);
+        setStaticField("spRankingListAlltime", alltime);
+
+        Method m = NetServer.class.getDeclaredMethod("getSPRanking", String.class, String.class, int.class);
+        m.setAccessible(true);
+        NetSPRanking result = (NetSPRanking) m.invoke(null, "TestRule", "TestMode", 0);
+        assertNotNull(result);
+        assertEquals("TestRule", result.strRuleName);
+    }
+
+    @Test
+    void getSPRankingNotFoundReturnsNull() throws Throwable {
+        setStaticField("spRankingListAlltime", new LinkedList<NetSPRanking>());
+
+        Method m = NetServer.class.getDeclaredMethod("getSPRanking", String.class, String.class, int.class);
+        m.setAccessible(true);
+        NetSPRanking result = (NetSPRanking) m.invoke(null, "NoRule", "NoMode", 0);
+        assertNull(result);
+    }
+
+    @Test
+    void getSPRankingWithAllRuleDelegatesToAllRules() throws Throwable {
+        LinkedList<NetSPRanking> alltime = new LinkedList<NetSPRanking>();
+        NetSPRanking r1 = new NetSPRanking("TestMode", "Rule1", 0, 0,
+                NetSPRecord.RANKINGTYPE_GENERIC_SCORE, 100);
+        NetSPRecord rec1 = new NetSPRecord();
+        rec1.strPlayerName = "Alice";
+        rec1.strModeName = "TestMode";
+        rec1.strRuleName = "Rule1";
+        rec1.stats = new Statistics();
+        rec1.stats.score = 200;
+        r1.listRecord.add(rec1);
+
+        NetSPRanking r2 = new NetSPRanking("TestMode", "Rule2", 0, 0,
+                NetSPRecord.RANKINGTYPE_GENERIC_SCORE, 100);
+        NetSPRecord rec2 = new NetSPRecord();
+        rec2.strPlayerName = "Bob";
+        rec2.strModeName = "TestMode";
+        rec2.strRuleName = "Rule2";
+        rec2.stats = new Statistics();
+        rec2.stats.score = 150;
+        r2.listRecord.add(rec2);
+
+        alltime.add(r1);
+        alltime.add(r2);
+        setStaticField("spRankingListAlltime", alltime);
+
+        Method m = NetServer.class.getDeclaredMethod("getSPRanking", String.class, String.class, int.class);
+        m.setAccessible(true);
+        NetSPRanking result = (NetSPRanking) m.invoke(null, "all", "TestMode", 0);
+        assertNotNull(result);
+        assertEquals("all", result.strRuleName);
+        assertEquals(2, result.listRecord.size());
+    }
+
+    @Test
+    void getSPRankingAllRulesWithNoMatchesReturnsNull() throws Throwable {
+        setStaticField("spRankingListAlltime", new LinkedList<NetSPRanking>());
+
+        Method m = NetServer.class.getDeclaredMethod("getSPRankingAllRules", String.class, int.class, boolean.class);
+        m.setAccessible(true);
+        NetSPRanking result = (NetSPRanking) m.invoke(null, "NoMode", 0, false);
+        assertNull(result);
+    }
+
+    // ==================================================================
+    // getRoomInfo
+    // ==================================================================
+
+    @Test
+    void getRoomInfoNotFoundReturnsNull() throws Throwable {
+        Method m = NetServer.class.getDeclaredMethod("getRoomInfo", int.class);
+        m.setAccessible(true);
+        NetRoomInfo result = (NetRoomInfo) m.invoke(server, 999);
+        assertNull(result);
+    }
+
+    @Test
+    void getRoomInfoMinusOneReturnsNull() throws Throwable {
+        Method m = NetServer.class.getDeclaredMethod("getRoomInfo", int.class);
+        m.setAccessible(true);
+        NetRoomInfo result = (NetRoomInfo) m.invoke(server, -1);
+        assertNull(result);
+    }
+
+    @Test
+    void getRoomInfoFoundReturnsRoom() throws Throwable {
+        NetRoomInfo room = new NetRoomInfo();
+        room.roomID = 42;
+        room.strName = "TestRoom";
+        @SuppressWarnings("unchecked")
+        LinkedList<NetRoomInfo> roomList = getInstanceField(server, "roomInfoList");
+        roomList.add(room);
+
+        Method m = NetServer.class.getDeclaredMethod("getRoomInfo", int.class);
+        m.setAccessible(true);
+        NetRoomInfo result = (NetRoomInfo) m.invoke(server, 42);
+        assertNotNull(result);
+        assertEquals(42, result.roomID);
+    }
+
+    // ==================================================================
+    // searchPlayerByName / searchPlayerByUID
+    // ==================================================================
+
+    @Test
+    void searchPlayerByNameFoundReturnsPlayer() throws Throwable {
+        try (SocketChannel ch = SocketChannel.open()) {
+            addPlayerToServer(ch, "Alice", 1);
+
+            Method m = NetServer.class.getDeclaredMethod("searchPlayerByName", String.class);
+            m.setAccessible(true);
+            NetPlayerInfo result = (NetPlayerInfo) m.invoke(server, "Alice");
+            assertNotNull(result);
+            assertEquals("Alice", result.strName);
+        }
+    }
+
+    @Test
+    void searchPlayerByNameNotFoundReturnsNull() throws Throwable {
+        Method m = NetServer.class.getDeclaredMethod("searchPlayerByName", String.class);
+        m.setAccessible(true);
+        NetPlayerInfo result = (NetPlayerInfo) m.invoke(server, "Nobody");
+        assertNull(result);
+    }
+
+    @Test
+    void searchPlayerByUIDFoundReturnsPlayer() throws Throwable {
+        try (SocketChannel ch = SocketChannel.open()) {
+            addPlayerToServer(ch, "Bob", 7);
+
+            Method m = NetServer.class.getDeclaredMethod("searchPlayerByUID", int.class);
+            m.setAccessible(true);
+            NetPlayerInfo result = (NetPlayerInfo) m.invoke(server, 7);
+            assertNotNull(result);
+            assertEquals(7, result.uid);
+        }
+    }
+
+    @Test
+    void searchPlayerByUIDNotFoundReturnsNull() throws Throwable {
+        Method m = NetServer.class.getDeclaredMethod("searchPlayerByUID", int.class);
+        m.setAccessible(true);
+        NetPlayerInfo result = (NetPlayerInfo) m.invoke(server, 999);
+        assertNull(result);
+    }
+
+    // ==================================================================
+    // findPlayerByMsg
+    // ==================================================================
+
+    @Test
+    void findPlayerByMsgWithEmptyChannelListReturnsNull() throws Throwable {
+        Method m = NetServer.class.getDeclaredMethod("findPlayerByMsg", String.class);
+        m.setAccessible(true);
+        SocketChannel result = (SocketChannel) m.invoke(server, "hello world");
+        assertNull(result);
+    }
+
+    @Test
+    void findPlayerByMsgWithMatchingPlayerReturnsChannel() throws Throwable {
+        try (SocketChannel ch = SocketChannel.open()) {
+            NetPlayerInfo p = addPlayerToServer(ch, "TestPlayer", 1);
+            // findPlayerByMsg looks for player name followed by space at start of msg
+
+            Method m = NetServer.class.getDeclaredMethod("findPlayerByMsg", String.class);
+            m.setAccessible(true);
+            SocketChannel result = (SocketChannel) m.invoke(server, "TestPlayer hello world");
+            assertSame(ch, result);
+        }
+    }
+
+    @Test
+    void findPlayerByMsgWithNonMatchingMsgReturnsNull() throws Throwable {
+        try (SocketChannel ch = SocketChannel.open()) {
+            addPlayerToServer(ch, "Alice", 1);
+
+            Method m = NetServer.class.getDeclaredMethod("findPlayerByMsg", String.class);
+            m.setAccessible(true);
+            SocketChannel result = (SocketChannel) m.invoke(server, "Bob hello");
+            assertNull(result);
+        }
+    }
+
+    @Test
+    void findPlayerByMsgWithTripPlayerStripsHash() throws Throwable {
+        try (SocketChannel ch = SocketChannel.open()) {
+            // A trip player has name like "Player !123456789ABC" (12 chars of trip hash).
+            // findPlayerByMsg strips the last 12 chars, so display name is "Tripster !".
+            // The message must start with "Tripster ! " (display name + space) to match.
+            NetPlayerInfo p = addPlayerToServer(ch, "Tripster !123456789ABC", 1);
+            p.isTripUse = true;
+
+            Method m = NetServer.class.getDeclaredMethod("findPlayerByMsg", String.class);
+            m.setAccessible(true);
+            SocketChannel result = (SocketChannel) m.invoke(server, "Tripster ! hello world");
+            assertSame(ch, result);
+        }
+    }
+
+    // ==================================================================
+    // checkConnectionOnBanlist
+    // ==================================================================
+
+    @Test
+    void checkConnectionOnBanlistWithNoBanReturnsFalse() throws Throwable {
+        try (SocketChannel ch = SocketChannel.open()) {
+            Method m = NetServer.class.getDeclaredMethod("checkConnectionOnBanlist", SocketChannel.class);
+            m.setAccessible(true);
+            boolean banned = (boolean) m.invoke(server, ch);
+            assertFalse(banned);
+        }
+    }
+
+    @Test
+    void checkConnectionOnBanlistWithBanReturnsTrue() throws Throwable {
+        try (SocketChannel ch = SocketChannel.open()) {
+            LinkedList<NetServerBan> bl = getStaticField("banList", LinkedList.class);
+            bl.add(new NetServerBan("")); // unconnected socket has "" address
+
+            Method m = NetServer.class.getDeclaredMethod("checkConnectionOnBanlist", SocketChannel.class);
+            m.setAccessible(true);
+            boolean banned = (boolean) m.invoke(server, ch);
+            assertTrue(banned);
+        }
+    }
+
+    // ==================================================================
+    // cleanup
+    // ==================================================================
+
+    @Test
+    void cleanupClearsAllDataStructures() throws Throwable {
+        // Populate some data
+        try (SocketChannel ch = SocketChannel.open()) {
+            @SuppressWarnings("unchecked")
+            LinkedList<SocketChannel> chList = getInstanceField(server, "channelList");
+            chList.add(ch);
+
+            @SuppressWarnings("unchecked")
+            Map<SocketChannel, Long> timeMap = getInstanceField(server, "lastCommTimeMap");
+            timeMap.put(ch, 1000L);
+
+            @SuppressWarnings("unchecked")
+            LinkedList<SocketChannel> obsList = getInstanceField(server, "observerList");
+            obsList.add(ch);
+
+            NetRoomInfo room = new NetRoomInfo();
+            room.roomID = 1;
+            @SuppressWarnings("unchecked")
+            LinkedList<NetRoomInfo> roomList = getInstanceField(server, "roomInfoList");
+            roomList.add(room);
+
+            Method m = NetServer.class.getDeclaredMethod("cleanup");
+            m.setAccessible(true);
+            m.invoke(server);
+
+            assertTrue(chList.isEmpty());
+            assertTrue(timeMap.isEmpty());
+            assertTrue(obsList.isEmpty());
+            assertTrue(roomList.isEmpty());
+        }
+    }
+
+    // ==================================================================
+    // deleteRoom
+    // ==================================================================
+
+    @Test
+    void deleteRoomWithEmptyRoomReturnsTrue() throws Throwable {
+        NetRoomInfo room = new NetRoomInfo();
+        room.roomID = 10;
+        room.strName = "EmptyRoom";
+
+        @SuppressWarnings("unchecked")
+        LinkedList<NetRoomInfo> roomList = getInstanceField(server, "roomInfoList");
+        roomList.add(room);
+
+        // deleteRoom calls broadcastRoomInfoUpdate -> broadcast -> send.
+        // Setting selector avoids NPE so we verify the return value.
+        setSelector();
+
+        Method m = NetServer.class.getDeclaredMethod("deleteRoom", NetRoomInfo.class);
+        m.setAccessible(true);
+        boolean result = (boolean) m.invoke(server, room);
+
+        assertTrue(result);
+        assertFalse(roomList.contains(room));
+    }
+
+    @Test
+    void deleteRoomWithNonEmptyRoomReturnsFalse() throws Throwable {
+        NetRoomInfo room = new NetRoomInfo();
+        room.roomID = 10;
+        room.strName = "OccupiedRoom";
+
+        NetPlayerInfo p = new NetPlayerInfo();
+        p.strName = "Staying";
+        room.playerList.add(p);
+
+        @SuppressWarnings("unchecked")
+        LinkedList<NetRoomInfo> roomList = getInstanceField(server, "roomInfoList");
+        roomList.add(room);
+
+        Method m = NetServer.class.getDeclaredMethod("deleteRoom", NetRoomInfo.class);
+        m.setAccessible(true);
+        boolean result = (boolean) m.invoke(server, room);
+
+        assertFalse(result);
+        assertTrue(roomList.contains(room));
+    }
+
+    // ==================================================================
+    // gameStartIfPossible
+    // ==================================================================
+
+    @Test
+    void gameStartIfPossibleWithNullReturnsFalse() throws Throwable {
+        Method m = NetServer.class.getDeclaredMethod("gameStartIfPossible", NetRoomInfo.class);
+        m.setAccessible(true);
+        boolean result = (boolean) m.invoke(server, (NetRoomInfo) null);
+        assertFalse(result);
+    }
+
+    @Test
+    void gameStartIfPossibleWithNotEnoughReadyReturnsFalse() throws Throwable {
+        NetRoomInfo room = new NetRoomInfo();
+        room.singleplayer = false;
+
+        // One seated player not ready
+        NetPlayerInfo p = new NetPlayerInfo();
+        p.ready = false;
+        room.playerSeat.add(p);
+
+        Method m = NetServer.class.getDeclaredMethod("gameStartIfPossible", NetRoomInfo.class);
+        m.setAccessible(true);
+        boolean result = (boolean) m.invoke(server, room);
+        assertFalse(result);
+    }
+
+    @Test
+    void gameStartIfPossibleWithAllReadyStartsGame() throws Throwable {
+        setSelector();
+        NetRoomInfo room = new NetRoomInfo();
+        room.singleplayer = false;
+
+        NetPlayerInfo p1 = new NetPlayerInfo();
+        p1.ready = true;
+        room.playerSeat.add(p1);
+
+        NetPlayerInfo p2 = new NetPlayerInfo();
+        p2.ready = true;
+        room.playerSeat.add(p2);
+
+        Method m = NetServer.class.getDeclaredMethod("gameStartIfPossible", NetRoomInfo.class);
+        m.setAccessible(true);
+        boolean result = (boolean) m.invoke(server, room);
+        assertTrue(result);
+        // gameStart sets playing = true
+        assertTrue(room.playing);
+    }
+
+    // ==================================================================
+    // joinAllQueuePlayers
+    // ==================================================================
+
+    @Test
+    void joinAllQueuePlayersMovesQueueToSeats() throws Throwable {
+        setSelector();
+        NetRoomInfo room = new NetRoomInfo();
+        room.maxPlayers = 2;
+        // Make room have an available seat
+        // joinSeat checks if room.playerSeat has a null slot
+        room.playerSeat.add(null);  // seat 0 empty
+        room.playerSeat.add(null);  // seat 1 empty
+
+        NetPlayerInfo qp1 = new NetPlayerInfo();
+        qp1.uid = 1;
+        qp1.strName = "Queue1";
+        qp1.roomID = 5;
+        room.playerQueue.add(qp1);
+
+        NetPlayerInfo qp2 = new NetPlayerInfo();
+        qp2.uid = 2;
+        qp2.strName = "Queue2";
+        qp2.roomID = 5;
+        room.playerQueue.add(qp2);
+
+        // Need a real channel for broadcast in joinAllQueuePlayers -> broadcast
+        try (SocketChannel ch = SocketChannel.open()) {
+            addPlayerToServer(ch, "Dummy", 99);
+
+            Method m = NetServer.class.getDeclaredMethod("joinAllQueuePlayers", NetRoomInfo.class);
+            m.setAccessible(true);
+            int joined = (int) m.invoke(server, room);
+
+            assertEquals(2, joined);
+            assertTrue(room.playerQueue.isEmpty());
+            assertSame(qp1, room.playerSeat.get(0));
+            assertSame(qp2, room.playerSeat.get(1));
+        }
+    }
+
+    // ==================================================================
+    // ban(String, int) - IP-based ban
+    // ==================================================================
+
+    @Test
+    void banByIPWithNoMatchingChannelsAndPositiveLengthAddsBanEntry() throws Throwable {
+        // No channels in channelList, so banChannels is empty
+        LinkedList<NetServerBan> bl = getStaticField("banList", LinkedList.class);
+
+        Method m = NetServer.class.getDeclaredMethod("ban", String.class, int.class);
+        m.setAccessible(true);
+        int result = (int) m.invoke(server, "10.0.0.99", NetServerBan.BANLENGTH_1HOUR);
+
+        assertEquals(0, result);
+        // Since banChannels was empty and banLength >= 0, a ban entry should be added
+        assertEquals(1, bl.size());
+        assertEquals("10.0.0.99", bl.get(0).addr);
+    }
+
+    @Test
+    void banByIPWithNegativeLengthKicksOnly() throws Throwable {
+        // No channels, banLength < 0 => no ban entry added
+        LinkedList<NetServerBan> bl = getStaticField("banList", LinkedList.class);
+
+        Method m = NetServer.class.getDeclaredMethod("ban", String.class, int.class);
+        m.setAccessible(true);
+        int result = (int) m.invoke(server, "10.0.0.99", -1);
+
+        assertEquals(0, result);
+        assertTrue(bl.isEmpty());
+    }
+
+    // ==================================================================
+    // processPacket: "getinfo"
+    // ==================================================================
+
+    @Test
+    void processPacketGetinfoSendsVersionData() throws Throwable {
+        setSelector();
+        try (SocketChannel ch = SocketChannel.open()) {
+            callProcessPacket(ch, "getinfo");
+            // Should not throw. The message is queued in pendingData.
+        }
+    }
+
+    // ==================================================================
+    // processPacket: "ping"
+    // ==================================================================
+
+    @Test
+    void processPacketPingWithoutIdDoesNotThrow() throws Throwable {
+        setSelector();
+        try (SocketChannel ch = SocketChannel.open()) {
+            callProcessPacket(ch, "ping");
+            // Should send "pong\n" and call killTimeoutConnections
+        }
+    }
+
+    @Test
+    void processPacketPingWithIdDoesNotThrow() throws Throwable {
+        setSelector();
+        try (SocketChannel ch = SocketChannel.open()) {
+            callProcessPacket(ch, "ping\t42");
+            // Should send "pong\t42\n"
+        }
+    }
+
+    // ==================================================================
+    // processPacket: "getpresets"
+    // ==================================================================
+
+    @Test
+    void processPacketGetpresetsWithEmptyListDoesNotThrow() throws Throwable {
+        setSelector();
+        try (SocketChannel ch = SocketChannel.open()) {
+            callProcessPacket(ch, "getpresets");
+        }
+    }
+
+    // ==================================================================
+    // processPacket: "changeteam"
+    // ==================================================================
+
+    @Test
+    void processPacketChangeteamValidChangeDoesNotThrow() throws Throwable {
+        setSelector();
+        try (SocketChannel ch = SocketChannel.open()) {
+            NetPlayerInfo p = addPlayerToServer(ch, "TeamPlayer", 1);
+            p.roomID = 5;
+
+            callProcessPacket(ch, "changeteam\t" + NetUtil.urlEncode("NewTeam"));
+            assertEquals("NewTeam", p.strTeam);
+        }
+    }
+
+    @Test
+    void processPacketChangeteamSameTeamIsNoOp() throws Throwable {
+        setSelector();
+        try (SocketChannel ch = SocketChannel.open()) {
+            NetPlayerInfo p = addPlayerToServer(ch, "TeamPlayer2", 2);
+            p.roomID = 5;
+            p.strTeam = "SameTeam";
+
+            callProcessPacket(ch, "changeteam\t" + NetUtil.urlEncode("SameTeam"));
+            assertEquals("SameTeam", p.strTeam);
+        }
+    }
+
+    // ==================================================================
+    // processPacket: "changename"
+    // ==================================================================
+
+    @Test
+    void processPacketChangenameWhilePlayingReturnsFail() throws Throwable {
+        setSelector();
+        try (SocketChannel ch = SocketChannel.open()) {
+            NetPlayerInfo p = addPlayerToServer(ch, "PlayingPlayer", 1);
+            p.playing = true;
+
+            callProcessPacket(ch, "changename\t" + NetUtil.urlEncode("NewName"));
+            // Should send "changenamefail\tPLAYING\n"
+            // Name should remain unchanged
+            assertEquals("PlayingPlayer", p.strName);
+        }
+    }
+
+    @Test
+    void processPacketChangenameEmptyNameReturnsFail() throws Throwable {
+        setSelector();
+        try (SocketChannel ch = SocketChannel.open()) {
+            NetPlayerInfo p = addPlayerToServer(ch, "Original", 1);
+
+            callProcessPacket(ch, "changename\t");
+            assertEquals("Original", p.strName);
+        }
+    }
+
+    @Test
+    void processPacketChangenameDuplicateReturnsFail() throws Throwable {
+        setSelector();
+        try (SocketChannel ch1 = SocketChannel.open(); SocketChannel ch2 = SocketChannel.open()) {
+            addPlayerToServer(ch1, "Alice", 1);
+            NetPlayerInfo p2 = addPlayerToServer(ch2, "Bob", 2);
+
+            // Try to change Bob's name to Alice
+            callProcessPacket(ch2, "changename\t" + NetUtil.urlEncode("Alice"));
+            assertEquals("Bob", p2.strName);
+        }
+    }
+
+    @Test
+    void processPacketChangenameSuccessChangesName() throws Throwable {
+        setSelector();
+        try (SocketChannel ch = SocketChannel.open()) {
+            NetPlayerInfo p = addPlayerToServer(ch, "OldName", 1);
+
+            callProcessPacket(ch, "changename\t" + NetUtil.urlEncode("NewName"));
+            assertEquals("NewName", p.strName);
+        }
+    }
+
+    // ==================================================================
+    // processPacket: "mpranking"
+    // ==================================================================
+
+    @Test
+    void processPacketMprankingWithEmptyRankingDoesNotThrow() throws Throwable {
+        setSelector();
+        try (SocketChannel ch = SocketChannel.open()) {
+            NetPlayerInfo p = addPlayerToServer(ch, "RankedPlayer", 1);
+            p.roomID = 5;
+
+            callProcessPacket(ch, "mpranking\t0");
+        }
+    }
+
+    // ==================================================================
+    // processPacket: "disconnect" (throws NetServerDisconnectRequestedException)
+    // ==================================================================
+
+    @Test
+    void processPacketDisconnectThrowsException() throws Throwable {
+        setSelector();
+        try (SocketChannel ch = SocketChannel.open()) {
+            Method m = NetServer.class.getDeclaredMethod("processPacket", SocketChannel.class, String.class);
+            m.setAccessible(true);
+            assertThrows(InvocationTargetException.class, () -> m.invoke(server, ch, "disconnect"));
+        }
     }
 }
