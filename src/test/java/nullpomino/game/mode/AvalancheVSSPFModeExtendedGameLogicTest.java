@@ -48,6 +48,7 @@ class AvalancheVSSPFModeExtendedGameLogicTest {
 		manager.init();
 		manager.engine[0].init();
 		GameEngine engine = manager.engine[0];
+		engine.owner.modeConfig = new CustomProperties();
 
 		mode.playerInit(engine, 0);
 

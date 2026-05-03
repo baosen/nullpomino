@@ -42,6 +42,7 @@ class AvalancheVSBombBattleModeGameLogicTest {
 	void playerInitDefaultOjamaRateIs60() throws Exception {
 		AvalancheVSBombBattleMode mode = new AvalancheVSBombBattleMode();
 		GameEngine engine = freshEngine(mode);
+		engine.owner.modeConfig = new CustomProperties();
 		mode.playerInit(engine, 0);
 
 		assertEquals(60, readIntArray(mode, "ojamaRate", 0));
@@ -51,6 +52,7 @@ class AvalancheVSBombBattleModeGameLogicTest {
 	void playerInitDefaultOjamaHardIs1() throws Exception {
 		AvalancheVSBombBattleMode mode = new AvalancheVSBombBattleMode();
 		GameEngine engine = freshEngine(mode);
+		engine.owner.modeConfig = new CustomProperties();
 		mode.playerInit(engine, 0);
 
 		assertEquals(1, readIntArray(mode, "ojamaHard", 0));
@@ -60,6 +62,7 @@ class AvalancheVSBombBattleModeGameLogicTest {
 	void playerInitDefaultOjamaCountdownIs5() throws Exception {
 		AvalancheVSBombBattleMode mode = new AvalancheVSBombBattleMode();
 		GameEngine engine = freshEngine(mode);
+		engine.owner.modeConfig = new CustomProperties();
 		mode.playerInit(engine, 0);
 
 		assertEquals(5, readIntArray(mode, "ojamaCountdown", 0));

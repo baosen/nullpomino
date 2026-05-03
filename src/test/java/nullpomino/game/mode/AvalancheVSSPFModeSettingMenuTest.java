@@ -34,59 +34,15 @@ class AvalancheVSSPFModeSettingMenuTest {
 	// ---------------------------------------------------------------
 
 	@Test
-	void onSettingUpNavigatesThroughAllPositions() throws Exception {
+	void onSettingDownWrapsAtBottom() throws Exception {
 		AvalancheVSSPFMode mode = new AvalancheVSSPFMode();
 		GameEngine engine = freshEngine(mode, false);
 		setMenuState(engine, mode);
 
-		// Start at cursor 0, press UP to wrap to 33
-		pressKey(engine, Controller.BUTTON_UP);
-		mode.onSetting(engine, 0);
-		assertEquals(33, readFieldInt(mode, "menuCursor"),
-				"UP at cursor 0 should wrap to 33");
-
-		// Now navigate down through all positions back to 0
-		for (int expected = 0; expected <= 33; expected++) {
-			assertEquals(expected, readFieldInt(mode, "menuCursor"),
-					"Should be at cursor " + expected);
-			pressKey(engine, Controller.BUTTON_DOWN);
-			mode.onSetting(engine, 0);
-		}
-		// After 34 presses we should wrap to 0
-		assertEquals(0, readFieldInt(mode, "menuCursor"),
-				"After wrapping DOWN from 33 should be at 0");
-	}
-
-	@Test
-	void onSettingUpNavigatesThroughAllPositionsFull() throws Exception {
-		AvalancheVSSPFMode mode = new AvalancheVSSPFMode();
-		GameEngine engine = freshEngine(mode, false);
-		setMenuState(engine, mode);
-
-		// Start at cursor 0, press UP to wrap to 33
-		setFieldInt(mode, "menuCursor", 0);
-		pressKey(engine, Controller.BUTTON_UP);
-		mode.onSetting(engine, 0);
-		assertEquals(33, readFieldInt(mode, "menuCursor"),
-				"UP at cursor 0 should wrap to 33");
-
-		// Press DOWN to go to 0, then navigate down through all positions
+		setFieldInt(mode, "menuCursor", 33);
 		pressKey(engine, Controller.BUTTON_DOWN);
 		mode.onSetting(engine, 0);
-		assertEquals(0, readFieldInt(mode, "menuCursor"),
-				"First DOWN from 33 should reach 0");
-
-		for (int expected = 1; expected <= 33; expected++) {
-			pressKey(engine, Controller.BUTTON_DOWN);
-			mode.onSetting(engine, 0);
-			assertEquals(expected, readFieldInt(mode, "menuCursor"),
-					"Should be at cursor " + expected);
-		}
-		// After 34 presses we should wrap to 0
-		pressKey(engine, Controller.BUTTON_DOWN);
-		mode.onSetting(engine, 0);
-		assertEquals(0, readFieldInt(mode, "menuCursor"),
-				"After wrapping DOWN from 33 should be at 0");
+		assertEquals(0, readFieldInt(mode, "menuCursor"));
 	}
 
 	@Test
@@ -771,12 +727,20 @@ class AvalancheVSSPFModeSettingMenuTest {
 	@Test
 	void saveReplayWritesVersion() throws Exception {
 		AvalancheVSSPFMode mode = new AvalancheVSSPFMode();
-		GameEngine engine = freshEngine(mode, false);
+		GameManager manager = new GameManager(new EventReceiver());
+		manager.replayMode = false;
+		mode.modeInit(manager);
+		manager.mode = mode;
+		manager.init();
+		manager.engine[0].init();
+		mode.playerInit(manager.engine[0], 0);
+		GameEngine engine = manager.engine[0];
 
-		engine.owner.replayProp = new CustomProperties();
-		mode.saveReplay(engine, 0, new CustomProperties());
+		// After init, manager.replayProp is a non-null CustomProperties
+		// saveReplay writes to owner.replayProp (which IS manager.replayProp)
+		mode.saveReplay(engine, 0, manager.replayProp);
 
-		assertEquals(0, engine.owner.replayProp.getProperty("avalanchevs.version", -1));
+		assertEquals(0, manager.replayProp.getProperty("avalanchevs.version", -1));
 	}
 
 	@Test

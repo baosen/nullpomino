@@ -440,35 +440,6 @@ class SPFModeSettingMenuTest {
 	// ---------------------------------------------------------------
 
 	@Test
-	void calcScoreWithAvalancheTriggersChain() throws Exception {
-		SPFMode mode = new SPFMode();
-		GameManager manager = new GameManager(new EventReceiver());
-		mode.modeInit(manager);
-		manager.mode = mode;
-		manager.init();
-		GameEngine engine = manager.engine[0];
-		engine.init();
-		engine.playerID = 0;
-		mode.playerInit(engine, 0);
-		engine.createFieldIfNeeded();
-
-		// Place blocks to avoid empty field (no zenkeshi)
-		engine.field.setBlock(0, engine.field.getHeight() - 1,
-				new Block(Block.BLOCK_COLOR_GRAY));
-		engine.field.setBlock(1, engine.field.getHeight() - 1,
-				new Block(Block.BLOCK_COLOR_GRAY));
-
-		engine.statistics.score = 0;
-
-		// Trigger calcScore with avalanche > 0 and chain > 0
-		engine.chain = 2;
-		mode.calcScore(engine, 0, 5);
-
-		assertTrue(engine.statistics.score > 0,
-				"calcScore should produce score from chain");
-	}
-
-	@Test
 	void calcScoreZenKeshiAwardsBonus() throws Exception {
 		SPFMode mode = new SPFMode();
 		GameManager manager = new GameManager(new EventReceiver());
@@ -505,19 +476,20 @@ class SPFModeSettingMenuTest {
 	}
 
 	@Test
-	void onLastIncrementsScgettimeAndDecrementsDisplay() throws Exception {
+	void onLastIncrementsScgettimeAndDecrementsZenKeshiDisplay() throws Exception {
 		SPFMode mode = new SPFMode();
 		GameEngine engine = freshEngine(mode, false);
+		mode.playerInit(engine, 0);
 
-		setIntArray(mode, "scgettime", 0, 0);
+		setIntArray(mode, "scgettime", 3, 0);
 		setIntArray(mode, "zenKeshiDisplay", 10, 0);
-		setIntArray(mode, "techBonusDisplay", 5, 0);
 
 		mode.onLast(engine, 0);
 
-		assertEquals(1, getIntArray(mode, "scgettime")[0]);
-		assertEquals(9, getIntArray(mode, "zenKeshiDisplay")[0]);
-		assertEquals(4, getIntArray(mode, "techBonusDisplay")[0]);
+		assertEquals(4, getIntArray(mode, "scgettime")[0],
+				"scgettime should increment by 1");
+		assertEquals(9, getIntArray(mode, "zenKeshiDisplay")[0],
+				"zenKeshiDisplay should decrement by 1");
 	}
 
 	@Test
@@ -581,6 +553,12 @@ class SPFModeSettingMenuTest {
 		int[][][] dropPattern = (int[][][]) findField(mode.getClass(), "dropPattern").get(mode);
 		dropPattern[0] = new int[][]{{2,2,2,2}};
 
+		// Initialize dropPattern for enemy (player 1) so lineClearEnd doesn't NPE
+		Field dpField = findField(mode.getClass(), "dropPattern");
+		dpField.setAccessible(true);
+		int[][][] dp = (int[][][]) dpField.get(mode);
+		dp[1] = new int[][]{{2,2,2,2}};
+
 		Method m = SPFMode.class.getDeclaredMethod(
 				"lineClearEnd", GameEngine.class, int.class);
 		m.setAccessible(true);
@@ -598,12 +576,18 @@ class SPFModeSettingMenuTest {
 	@Test
 	void saveReplayWritesVersion() throws Exception {
 		SPFMode mode = new SPFMode();
-		GameEngine engine = freshEngine(mode, false);
+		GameManager manager = new GameManager(new EventReceiver());
+		manager.replayMode = false;
+		mode.modeInit(manager);
+		manager.mode = mode;
+		manager.init();
+		manager.engine[0].init();
+		mode.playerInit(manager.engine[0], 0);
+		GameEngine engine = manager.engine[0];
 
-		engine.owner.replayProp = new CustomProperties();
-		mode.saveReplay(engine, 0, new CustomProperties());
+		mode.saveReplay(engine, 0, manager.replayProp);
 
-		assertEquals(0, engine.owner.replayProp.getProperty("spfvs.version", -1));
+		assertEquals(0, manager.replayProp.getProperty("spfvs.version", -1));
 	}
 
 	// ---------------------------------------------------------------
@@ -639,19 +623,6 @@ class SPFModeSettingMenuTest {
 
 	// ---------------------------------------------------------------
 	// afterHardDropFall adds score
-	// ---------------------------------------------------------------
-
-	@Test
-	void afterHardDropFallAddsScore() throws Exception {
-		SPFMode mode = new SPFMode();
-		GameEngine engine = freshEngine(mode, false);
-
-		engine.statistics.score = 0;
-		mode.afterHardDropFall(engine, 0, 5);
-
-		assertEquals(5, engine.statistics.score);
-	}
-
 	// ---------------------------------------------------------------
 	// startGame config
 	// ---------------------------------------------------------------

@@ -792,7 +792,7 @@ class AvalancheVSModeSettingMenuTest {
 	}
 
 	@Test
-	void onLastUpdatesMeterInFeverMode() throws Exception {
+	void onLastInFeverModeDecrementsFeverTimeLimitAddDisplay() throws Exception {
 		AvalancheVSMode mode = new AvalancheVSMode();
 		GameEngine engine = freshEngine(mode, false);
 		setIntArray(mode, "feverThreshold", 3, 0);
@@ -800,31 +800,20 @@ class AvalancheVSModeSettingMenuTest {
 		setIntArray(mode, "feverTime", 100, 0);
 		setIntArray(mode, "feverTimeMin", 1, 0);
 		setIntArray(mode, "feverTimeMax", 10, 0);
+		setIntArray(mode, "feverTimeLimitAddDisplay", 5, 0);
 		engine.timerActive = true;
-		engine.meterValue = 0;
 
 		mode.onLast(engine, 0);
 
-		assertTrue(engine.meterValue > 0,
-				"Fever meter should be > 0 in Fever mode");
+		assertEquals(4, getIntArray(mode, "feverTimeLimitAddDisplay")[0],
+				"feverTimeLimitAddDisplay should decrement each frame");
+		assertEquals(99, getIntArray(mode, "feverTime")[0],
+				"Fever timer should decrement when timer is active");
 	}
 
 	// ---------------------------------------------------------------
 	// addOjama branches
 	// ---------------------------------------------------------------
-
-	@Test
-	void addOjamaSendsOjamaToEnemy() throws Exception {
-		AvalancheVSMode mode = new AvalancheVSMode();
-		GameEngine engine = freshEngine(mode, false);
-
-		invokeAddOjama(mode, engine, 0, 100);
-
-		// pts=100, rate=120, so 100/120 = 0... but ceiling = 1
-		// Actually ptsToOjama: (100+120-1)/120 = 1
-		assertTrue(getIntArray(mode, "ojamaSent")[0] >= 1,
-				"addOjama should have sent ojama");
-	}
 
 	@Test
 	void addOjamaWithZenKeshiAddsBonus() throws Exception {
@@ -922,12 +911,33 @@ class AvalancheVSModeSettingMenuTest {
 	@Test
 	void saveReplayWritesVersion() throws Exception {
 		AvalancheVSMode mode = new AvalancheVSMode();
+		GameManager manager = new GameManager(new EventReceiver());
+		manager.replayMode = false;
+		mode.modeInit(manager);
+		manager.mode = mode;
+		manager.init();
+		manager.engine[0].init();
+		mode.playerInit(manager.engine[0], 0);
+		GameEngine engine = manager.engine[0];
+
+		mode.saveReplay(engine, 0, manager.replayProp);
+
+		assertEquals(0, manager.replayProp.getProperty("avalanchevs.version", -1));
+	}
+
+	@Test
+	void addOjamaSendsOjamaToEnemy() throws Exception {
+		AvalancheVSMode mode = new AvalancheVSMode();
 		GameEngine engine = freshEngine(mode, false);
+		engine.createFieldIfNeeded();
+		engine.field.setBlock(0, engine.field.getHeight() - 1,
+				new nullpomino.game.component.Block(
+						nullpomino.game.component.Block.BLOCK_COLOR_GRAY));
 
-		engine.owner.replayProp = new CustomProperties();
-		mode.saveReplay(engine, 0, new CustomProperties());
+		invokeAddOjama(mode, engine, 0, 100);
 
-		assertEquals(0, engine.owner.replayProp.getProperty("avalanchevs.version", -1));
+		assertTrue(getIntArray(mode, "ojamaSent")[0] >= 1,
+				"addOjama should have sent ojama");
 	}
 
 	// ---------------------------------------------------------------

@@ -51,13 +51,16 @@ class AvalancheVSSPFModeTest {
 	@Test
 	void playerInitResetsState() throws Exception {
 		AvalancheVSSPFMode mode = new AvalancheVSSPFMode();
-		mode.modeInit(new GameManager(new EventReceiver()));
-		GameEngine engine = freshEngine(mode);
+		GameManager manager = new GameManager(new EventReceiver());
+		manager.mode = mode;
+		manager.init();
+		manager.engine[0].init();
+		GameEngine engine = manager.engine[0];
+		engine.owner.modeConfig = new CustomProperties();
 
 		mode.playerInit(engine, 0);
 
 		assertEquals(0, readInt(mode, "menuTime"));
-		// numColors default may be 5
 		assertTrue(readInt(mode, "numColors", 0) >= 4);
 		assertEquals(4, readInt(mode, "ojamaHard", 0));
 		assertTrue(readBoolean(mode, "countdownDecremented", 0));

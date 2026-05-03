@@ -44,10 +44,18 @@ class AvalancheVSModeGameLogicTest {
 	@Test
 	void playerInitSetsFeverTimeFromMinDefault() throws Exception {
 		AvalancheVSMode mode = new AvalancheVSMode();
-		mode.modeInit(new GameManager(new EventReceiver()));
-		GameEngine engine = freshEngine(mode);
-		// feverTimeMin defaults to 15
-		mode.playerInit(engine, 0);
+		GameManager manager = new GameManager(new EventReceiver());
+		manager.mode = mode;
+		manager.init();
+		manager.modeConfig = new CustomProperties();
+
+		// playerInit sets feverTime = feverTimeMin * 60 before loadOtherSetting runs,
+		// so we need feverTimeMin pre-seeded for the computed feverTime to be correct.
+		Field ftm = AvalancheVSMode.class.getDeclaredField("feverTimeMin");
+		ftm.setAccessible(true);
+		((int[]) ftm.get(mode))[0] = 15;
+
+		manager.engine[0].init();
 
 		// feverTime = feverTimeMin * 60 = 15 * 60 = 900
 		assertEquals(900, readIntArray(mode, "feverTime", 0));

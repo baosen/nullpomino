@@ -132,6 +132,8 @@ class AvalancheVSBombBattleModeExtendedGameLogicTest {
         cleared[0] = false;
         int[] ojamaCounterMode = (int[]) readField(mode, "ojamaCounterMode");
         ojamaCounterMode[0] = AvalancheVSDummyMode.OJAMA_COUNTER_ON;
+        int[] maxAttack = (int[]) readField(mode, "maxAttack");
+        maxAttack[0] = 30;
 
         mode.lineClearEnd(engine, 0);
 

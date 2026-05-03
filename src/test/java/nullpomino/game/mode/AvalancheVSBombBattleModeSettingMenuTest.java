@@ -691,12 +691,18 @@ class AvalancheVSBombBattleModeSettingMenuTest {
 	@Test
 	void saveReplayWritesVersion() throws Exception {
 		AvalancheVSBombBattleMode mode = new AvalancheVSBombBattleMode();
-		GameEngine engine = freshEngine(mode, false);
+		GameManager manager = new GameManager(new EventReceiver());
+		manager.replayMode = false;
+		mode.modeInit(manager);
+		manager.mode = mode;
+		manager.init();
+		manager.engine[0].init();
+		mode.playerInit(manager.engine[0], 0);
+		GameEngine engine = manager.engine[0];
 
-		engine.owner.replayProp = new CustomProperties();
-		mode.saveReplay(engine, 0, new CustomProperties());
+		mode.saveReplay(engine, 0, manager.replayProp);
 
-		assertEquals(0, engine.owner.replayProp.getProperty("avalanchevs.version", -1));
+		assertEquals(0, manager.replayProp.getProperty("avalanchevs.version", -1));
 	}
 
 	// ---------------------------------------------------------------
