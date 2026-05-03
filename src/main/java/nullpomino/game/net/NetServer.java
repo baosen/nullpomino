@@ -424,7 +424,7 @@ public class NetServer {
 		}
 
 		// Remove anything after maxMPRanking
-		while(mpRankingList[style].size() >= maxMPRanking) mpRankingList[style].removeLast();
+		while(mpRankingList[style].size() > maxMPRanking) mpRankingList[style].removeLast();
 
 		// Done
 		return (place >= maxMPRanking) ? -1 : place;
@@ -569,7 +569,7 @@ public class NetServer {
 			}
 		}
 		NetSPRanking merged = NetSPRanking.mergeRankings(allRanks);
-		merged.strRuleName = "all";
+		if (merged != null) merged.strRuleName = "all";
 		return merged;
 	}
 
@@ -780,6 +780,7 @@ public class NetServer {
 	 * @return IP address
 	 */
 	private static String getHostAddress(SocketChannel client) {
+		if(client == null) return "";
 		try {
 			return client.socket().getInetAddress().getHostAddress();
 		} catch (Exception e) {}
@@ -792,6 +793,7 @@ public class NetServer {
 	 * @return Hostname
 	 */
 	private static String getHostName(SocketChannel client) {
+		if(client == null) return "";
 		if(!allowDNSAccess) return getHostAddress(client);
 		try {
 			return client.socket().getInetAddress().getHostName();
@@ -805,6 +807,7 @@ public class NetServer {
 	 * @return Hostname and IP address
 	 */
 	private static String getHostFull(SocketChannel client) {
+		if(client == null) return "";
 		if(!allowDNSAccess) return getHostAddress(client);
 		try {
 			return getHostName(client) + " (" + getHostAddress(client) + ")";
@@ -3072,6 +3075,7 @@ public class NetServer {
 	 * @return true if started, false if not
 	 */
 	private boolean gameStartIfPossible(NetRoomInfo roomInfo) {
+		if(roomInfo == null) return false;
 		if((roomInfo.getHowManyPlayersReady() == roomInfo.getNumberOfPlayerSeated()) && (roomInfo.getNumberOfPlayerSeated() >= 2)) {
 			gameStart(roomInfo);
 			return true;
@@ -3491,6 +3495,7 @@ public class NetServer {
 	 * @return Rated-game rule (null if not found)
 	 */
 	private RuleOptions getRatedRule(int style, String name) {
+		if(name == null) return null;
 		for(int i = 0; i < ruleList[style].size(); i++) {
 			RuleOptions rule = (RuleOptions)ruleList[style].get(i);
 
