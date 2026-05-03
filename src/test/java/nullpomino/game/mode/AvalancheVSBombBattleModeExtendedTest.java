@@ -137,7 +137,7 @@ class AvalancheVSBombBattleModeExtendedTest {
 		CustomProperties prop = new CustomProperties();
 		mode.saveReplay(engine, 0, prop);
 
-		assertEquals(0, manager.replayProp.getProperty("avalanchevs.version", -1));
+		assertEquals(0, prop.getProperty("avalanchevs.version", -1));
 	}
 
 	@Test
