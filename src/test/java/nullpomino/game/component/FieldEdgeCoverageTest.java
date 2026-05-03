@@ -41,6 +41,19 @@ class FieldEdgeCoverageTest {
 	}
 
 	@Test
+	void clearColorLastRowStillWorks() {
+		// getBlock(x, y) returns a valid block for y = height-1
+		// since it delegates to getBlockE which accesses the array directly.
+		// The method should still function correctly for the last row.
+		Field f = new Field(10, 20, 3, false);
+		f.setBlockColor(5, 19, Block.BLOCK_COLOR_RED);
+		int result = f.clearColor(5, 19, false, true, false, false);
+		// The clear should succeed (return 1) and clear the block
+		assertEquals(1, result);
+		assertEquals(Block.BLOCK_COLOR_NONE, f.getBlockColor(5, 19));
+	}
+
+	@Test
 	void clearColorDecrementsHardOnAdjacentGarbageBlock() {
 		Field f = new Field(10, 20, 3, false);
 		Block garbage = new Block(Block.BLOCK_COLOR_RED);
@@ -175,6 +188,102 @@ class FieldEdgeCoverageTest {
 		f.setBlockColor(5, 0, Block.BLOCK_COLOR_RED);
 		assertTrue(f.freeFall());
 		assertEquals(Block.BLOCK_COLOR_NONE, f.getBlockColor(5, 0));
+	}
+
+	@Test
+	void attrStringToFieldTriggersCatchBlock() {
+		// The catch block at lines 2392-2394 fires when attrStringToRow throws.
+		// An empty cell string causes parseInt("") to throw NumberFormatException.
+		Field f = new Field(10, 20, 0, false);
+		// With hidden_height=0, i=-1 triggers the catch because the data doesn't
+		// have enough rows, causing index+j >= strArray.length for all j,
+		// then attrStringToRow gets empty strings which fail to parse.
+		f.attrStringToField("", 0);
+		// Should survive the catch blocks without exception.
+		assertEquals(Block.BLOCK_COLOR_NONE, f.getBlockColor(0, 0));
+	}
+
+	@Test
+	void addRandomHoverBlocksWithPreExistingBlocksHitsPlaceBlockContinue() {
+		// Line 2746: continue when !placeBlock[x][y-minY] in the while(!done) loop.
+		// Set up pre-existing blocks on the field, then call addRandomHoverBlocks
+		// with avoidLines=true so the balancing loop iterates over ALL cells.
+		// Pre-existing blocks are not in placeBlock, so placeBlock[x][y-minY] is false.
+		GameEngine engine = makeEngine();
+		Field f = new Field(4, 4, 0, false);
+		f.setBlockColor(0, 0, Block.BLOCK_COLOR_RED);
+		f.setBlockColor(1, 0, Block.BLOCK_COLOR_BLUE);
+		int[] colors = {Block.BLOCK_COLOR_RED, Block.BLOCK_COLOR_BLUE, Block.BLOCK_COLOR_GREEN};
+		// Use count >= placeSize/2 so the else branch places many blocks.
+		f.addRandomHoverBlocks(engine, 10, colors, 0, true, false);
+		// Should not throw: pre-existing blocks are not in placeBlock,
+		// so the balancing loop skips them (hit line 2746).
+	}
+
+	@Test
+	void addRandomHoverBlocksWithUnknownColorHitsCIndexContinue() {
+		// Line 2754: continue when cIndex == -1.
+		// Place a block with a color NOT in the colors array, then call
+		// addRandomHoverBlocks with avoidLines=true. The balancing loop
+		// finds the pre-existing block, but its color is not in colors[],
+		// so cIndex stays -1 and the continue at line 2754 fires.
+		GameEngine engine = makeEngine();
+		Field f = new Field(4, 4, 0, false);
+		// BLOCK_COLOR_GRAY (1) is not in the colors array below.
+		f.setBlockColor(0, 0, Block.BLOCK_COLOR_GRAY);
+		int[] colors = {Block.BLOCK_COLOR_RED, Block.BLOCK_COLOR_BLUE, Block.BLOCK_COLOR_GREEN};
+		f.addRandomHoverBlocks(engine, 10, colors, 0, true, false);
+		// Should not throw.
+	}
+
+	@Test
+	void addRandomHoverBlocksBalancingLoopExcessRemoval() {
+		// Exercise the balancing while(!done) loop including the removal
+		// of excess blocks and the balance check (lines 2838-2839).
+		// Use a small field with a heavily imbalanced initial placement
+		// so the only way to balance is through the fill/switch path.
+		GameEngine engine = makeEngine();
+		Field f = new Field(4, 4, 0, false);
+		// 12 blocks on 16 cells with 3 colors. After initial placement,
+		// some colors will exceed maxCount=4. The balancing loop should
+		// adjust colors and remove excess.
+		int[] colors = {Block.BLOCK_COLOR_RED, Block.BLOCK_COLOR_BLUE, Block.BLOCK_COLOR_GREEN};
+		f.addRandomHoverBlocks(engine, 12, colors, 0, true, false);
+		int count = 0;
+		for (int y = 0; y < 4; y++)
+			for (int x = 0; x < 4; x++)
+				if (f.getBlockColor(x, y) != Block.BLOCK_COLOR_NONE) count++;
+		assertEquals(12, count);
+	}
+
+	@Test
+	void addRandomHoverBlocksFlashModeGemLoopOutsideRange() {
+		// Line 2856: gemNeeded[i] = false when color outside 2-8 range.
+		// Use BLOCK_COLOR_GRAY (1) and BLOCK_COLOR_WHITE (9) so some colors
+		// are outside the gem-mappable range (2-8).
+		GameEngine engine = makeEngine();
+		Field f = new Field(6, 6, 0, false);
+		int[] colors = {Block.BLOCK_COLOR_GRAY, Block.BLOCK_COLOR_RED};
+		// Use avoidLines=true and flashMode=true.
+		f.addRandomHoverBlocks(engine, 18, colors, 0, true, true);
+		// Should not throw.
+	}
+
+	@Test
+	void addRandomHoverBlocksFlashModeGemLoopContinue() {
+		// Line 2863: continue in the gem while loop when !placeBlock[x][y-minY].
+		// The gem loop randomly selects cells; some will not be in placeBlock.
+		GameEngine engine = makeEngine();
+		Field f = new Field(4, 4, 0, false);
+		int[] colors = {Block.BLOCK_COLOR_RED, Block.BLOCK_COLOR_BLUE};
+		f.addRandomHoverBlocks(engine, 8, colors, 0, true, true);
+		// Should not throw; the random cell selection in the gem loop
+		// will eventually hit a placed cell.
+		int count = 0;
+		for (int y = 0; y < 4; y++)
+			for (int x = 0; x < 4; x++)
+				if (f.getBlockColor(x, y) != Block.BLOCK_COLOR_NONE) count++;
+		assertEquals(8, count);
 	}
 
 	private static GameEngine makeEngine() {
