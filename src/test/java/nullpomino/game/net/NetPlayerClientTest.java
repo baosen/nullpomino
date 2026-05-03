@@ -73,6 +73,24 @@ class NetPlayerClientTest {
 	}
 
 	@Test
+	void welcomePacketWithCustomPingIntervalStartsPingTask() throws IOException {
+		NetPlayerClient client = new NetPlayerClient("example.invalid", 5000, "Nullpo");
+
+		try {
+			client.processPacket(
+					"welcome\t1.0\t11\t4\t0\t1.0a\t" + (NetBaseClient.PING_INTERVAL * 2));
+
+			assertEquals(11, client.getPlayerCount());
+			assertEquals(4, client.getObserverCount());
+			assertNotNull(client.timerPing);
+		} finally {
+			if (client.timerPing != null) {
+				client.timerPing.cancel();
+			}
+		}
+	}
+
+	@Test
 	void observerUpdatePacketRefreshesCounts() throws IOException {
 		NetPlayerClient client = new NetPlayerClient();
 
