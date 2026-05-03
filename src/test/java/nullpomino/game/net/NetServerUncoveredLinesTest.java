@@ -2,9 +2,6 @@ package nullpomino.game.net;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-import java.io.File;
-import java.io.FileWriter;
-import java.io.PrintWriter;
 import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandles;
 import java.lang.invoke.MethodType;
@@ -13,6 +10,8 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.nio.channels.Selector;
 import java.nio.channels.SocketChannel;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.Calendar;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -29,6 +28,7 @@ import nullpomino.util.CustomProperties;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
 /**
  * Tests covering additional uncovered lines in {@link NetServer}.
@@ -47,6 +47,9 @@ class NetServerUncoveredLinesTest {
     private NetServer server;
     private Selector savedSelector;
 
+    @TempDir
+    Path tempDir;
+
     // Method handles for static methods
     private MethodHandle loadRuleList;
     private MethodHandle updateSPDailyRanking;
@@ -64,7 +67,7 @@ class NetServerUncoveredLinesTest {
                 MethodHandles.privateLookupIn(NetServer.class, MethodHandles.lookup());
 
         loadRuleList = lookup.findStatic(NetServer.class, "loadRuleList",
-                MethodType.methodType(void.class));
+                MethodType.methodType(void.class, String.class));
         updateSPDailyRanking = lookup.findStatic(NetServer.class, "updateSPDailyRanking",
                 MethodType.methodType(boolean.class));
         writeMPRankingToFile = lookup.findStatic(NetServer.class, "writeMPRankingToFile",
@@ -251,59 +254,43 @@ class NetServerUncoveredLinesTest {
 
     @Test
     void loadRuleListWithValidFilePopulatesRules() throws Throwable {
-        File ruleFile = new File("config/etc/netserver_rulelist.lst");
-        ruleFile.getParentFile().mkdirs();
-        try {
-            FileWriter fw = new FileWriter(ruleFile);
-            PrintWriter pw = new PrintWriter(fw);
-            pw.println("# Comment line");
-            pw.println(":AUTO");      // valid style marker
-            pw.println("config/rules/standard/standard.rul");  // likely exists
-            pw.println(":TETRIS");    // another valid style
-            pw.close();
+        Path ruleFile = tempDir.resolve("rulelist.lst");
+        Files.writeString(ruleFile, String.join("\n",
+                "# Comment line",
+                ":AUTO",                                  // valid style marker
+                "config/rules/standard/standard.rul",     // likely exists
+                ":TETRIS",                                // another valid style
+                ""));
 
-            loadRuleList.invokeExact();
+        loadRuleList.invokeExact((String) ruleFile.toString());
 
-            // Verify ruleList is populated
-            LinkedList<RuleOptions>[] rl = getStaticField("ruleList", LinkedList[].class);
-            LinkedList<Integer>[] rlID = getStaticField("ruleSettingIDList", LinkedList[].class);
-            assertNotNull(rl);
-            assertNotNull(rlID);
+        // Verify ruleList is populated
+        LinkedList<RuleOptions>[] rl = getStaticField("ruleList", LinkedList[].class);
+        LinkedList<Integer>[] rlID = getStaticField("ruleSettingIDList", LinkedList[].class);
+        assertNotNull(rl);
+        assertNotNull(rlID);
 
-            // Style 0 (AUTO) should have at least 1 rule (standard.rul)
-            // Style 1 (TETRIS) may or may not have rules depending on file existence
-        } finally {
-            ruleFile.delete();
-        }
+        // Style 0 (AUTO) should have at least 1 rule (standard.rul)
+        // Style 1 (TETRIS) may or may not have rules depending on file existence
     }
 
     @Test
     void loadRuleListWithUnknownStyleFallsBackToZero() throws Throwable {
-        File ruleFile = new File("config/etc/netserver_rulelist.lst");
-        ruleFile.getParentFile().mkdirs();
-        try {
-            FileWriter fw = new FileWriter(ruleFile);
-            PrintWriter pw = new PrintWriter(fw);
-            pw.println(":UNKNOWN_STYLE_XYZ123");
-            pw.close();
+        Path ruleFile = tempDir.resolve("rulelist.lst");
+        Files.writeString(ruleFile, ":UNKNOWN_STYLE_XYZ123\n");
 
-            loadRuleList.invokeExact();
+        loadRuleList.invokeExact((String) ruleFile.toString());
 
-            // Should not throw; unknown style causes style=0 fallback
-            LinkedList<RuleOptions>[] rl = getStaticField("ruleList", LinkedList[].class);
-            assertNotNull(rl);
-        } finally {
-            ruleFile.delete();
-        }
+        // Should not throw; unknown style causes style=0 fallback
+        LinkedList<RuleOptions>[] rl = getStaticField("ruleList", LinkedList[].class);
+        assertNotNull(rl);
     }
 
     @Test
     void loadRuleListWithNonexistentFileDoesNotThrow() throws Throwable {
-        // Ensure file doesn't exist
-        File ruleFile = new File("config/etc/netserver_rulelist.lst");
-        if (ruleFile.exists()) ruleFile.delete();
+        Path ruleFile = tempDir.resolve("does-not-exist.lst");
 
-        loadRuleList.invokeExact();
+        loadRuleList.invokeExact((String) ruleFile.toString());
 
         LinkedList<RuleOptions>[] rl = getStaticField("ruleList", LinkedList[].class);
         assertNotNull(rl);
