@@ -521,16 +521,6 @@ class BasicAIExtraTest5 {
         // Let's just verify the code path is exercised
         assertTrue(pts >= 0, "thinkMain placeToField test completed, pts=" + pts);
     }
-        }
-
-        Piece piece = new Piece(Piece.PIECE_T);
-        piece.setColor(1);
-        // Try to place at a position where it collides
-        int pts = ai.thinkMain(engine, 5, 0, 0, -1, fld, piece, null, null, 0);
-
-        // placeToField returns false, so pts should be 0
-        assertEquals(0, pts, "placeToField failure should return 0");
-    }
 
     // ─── thinkBestPosition: hold piece with pts > bestPts (lines 437-443) ───
 
