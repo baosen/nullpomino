@@ -8,6 +8,7 @@ import nullpomino.game.component.Controller;
 import nullpomino.game.event.EventReceiver;
 import nullpomino.game.play.GameEngine;
 import nullpomino.game.play.GameManager;
+import nullpomino.util.CustomProperties;
 import org.junit.jupiter.api.Test;
 
 class AvalancheFeverModeBranchCoverageTest {
@@ -24,7 +25,12 @@ class AvalancheFeverModeBranchCoverageTest {
 	}
 	@Test void renderSettingPage2() throws Exception {
 		AvalancheFeverMode mode = new AvalancheFeverMode(); GameEngine e = freshEngine(mode);
-		setInt(mode, "menuCursor", 6); mode.renderSetting(e, 0);
+		// Need non-null mapSubsets for page 2; set a dummy
+		setStringArrayField(mode, "mapSubsets", new String[] {"dummy"});
+		setInt(mode, "menuCursor", 6);
+		setInt(mode, "previewSubset", 0);
+		setInt(mode, "previewChain", 5);
+		mode.renderSetting(e, 0);
 	}
 	@Test void renderLastWithMultiplier() throws Exception {
 		AvalancheFeverMode mode = new AvalancheFeverMode(); GameEngine e = freshEngine(mode);
@@ -47,6 +53,10 @@ class AvalancheFeverModeBranchCoverageTest {
 	}
 	@Test void lineClearEndTimeLimitAdd() throws Exception {
 		AvalancheFeverMode mode = new AvalancheFeverMode(); GameEngine e = freshEngine(mode);
+		// Initialize fever map state to avoid NPE in loadFeverMap
+		setStringArrayField(mode, "mapSubsets", new String[] {"dummy"});
+		setFieldRef(mode, "propFeverMap", new CustomProperties());
+		e.random.setSeed(12345); // deterministic random for subset selection
 		e.createFieldIfNeeded(); e.chain = 4; setBoolean(mode, "cleared", true);
 		setInt(mode, "feverChainMin", 3); setInt(mode, "feverChainMax", 15);
 		setInt(mode, "feverChain", 5); setInt(mode, "timeLimit", 3600);
@@ -60,6 +70,7 @@ class AvalancheFeverModeBranchCoverageTest {
 	}
 	@Test void onLastFastenableClearMode() throws Exception {
 		AvalancheFeverMode mode = new AvalancheFeverMode(); GameEngine e = freshEngine(mode);
+		e.createFieldIfNeeded();
 		setInt(mode, "fastenable", 1); setBoolean(mode, "fastinuse", false);
 		e.stat = GameEngine.Status.LINECLEAR; e.ctrl = new SimpleController(Controller.BUTTON_F);
 		mode.onLast(e, 0);
@@ -80,6 +91,12 @@ class AvalancheFeverModeBranchCoverageTest {
 	}
 	private static void setBoolean(Object o, String n, boolean v) throws Exception {
 		java.lang.reflect.Field f = findField(o.getClass(), n); f.setAccessible(true); f.setBoolean(o, v);
+	}
+	private static void setStringArrayField(Object o, String n, String[] v) throws Exception {
+		java.lang.reflect.Field f = findField(o.getClass(), n); f.setAccessible(true); f.set(o, v);
+	}
+	private static void setFieldRef(Object o, String n, Object v) throws Exception {
+		java.lang.reflect.Field f = findField(o.getClass(), n); f.setAccessible(true); f.set(o, v);
 	}
 	private static java.lang.reflect.Field findField(Class<?> cls, String name) throws NoSuchFieldException {
 		for (Class<?> c = cls; c != null; c = c.getSuperclass()) {

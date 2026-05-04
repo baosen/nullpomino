@@ -424,15 +424,9 @@ class PoochyBotDefensiveExtraTest3 {
     @Test
     void thinkMainCannotPlacePiece() {
         Field fld = new Field(10, 20, 0, false);
-        // Fill the entire field
-        for (int x = 0; x < 10; x++) {
-            for (int y = 0; y < 20; y++) {
-                fld.setBlockColor(x, y, 1);
-            }
-        }
-
+        // Place piece above the field (negative y) so placeToField returns false
         Piece piece = new Piece(Piece.PIECE_O);
-        int pts = ai.thinkMain(4, 18, 0, -1, fld, piece, 0);
+        int pts = ai.thinkMain(4, -5, 0, -1, fld, piece, 0);
 
         assertEquals(Integer.MIN_VALUE, pts, "Should return MIN_VALUE when piece cannot be placed");
     }

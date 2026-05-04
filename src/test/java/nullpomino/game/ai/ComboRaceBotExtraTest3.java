@@ -290,6 +290,7 @@ class ComboRaceBotExtraTest3 {
     void thinkMainTerminalWithHoldI() {
         // Need moves table initialized
         ai.createTables(engine);
+        ai.nextQueueIDs = new int[ComboRaceBot.MAX_THINK_DEPTH];
 
         int pts = ai.thinkMain(engine, 0, Piece.PIECE_I, ComboRaceBot.MAX_THINK_DEPTH);
 
@@ -302,6 +303,7 @@ class ComboRaceBotExtraTest3 {
     @Test
     void thinkMainTerminalWithHoldOther() {
         ai.createTables(engine);
+        ai.nextQueueIDs = new int[ComboRaceBot.MAX_THINK_DEPTH];
 
         int pts = ai.thinkMain(engine, 0, Piece.PIECE_T, ComboRaceBot.MAX_THINK_DEPTH);
 
@@ -314,6 +316,7 @@ class ComboRaceBotExtraTest3 {
     void thinkMainNonTerminalEmptyHold() {
         engine.ruleopt.holdEnable = true;
         ai.createTables(engine);
+        ai.nextQueueIDs = new int[ComboRaceBot.MAX_THINK_DEPTH];
 
         int pts = ai.thinkMain(engine, 0, -1, 0);
 
@@ -326,6 +329,7 @@ class ComboRaceBotExtraTest3 {
     void thinkMainNonTerminalWithHold() {
         engine.ruleopt.holdEnable = true;
         ai.createTables(engine);
+        ai.nextQueueIDs = new int[ComboRaceBot.MAX_THINK_DEPTH];
 
         int pts = ai.thinkMain(engine, 0, Piece.PIECE_S, 0);
 
@@ -338,6 +342,7 @@ class ComboRaceBotExtraTest3 {
     void thinkMainNonTerminalHoldDisabled() {
         engine.ruleopt.holdEnable = false;
         ai.createTables(engine);
+        ai.nextQueueIDs = new int[ComboRaceBot.MAX_THINK_DEPTH];
 
         int pts = ai.thinkMain(engine, 0, -1, 0);
 

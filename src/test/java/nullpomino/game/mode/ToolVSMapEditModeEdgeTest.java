@@ -13,20 +13,20 @@ class ToolVSMapEditModeEdgeTest {
 	@Test void cursor0Edit() throws Exception {
 		ToolVSMapEditMode m = new ToolVSMapEditMode(); GameEngine e = fresh(m);
 		m.modeInit(m.owner); m.playerInit(e,0); sf(m,"menuCursor",0); sf(m,"menuTime",5);
-		Controller c = new Controller(); c.buttonPress[Controller.BUTTON_A]=true; e.ctrl=c;
+		Controller c = new Controller(); c.buttonPress[Controller.BUTTON_A]=true; c.buttonTime[Controller.BUTTON_A]=1; e.ctrl=c;
 		m.onSetting(e,0); assertEquals(GameEngine.Status.FIELDEDIT, e.stat);
 	}
 	@Test void cursor2Clear() throws Exception {
 		ToolVSMapEditMode m = new ToolVSMapEditMode(); GameEngine e = fresh(m);
 		m.modeInit(m.owner); m.playerInit(e,0); sf(m,"menuCursor",2); sf(m,"menuTime",5);
 		e.createFieldIfNeeded(); e.field.setBlock(0,0,new Block(Block.BLOCK_COLOR_RED));
-		Controller c = new Controller(); c.buttonPress[Controller.BUTTON_A]=true; e.ctrl=c;
+		Controller c = new Controller(); c.buttonPress[Controller.BUTTON_A]=true; c.buttonTime[Controller.BUTTON_A]=1; e.ctrl=c;
 		m.onSetting(e,0); assertTrue(e.field.getBlockEmpty(0,0));
 	}
 	@Test void dPlusEExits() throws Exception {
 		ToolVSMapEditMode m = new ToolVSMapEditMode(); GameEngine e = fresh(m);
 		m.modeInit(m.owner); m.playerInit(e,0); sf(m,"menuTime",5);
-		Controller c = new Controller(); c.buttonPress[Controller.BUTTON_D]=true; c.buttonPress[Controller.BUTTON_E]=true; e.ctrl=c;
+		Controller c = new Controller(); c.buttonPress[Controller.BUTTON_D]=true; c.buttonTime[Controller.BUTTON_D]=1; c.buttonPress[Controller.BUTTON_E]=true; c.buttonTime[Controller.BUTTON_E]=1; e.ctrl=c;
 		m.onSetting(e,0); assertTrue(e.quitflag);
 	}
 	private static GameEngine fresh(ToolVSMapEditMode m) {

@@ -340,16 +340,14 @@ class RanksAIExtraTest3 {
         ai.thinkCurrentPieceNo = 0;
         ai.threadRunning = true;
 
-        // First call: skipNextFrame starts false and gets set to true
+        // First call: skipNextFrame starts false, enters !skipNextFrame block.
+        // Input is generated in this block (speedLimit=0 from initRanks means check passes).
         ai.setControl(engine, 0, ctrl);
-        assertEquals(0, ctrl.getButtonBit(), "First call should skip");
 
-        // After first call, skipNextFrame should be true
-        // Reset delay so we enter the if block
+        // Second call: skipNextFrame is true, enters else block, sets skipNextFrame=false, no input
         ai.delay = 0;
-        // Second call: skipNextFrame is true, should set to false and skip again
         ai.setControl(engine, 0, ctrl);
-        assertEquals(0, ctrl.getButtonBit(), "Second call should also skip (toggle back)");
+        assertEquals(0, ctrl.getButtonBit(), "Second call should produce no input (skipNextFrame toggled off)");
     }
 
     // ─── setControl: BUTTON_A rotation (lines 251-252) ───

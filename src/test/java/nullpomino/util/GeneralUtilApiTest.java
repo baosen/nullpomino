@@ -5,6 +5,7 @@ import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertSame;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -177,5 +178,38 @@ class GeneralUtilApiTest {
 		RuleOptions r = GeneralUtil.loadRule(file.toString());
 
 		assertEquals("My Rule", r.strRuleName);
+	}
+
+	@Test
+	void constructorCanBeCalled() {
+		// Cover the default constructor (line 23)
+		GeneralUtil util = new GeneralUtil();
+		assertNotNull(util);
+	}
+
+	@Test
+	void pieceIdFromDigitHandlesAllDigitPaths() {
+		// Test digit '0' (edge of range, value >= '0' and value <= '9')
+		assertArrayEquals(new int[] {Piece.PIECE_I},
+			GeneralUtil.createNextPieceArrayFromNumberString("0"));
+
+		// Test digit '9' (edge of range)
+		int[] result = GeneralUtil.createNextPieceArrayFromNumberString("9");
+		assertNotNull(result);
+		assertEquals(1, result.length);
+	}
+
+	@Test
+	void pieceIdFromDigitWithNonDigitReturnsI() {
+		// Test with non-digit char that triggers value > '9'
+		assertArrayEquals(new int[] {Piece.PIECE_I, Piece.PIECE_I},
+			GeneralUtil.createNextPieceArrayFromNumberString("ab"));
+	}
+
+	@Test
+	void loadRuleReturnsDefaultOnIOException() {
+		RuleOptions r = GeneralUtil.loadRule(tempDir.resolve("nonexistent.rul").toString());
+		assertNotNull(r);
+		assertEquals("", r.strRuleName);
 	}
 }

@@ -2,9 +2,11 @@ package nullpomino.util;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.IOException;
+import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -143,5 +145,18 @@ class CustomPropertiesRoundTripTest {
 		CustomProperties properties = CustomProperties.loadFromFileOrEmpty(file.toString());
 
 		assertEquals("Nullpo", properties.getProperty("name"));
+	}
+
+	@Test
+	void encodePropagatesIOExceptionFromStore() {
+		CustomProperties throwing = new CustomProperties() {
+			private static final long serialVersionUID = 1L;
+			@Override
+			public void store(OutputStream out, String comments) throws IOException {
+				throw new IOException("forced store failure");
+			}
+		};
+		throwing.setProperty("key", "value");
+		assertThrows(IllegalStateException.class, () -> throwing.encode("test"));
 	}
 }

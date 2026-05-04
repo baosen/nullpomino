@@ -11,7 +11,9 @@ import java.lang.reflect.Method;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Collections;
 import java.util.Comparator;
+import java.util.Set;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -110,35 +112,68 @@ class GameManagerCommitHashEdgeTest {
 	}
 
 	// ====================================================================
-	// resolveCommitHash catches IOException when .git/HEAD is a directory
-	// (lines 136-137)
+	// resolveCommitHash catches IOException when Files.readAllBytes fails
+	// on .git/HEAD (lines 136-137)
 	// ====================================================================
 
+	/**
+	 * Covers the catch(IOException) block in resolveCommitHash (lines 136-137).
+	 *
+	 * We create a real .git/HEAD file in the sandbox CWD, then revoke all
+	 * read permissions.  {@code Files.isRegularFile} uses {@code stat(2)} which
+	 * only needs execute permission on the parent directory (which we keep),
+	 * so it returns {@code true}.  {@code Files.readAllBytes} then attempts
+	 * {@code open(2)} which requires read permission on the file itself, and
+	 * throws {@code AccessDeniedException} (a subclass of IOException).
+	 */
 	@Test
-	void getCommitHashReturnsUnknownWhenHeadIsDirectory() throws Exception {
-		Path gitDir = Path.of(".git-head-test-io");
+	void resolveCommitHashCatchesIoExceptionOnRead() throws Exception {
+		Path gitDir = Path.of(".git");
+		boolean createdGitDir = !Files.isDirectory(gitDir);
+		boolean headExisted = false;
+		String originalHeadContent = null;
 		try {
-			Files.createDirectories(gitDir);
-			Files.createDirectory(gitDir.resolve("HEAD"));
+			if (createdGitDir) {
+				Files.createDirectories(gitDir);
+			} else {
+				Path hp = gitDir.resolve("HEAD");
+				headExisted = Files.exists(hp);
+				if (headExisted) {
+					originalHeadContent = Files.readString(hp);
+				}
+			}
+
+			// Write HEAD so it's a regular file
+			Path headPath = gitDir.resolve("HEAD");
+			Files.writeString(headPath, "ref: refs/heads/somebranch\n");
+
+			// Strip all permissions — stat(2) still works but open(2) fails
+			Files.setPosixFilePermissions(headPath, Collections.emptySet());
+
+			// Clear cached hash
 			Field cached = GameManager.class.getDeclaredField("cachedCommitHash");
 			cached.setAccessible(true);
 			cached.set(null, null);
-			// resolveCommitHash uses Paths.get(".git", "HEAD") which resolves
-			// relative to CWD. We can't easily redirect it, so we test via
-			// readRef which uses the same Paths.get logic.
-			// Instead, directly test the IOException handling by calling
-			// resolveCommitHash via getCommitHash with a deliberately broken
-			// .git structure in the current directory.
-			// Actually, in the Bazel sandbox CWD there is no .git, so
-			// resolveCommitHash returns "unknown" at line 129 (no HEAD file).
-			// We already test that case below. For the IOException case,
-			// we verify via readRef's IOException handling.
+
+			String hash = GameManager.getCommitHash();
+			assertEquals("unknown", hash);
 		} finally {
-			deletePath(gitDir);
+			Path headPath = gitDir.resolve("HEAD");
+			if (Files.exists(headPath)) {
+				// Restore permissions so we can delete / overwrite
+				Files.setPosixFilePermissions(headPath,
+					Set.of(java.nio.file.attribute.PosixFilePermission.OWNER_READ,
+						   java.nio.file.attribute.PosixFilePermission.OWNER_WRITE));
+				if (!headExisted) {
+					Files.delete(headPath);
+				} else if (originalHeadContent != null) {
+					Files.writeString(headPath, originalHeadContent);
+				}
+			}
+			if (createdGitDir) {
+				deletePath(gitDir);
+			}
 		}
-		// The IOException path is verified: when .git/HEAD exists but
-		// reading it throws (e.g., it's a directory), the catch returns "unknown".
-		// This is tested above by creating a HEAD directory.
 	}
 
 	// ====================================================================

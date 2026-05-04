@@ -128,10 +128,10 @@ class AvalancheVSBombBattleModeBranchCoverageTest {
 		GameEngine e = freshEngine(mode);
 		setBooleanArray(mode, "newChainPower", 0, true);
 		setIntArray(mode, "ojamaCountdown", 0, 7);
-		e.owner.replayProp = new CustomProperties();
-		mode.saveReplay(e, 0, new CustomProperties());
-		assertTrue(e.owner.replayProp.getProperty("avalanchevsbombbattle.newChainPower.p0", false));
-		assertEquals(7, e.owner.replayProp.getProperty("avalanchevsbombbattle.ojamaCountdown.p0", -1));
+		CustomProperties prop = new CustomProperties();
+		mode.saveReplay(e, 0, prop);
+		assertTrue(prop.getProperty("avalanchevsbombbattle.newChainPower.p0", false));
+		assertEquals(7, prop.getProperty("avalanchevsbombbattle.ojamaCountdown.p0", -1));
 	}
 	@Test void updateOjamaMeterNullField() throws Exception {
 		AvalancheVSBombBattleMode mode = new AvalancheVSBombBattleMode();

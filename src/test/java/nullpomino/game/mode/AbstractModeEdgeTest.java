@@ -21,8 +21,8 @@ class AbstractModeEdgeTest {
 	}
 	@Test void renderInputVSModePlayer1() throws Exception {
 		VSModeStub m = new VSModeStub(true, false);
-		GameManager gm = new GameManager(new EventReceiver()); gm.init(); gm.engine[1].init();
-		GameEngine e = gm.engine[1]; m.playerInit(e, 1); e.ctrl = new Controller(); m.renderInput(e, 1);
+		GameManager gm = new GameManager(new EventReceiver()); gm.init(); gm.engine[0].init();
+		GameEngine e = gm.engine[0]; m.playerInit(e, 0); e.ctrl = new Controller(); m.renderInput(e, 0);
 	}
 	@Test void renderInputNonVSMode() throws Exception {
 		VSModeStub m = new VSModeStub(false, false);
@@ -58,7 +58,7 @@ class AbstractModeEdgeTest {
 		VSModeStub m = new VSModeStub(false, false);
 		GameEngine e = fresh(); EventReceiver r = e.owner.receiver; m.playerInit(e, 0);
 		Method me = AbstractMode.class.getDeclaredMethod("drawMenuCompact", GameEngine.class, int.class, EventReceiver.class, String[].class);
-		me.setAccessible(true); me.invoke(m, e, 0, r, new Object[]{new String[]{"A","1","B","2"}});
+		me.setAccessible(true); me.invoke(m, e, 0, r, new String[]{"A","1","B","2"});
 	}
 	@Test void drawResultStatsScale() throws Exception {
 		VSModeStub m = new VSModeStub(false, false);
@@ -72,6 +72,37 @@ class AbstractModeEdgeTest {
 		Object[] all = (Object[])sc.getMethod("values").invoke(null);
 		Method me = AbstractMode.class.getDeclaredMethod("drawResultStatsScale", GameEngine.class, int.class, EventReceiver.class, int.class, int.class, float.class, all.getClass());
 		me.setAccessible(true); me.invoke(m, e, 0, r, 0, EventReceiver.COLOR_WHITE, 1.0f, all);
+	}
+	/**
+	 * Covers the overloaded {@code drawMenuCompact(GameEngine, int, EventReceiver,
+	 * int, int, int, String...)} at lines 229-235.  Verifies that the method sets
+	 * {@code menuY}, {@code menuColor}, and {@code statcMenu} before delegating
+	 * to the varargs overload.
+	 */
+	@Test void drawMenuCompactWithPositionArgs() throws Exception {
+		VSModeStub m = new VSModeStub(false, false);
+		GameEngine e = fresh(); EventReceiver r = e.owner.receiver; m.playerInit(e, 0);
+		// Use reflection to find the 6-param + varargs overload
+		Method me = AbstractMode.class.getDeclaredMethod("drawMenuCompact",
+				GameEngine.class, int.class, EventReceiver.class,
+				int.class, int.class, int.class, String[].class);
+		me.setAccessible(true);
+		// Invoke with known position args
+		me.invoke(m, e, 0, r, 42, EventReceiver.COLOR_RED, 7, new String[]{"K","1","L","2"});
+		// Verify the delegation set the state fields
+		java.lang.reflect.Field fMenuY = AbstractMode.class.getDeclaredField("menuY");
+		java.lang.reflect.Field fMenuColor = AbstractMode.class.getDeclaredField("menuColor");
+		java.lang.reflect.Field fStatcMenu = AbstractMode.class.getDeclaredField("statcMenu");
+		fMenuY.setAccessible(true);
+		fMenuColor.setAccessible(true);
+		fStatcMenu.setAccessible(true);
+		// The 4-arg delegate increments menuY/statcMenu once per string pair
+		// (we passed 2 pairs: "K","1" and "L","2"), so:
+		//   menuY    = 42 + 2 = 44
+		//   statcMenu = 7 + 2 = 9
+		assertEquals(44, fMenuY.getInt(m));
+		assertEquals(EventReceiver.COLOR_RED, fMenuColor.getInt(m));
+		assertEquals(9, fStatcMenu.getInt(m));
 	}
 	private static GameEngine fresh() { GameManager gm = new GameManager(new EventReceiver()); gm.init(); gm.engine[0].init(); return gm.engine[0]; }
 }
