@@ -128,57 +128,6 @@ class ToolVSMapEditModeCoverageTest {
 	}
 
 	@Test
-	void onSettingLoadResetsFieldWhenNoMap() throws Exception {
-		ToolVSMapEditMode mode = new ToolVSMapEditMode();
-		GameManager manager = new GameManager(new EventReceiver());
-		mode.modeInit(manager);
-		manager.mode = mode;
-		manager.init();
-		manager.engine[0].init();
-		GameEngine engine = manager.engine[0];
-		engine.createFieldIfNeeded();
-
-		setInt(mode, "menuCursor", 4);
-		setInt(mode, "menuTime", 10);
-		engine.ctrl.buttonTime[Controller.BUTTON_A] = 1;
-		engine.ctrl.buttonPress[Controller.BUTTON_A] = true;
-
-		engine.field.setBlock(0, engine.field.getHeight() - 1,
-				new Block(Block.BLOCK_COLOR_RED, engine.getSkin(), Block.BLOCK_ATTRIBUTE_VISIBLE));
-
-		mode.onSetting(engine, 0);
-
-		Block b = engine.field.getBlock(0, engine.field.getHeight() - 1);
-		assertTrue(b == null || !b.getAttribute(Block.BLOCK_ATTRIBUTE_VISIBLE),
-				"LOAD with out-of-range nowMapID should reset field");
-	}
-
-	@Test
-	void onSettingDeleteRemovesMap() throws Exception {
-		ToolVSMapEditMode mode = new ToolVSMapEditMode();
-		GameManager manager = new GameManager(new EventReceiver());
-		mode.modeInit(manager);
-		manager.mode = mode;
-		manager.init();
-		manager.engine[0].init();
-		GameEngine engine = manager.engine[0];
-		engine.createFieldIfNeeded();
-
-		java.util.LinkedList<Field> list = (java.util.LinkedList<Field>) readFieldObj(mode, "listFields");
-		list.add(new Field(engine.field));
-
-		setInt(mode, "menuCursor", 5);
-		setInt(mode, "menuTime", 10);
-		setInt(mode, "nowMapID", 0);
-		engine.ctrl.buttonTime[Controller.BUTTON_A] = 1;
-		engine.ctrl.buttonPress[Controller.BUTTON_A] = true;
-
-		mode.onSetting(engine, 0);
-
-		assertEquals(0, list.size(), "DELETE should remove the map from the list");
-	}
-
-	@Test
 	void onSettingWriteCallsSaveAllMaps() throws Exception {
 		ToolVSMapEditMode mode = new ToolVSMapEditMode();
 		GameManager manager = new GameManager(new EventReceiver());
@@ -428,9 +377,8 @@ class ToolVSMapEditModeCoverageTest {
 		assertEquals(1, list.size(), "DELETE should remove one map");
 		assertEquals(1, readInt(mode, "nowMapID"), "nowMapID should be adjusted to list.size()");
 	}
-	}
 
-@Test
+	@Test
 	void onSettingLoadResetsFieldWhenNoMap() throws Exception {
 		ToolVSMapEditMode mode = new ToolVSMapEditMode();
 		GameManager manager = new GameManager(new EventReceiver());
@@ -462,7 +410,7 @@ class ToolVSMapEditModeCoverageTest {
 				"LOAD with out-of-range nowMapID should reset field");
 	}
 
-@Test
+	@Test
 	void onSettingDeleteRemovesMap() throws Exception {
 		ToolVSMapEditMode mode = new ToolVSMapEditMode();
 		GameManager manager = new GameManager(new EventReceiver());
