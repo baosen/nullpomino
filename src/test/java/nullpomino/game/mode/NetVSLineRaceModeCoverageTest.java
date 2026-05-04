@@ -81,11 +81,18 @@ class NetVSLineRaceModeCoverageTest {
 		mode.modeInit(manager);
 		manager.mode = mode;
 		manager.init();
-		manager.engine[0].init();
+		// Initialize all engines since getPlayers() returns 6
+		for (int i = 0; i < manager.engine.length; i++) {
+			manager.engine[i].init();
+			manager.engine[i].createFieldIfNeeded();
+		}
 		GameEngine engine = manager.engine[0];
 
-		setBooleanArray(mode, "netvsPlayerDead", false);
-		setBooleanArray(mode, "netvsPlayerExist", true);
+		// Only player 0 exists and is alive
+		boolean[] exist = new boolean[6];
+		exist[0] = true;
+		setBooleanArray(mode, "netvsPlayerExist", exist);
+		setBooleanArray(mode, "netvsPlayerDead", new boolean[6]);
 		engine.statistics.lines = 30;
 
 		int result = invokeGetNowPlayerPlace(mode, engine, 0);
@@ -153,32 +160,35 @@ class NetVSLineRaceModeCoverageTest {
 		mode.playerInit(engine, 0);
 		setInt(mode, "goalLines", 40);
 
-		String[] message = new String[] {"game", "0", "0", "stats", "0", "10", "5.0", "3.0"};
+		// message[4]=lines, message[5]=pps, message[6]=lpm
+		String[] message = new String[] {"game", "0", "0", "stats", "10", "5.0", "3.0"};
 		mode.netRecvStats(engine, message);
 
 		assertEquals(10, engine.statistics.lines);
 	}
 
 	@Test
-	void netSendStatsDoesNotThrow() throws Exception {
+	void netSendStatsDoesNotThrowInPracticeMode() throws Exception {
 		NetVSLineRaceMode mode = new NetVSLineRaceMode();
 		GameEngine engine = freshEngine(mode);
 		mode.modeInit(new GameManager(new EventReceiver()));
 		mode.playerInit(engine, 0);
-		setBoolean(mode, "netvsIsPractice", false);
+		setBoolean(mode, "netvsIsPractice", true);
 
-		// netSendStats requires netLobby, so we need to set up netplay
-		// Just verify it doesn't crash when not netplay
-		mode.netIsNetPlay = false;
+		// In practice mode, netSendStats should skip sending
 		mode.netSendStats(engine);
 	}
 
 	@Test
 	void startGameSetsMeter() throws Exception {
 		NetVSLineRaceMode mode = new NetVSLineRaceMode();
-		GameEngine engine = freshEngine(mode);
-		mode.modeInit(new GameManager(new EventReceiver()));
-		mode.playerInit(engine, 0);
+		GameManager manager = new GameManager(new EventReceiver());
+		mode.modeInit(manager);
+		manager.mode = mode;
+		manager.init();
+		manager.engine[0].init();
+		GameEngine engine = manager.engine[0];
+		engine.createFieldIfNeeded();
 
 		mode.startGame(engine, 0);
 
@@ -186,12 +196,12 @@ class NetVSLineRaceModeCoverageTest {
 	}
 
 	@Test
-	void netGetGoalTypeReturnsGoalLines() throws Exception {
+	void netGetGoalTypeReturnsDefaultZero() throws Exception {
 		NetVSLineRaceMode mode = new NetVSLineRaceMode();
 		mode.modeInit(new GameManager(new EventReceiver()));
-		setInt(mode, "goalLines", 40);
 
-		assertEquals(40, mode.netGetGoalType());
+		// NetVSLineRaceMode doesn't override netGetGoalType(), so it returns 0
+		assertEquals(0, mode.netGetGoalType());
 	}
 
 	// ---- helpers ----
@@ -229,6 +239,12 @@ class NetVSLineRaceModeCoverageTest {
 		if (arr != null) {
 			for (int i = 0; i < arr.length; i++) arr[i] = value;
 		}
+	}
+
+	private static void setBooleanArray(Object obj, String name, boolean[] values) throws Exception {
+		Field f = findField(obj.getClass(), name);
+		f.setAccessible(true);
+		f.set(obj, values);
 	}
 
 	private static Field findField(Class<?> cls, String name) throws NoSuchFieldException {

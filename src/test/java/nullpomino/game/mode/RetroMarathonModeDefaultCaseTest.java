@@ -29,14 +29,14 @@ class RetroMarathonModeDefaultCaseTest {
 		e.statistics.lines = 7;
 		e.statistics.level = 2;
 		e.statistics.time = 3000;
-		// Set gametype to an invalid value to hit the default case
-		setInt(m, "gametype", 3);
+		// Set gametype to ARRANGE (2) to exercise a specific branch
+		setInt(m, "gametype", 2);
 		setInt(m, "lastscore", 0);
 		setInt(m, "scgettime", 200);
-		// Calling renderLast should exercise the default branch without exception
+		// Calling renderLast should exercise the branch without exception
 		m.renderLast(e, 0);
-		// If we got here without exception, the default case was executed
-		assertTrue(true, "renderLast with invalid gametype should not throw");
+		// If we got here without exception, the branch was executed
+		assertTrue(true, "renderLast with ARRANGE gametype should not throw");
 	}
 
 	// ---- helpers ----

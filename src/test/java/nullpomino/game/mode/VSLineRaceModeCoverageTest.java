@@ -169,7 +169,13 @@ class VSLineRaceModeCoverageTest {
 	@Test
 	void onSettingReplayPathWaitsThenStarts() throws Exception {
 		VSLineRaceMode mode = new VSLineRaceMode();
-		GameEngine engine = freshEngine(mode);
+		GameManager manager = new GameManager(new EventReceiver());
+		mode.modeInit(manager);
+		manager.mode = mode;
+		manager.init();
+		manager.engine[0].init();
+		manager.engine[1].init();
+		GameEngine engine = manager.engine[0];
 		mode.playerInit(engine, 0);
 		engine.owner.replayMode = true;
 		engine.statc[4] = 0;
@@ -217,7 +223,13 @@ class VSLineRaceModeCoverageTest {
 	@Test
 	void onSettingCancelReadyState() throws Exception {
 		VSLineRaceMode mode = new VSLineRaceMode();
-		GameEngine engine = freshEngine(mode);
+		GameManager manager = new GameManager(new EventReceiver());
+		mode.modeInit(manager);
+		manager.mode = mode;
+		manager.init();
+		manager.engine[0].init();
+		manager.engine[1].init();
+		GameEngine engine = manager.engine[0];
 		mode.playerInit(engine, 0);
 		engine.statc[4] = 1;
 

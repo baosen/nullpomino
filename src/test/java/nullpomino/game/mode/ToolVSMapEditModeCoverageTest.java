@@ -36,6 +36,10 @@ class ToolVSMapEditModeCoverageTest {
 		GameEngine engine = manager.engine[0];
 		engine.createFieldIfNeeded();
 
+		// Add a block so the field is non-empty
+		engine.field.setBlock(0, engine.field.getHeight() - 1,
+				new Block(Block.BLOCK_COLOR_RED, engine.getSkin(), Block.BLOCK_ATTRIBUTE_VISIBLE));
+
 		CustomProperties prop = new CustomProperties();
 		invokeSaveMap(mode, engine.field, prop, 5);
 
@@ -110,21 +114,21 @@ class ToolVSMapEditModeCoverageTest {
 		GameEngine engine = manager.engine[0];
 		engine.createFieldIfNeeded();
 
-		// Use nowMapSetID=9999 so loadAllMaps finds no file and list stays empty
+		// Set up empty listFields (avoid loading real map files)
+		@SuppressWarnings("unchecked")
+		java.util.LinkedList<Field> list = (java.util.LinkedList<Field>) readFieldObj(mode, "listFields");
+		list.clear();
 		setInt(mode, "nowMapSetID", 9999);
-		mode.playerInit(engine, 0);
-
+		setInt(mode, "nowMapID", 999); // out of range, so SAVE will add
 		setInt(mode, "menuCursor", 3);
 		setInt(mode, "menuTime", 10);
 		engine.ctrl.buttonTime[Controller.BUTTON_A] = 1;
-		engine.ctrl.buttonPress[Controller.BUTTON_A] = true;
 
-		int sizeBefore = ((java.util.LinkedList<Field>) readFieldObj(mode, "listFields")).size();
+		int sizeBefore = list.size();
 
 		mode.onSetting(engine, 0);
 
-		int sizeAfter = ((java.util.LinkedList<Field>) readFieldObj(mode, "listFields")).size();
-		assertEquals(sizeBefore + 1, sizeAfter, "SAVE with out-of-range nowMapID should add new field");
+		assertEquals(sizeBefore + 1, list.size(), "SAVE with out-of-range nowMapID should add new field");
 	}
 
 	@Test
@@ -141,7 +145,6 @@ class ToolVSMapEditModeCoverageTest {
 		setInt(mode, "menuCursor", 6);
 		setInt(mode, "menuTime", 10);
 		engine.ctrl.buttonTime[Controller.BUTTON_A] = 1;
-		engine.ctrl.buttonPress[Controller.BUTTON_A] = true;
 
 		mode.onSetting(engine, 0);
 	}
@@ -160,7 +163,6 @@ class ToolVSMapEditModeCoverageTest {
 		setInt(mode, "menuCursor", 7);
 		setInt(mode, "menuTime", 10);
 		engine.ctrl.buttonTime[Controller.BUTTON_A] = 1;
-		engine.ctrl.buttonPress[Controller.BUTTON_A] = true;
 
 		mode.onSetting(engine, 0);
 		assertEquals(0, readInt(mode, "nowMapID"), "READ should reset nowMapID to 0");
@@ -180,7 +182,6 @@ class ToolVSMapEditModeCoverageTest {
 		setInt(mode, "menuCursor", 0);
 		setInt(mode, "menuTime", 10);
 		engine.ctrl.buttonTime[Controller.BUTTON_A] = 1;
-		engine.ctrl.buttonPress[Controller.BUTTON_A] = true;
 
 		mode.onSetting(engine, 0);
 
@@ -205,7 +206,6 @@ class ToolVSMapEditModeCoverageTest {
 		setInt(mode, "menuCursor", 1);
 		setInt(mode, "menuTime", 10);
 		engine.ctrl.buttonTime[Controller.BUTTON_A] = 1;
-		engine.ctrl.buttonPress[Controller.BUTTON_A] = true;
 
 		mode.onSetting(engine, 0);
 
@@ -231,7 +231,6 @@ class ToolVSMapEditModeCoverageTest {
 		setInt(mode, "menuCursor", 2);
 		setInt(mode, "menuTime", 10);
 		engine.ctrl.buttonTime[Controller.BUTTON_A] = 1;
-		engine.ctrl.buttonPress[Controller.BUTTON_A] = true;
 
 		mode.onSetting(engine, 0);
 
@@ -253,7 +252,6 @@ class ToolVSMapEditModeCoverageTest {
 		setInt(mode, "menuCursor", 6);
 		setInt(mode, "menuTime", 10);
 		engine.ctrl.buttonTime[Controller.BUTTON_UP] = 1;
-		engine.ctrl.buttonPress[Controller.BUTTON_UP] = true;
 
 		mode.onSetting(engine, 0);
 	}
@@ -269,9 +267,7 @@ class ToolVSMapEditModeCoverageTest {
 		GameEngine engine = manager.engine[0];
 
 		engine.ctrl.buttonTime[Controller.BUTTON_D] = 1;
-		engine.ctrl.buttonPress[Controller.BUTTON_D] = true;
 		engine.ctrl.buttonTime[Controller.BUTTON_E] = 1;
-		engine.ctrl.buttonPress[Controller.BUTTON_E] = true;
 		setInt(mode, "menuTime", 10);
 
 		mode.onSetting(engine, 0);
@@ -290,12 +286,10 @@ class ToolVSMapEditModeCoverageTest {
 		GameEngine engine = manager.engine[0];
 		engine.createFieldIfNeeded();
 
-		// Use nowMapSetID=9999 so loadAllMaps finds no file and list stays empty
-		setInt(mode, "nowMapSetID", 9999);
-		mode.playerInit(engine, 0);
-
-		// Add a field to the list
+		// Set up empty listFields directly (avoid loading real map files)
+		@SuppressWarnings("unchecked")
 		java.util.LinkedList<Field> list = (java.util.LinkedList<Field>) readFieldObj(mode, "listFields");
+		list.clear();
 		list.add(new Field(engine.field));
 
 		// menuCursor = 3 → SAVE, nowMapID = 0 (valid)
@@ -303,7 +297,6 @@ class ToolVSMapEditModeCoverageTest {
 		setInt(mode, "menuTime", 10);
 		setInt(mode, "nowMapID", 0);
 		engine.ctrl.buttonTime[Controller.BUTTON_A] = 1;
-		engine.ctrl.buttonPress[Controller.BUTTON_A] = true;
 
 		mode.onSetting(engine, 0);
 
@@ -321,12 +314,10 @@ class ToolVSMapEditModeCoverageTest {
 		GameEngine engine = manager.engine[0];
 		engine.createFieldIfNeeded();
 
-		// Use nowMapSetID=9999 so loadAllMaps finds no file and list stays empty
-		setInt(mode, "nowMapSetID", 9999);
-		mode.playerInit(engine, 0);
-
-		// Add a field with a block to the list
+		// Set up listFields with a field that has a block
+		@SuppressWarnings("unchecked")
 		java.util.LinkedList<Field> list = (java.util.LinkedList<Field>) readFieldObj(mode, "listFields");
+		list.clear();
 		Field storedField = new Field(engine.field);
 		storedField.setBlock(5, storedField.getHeight() - 1,
 				new Block(Block.BLOCK_COLOR_RED, engine.getSkin(), Block.BLOCK_ATTRIBUTE_VISIBLE));
@@ -337,7 +328,6 @@ class ToolVSMapEditModeCoverageTest {
 		setInt(mode, "menuTime", 10);
 		setInt(mode, "nowMapID", 0);
 		engine.ctrl.buttonTime[Controller.BUTTON_A] = 1;
-		engine.ctrl.buttonPress[Controller.BUTTON_A] = true;
 
 		mode.onSetting(engine, 0);
 
@@ -356,12 +346,10 @@ class ToolVSMapEditModeCoverageTest {
 		GameEngine engine = manager.engine[0];
 		engine.createFieldIfNeeded();
 
-		// Use nowMapSetID=9999 so loadAllMaps finds no file and list stays empty
-		setInt(mode, "nowMapSetID", 9999);
-		mode.playerInit(engine, 0);
-
-		// Add two fields
+		// Set up listFields with two fields
+		@SuppressWarnings("unchecked")
 		java.util.LinkedList<Field> list = (java.util.LinkedList<Field>) readFieldObj(mode, "listFields");
+		list.clear();
 		list.add(new Field(engine.field));
 		list.add(new Field(engine.field));
 
@@ -370,7 +358,6 @@ class ToolVSMapEditModeCoverageTest {
 		setInt(mode, "menuTime", 10);
 		setInt(mode, "nowMapID", 1);
 		engine.ctrl.buttonTime[Controller.BUTTON_A] = 1;
-		engine.ctrl.buttonPress[Controller.BUTTON_A] = true;
 
 		mode.onSetting(engine, 0);
 
@@ -389,15 +376,16 @@ class ToolVSMapEditModeCoverageTest {
 		GameEngine engine = manager.engine[0];
 		engine.createFieldIfNeeded();
 
-		// Use nowMapSetID=9999 so loadAllMaps finds no file and list stays empty
-		setInt(mode, "nowMapSetID", 9999);
-		mode.playerInit(engine, 0);
+		// Set up empty listFields (no maps to load)
+		@SuppressWarnings("unchecked")
+		java.util.LinkedList<Field> list = (java.util.LinkedList<Field>) readFieldObj(mode, "listFields");
+		list.clear();
 
 		// menuCursor = 4 → LOAD, nowMapID out of range → field.reset()
 		setInt(mode, "menuCursor", 4);
 		setInt(mode, "menuTime", 10);
+		setInt(mode, "nowMapID", 0);
 		engine.ctrl.buttonTime[Controller.BUTTON_A] = 1;
-		engine.ctrl.buttonPress[Controller.BUTTON_A] = true;
 
 		// Place a block so we can verify it gets cleared
 		engine.field.setBlock(0, engine.field.getHeight() - 1,
@@ -421,12 +409,10 @@ class ToolVSMapEditModeCoverageTest {
 		GameEngine engine = manager.engine[0];
 		engine.createFieldIfNeeded();
 
-		// Use nowMapSetID=9999 so loadAllMaps finds no file and list stays empty
-		setInt(mode, "nowMapSetID", 9999);
-		mode.playerInit(engine, 0);
-
-		// Add a field to the list
+		// Set up listFields with one field
+		@SuppressWarnings("unchecked")
 		java.util.LinkedList<Field> list = (java.util.LinkedList<Field>) readFieldObj(mode, "listFields");
+		list.clear();
 		list.add(new Field(engine.field));
 
 		// menuCursor = 5 → DELETE, nowMapID = 0 (valid)
@@ -434,7 +420,6 @@ class ToolVSMapEditModeCoverageTest {
 		setInt(mode, "menuTime", 10);
 		setInt(mode, "nowMapID", 0);
 		engine.ctrl.buttonTime[Controller.BUTTON_A] = 1;
-		engine.ctrl.buttonPress[Controller.BUTTON_A] = true;
 
 		mode.onSetting(engine, 0);
 
