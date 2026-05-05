@@ -1,2 +1,2 @@
-- Use `jj` for VCS.
-- Make and divide into atomic conventional commits, each with descriptive body. When done, finish on an empty commit.
+- STRICTLY MUST: Use Jujutsu (`jj`) for version control (VCS), not `git`.
+- STRICTLY FORBIDDEN: Using Jujutsu (`jj`) or `git` in a sub-agent running in parallel, because it causes conflicts.
