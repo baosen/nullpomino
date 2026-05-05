@@ -166,6 +166,7 @@ class BatchRemainingModesCoveragePart3 {
         GameEngine e = fe(m);
         m.playerInit(e, 0);
         e.statistics.level = 50;
+        setInt(m, "nextseclv", 100);
         inv(m, "levelUp", e);
         assertEquals(GameEngine.METER_COLOR_YELLOW, e.meterColor);
     }

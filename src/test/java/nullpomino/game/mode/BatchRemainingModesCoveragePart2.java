@@ -365,7 +365,7 @@ class BatchRemainingModesCoveragePart2 {
         setInt(m, "startlevel", 0);
         setField(m, "sectiontime", new int[]{1000, 2000, 3000, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0});
         inv(m, "setAverageSectionTime");
-        assertEquals(1000, readInt(m, "sectionavgtime")); // (1000+2000+3000)/3
+        assertEquals(2000, readInt(m, "sectionavgtime")); // (1000+2000+3000)/3
     }
 
     @Test
@@ -433,7 +433,7 @@ class BatchRemainingModesCoveragePart2 {
         m.playerInit(e, 0);
         e.timerActive = true;
         e.ending = 0;
-        setInt(m, "levelTimer", 1);
+        setInt(m, "levelTimer", 0);
         m.onLast(e, 0);
         assertEquals(GameEngine.Status.GAMEOVER, e.stat);
     }
@@ -446,6 +446,7 @@ class BatchRemainingModesCoveragePart2 {
         e.timerActive = true;
         e.ending = 0;
         e.statistics.level = 0;
+        setInt(m, "levelTimer", 10);
         m.onLast(e, 0);
         int[] st = (int[]) readField(m, "sectiontime");
         assertEquals(1, st[0]);
@@ -460,6 +461,7 @@ class BatchRemainingModesCoveragePart2 {
         e.timerActive = true;
         e.ending = 0;
         e.statistics.level = 5;
+        setInt(m, "levelTimer", 10);
         m.onLast(e, 0);
         assertTrue(e.heboHiddenEnable);
     }
@@ -605,7 +607,7 @@ class BatchRemainingModesCoveragePart2 {
 
         // Test all T-Spin branches quickly
         int[][] testCases = {
-            {0, 0, 0, 0, 1, 5},  // tspin,lines,tspinez,tspinmini -> lastevent
+            {1, 0, 0, 1, 1, 5},  // tspin,lines,tspinez,tspinmini -> lastevent
             {1, 0, 0, 0, 0, 6},
             {1, 1, 1, 0, 1, 12},
             {1, 1, 0, 1, 1, 7},
@@ -619,6 +621,7 @@ class BatchRemainingModesCoveragePart2 {
             e.tspinez = tc[2] == 1;
             e.tspinmini = tc[3] == 1;
             e.b2b = tc[4] == 1;
+            e.useAllSpinBonus = tc[5] == 9;
             e.nowPieceObject = new Piece(Piece.PIECE_T);
             e.ending = 0;
             m.calcScore(e, 0, tc[1]);
@@ -656,7 +659,7 @@ class BatchRemainingModesCoveragePart2 {
         e.tspin = false;
         setBoolean(m, "endless", false);
         e.ending = 0;
-        e.statistics.lines = 199;
+        e.statistics.lines = 200;
         e.statistics.level = 19;
         e.nowPieceObject = new Piece(Piece.PIECE_T);
         m.calcScore(e, 0, 1);
@@ -672,7 +675,7 @@ class BatchRemainingModesCoveragePart2 {
         e.createFieldIfNeeded();
         e.tspin = false;
         e.ending = 0;
-        e.statistics.lines = 9;
+        e.statistics.lines = 10;
         e.statistics.level = 0;
         e.nowPieceObject = new Piece(Piece.PIECE_T);
         m.calcScore(e, 0, 1);
@@ -950,7 +953,9 @@ class BatchRemainingModesCoveragePart2 {
         m.playerInit(e, 0);
         setInt(m, "goaltype", 0);
         inv(m, "updateRanking", 50000, 200);
-        assertTrue(readInt(m, "rankingRank") >= -1);
+        int[] ranks = (int[]) readField(m, "rankingRank");
+        assertTrue(ranks[0] >= -1);
+        assertTrue(ranks[1] >= -1);
     }
 
     @Test

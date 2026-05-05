@@ -92,11 +92,15 @@ class AvalancheVSModeRemainingCoverageTest {
 
     // --- helpers ---
     private static void setIntArray(Object o, String n, int i, int v) throws Exception {
-        ((int[]) findField(o.getClass(), n).get(o))[i] = v;
+        java.lang.reflect.Field f = findField(o.getClass(), n);
+        f.setAccessible(true);
+        ((int[]) f.get(o))[i] = v;
     }
 
     private static void setBooleanArray(Object o, String n, int i, boolean v) throws Exception {
-        ((boolean[]) findField(o.getClass(), n).get(o))[i] = v;
+        java.lang.reflect.Field f = findField(o.getClass(), n);
+        f.setAccessible(true);
+        ((boolean[]) f.get(o))[i] = v;
     }
 
     private static java.lang.reflect.Field findField(Class<?> cls, String name) throws NoSuchFieldException {

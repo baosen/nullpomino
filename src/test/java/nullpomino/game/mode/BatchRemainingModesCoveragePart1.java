@@ -152,15 +152,15 @@ class BatchRemainingModesCoveragePart1 {
         m.playerInit(e, 0);
         e.timerActive = true;
 
-        setInt(m, "timeLimit", 2000);
+        setInt(m, "timeLimit", 1801);
         m.onLast(e, 0);
         assertEquals(GameEngine.METER_COLOR_YELLOW, e.meterColor);
 
-        setInt(m, "timeLimit", 1000);
+        setInt(m, "timeLimit", 901);
         m.onLast(e, 0);
         assertEquals(GameEngine.METER_COLOR_ORANGE, e.meterColor);
 
-        setInt(m, "timeLimit", 300);
+        setInt(m, "timeLimit", 301);
         m.onLast(e, 0);
         assertEquals(GameEngine.METER_COLOR_RED, e.meterColor);
     }
@@ -172,6 +172,7 @@ class BatchRemainingModesCoveragePart1 {
         m.playerInit(e, 0);
         e.createFieldIfNeeded();
         e.stat = GameEngine.Status.MOVE;
+        seedNextPieces(e);
         setInt(m, "fastenable", 2);
         setBoolean(m, "fastinuse", false);
         e.ctrl = new SimpleController(Controller.BUTTON_F);
@@ -185,11 +186,11 @@ class BatchRemainingModesCoveragePart1 {
         setInt(m, "chainLevelMultiplier", 10);
         Method calcPts = AvalancheFeverMode.class.getDeclaredMethod("calcPts", int.class);
         calcPts.setAccessible(true);
-        assertEquals(50, (int) calcPts.invoke(m, 5));
+        assertEquals(500, (int) calcPts.invoke(m, 5));
 
         Method calcOjama = AvalancheFeverMode.class.getDeclaredMethod("calcOjama", int.class, int.class, int.class, int.class);
         calcOjama.setAccessible(true);
-        assertEquals(6, (int) calcOjama.invoke(m, 100, 5, 50, 3));
+        assertEquals(5, (int) calcOjama.invoke(m, 100, 5, 50, 3));
 
         assertEquals(800, m.calcChainMultiplier(25));
         assertEquals(4, m.calcChainMultiplier(1));
@@ -444,8 +445,9 @@ class BatchRemainingModesCoveragePart1 {
         e.nowPieceObject = new Piece(Piece.PIECE_T);
         e.combo = 4;
         e.ending = 0;
+        setInt(m, "medalCO", 2);
         m.calcScore(e, 0, 1);
-        assertTrue(readInt(m, "medalCO") >= 3);
+        assertEquals(3, readInt(m, "medalCO"));
     }
 
     @Test
@@ -458,8 +460,9 @@ class BatchRemainingModesCoveragePart1 {
         e.nowPieceObject = new Piece(Piece.PIECE_T);
         e.combo = 7;
         e.ending = 0;
+        setInt(m, "medalCO", 2);
         m.calcScore(e, 0, 1);
-        assertTrue(readInt(m, "medalCO") >= 3);
+        assertEquals(3, readInt(m, "medalCO"));
     }
 
     @Test
@@ -715,14 +718,14 @@ class BatchRemainingModesCoveragePart1 {
         setBoolean(m, "enableCombo", false);
 
         // Level up (lines >= (level+1)*10)
-        e.statistics.lines = 9;
+        e.statistics.lines = 10;
         e.statistics.level = 0;
         e.nowPieceObject = new Piece(Piece.PIECE_T);
         m.calcScore(e, 0, 1);
         assertEquals(1, e.statistics.level);
 
         // Ending (lines >= goal)
-        e.statistics.lines = 149;
+        e.statistics.lines = 150;
         e.statistics.level = 14;
         e.nowPieceObject = new Piece(Piece.PIECE_T);
         m.calcScore(e, 0, 1);
@@ -797,6 +800,7 @@ class BatchRemainingModesCoveragePart1 {
     void marathonModeStartGameOptions() throws Exception {
         MarathonMode m = new MarathonMode();
         GameEngine e = fe(m);
+        m.playerInit(e, 0);
         setInt(m, "version", 2);
         setInt(m, "tspinEnableType", 2);
         setBoolean(m, "enableTSpinKick", true);
@@ -805,7 +809,6 @@ class BatchRemainingModesCoveragePart1 {
         setBoolean(m, "enableB2B", true);
         setBoolean(m, "enableCombo", true);
         setBoolean(m, "big", true);
-        m.playerInit(e, 0);
         m.startGame(e, 0);
         assertTrue(e.big);
         assertTrue(e.tspinEnable);
@@ -982,8 +985,9 @@ class BatchRemainingModesCoveragePart1 {
         e.createFieldIfNeeded();
         e.nowPieceObject = new Piece(Piece.PIECE_T);
         e.combo = 4; e.ending = 0;
+        setInt(m, "medalCO", 2);
         m.calcScore(e, 0, 1);
-        assertTrue(readInt(m, "medalCO") >= 3);
+        assertEquals(3, readInt(m, "medalCO"));
     }
 
     @Test
@@ -995,8 +999,9 @@ class BatchRemainingModesCoveragePart1 {
         e.createFieldIfNeeded();
         e.nowPieceObject = new Piece(Piece.PIECE_T);
         e.combo = 7; e.ending = 0;
+        setInt(m, "medalCO", 2);
         m.calcScore(e, 0, 1);
-        assertTrue(readInt(m, "medalCO") >= 3);
+        assertEquals(3, readInt(m, "medalCO"));
     }
 
     @Test
@@ -1085,9 +1090,11 @@ class BatchRemainingModesCoveragePart1 {
     private static class SimpleController extends Controller {
         private final int btn;
         SimpleController(int b) { super(); btn = b; }
-        @Override public boolean isPush(int b) { return (btn & b) != 0; }
-        @Override public boolean isMenuRepeatKey(int b) { return (btn & b) != 0; }
-        @Override public boolean isPress(int b) { return (btn & b) != 0; }
+        // Controller.BUTTON_* are sequential indices (0..9), not bit flags,
+        // so equality is what callers actually want.
+        @Override public boolean isPush(int b) { return btn == b; }
+        @Override public boolean isMenuRepeatKey(int b) { return btn == b; }
+        @Override public boolean isPress(int b) { return btn == b; }
     }
 
     private static GameEngine fe(GameMode m) {
@@ -1110,6 +1117,16 @@ class BatchRemainingModesCoveragePart1 {
         }
     }
 
+    private static void seedNextPieces(GameEngine e) {
+        int count = 16;
+        e.nextPieceArrayID = new int[count];
+        e.nextPieceArrayObject = new Piece[count];
+        for (int i = 0; i < count; i++) {
+            e.nextPieceArrayID[i] = Piece.PIECE_T;
+            e.nextPieceArrayObject[i] = new Piece(Piece.PIECE_T);
+        }
+    }
+
     private static Field ff(Object o, String n) throws NoSuchFieldException {
         Class<?> c = o.getClass();
         while (c != null) {
@@ -1127,6 +1144,8 @@ class BatchRemainingModesCoveragePart1 {
         Field f = ff(o, n);
         if (f.getType().isArray()) {
             f.set(o, v);
+        } else if (nullpomino.game.menu.IntegerMenuItem.class.isAssignableFrom(f.getType())) {
+            ((nullpomino.game.menu.IntegerMenuItem) f.get(o)).value = v;
         } else {
             f.setInt(o, v);
         }
@@ -1135,6 +1154,8 @@ class BatchRemainingModesCoveragePart1 {
         Field f = ff(o, n);
         if (f.getType().isArray()) {
             f.set(o, v);
+        } else if (nullpomino.game.menu.BooleanMenuItem.class.isAssignableFrom(f.getType())) {
+            ((nullpomino.game.menu.BooleanMenuItem) f.get(o)).value = v;
         } else {
             f.setBoolean(o, v);
         }

@@ -8,6 +8,7 @@ import nullpomino.game.component.Controller;
 import nullpomino.game.component.Field;
 import nullpomino.game.component.Piece;
 import nullpomino.game.event.EventReceiver;
+import nullpomino.game.net.NetRoomInfo;
 import nullpomino.game.play.GameEngine;
 import nullpomino.game.play.GameManager;
 import nullpomino.util.CustomProperties;
@@ -59,17 +60,26 @@ class NetDummyVSModeRemainingCoverageTest {
 
     @Test
     void netOnJoin() throws Exception {
-        mode.getClass().getSuperclass().getDeclaredMethod("netOnJoin", 
-            Class.forName("nullpomino.gui.net.NetLobbyFrame"), 
-            Class.forName("nullpomino.game.net.NetPlayerClient"), 
-            Class.forName("nullpomino.game.net.NetRoomInfo")).invoke(mode, null, null, null);
-        assertTrue(true, "net on join");
+        NetRoomInfo room = new NetRoomInfo();
+        room.playing = true;
+        java.lang.reflect.Method m = mode.getClass().getDeclaredMethod("netOnJoin",
+            Class.forName("nullpomino.gui.net.NetLobbyFrame"),
+            Class.forName("nullpomino.game.net.NetPlayerClient"),
+            Class.forName("nullpomino.game.net.NetRoomInfo"));
+        // Without a real NetLobbyFrame, netUpdatePlayerExist NPEs after the assignment
+        // chain we want to cover. Verify we got past the netCurrentRoomInfo assignment.
+        try { m.invoke(mode, null, null, room); }
+        catch (java.lang.reflect.InvocationTargetException e) {
+            assertInstanceOf(NullPointerException.class, e.getCause());
+        }
+        assertTrue(mode.netIsNetPlay, "netIsNetPlay set");
     }
 
     // --- helpers ---
     private static void setField(Object o, String n, Object v) throws Exception {
-        findField(o.getClass(), n).setAccessible(true);
-        findField(o.getClass(), n).set(o, v);
+        java.lang.reflect.Field f = findField(o.getClass(), n);
+        f.setAccessible(true);
+        f.set(o, v);
     }
 
     private static java.lang.reflect.Field findField(Class<?> cls, String name) throws NoSuchFieldException {
