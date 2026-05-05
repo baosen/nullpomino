@@ -130,6 +130,8 @@ class GradeMania2ModeGameLogicTest {
 	void rankingArraysInitialiseToZero() throws Exception {
 		GradeMania2Mode mode = new GradeMania2Mode();
 		GameEngine engine = freshEngine(mode);
+		// Use replayMode=true to skip loadRanking which would load persisted data
+		engine.owner.replayMode = true;
 		mode.playerInit(engine, 0);
 
 		int[] grades = (int[]) readField(mode, "rankingGrade");
