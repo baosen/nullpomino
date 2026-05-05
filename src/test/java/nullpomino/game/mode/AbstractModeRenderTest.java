@@ -181,6 +181,57 @@ class AbstractModeRenderTest {
 	}
 
 	@Test
+	void drawMenuCompactHighlightBranchRendersCursorOnMatchedStatc() throws Exception {
+		StubMode mode = new StubMode();
+		GameEngine engine = freshEngine();
+		EventReceiver receiver = engine.owner.receiver;
+		setInt(mode, "menuY", 0);
+		setInt(mode, "statcMenu", 0);
+		setInt(mode, "menuCursor", 0); // matches statcMenu, so highlight branch fires
+
+		invokeDrawMenuCompact(mode, engine, receiver, "LEVEL", "1");
+
+		assertEquals(1, readInt(mode, "menuY"));
+		assertEquals(1, readInt(mode, "statcMenu"));
+	}
+
+	@Test
+	void drawMenuCompactSevenArgFormDelegatesToVarargsForm() throws Exception {
+		StubMode mode = new StubMode();
+		GameEngine engine = freshEngine();
+		EventReceiver receiver = engine.owner.receiver;
+		setInt(mode, "menuY", 99);
+		setInt(mode, "menuColor", -1);
+		setInt(mode, "statcMenu", 99);
+		setInt(mode, "menuCursor", 1);
+
+		invokeDrawMenuCompactFull(mode, engine, receiver, 4, EventReceiver.COLOR_BLUE, 0,
+				"GHOST", "ON", "LEVEL", "3");
+
+		// 7-arg form sets fields then delegates to the varargs form,
+		// which advances menuY for each row and statcMenu for each value row.
+		assertEquals(6, readInt(mode, "menuY"));
+		assertEquals(EventReceiver.COLOR_BLUE, readInt(mode, "menuColor"));
+		assertEquals(2, readInt(mode, "statcMenu"));
+	}
+
+	@Test
+	void drawMenuCompactHighlightBranchRespectsReplayMode() throws Exception {
+		StubMode mode = new StubMode();
+		GameEngine engine = freshEngine();
+		EventReceiver receiver = engine.owner.receiver;
+		setInt(mode, "menuY", 0);
+		setInt(mode, "statcMenu", 0);
+		setInt(mode, "menuCursor", 0);
+		engine.owner.replayMode = true; // highlight should be suppressed
+
+		invokeDrawMenuCompact(mode, engine, receiver, "LEVEL", "1");
+
+		assertEquals(1, readInt(mode, "menuY"));
+		assertEquals(1, readInt(mode, "statcMenu"));
+	}
+
+	@Test
 	void drawResultRankRendersOnlyWhenRankIsNonNegative() throws Exception {
 		StubMode mode = new StubMode();
 		GameEngine engine = freshEngine();
@@ -324,6 +375,15 @@ class AbstractModeRenderTest {
 				GameEngine.class, int.class, EventReceiver.class, String[].class);
 		m.setAccessible(true);
 		m.invoke(mode, engine, 0, receiver, (Object) str);
+	}
+
+	private static void invokeDrawMenuCompactFull(StubMode mode, GameEngine engine, EventReceiver receiver,
+			int y, int color, int statc, String... str) throws Exception {
+		Method m = AbstractMode.class.getDeclaredMethod("drawMenuCompact",
+				GameEngine.class, int.class, EventReceiver.class,
+				int.class, int.class, int.class, String[].class);
+		m.setAccessible(true);
+		m.invoke(mode, engine, 0, receiver, y, color, statc, (Object) str);
 	}
 
 	private static void invokeDrawResultRank(StubMode mode, GameEngine engine, EventReceiver receiver,
