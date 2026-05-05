@@ -13,6 +13,7 @@ import nullpomino.game.component.Block;
 import nullpomino.game.component.Controller;
 import nullpomino.game.component.Field;
 import nullpomino.game.component.Piece;
+import nullpomino.game.component.RuleOptions;
 import nullpomino.game.event.EventReceiver;
 
 /**
@@ -1342,5 +1343,320 @@ class GameEngineEdgeCoverageTest {
 
 		engine.statMove();
 		// Should not throw: dasInstant triggers move sound and dasRepeat.
+	}
+
+	// ====================================================================
+	// 52. Wallkick lock reset (line 2223-2224)
+	// ====================================================================
+
+	@Test
+	void wallkickLockReset() {
+		GameEngine engine = engineWithField();
+		engine.gameActive = true;
+		engine.stat = GameEngine.Status.MOVE;
+		engine.statc[0] = 1;
+		engine.ruleopt.moveFirstFrame = true;
+		engine.ruleopt.rotateWallkick = true;
+		engine.ruleopt.rotateInitialWallkick = true;
+		engine.ruleopt.lockresetWallkick = true;
+		engine.extendedRotateCount = 0;
+		engine.nowPieceObject = new Piece(Piece.PIECE_T);
+		engine.nowPieceObject.applyOffsetArray(
+				engine.ruleopt.pieceOffsetX[Piece.PIECE_T],
+				engine.ruleopt.pieceOffsetY[Piece.PIECE_T]);
+		engine.nowPieceX = 5;
+		engine.nowPieceY = 5;
+		// Block rotation so wallkick is needed
+		engine.field.setBlockColor(5, 4, Block.BLOCK_COLOR_RED);
+		engine.field.setBlockColor(6, 5, Block.BLOCK_COLOR_RED);
+		engine.wallkick = new nullpomino.game.wallkick.StandardWallkick();
+		engine.ctrl = new Controller();
+		engine.ctrl.buttonPress[Controller.BUTTON_B] = true;
+		engine.ctrl.buttonTime[Controller.BUTTON_B] = 1;
+		engine.initialRotateDirection = 0;
+		engine.nextPieceArrayObject = new Piece[1];
+		engine.nextPieceArrayObject[0] = new Piece(Piece.PIECE_T);
+		engine.statMove();
+		assertEquals(0, engine.lockDelayNow, "lockresetWallkick should reset lockDelayNow");
+	}
+
+	// ====================================================================
+	// 53. Domino Quick Turn collision true (line 2239) and false+onGround (line 2240)
+	// ====================================================================
+
+	@Test
+	void dominoQuickTurnCollisionTrue() {
+		GameEngine engine = engineWithField();
+		engine.gameActive = true;
+		engine.stat = GameEngine.Status.MOVE;
+		engine.statc[0] = 1;
+		engine.ruleopt.moveFirstFrame = true;
+		engine.ruleopt.rotateWallkick = false;
+		engine.dominoQuickTurn = true;
+		engine.nowPieceRotateFailCount = 1;
+		Piece i2 = new Piece(Piece.PIECE_I2);
+		i2.applyOffsetArray(engine.ruleopt.pieceOffsetX[Piece.PIECE_I2],
+				engine.ruleopt.pieceOffsetY[Piece.PIECE_I2]);
+		engine.nowPieceObject = i2;
+		engine.nowPieceX = 5;
+		engine.nowPieceY = 18;
+		for (int x = 0; x < engine.field.getWidth(); x++)
+			engine.field.setBlockColor(x, 19, Block.BLOCK_COLOR_GRAY);
+		engine.ctrl = new Controller();
+		engine.ctrl.buttonPress[Controller.BUTTON_B] = true;
+		engine.ctrl.buttonTime[Controller.BUTTON_B] = 1;
+		engine.initialRotateDirection = 0;
+		engine.nextPieceArrayObject = new Piece[1];
+		engine.nextPieceArrayObject[0] = new Piece(Piece.PIECE_I2);
+		engine.statMove();
+	}
+
+	@Test
+	void dominoQuickTurnNoCollisionOnGround() {
+		GameEngine engine = engineWithField();
+		engine.gameActive = true;
+		engine.stat = GameEngine.Status.MOVE;
+		engine.statc[0] = 1;
+		engine.ruleopt.moveFirstFrame = true;
+		engine.ruleopt.rotateWallkick = false;
+		engine.dominoQuickTurn = true;
+		engine.nowPieceRotateFailCount = 1;
+		Piece i2 = new Piece(Piece.PIECE_I2);
+		i2.applyOffsetArray(engine.ruleopt.pieceOffsetX[Piece.PIECE_I2],
+				engine.ruleopt.pieceOffsetY[Piece.PIECE_I2]);
+		engine.nowPieceObject = i2;
+		engine.nowPieceX = 5;
+		engine.nowPieceY = 6;
+		for (int x = 0; x < engine.field.getWidth(); x++)
+			engine.field.setBlockColor(x, 7, Block.BLOCK_COLOR_GRAY);
+		engine.ctrl = new Controller();
+		engine.ctrl.buttonPress[Controller.BUTTON_B] = true;
+		engine.ctrl.buttonTime[Controller.BUTTON_B] = 1;
+		engine.initialRotateDirection = 0;
+		engine.nextPieceArrayObject = new Piece[1];
+		engine.nextPieceArrayObject[0] = new Piece(Piece.PIECE_I2);
+		engine.statMove();
+	}
+
+	// ====================================================================
+	// 54. Game over spawn shift big (line 2278) and non-big (line 2279)
+	// ====================================================================
+
+	@Test
+	void spawnShiftBigPiece() {
+		GameEngine engine = engineWithField();
+		engine.gameActive = true;
+		engine.stat = GameEngine.Status.MOVE;
+		engine.statc[0] = 0;
+		engine.statc[1] = 0;
+		engine.big = true;
+		engine.ruleopt.pieceEnterMaxDistanceY = 3;
+		engine.nextPieceArrayID = new int[]{Piece.PIECE_O};
+		engine.nextPieceArrayObject = new Piece[1];
+		engine.nextPieceArrayObject[0] = new Piece(Piece.PIECE_O);
+		engine.nextPieceArrayObject[0].big = true;
+		engine.nextPieceArrayObject[0].applyOffsetArray(
+				engine.ruleopt.pieceOffsetX[Piece.PIECE_O],
+				engine.ruleopt.pieceOffsetY[Piece.PIECE_O]);
+		engine.nextPieceCount = 0;
+		for (int x = 0; x < engine.field.getWidth(); x++) {
+			engine.field.setBlockColor(x, 1, Block.BLOCK_COLOR_GRAY);
+			engine.field.setBlockColor(x, 2, Block.BLOCK_COLOR_GRAY);
+		}
+		engine.nextPieceArrayObject = new Piece[1];
+		engine.nextPieceArrayObject[0] = new Piece(Piece.PIECE_O);
+		engine.nextPieceArrayObject[0].big = true;
+		engine.statMove();
+	}
+
+	@Test
+	void spawnShiftNonBigPiece() {
+		GameEngine engine = engineWithField();
+		engine.gameActive = true;
+		engine.stat = GameEngine.Status.MOVE;
+		engine.statc[0] = 0;
+		engine.statc[1] = 0;
+		engine.big = false;
+		engine.ruleopt.pieceEnterMaxDistanceY = 3;
+		engine.nextPieceArrayID = new int[]{Piece.PIECE_O};
+		engine.nextPieceArrayObject = new Piece[1];
+		engine.nextPieceArrayObject[0] = new Piece(Piece.PIECE_O);
+		engine.nextPieceArrayObject[0].applyOffsetArray(
+				engine.ruleopt.pieceOffsetX[Piece.PIECE_O],
+				engine.ruleopt.pieceOffsetY[Piece.PIECE_O]);
+		engine.nextPieceCount = 0;
+		for (int x = 0; x < engine.field.getWidth(); x++)
+			engine.field.setBlockColor(x, 1, Block.BLOCK_COLOR_GRAY);
+		engine.nextPieceArrayObject = new Piece[1];
+		engine.nextPieceArrayObject[0] = new Piece(Piece.PIECE_O);
+		engine.statMove();
+	}
+
+	// ====================================================================
+	// 55. Instant DAS (lines 2338-2340)
+	// ====================================================================
+
+	@Test
+	void instantDasFlags() {
+		GameEngine engine = engineWithField();
+		engine.gameActive = true;
+		engine.stat = GameEngine.Status.MOVE;
+		engine.ruleopt.moveFirstFrame = true;
+		engine.owDasDelay = 0;
+		engine.dasDirection = 1;
+		engine.dasSpeedCount = 0;
+		engine.dasInstant = false;
+		engine.nowPieceObject = new Piece(Piece.PIECE_I);
+		engine.nowPieceObject.applyOffsetArray(
+				engine.ruleopt.pieceOffsetX[Piece.PIECE_I],
+				engine.ruleopt.pieceOffsetY[Piece.PIECE_I]);
+		engine.nowPieceX = 0;
+		engine.nowPieceY = 5;
+		engine.nowPieceBottomY = 5;
+		engine.statc[0] = 1;
+		engine.ctrl = new Controller();
+		engine.ctrl.buttonPress[Controller.BUTTON_RIGHT] = true;
+		engine.ctrl.buttonTime[Controller.BUTTON_RIGHT] = 10;
+		engine.dasCount = 1;
+		engine.nextPieceArrayObject = new Piece[1];
+		engine.nextPieceArrayObject[0] = new Piece(Piece.PIECE_I);
+		engine.statMove();
+	}
+
+	// ====================================================================
+	// 56. Softdrop non-multiply-native (line 2426)
+	// ====================================================================
+
+	@Test
+	void softdropNonMultiplyNative() {
+		GameEngine engine = engineWithField();
+		engine.gameActive = true;
+		engine.stat = GameEngine.Status.MOVE;
+		engine.ruleopt.moveFirstFrame = true;
+		engine.ruleopt.softdropGravitySpeedLimit = true;
+		engine.ruleopt.softdropEnable = true;
+		engine.ruleopt.softdropMultiplyNativeSpeed = false;
+		engine.ruleopt.softdropSpeed = 0.5f;
+		engine.ruleopt.moveUpAndDown = true;
+		engine.speed.gravity = 100;
+		engine.speed.denominator = 256;
+		engine.nowPieceObject = new Piece(Piece.PIECE_T);
+		engine.nowPieceObject.applyOffsetArray(
+				engine.ruleopt.pieceOffsetX[Piece.PIECE_T],
+				engine.ruleopt.pieceOffsetY[Piece.PIECE_T]);
+		engine.nowPieceX = 5;
+		engine.nowPieceY = 10;
+		engine.nowPieceBottomY = 11;
+		engine.statc[0] = 1;
+		engine.gcount = 0;
+		engine.ctrl = new Controller();
+		engine.ctrl.buttonPress[Controller.BUTTON_DOWN] = true;
+		engine.ctrl.buttonTime[Controller.BUTTON_DOWN] = 10;
+		engine.nextPieceArrayObject = new Piece[1];
+		engine.nextPieceArrayObject[0] = new Piece(Piece.PIECE_T);
+		engine.statMove();
+		assertTrue(engine.gcount > 0, "gcount > 0 from softdrop");
+	}
+
+	// ====================================================================
+	// 57. Line clear null block in color mode (line 2830)
+	// ====================================================================
+
+	@Test
+	void lineClearNullBlockContinue() {
+		GameEngine engine = engineWithField();
+		engine.gameActive = true;
+		engine.stat = GameEngine.Status.LINECLEAR;
+		engine.clearMode = GameEngine.ClearType.COLOR;
+		engine.colorClearSize = 1;
+		engine.garbageColorClear = false;
+		engine.gemSameColor = false;
+		engine.ignoreHidden = true;
+		engine.speed.lineDelay = 1;
+		engine.ruleopt.minLineDelay = -1;
+		engine.ruleopt.maxLineDelay = -1;
+		engine.statc[0] = 0;
+		engine.lineClearing = 1;
+		engine.field.setBlockColor(0, 19, Block.BLOCK_COLOR_RED);
+		engine.field.getBlock(0, 19).setAttribute(Block.BLOCK_ATTRIBUTE_ERASE, true);
+		engine.statLineClear();
+	}
+
+	// ====================================================================
+	// 58. Cascade sticky block link (lines 2892-2895)
+	// ====================================================================
+
+	@Test
+	void cascadeStickyBlockLink() {
+		GameEngine engine = engineWithField();
+		engine.gameActive = true;
+		engine.stat = GameEngine.Status.LINECLEAR;
+		engine.clearMode = GameEngine.ClearType.LINE;
+		engine.lineGravityType = GameEngine.LineGravity.CASCADE;
+		engine.speed.lineDelay = 1;
+		engine.ruleopt.minLineDelay = -1;
+		engine.ruleopt.maxLineDelay = -1;
+		engine.cascadeDelay = 0;
+		engine.cascadeClearDelay = 5;
+		engine.statc[0] = 100;
+		engine.statc[6] = 3;
+		engine.sticky = 1;
+		engine.lineClearing = 1;
+		for (int x = 0; x < engine.field.getWidth(); x++)
+			engine.field.setBlockColor(x, 19, Block.BLOCK_COLOR_RED);
+		engine.statLineClear();
+	}
+
+	// ====================================================================
+	// 59. Cascade chain detection (lines 2899-2906)
+	// ====================================================================
+
+	@Test
+	void cascadeChainDetection() {
+		GameEngine engine = engineWithField();
+		engine.gameActive = true;
+		engine.stat = GameEngine.Status.LINECLEAR;
+		engine.clearMode = GameEngine.ClearType.LINE;
+		engine.lineGravityType = GameEngine.LineGravity.CASCADE;
+		engine.speed.lineDelay = 1;
+		engine.ruleopt.minLineDelay = -1;
+		engine.ruleopt.maxLineDelay = -1;
+		engine.cascadeDelay = 0;
+		engine.cascadeClearDelay = 0;
+		engine.statc[0] = 100;
+		engine.statc[6] = 100;
+		engine.lineClearing = 1;
+		for (int x = 0; x < engine.field.getWidth(); x++)
+			engine.field.setBlockColor(x, 19, Block.BLOCK_COLOR_RED);
+		engine.statLineClear();
+	}
+
+	// ====================================================================
+	// 60. Line clear interrupt item transition (lines 2937-2939)
+	// ====================================================================
+
+	@Test
+	void lineClearInterruptItemTransition() {
+		GameEngine engine = engineWithField();
+		engine.gameActive = true;
+		engine.stat = GameEngine.Status.LINECLEAR;
+		engine.clearMode = GameEngine.ClearType.LINE;
+		engine.speed.lineDelay = 1;
+		engine.ruleopt.minLineDelay = -1;
+		engine.ruleopt.maxLineDelay = -1;
+		engine.statc[0] = 0;
+		engine.lineClearing = 0;
+		engine.interruptItemNumber = GameEngine.INTERRUPTITEM_MIRROR;
+		engine.versionMajor = 7.0f;
+		engine.lagARE = false;
+		engine.speed.areLine = 0;
+		engine.ruleopt.minARELine = -1;
+		engine.ruleopt.maxARELine = -1;
+		for (int x = 0; x < engine.field.getWidth(); x++)
+			engine.field.setBlockColor(x, 19, Block.BLOCK_COLOR_RED);
+		engine.statLineClear();
+		engine.statc[0] = engine.speed.lineDelay;
+		engine.statLineClear();
+		assertEquals(GameEngine.Status.INTERRUPTITEM, engine.stat);
 	}
 }
