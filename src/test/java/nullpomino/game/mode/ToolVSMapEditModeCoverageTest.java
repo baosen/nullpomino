@@ -144,6 +144,7 @@ class ToolVSMapEditModeCoverageTest {
 
 		setInt(mode, "menuCursor", 6);
 		setInt(mode, "menuTime", 10);
+		setInt(mode, "nowMapSetID", 9999);
 		engine.ctrl.buttonTime[Controller.BUTTON_A] = 1;
 
 		mode.onSetting(engine, 0);
