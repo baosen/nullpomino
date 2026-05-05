@@ -11,6 +11,7 @@ import nullpomino.game.event.EventReceiver;
 import nullpomino.game.play.GameEngine;
 import nullpomino.game.play.GameManager;
 
+import nullpomino.util.CustomProperties;
 import org.junit.jupiter.api.Test;
 
 /**
