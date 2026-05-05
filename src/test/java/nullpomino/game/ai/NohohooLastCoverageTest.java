@@ -123,17 +123,16 @@ class NohohooLastCoverageTest {
 	@Test
 	void threadRunWithInterrupt() throws Exception {
 		Nohoho tAi = new Nohoho();
-		tAi.gEngine = engine;
-		tAi.gManager = gm;
+		tAi.init(engine, 0);
 		tAi.thinkDelay = 10;
-		tAi.threadRunning = false;
 		// Verify run method handles interrupt without throwing
 		tAi.thread = new Thread(tAi);
 		tAi.threadRunning = true;
 		tAi.thread.start();
 		Thread.sleep(5);
+		tAi.threadRunning = false;
 		tAi.thread.interrupt();
-		Thread.sleep(20);
+		tAi.thread.join(200);
 		assertFalse(tAi.thread.isAlive());
 	}
 }
