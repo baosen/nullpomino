@@ -627,7 +627,7 @@ public class DigChallengeMode extends NetDummyMode {
 					lastevent = EVENT_TSPIN_EZ;
 				}
 				// T-Spin 1 line
-				if(lines == 1) {
+				else if(lines == 1) {
 					if(engine.tspinmini) {
 						if(!engine.useAllSpinBonus) {
 							pts += 1;
