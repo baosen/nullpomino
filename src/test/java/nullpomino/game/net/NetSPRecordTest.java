@@ -30,6 +30,38 @@ class NetSPRecordTest {
 	}
 
 	@Test
+	void importCustomStatsHandlesNullAndEmptyInput() {
+		NetSPRecord record = new NetSPRecord();
+		record.listCustomStats.add("stale;1");
+
+		// null input: the (s == null) arm short-circuits and returns after clearing
+		record.importCustomStats(null);
+		assertTrue(record.listCustomStats.isEmpty());
+
+		// empty input: (s.length() <= 0) arm returns after clearing
+		record.listCustomStats.add("stale;1");
+		record.importCustomStats("");
+		assertTrue(record.listCustomStats.isEmpty());
+
+		// non-null but empty list: hasCustomStats()'s size()>0 sub-condition is false,
+		// so exportStringArray writes the empty custom-stats slot.
+		String[] arr = record.exportStringArray();
+		assertEquals("", arr[4]);
+	}
+
+	@Test
+	void getCustomStatHandlesSemicolonlessEntryAndFoundDefault() {
+		NetSPRecord record = new NetSPRecord();
+		record.listCustomStats.add("nosemicolon"); // split(";",2).length == 1 -> guard false
+		record.listCustomStats.add("combo;12");
+
+		// found name through the default overload exercises the strResult != null branch
+		assertEquals("12", record.getCustomStat("combo", "fallback"));
+		// the semicolon-less entry is skipped without matching
+		assertNull(record.getCustomStat("nosemicolon"));
+	}
+
+	@Test
 	void exportImportPreservesRecordFieldsWithEmptyTimestamp() {
 		NetSPRecord original = new NetSPRecord();
 		original.strPlayerName = "Player; Name";
