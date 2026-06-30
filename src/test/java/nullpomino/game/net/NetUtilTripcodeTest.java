@@ -32,6 +32,15 @@ class NetUtilTripcodeTest {
     }
 
     @Test
+    void tripCodeSaltCharAboveLowercaseZIsNormalized() {
+        // The salt byte is taken from index 1 of the key; '{' (0x7B) is just above
+        // 'z' (0x7A), exercising the (salt > 'z') arm of the normalize guard.
+        String code = NetUtil.createTripCode("a{b", 10);
+        assertNotNull(code);
+        assertEquals(10, code.length());
+    }
+
+    @Test
     void tripCodeMaxlenTruncation() {
         // maxlen shorter than the 13-char crypt output takes the last N chars
         assertEquals("o2NFA", NetUtil.createTripCode("a[b", 5));
