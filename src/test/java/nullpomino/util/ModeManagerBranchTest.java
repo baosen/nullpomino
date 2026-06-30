@@ -1,7 +1,13 @@
 package nullpomino.util;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+
+import java.lang.reflect.Field;
+import java.util.List;
+
+import nullpomino.game.mode.GameMode;
 
 import org.junit.jupiter.api.Test;
 
@@ -12,12 +18,19 @@ import org.junit.jupiter.api.Test;
 class ModeManagerBranchTest {
 
 	@Test
-	void getAllModeNamesHandlesNullMode() {
+	@SuppressWarnings("unchecked")
+	void getAllModeNamesHandlesNullMode() throws Exception {
 		ModeManager mm = new ModeManager();
-		// Add a mode via addMode - since GameMode is an interface, we can't
-		// directly instantiate, but we can use reflection to add null.
-		// Instead, verify the method works with real modes first.
-		assertNotNull(mm.getAllModeNames());
+		// A null mode lands in the list when a mode class fails to load; inject one
+		// directly so the (mode == null) ternary arm in getAllModeNames is exercised.
+		Field modesField = ModeManager.class.getDeclaredField("modes");
+		modesField.setAccessible(true);
+		List<GameMode> modes = (List<GameMode>) modesField.get(mm);
+		modes.add(null);
+
+		String[] names = mm.getAllModeNames();
+		assertNotNull(names);
+		assertEquals("*INVALID MODE*", names[0]);
 	}
 
 	@Test
