@@ -99,6 +99,35 @@ class AvalancheClassicWallkickTest {
 		assertNull(result);
 	}
 
+	@Test
+	void rightwardRotationWithoutClearanceFallsThroughToNull() {
+		// Collides at the start cell AND after the upward shift, so the RIGHT
+		// arm's clearance check is false and the switch breaks to null.
+		assertNull(surroundedKick(Piece.DIRECTION_RIGHT));
+	}
+
+	@Test
+	void downwardRotationWithoutClearanceFallsThroughToNull() {
+		assertNull(surroundedKick(Piece.DIRECTION_DOWN));
+	}
+
+	@Test
+	void leftwardRotationWithoutClearanceFallsThroughToNull() {
+		assertNull(surroundedKick(Piece.DIRECTION_LEFT));
+	}
+
+	private static WallkickResult surroundedKick(int rtNew) {
+		AvalancheClassicWallkick wallkick = new AvalancheClassicWallkick();
+		Piece piece = new Piece(Piece.PIECE_O);
+		Field field = new Field();
+		for(int dx = 4; dx <= 7; dx++) {
+			for(int dy = 4; dy <= 7; dy++) {
+				field.setBlock(dx, dy, new Block(Block.BLOCK_COLOR_GRAY));
+			}
+		}
+		return wallkick.executeWallkick(5, 5, 1, 0, rtNew, true, piece, field, null);
+	}
+
 	private static Field fieldWithBlockAt(int x, int y) {
 		Field field = new Field();
 		field.setBlock(x, y, new Block(Block.BLOCK_COLOR_GRAY));
