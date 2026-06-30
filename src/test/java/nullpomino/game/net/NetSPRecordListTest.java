@@ -106,6 +106,38 @@ class NetSPRecordListTest {
 		assertEquals(0, records.size());
 	}
 
+	@Test
+	void readPropertySkipsMissingRecordSlots() {
+		// Write a single record, then claim two exist so slot 1 reads back null
+		// and the (compressedRecord != null) guard takes its false branch.
+		LinkedList<NetSPRecord> source = new LinkedList<>();
+		source.add(record("alice", 100));
+		CustomProperties prop = new CustomProperties();
+		NetSPRecordList.writeProperty(prop, "test.", source);
+		prop.setProperty("test.numRecords", 2);
+
+		LinkedList<NetSPRecord> read = new LinkedList<>();
+		NetSPRecordList.readProperty(prop, "test.", read, -1);
+
+		assertEquals(1, read.size());
+	}
+
+	@Test
+	void importCompressedSkipsEmptySegments() {
+		// A trailing ';' yields an empty split segment, exercising the
+		// (compressedRecord.length() > 0) false branch while the valid
+		// segments still import.
+		LinkedList<NetSPRecord> source = new LinkedList<>();
+		source.add(record("alice", 100));
+		source.add(record("bob", 200));
+		String compressed = NetSPRecordList.exportCompressedList(source);
+
+		LinkedList<NetSPRecord> imported = new LinkedList<>();
+		NetSPRecordList.importCompressedList(compressed + ";", imported);
+
+		assertEquals(2, imported.size());
+	}
+
 	private static NetSPRecord record(String playerName, int score) {
 		NetSPRecord r = new NetSPRecord();
 		r.strPlayerName = playerName;
