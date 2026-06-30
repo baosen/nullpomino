@@ -44,6 +44,7 @@ log/
 # Agent directories
 .claude
 .codex
+.serena
 
 # Coverage reports (bazel coverage --combined_report=lcov + genhtml)
 /coverage/
