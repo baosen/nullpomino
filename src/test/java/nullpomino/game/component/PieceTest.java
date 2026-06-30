@@ -188,6 +188,12 @@ class PieceTest {
 		assertEquals(Piece.DIRECTION_UP, p.getRotateDirection(2, Piece.DIRECTION_DOWN));
 		assertEquals(Piece.DIRECTION_RIGHT, p.getRotateDirection(1, Piece.DIRECTION_UP));
 		assertEquals(Piece.DIRECTION_RIGHT, p.getRotateDirection(2, Piece.DIRECTION_LEFT));
+
+		// move==2 with an out-of-range negative direction underflows below 0
+		// and wraps via the rt += 4 branch (rt = -3 + 2 = -1 -> 3).
+		p.direction = -3;
+		assertEquals(Piece.DIRECTION_LEFT, p.getRotateDirection(2));
+		assertEquals(Piece.DIRECTION_LEFT, p.getRotateDirection(2, -3));
 	}
 
 	@Test
