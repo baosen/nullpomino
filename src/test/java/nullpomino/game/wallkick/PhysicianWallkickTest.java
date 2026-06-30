@@ -100,6 +100,25 @@ class PhysicianWallkickTest {
 		assertNull(result);
 	}
 
+	@Test
+	void rightRotationWithoutClearanceFallsThroughToNull() {
+		// rtNew==RIGHT reaches the LEFT/RIGHT switch arm; both the start cell and
+		// the x+check shift collide, so the L32 clearance check is false -> null.
+		PhysicianWallkick wallkick = new PhysicianWallkick();
+		Field field = new Field();
+		for(int dx = 4; dx <= 8; dx++) {
+			for(int dy = 4; dy <= 7; dy++) {
+				field.setBlock(dx, dy, new Block(Block.BLOCK_COLOR_GRAY));
+			}
+		}
+
+		WallkickResult result = wallkick.executeWallkick(
+				5, 5, 1, Piece.DIRECTION_UP, Piece.DIRECTION_RIGHT, true,
+				new Piece(Piece.PIECE_O), field, null);
+
+		assertNull(result);
+	}
+
 	private static Field fieldWithBlockAt(int x, int y) {
 		Field field = new Field();
 		field.setBlock(x, y, new Block(Block.BLOCK_COLOR_GRAY));

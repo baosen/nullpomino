@@ -100,6 +100,31 @@ class AvalancheWallkickTest {
 		assertNull(result);
 	}
 
+	@Test
+	void upRotationWithLeftAlsoBlockedFallsThroughToNull() {
+		// rtNew==UP, up shift blocked (L23 false) AND left shift blocked, so the
+		// L25 clearance check is false and the DOWN guard at L27 is also false.
+		assertNull(surroundedKick(Piece.DIRECTION_UP));
+	}
+
+	@Test
+	void downRotationWithRightAlsoBlockedFallsThroughToNull() {
+		// rtNew==DOWN, up shift blocked, right shift blocked -> L27 clearance false.
+		assertNull(surroundedKick(Piece.DIRECTION_DOWN));
+	}
+
+	private static WallkickResult surroundedKick(int rtNew) {
+		AvalancheWallkick wallkick = new AvalancheWallkick();
+		Field field = new Field();
+		for(int dx = 4; dx <= 7; dx++) {
+			for(int dy = 4; dy <= 7; dy++) {
+				field.setBlock(dx, dy, new Block(Block.BLOCK_COLOR_GRAY));
+			}
+		}
+		return wallkick.executeWallkick(5, 5, 1, Piece.DIRECTION_LEFT, rtNew, true,
+				new Piece(Piece.PIECE_O), field, null);
+	}
+
 	private static Field fieldWithBlockAt(int x, int y) {
 		Field field = new Field();
 		field.setBlock(x, y, new Block(Block.BLOCK_COLOR_GRAY));
