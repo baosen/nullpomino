@@ -157,6 +157,16 @@ class AvalancheFeverModeGameLogicTest {
 		GameEngine engine = freshEngine(mode);
 		mode.playerInit(engine, 0);
 
+		// playerInit loads rankings from the shared config/setting file, so other
+		// tests in the same JVM can leave a higher score at rank 0. Reset every
+		// ranking slot to the empty sentinel so the inserted score is unambiguously best.
+		int[][][] rankingScore = (int[][][]) readField(mode, "rankingScore");
+		for (int[][] plane : rankingScore) {
+			for (int[] row : plane) {
+				java.util.Arrays.fill(row, -1);
+			}
+		}
+
 		invokeUpdateRanking(mode, 10000, 3600, 0, 4);
 
 		assertEquals(0, readInt(mode, "rankingRank"),
