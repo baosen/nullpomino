@@ -19,6 +19,7 @@ import nullpomino.game.component.Controller;
 import nullpomino.game.component.Piece;
 import nullpomino.game.component.ReplayData;
 import nullpomino.game.component.Statistics;
+import nullpomino.game.ai.DummyAI;
 import nullpomino.game.event.EventReceiver;
 import nullpomino.game.mode.AbstractMode;
 import nullpomino.util.CustomProperties;
@@ -445,6 +446,53 @@ class GameEngineBranchEdgeTest {
 		GameEngine e = freshEngine();
 		e.ruleopt.lockresetLimitShareCount = false; e.ruleopt.lockresetLimitMove = 10; e.extendedMoveCount = 5;
 		assertFalse(e.isMoveCountExceed());
+	}
+
+	@Test void isMoveCountExceedSeparateNegativeLimitNeverExceeds() {
+		// count is above the limit, but a negative limit is the "no limit" sentinel,
+		// so the (lockresetLimitMove >= 0) sub-condition is false -> not exceeded.
+		GameEngine e = freshEngine();
+		e.ruleopt.lockresetLimitShareCount = false; e.ruleopt.lockresetLimitMove = -1; e.extendedMoveCount = 50;
+		assertFalse(e.isMoveCountExceed());
+	}
+
+	@Test void isRotateCountExceedSeparateNegativeLimitNeverExceeds() {
+		GameEngine e = freshEngine();
+		e.ruleopt.lockresetLimitShareCount = false; e.ruleopt.lockresetLimitRotate = -1; e.extendedRotateCount = 50;
+		assertFalse(e.isRotateCountExceed());
+	}
+
+	@Test void isRotateCountExceedSharedNegativeLimitNeverExceeds() {
+		// shared-count path with a negative shared limit: second sub-condition false.
+		GameEngine e = freshEngine();
+		e.ruleopt.lockresetLimitShareCount = true; e.ruleopt.lockresetLimitMove = -1;
+		e.extendedMoveCount = 30; e.extendedRotateCount = 30;
+		assertFalse(e.isRotateCountExceed());
+	}
+
+	@Test void getRotateDirectionHalfTurnUnderflowWrapsViaCurrentPiece() {
+		// rt = nowPieceObject.direction + 2; an out-of-range negative direction makes
+		// rt < 0 so the move==2 underflow-wrap (rt += 4) branch is exercised.
+		GameEngine e = freshEngine();
+		Piece p = new Piece(Piece.PIECE_T);
+		p.direction = -3;
+		e.nowPieceObject = p;
+		assertEquals(Piece.DIRECTION_LEFT, e.getRotateDirection(2));
+	}
+
+	@Test void shutdownInvokesAiShutdownWhenAiPresent() {
+		GameEngine e = freshEngine();
+		e.ai = new DummyAI();
+		e.shutdown(); // ai != null -> ai.shutdown(...), then owner/ruleopt nulled
+		assertNull(e.owner);
+	}
+
+	@Test void gameEndedInvokesAiShutdownWhenAiPresent() {
+		GameEngine e = freshEngine();
+		e.ai = new DummyAI();
+		e.gameActive = true;
+		e.gameEnded(); // ai != null -> ai.shutdown(...)
+		assertFalse(e.gameActive);
 	}
 
 	@Test void statMoveInterruptItemTransition() {

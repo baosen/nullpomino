@@ -119,6 +119,35 @@ class GameEngineGettersTest {
 	}
 
 	@Test
+	void speedGettersIgnoreNegativeSentinelBoundsEvenWhenSpeedIsOutOfRange() {
+		// Each clamp guard is `(speed < minX) && (minX >= 0)`. A negative bound is
+		// the "unconstrained" sentinel: even when the speed value is below/above it,
+		// the `>= 0` sub-condition is false so no clamp applies and the raw value
+		// is returned. This exercises the false outcome of every second sub-condition.
+		GameEngine eng = newEngine();
+		eng.ruleopt.minARE = eng.ruleopt.maxARE = -2;
+		eng.ruleopt.minARELine = eng.ruleopt.maxARELine = -2;
+		eng.ruleopt.minLineDelay = eng.ruleopt.maxLineDelay = -2;
+		eng.ruleopt.minLockDelay = eng.ruleopt.maxLockDelay = -2;
+		eng.ruleopt.minDAS = eng.ruleopt.maxDAS = -2;
+		eng.owMinDAS = eng.owMaxDAS = -2;
+
+		// below the (negative) min: first sub-condition true, second false -> no clamp
+		eng.speed.are = -5;       assertEquals(-5, eng.getARE());
+		eng.speed.areLine = -5;   assertEquals(-5, eng.getARELine());
+		eng.speed.lineDelay = -5; assertEquals(-5, eng.getLineDelay());
+		eng.speed.lockDelay = -5; assertEquals(-5, eng.getLockDelay());
+		eng.speed.das = -5;       assertEquals(-5, eng.getDAS());
+
+		// above the (negative) max: covers each max guard's second sub-condition false
+		eng.speed.are = 5;        assertEquals(5, eng.getARE());
+		eng.speed.areLine = 5;    assertEquals(5, eng.getARELine());
+		eng.speed.lineDelay = 5;  assertEquals(5, eng.getLineDelay());
+		eng.speed.lockDelay = 5;  assertEquals(5, eng.getLockDelay());
+		eng.speed.das = 5;        assertEquals(5, eng.getDAS());
+	}
+
+	@Test
 	void getLineDelayClampsToConfiguredBounds() {
 		GameEngine eng = newEngine();
 		eng.speed.lineDelay = 5;
