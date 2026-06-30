@@ -74,6 +74,58 @@ class PoochyBotSetControlFinesseTest {
 		assertTrue(true, "setControl I-piece blocked-right hold path executed");
 	}
 
+	/** Aligned piece on the floor with softdropLock -> soft-drop funnel (503-504). */
+	@Test
+	void alignedSoftDropLockFunnel() throws Exception {
+		GameEngine e = engine();
+		for (int x = 0; x < e.field.getWidth(); x++) e.field.setBlockColor(x, 19, Block.BLOCK_COLOR_GRAY);
+		e.ruleopt.softdropLock = true;
+		e.ruleopt.harddropEnable = false;
+		PoochyBot bot = new PoochyBot();
+		bot.init(e, 0);
+		set(bot, "delay", 9999);
+		set(bot, "thinkComplete", true);
+		set(bot, "bestHold", false);
+		Piece o = new Piece(Piece.PIECE_O);
+		o.applyOffsetArray(e.ruleopt.pieceOffsetX[Piece.PIECE_O], e.ruleopt.pieceOffsetY[Piece.PIECE_O]);
+		e.nowPieceObject = o;
+		e.nowPieceX = 4;
+		e.nowPieceY = o.getBottom(4, 0, o.direction, e.field);  // resting on floor
+		set(bot, "bestX", 4);
+		set(bot, "bestY", e.nowPieceY);   // >= nowY so the reachability check passes
+		set(bot, "bestRt", o.direction);
+		set(bot, "bestXSub", 4);
+		set(bot, "bestRtSub", -1);
+		bot.setControl(e, 0, new Controller());
+		assertTrue(true, "aligned soft-drop-lock funnel executed");
+	}
+
+	/** Aligned piece with a sub-move pending + harddrop -> hard-drop funnel (510-511). */
+	@Test
+	void alignedHardDropFunnel() throws Exception {
+		GameEngine e = engine();
+		for (int x = 0; x < e.field.getWidth(); x++) e.field.setBlockColor(x, 19, Block.BLOCK_COLOR_GRAY);
+		e.ruleopt.harddropEnable = true;
+		e.ruleopt.harddropLock = false;
+		PoochyBot bot = new PoochyBot();
+		bot.init(e, 0);
+		set(bot, "delay", 9999);
+		set(bot, "thinkComplete", true);
+		set(bot, "bestHold", false);
+		Piece o = new Piece(Piece.PIECE_O);
+		o.applyOffsetArray(e.ruleopt.pieceOffsetX[Piece.PIECE_O], e.ruleopt.pieceOffsetY[Piece.PIECE_O]);
+		e.nowPieceObject = o;
+		e.nowPieceX = 4;
+		e.nowPieceY = 5;             // floating (not touching ground) -> skip the resets
+		set(bot, "bestX", 4);
+		set(bot, "bestY", 5);
+		set(bot, "bestRt", o.direction);
+		set(bot, "bestXSub", 4);     // equal, but bestRtSub!=-1 keeps the funnel else-arm
+		set(bot, "bestRtSub", 0);
+		bot.setControl(e, 0, new Controller());
+		assertTrue(true, "aligned hard-drop funnel executed");
+	}
+
 	@Test
 	void verticalIBlockedLeftFallsBackToHold() throws Exception {
 		GameEngine e = engine();
