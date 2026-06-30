@@ -299,6 +299,23 @@ class RuleOptionsTest {
 	}
 
 	@Test
+	void strictCompareFailsOnEachIndividualGraphicsField() {
+		// When only ONE graphics field differs, compare(false) must reach and fail at
+		// exactly that field's check (the others would short-circuit if combined).
+		RuleOptions colorOnly = new RuleOptions(populated());
+		colorOnly.pieceColor[0] = populated().pieceColor[0] + 1;
+		assertFalse(populated().compare(colorOnly, false), "pieceColor diff fails strict compare");
+
+		RuleOptions animOnly = new RuleOptions(populated());
+		animOnly.lineFallAnim = !populated().lineFallAnim;
+		assertFalse(populated().compare(animOnly, false), "lineFallAnim diff fails strict compare");
+
+		RuleOptions skinOnly = new RuleOptions(populated());
+		skinOnly.skin = populated().skin + 1;
+		assertFalse(populated().compare(skinOnly, false), "skin diff fails strict compare");
+	}
+
+	@Test
 	void compareTreatsNullStringEqualToNullStringButNotToValue() {
 		RuleOptions src = populated();
 		src.strWallkick = null;
