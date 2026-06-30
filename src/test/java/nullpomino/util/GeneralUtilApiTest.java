@@ -207,6 +207,13 @@ class GeneralUtilApiTest {
 	}
 
 	@Test
+	void pieceIdFromDigitWithCharBelowZeroReturnsI() {
+		// '/' (0x2F) and ' ' are below '0' (0x30), exercising the value < '0' branch
+		assertArrayEquals(new int[] {Piece.PIECE_I, Piece.PIECE_I},
+			GeneralUtil.createNextPieceArrayFromNumberString("/ "));
+	}
+
+	@Test
 	void loadRuleReturnsDefaultOnIOException() {
 		RuleOptions r = GeneralUtil.loadRule(tempDir.resolve("nonexistent.rul").toString());
 		assertNotNull(r);
