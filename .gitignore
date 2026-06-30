@@ -47,3 +47,6 @@ log/
 
 # Coverage reports (bazel coverage --combined_report=lcov + genhtml)
 /coverage/
+# JaCoCo offline-instrumentation execution data (emitted when the bazel-built
+# instrumented classes are run directly, e.g. local single-test verification)
+/jacoco.exec
