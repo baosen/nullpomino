@@ -83,6 +83,32 @@ class NetSPPersonalBestTest {
 	}
 
 	@Test
+	void getRecordRejectsModeAndGameTypeMismatch() {
+		NetSPPersonalBest pb = new NetSPPersonalBest();
+		pb.listRecord.add(record("Rule", "Mode", 2));
+
+		// rule matches but mode differs -> second equals() sub-condition is false
+		assertNull(pb.getRecord("Rule", "OtherMode", 2));
+		// rule and mode match but game type differs -> third sub-condition is false
+		assertNull(pb.getRecord("Rule", "Mode", 99));
+		// all three match -> found
+		assertNotNull(pb.getRecord("Rule", "Mode", 2));
+	}
+
+	@Test
+	void importStringArrayWithEmptyArrayClearsListAndKeepsName() {
+		NetSPPersonalBest pb = new NetSPPersonalBest();
+		pb.listRecord.add(record("Rule", "Mode", 0));
+		pb.strPlayerName = "Keep";
+
+		// length 0 -> the s.length>0 guard is false, player name untouched, list cleared
+		pb.importStringArray(new String[0]);
+
+		assertEquals("Keep", pb.strPlayerName);
+		assertEquals(0, pb.listRecord.size());
+	}
+
+	@Test
 	void importStringArrayWithSinglePlayerNameElementClearsList() {
 		NetSPPersonalBest pb = new NetSPPersonalBest();
 		pb.listRecord.add(record("Rule", "Mode", 0));
