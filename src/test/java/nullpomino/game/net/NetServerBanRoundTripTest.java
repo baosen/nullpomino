@@ -43,6 +43,30 @@ class NetServerBanRoundTripTest {
 	}
 
 	@Test
+	void importIgnoresDateFieldWithoutGmtMarker() {
+		// dateField that does not start with "GMT" skips the parse block entirely,
+		// leaving startDate untouched (null).
+		NetServerBan ban = new NetServerBan();
+		ban.importString("198.51.100.5;100;not-a-gmt-date");
+
+		assertEquals("198.51.100.5", ban.addr);
+		assertEquals(100, ban.banLength);
+		assertNull(ban.startDate);
+	}
+
+	@Test
+	void importLeavesStartDateNullWhenGmtCalendarUnparseable() {
+		// "GMT" marker present but the remainder fails to parse, so
+		// importCalendarString returns null and startDate stays null.
+		NetServerBan ban = new NetServerBan();
+		ban.importString("198.51.100.6;200;GMTnonsense");
+
+		assertEquals("198.51.100.6", ban.addr);
+		assertEquals(200, ban.banLength);
+		assertNull(ban.startDate);
+	}
+
+	@Test
 	void permanentBanHasNullEndDate() {
 		NetServerBan ban = new NetServerBan("10.0.0.1");
 		assertEquals(NetServerBan.BANLENGTH_PERMANENT, ban.banLength);
