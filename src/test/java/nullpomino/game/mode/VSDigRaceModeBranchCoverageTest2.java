@@ -31,7 +31,7 @@ class VSDigRaceModeBranchCoverageTest2 {
     // strLines.length() can never equal 3. Skip.
 
     // ---------------------------------------------------------------
-    // Line 513 – wide x-offset when winCount >= 10
+// Line 513 – compact x-offset when winCount < 10
     // ---------------------------------------------------------------
 
     /**
@@ -42,7 +42,7 @@ class VSDigRaceModeBranchCoverageTest2 {
      * throwing.
      */
     @Test
-    void renderLastUsesWideOffsetWhenWinCountIsTenOrMore() throws Exception {
+    void renderLastUsesCompactOffsetWhenWinCountIsBelowTen() throws Exception {
         VSDigRaceMode mode = new VSDigRaceMode();
         GameEngine engine = buildEngine(mode);
 
@@ -50,12 +50,12 @@ class VSDigRaceModeBranchCoverageTest2 {
         setReceiverBoolField(engine, "sidenext", true);
         setReceiverBoolField(engine, "bigsidenext", true);
 
-        // Set winCount[0] = 10 to enter the wide-offset branch (line 513)
+        // Set winCount[0] = 9 to enter the compact-offset branch (line 513)
         int[] winCount = getIntArray(mode, "winCount");
-        winCount[0] = 10;
+        winCount[0] = 9;
 
         assertDoesNotThrow(() -> mode.renderLast(engine, 0),
-                "renderLast should not throw when winCount=10 and NextDisplayType=2");
+                "renderLast should not throw when winCount=9 and NextDisplayType=2");
     }
 
     // ---------------------------------------------------------------

@@ -931,6 +931,7 @@ class VSBattleModeCoverageBoostTest {
 		// propMap null and field non-null -> reset (397-398)
 		CustomProperties[] propMap = (CustomProperties[]) readField(mode, "propMap");
 		propMap[0] = null;
+		((int[]) readField(mode, "mapSet"))[0] = 123456; // nonexistent map file
 		java.lang.reflect.Method m = VSBattleMode.class.getDeclaredMethod(
 				"loadMapPreview", GameEngine.class, int.class, int.class, boolean.class);
 		m.setAccessible(true);

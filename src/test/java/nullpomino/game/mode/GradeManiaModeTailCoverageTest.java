@@ -69,12 +69,12 @@ class GradeManiaModeTailCoverageTest {
         engine.createFieldIfNeeded();
 
         setInt(mode, "nextseclv", 200);
-        engine.statistics.level = 199; // == nextseclv - 1 = 199
+        engine.statistics.level = 198; // +1 line -> nextseclv - 1 = 199
         // lvstopse is an OnOffMenuItem with public field 'value' from AbstractMenuItem
         ((OnOffMenuItem) readField(mode, "lvstopse")).value = true;
 
-        // lines=0 so level stays at 199 = nextseclv-1
-        mode.calcScore(engine, 0, 0);
+        // lines>=1 is required to enter the level-stop block; +1 lands at 199.
+        mode.calcScore(engine, 0, 1);
 
         // SE was played (no-op receiver); level stays at 199
         assertEquals(199, engine.statistics.level);

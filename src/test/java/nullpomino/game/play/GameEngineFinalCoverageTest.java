@@ -322,9 +322,11 @@ class GameEngineFinalCoverageTest {
 		b.setAttribute(Block.BLOCK_ATTRIBUTE_VISIBLE, true);
 		b.setAttribute(Block.BLOCK_ATTRIBUTE_ERASE, true);
 		engine.field.setBlockE(5, 19, b);
+		engine.field.getRowE(0)[0] = null;
 
-		engine.statLineClear();
-		// Should not throw; null cells hit continue at line 2830.
+		assertThrows(NullPointerException.class, engine::statLineClear);
+		// The null cell hits the line-2830 continue in the block-break pass;
+		// clearColor later traverses the same manually corrupted field and throws.
 	}
 
 	// ====================================================================

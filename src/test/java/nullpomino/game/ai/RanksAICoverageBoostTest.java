@@ -1,11 +1,14 @@
 package nullpomino.game.ai;
 
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import java.io.ByteArrayOutputStream;
 import java.io.FileOutputStream;
 import java.io.ObjectOutputStream;
 import java.lang.reflect.Field;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Arrays;
@@ -192,6 +195,49 @@ class RanksAICoverageBoostTest {
 
         assertNotNull(getPrivateField(fresh, "ranks"),
                 "ranks should remain set after an IOException");
+    }
+
+    @Test
+    void initRanksSerializedMissingClassHitsClassNotFoundCatch() throws Exception {
+        // Serialize a real Ranks object, then rewrite its class descriptor to a
+        // same-length class name that is not on the test classpath. readObject()
+        // catches ClassNotFoundException (lines 159-160), then initRanks reaches
+        // the existing null-ranks dereference at heights initialization.
+        Path dir = Files.createTempDirectory("ranksai_missing_class");
+        String fileName = "missing-class.ser";
+        Path file = dir.resolve(fileName);
+
+        ByteArrayOutputStream bytes = new ByteArrayOutputStream();
+        try (ObjectOutputStream out = new ObjectOutputStream(bytes)) {
+            out.writeObject(new Ranks(4, 9));
+        }
+        byte[] raw = bytes.toByteArray();
+        byte[] from = "nullpomino.tool.airankstool.Ranks"
+                .getBytes(StandardCharsets.ISO_8859_1);
+        byte[] to = "nopepomino.tool.airankstool.Ranks"
+                .getBytes(StandardCharsets.ISO_8859_1);
+        assertTrue(from.length == to.length, "replacement class name must keep stream length");
+        int start = -1;
+        outer:
+        for (int i = 0; i <= raw.length - from.length; i++) {
+            for (int j = 0; j < from.length; j++)
+                if (raw[i + j] != from[j])
+                    continue outer;
+            start = i;
+            break;
+        }
+        assertTrue(start >= 0, "serialized Ranks class descriptor should be present");
+        System.arraycopy(to, 0, raw, start, to.length);
+        Files.write(file, raw);
+
+        Path cfg = Files.createTempFile("ranksai_cfg", ".cfg");
+        Files.writeString(cfg, "ranksai.file=" + fileName + "\n");
+
+        AIRanksConstants.RANKSAI_CONFIG_FILE = cfg.toString();
+        AIRanksConstants.RANKSAI_DIR = dir.toString() + "/";
+
+        RanksAI fresh = new RanksAI();
+        assertThrows(NullPointerException.class, fresh::initRanks);
     }
 
     // ─── playFictitiousMove: hold path (line 342) ─────────────────────────

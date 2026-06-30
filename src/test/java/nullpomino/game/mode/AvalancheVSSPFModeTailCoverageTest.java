@@ -192,6 +192,21 @@ class AvalancheVSSPFModeTailCoverageTest {
 		assertEquals(false, result);
 	}
 
+	@Test
+	void lineClearEndNullBlockContinue() throws Exception {
+		AvalancheVSSPFMode mode = new AvalancheVSSPFMode();
+		GameManager mgr = twoPlayerEngine(mode);
+		GameEngine e = mgr.engine[0];
+		mode.playerInit(e, 0);
+		e.createFieldIfNeeded();
+		e.field.getRowE(0)[0] = null;
+		setIntArr(mode, "ojamaCountdown", 0, 0);
+
+		boolean result = mode.lineClearEnd(e, 0);
+
+		assertEquals(false, result);
+	}
+
 	// --- 874, 885: lineClearEnd drop pattern wrap + game over check ---
 	@Test
 	void lineClearEndDropOjamaAndGameOver() throws Exception {
@@ -205,7 +220,7 @@ class AvalancheVSSPFModeTailCoverageTest {
 		// dropPattern for enemy (player 1) so lineClearEnd doesn't NPE
 		Object dpObj = readField(mode, "dropPattern");
 		int[][][] dp = (int[][][]) dpObj;
-		dp[1] = new int[][]{{2, 2, 2, 2}};
+		dp[1] = new int[][]{{2}};
 
 		setIntArr(mode, "ojama", 0, 30);
 		setIntArr(mode, "ojamaCountdown", 0, 10); // skip countdown loop

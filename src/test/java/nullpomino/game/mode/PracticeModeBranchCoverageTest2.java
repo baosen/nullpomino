@@ -135,8 +135,9 @@ class PracticeModeBranchCoverageTest2 {
 
         // Set up: normal play mode (not ending==2), timelimit > 0, timerActive
         setInt(mode, "timelimit", 3600);
-        // timelimitTimer = 600 (== 10 * 60 == 600, and 600 % 60 == 0)
-        setInt(mode, "timelimitTimer", 600);
+        // onLast decrements before the countdown check, so start at 601 to
+        // make the branch see 600 (== 10 * 60, and divisible by 60).
+        setInt(mode, "timelimitTimer", 601);
         setInt(mode, "goallv", 0); // not -1, so ending goes to GAMEOVER when time runs out
         engine.ending = 0;
         engine.gameActive = true;
@@ -147,7 +148,7 @@ class PracticeModeBranchCoverageTest2 {
         mode.onLast(engine, 0);
 
         // timelimitTimer should have decremented by 1 (from the timelimitTimer-- at 1081)
-        assertEquals(599, readInt(mode, "timelimitTimer"),
+        assertEquals(600, readInt(mode, "timelimitTimer"),
                 "timelimitTimer should decrement each onLast call");
     }
 

@@ -357,6 +357,39 @@ class SPFModeRemainderCoverageTest {
 				"a random-map onReady should back up the field for replay");
 	}
 
+	/**
+	 * Player 1 with random maps copies player 0's already-created random map
+	 * instead of loading a separate random map (line 874).
+	 */
+	@Test
+	void onReadyPlayerOneRandomMapCopiesPlayerZeroField() throws Exception {
+		SPFMode mode = new SPFMode();
+		GameManager manager = new GameManager(new EventReceiver());
+		manager.mode = mode;
+		manager.init();
+		manager.engine[0].init();
+		manager.engine[1].init();
+		mode.modeInit(manager);
+		manager.engine[0].playerID = 0;
+		manager.engine[1].playerID = 1;
+		manager.replayMode = false;
+
+		manager.engine[0].createFieldIfNeeded();
+		manager.engine[0].field.setBlock(1, 1, new Block(Block.BLOCK_COLOR_RED));
+
+		getBoolArray(mode, "useMap")[0] = true;
+		getBoolArray(mode, "useMap")[1] = true;
+		getIntArray(mode, "mapNumber")[0] = -1;
+		getIntArray(mode, "mapNumber")[1] = -1;
+		getPropMapArray(mode)[1] = new CustomProperties();
+
+		mode.onReady(manager.engine[1], 1);
+
+		assertEquals(Block.BLOCK_COLOR_RED,
+				manager.engine[1].field.getBlockColor(1, 1),
+				"player 1 random map should copy player 0's field");
+	}
+
 	// =================================================================
 	// calcScore: null field guard (1009)
 	// =================================================================

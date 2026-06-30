@@ -144,6 +144,24 @@ class AvalancheVSModeTailCoverage2Test {
                 "zenKeshiChain < min after case-44 map change should wrap to max (line 383)");
     }
 
+    @Test
+    void onSettingCase25ZenKeshiChainClampAboveMax() throws Exception {
+        AvalancheVSMode mode = new AvalancheVSMode();
+        GameEngine engine = freshEngine(mode);
+
+        int min = getIntArray(mode, "feverChainMin")[0];
+        int max = getIntArray(mode, "feverChainMax")[0];
+        setIntArray(mode, "zenKeshiType", AvalancheVSDummyMode.ZENKESHI_MODE_FEVER, 0);
+        setIntArray(mode, "zenKeshiChain", max, 0);
+        setMenuState(engine, mode, 25);
+
+        pressKey(engine, Controller.BUTTON_RIGHT);
+        mode.onSetting(engine, 0);
+
+        assertEquals(min, getIntArray(mode, "zenKeshiChain")[0],
+                "case 25 should wrap fever zenkeshi chain above max to min");
+    }
+
     // ---------------------------------------------------------------
     // onSetting case 45/46: previewSubset / previewChain clamp
     // ---------------------------------------------------------------
@@ -216,6 +234,24 @@ class AvalancheVSModeTailCoverage2Test {
         // statc[5] should have incremented
         assertTrue(engine.statc[5] >= before,
                 "renderSetting should tick statc[5] on map preview");
+    }
+
+    @Test
+    void onSettingRandomMapPreviewAutoAdvancesAndWraps() throws Exception {
+        AvalancheVSMode mode = new AvalancheVSMode();
+        GameEngine engine = freshEngine(mode);
+
+        setBoolArray(mode, "useMap", true, 0);
+        setArrElem(mode, "propMap", 0, new CustomProperties());
+        setIntArray(mode, "mapNumber", -1, 0);
+        setIntArray(mode, "mapMaxNo", 2, 0);
+        engine.statc[5] = 1;
+        setFieldInt(mode, "menuTime", 30);
+
+        mode.onSetting(engine, 0);
+
+        assertEquals(0, engine.statc[5],
+                "random map preview should wrap statc[5] after the last map");
     }
 
     // ---------------------------------------------------------------
@@ -492,6 +528,12 @@ class AvalancheVSModeTailCoverage2Test {
     private static void setBoolArray(Object obj, String name, boolean value, int index)
             throws Exception {
         ((boolean[]) findField(obj.getClass(), name).get(obj))[index] = value;
+    }
+
+    private static void setArrElem(Object obj, String name, int index, Object value)
+            throws Exception {
+        Object arr = findField(obj.getClass(), name).get(obj);
+        java.lang.reflect.Array.set(arr, index, value);
     }
 
     private static Method findMethod(Class<?> cls, String name, Class<?>... params)

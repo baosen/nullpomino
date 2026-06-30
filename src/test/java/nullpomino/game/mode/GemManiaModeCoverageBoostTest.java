@@ -164,6 +164,25 @@ class GemManiaModeCoverageBoostTest {
 	}
 
 	@Test
+	void onSettingEditScreensCursorZeroChangeNoOps() throws Exception {
+		GemManiaMode mode = new GemManiaMode();
+		GameEngine engine = freshEngine(mode, false);
+		mode.playerInit(engine, 0);
+
+		setFieldInt(mode, "editModeScreen", 1);
+		setFieldInt(mode, "menuCursor", 0);
+		pressKey(engine, Controller.BUTTON_RIGHT);
+		mode.onSetting(engine, 0);
+		assertEquals(1, readFieldInt(mode, "editModeScreen"));
+
+		setFieldInt(mode, "editModeScreen", 2);
+		setFieldInt(mode, "menuCursor", 0);
+		pressKey(engine, Controller.BUTTON_RIGHT);
+		mode.onSetting(engine, 0);
+		assertEquals(2, readFieldInt(mode, "editModeScreen"));
+	}
+
+	@Test
 	void onSettingEditScreen1LoadAndSaveMapAndStageSet() throws Exception {
 		GemManiaMode mode = new GemManiaMode();
 		GameEngine engine = freshEngine(mode, false);

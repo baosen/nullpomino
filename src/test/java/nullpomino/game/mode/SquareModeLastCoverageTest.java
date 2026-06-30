@@ -173,6 +173,7 @@ class SquareModeLastCoverageTest {
 		m.playerInit(e, 0);
 		e.tspin = true;
 		e.nowPieceObject = new Piece(Piece.PIECE_T);
+		e.nowPieceY = 5;
 		e.createFieldIfNeeded();
 		setInt(m, "version", 1);
 		setBool(m, "tntAvalanche", true);
@@ -195,6 +196,7 @@ class SquareModeLastCoverageTest {
 		e.createFieldIfNeeded();
 		setInt(m, "version", 0);
 		setBool(m, "tntAvalanche", true);
+		e.field.setBlockColor(5, 0, Block.BLOCK_COLOR_RED);
 		// Set a line flag to trigger avalancheOld with TNT
 		e.field.setLineFlag(5, true);
 		m.calcScore(e, 0, 1);

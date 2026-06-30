@@ -21,12 +21,10 @@ import nullpomino.game.play.GameManager;
  * the existing Nohoho test suite:
  *
  * <ul>
- *   <li>306-307 - {@code setControl} double-rotation branch (the
- *       {@code rotateButtonAllowDouble && rotateDir == 2} guard, reached only
- *       when {@code rotateDir != 0} and double rotation is enabled).</li>
- *   <li>380-382 - {@code thinkBestPosition} hold-piece offset block, reached
- *       only when {@code isHoldOK()} is true but no hold piece and no next
- *       queue exist (so {@code pieceHold} is still {@code null} at the guard).</li>
+ *   <li>380 - {@code thinkBestPosition} hold-piece offset throwing block,
+ *       reached only when {@code isHoldOK()} is true but no hold piece and no
+ *       next queue exist (so {@code pieceHold} is still {@code null} at the
+ *       guard).</li>
  *   <li>551 - {@code thinkMain} {@code clear == 3} colour-pop scoring for the
  *       defensive ({@code defcon >= 4}) branch.</li>
  *   <li>585-586 - {@code thinkMain} {@code chain >= 4} cascade scoring.</li>
@@ -105,7 +103,7 @@ class NohohoCoverageBoostTest {
 	 * queue, {@code pieceHold} is still {@code null} at the guard, so
 	 * {@code checkOffset(null, engine)} is reached. That call constructs
 	 * {@code new Piece(null)} and throws NPE, so we assert the throw to keep the
-	 * test green while still executing the branch.
+	 * test green while still documenting the throwing branch.
 	 */
 	@Test
 	void thinkBestPositionHoldNullOffsetBranch() {
@@ -126,22 +124,18 @@ class NohohoCoverageBoostTest {
 	/**
 	 * Line 551: in the defensive ({@code defcon >= 4}) branch the first
 	 * {@code clearColor} at the landing column pops a group of exactly three
-	 * same-colour blocks. Two colour-1 blocks are pre-stacked in column 5 and
-	 * the J piece's single column-5 block lands on top of them.
+	 * same-colour blocks. Two colour-1 blocks are pre-stacked in column 3 and
+	 * the single-block I1 piece lands on top of them.
 	 */
 	@Test
 	void thinkMainClearExactlyThree() {
 		nullpomino.game.component.Field fld =
-				new nullpomino.game.component.Field(10, 20, 0, false);
-		fld.setBlockColor(5, 19, 1);
-		fld.setBlockColor(5, 18, 1);
-		for (int y = 14; y <= 19; y++) {
-			fld.setBlockColor(4, y, 2); // wall so the J rests with its col-5 block at (5,17)
-		}
-		Piece j = new Piece(Piece.PIECE_J);
-		j.setColor(1);
-		j.direction = Piece.DIRECTION_RIGHT;
-		int pts = ai.thinkMain(3, 17, Piece.DIRECTION_RIGHT, -1, fld, j, 4);
+				new nullpomino.game.component.Field(6, 12, 0, false);
+		fld.setBlockColor(3, 10, 1);
+		fld.setBlockColor(3, 11, 1);
+		Piece i1 = new Piece(Piece.PIECE_I1);
+		i1.setColor(1);
+		int pts = ai.thinkMain(3, 9, Piece.DIRECTION_UP, -1, fld, i1, 4);
 		assertTrue(pts != Integer.MIN_VALUE, "piece placed and scored");
 	}
 

@@ -129,6 +129,28 @@ class NetVSBattleModeBranchCoverageTest2 {
         assertNotNull(engine.field, "field should still exist after garbage delivery");
     }
 
+    @Test
+    void smallGarbagePerAttackNewHoleIncrementBranchExecutes() throws Exception {
+        NetVSBattleMode mode = new NetVSBattleMode();
+        GameEngine engine = buildEngine(mode);
+
+        Object roomInfo = makeRoomInfo(false, true, 100);
+        setNetCurrentRoomInfo(mode, roomInfo);
+
+        // Each entry is below one full garbage line, so both go through the
+        // remainder accumulator. Together 59 + 59 crosses GARBAGE_DENOMINATOR.
+        addGarbageEntry(mode, 59);
+        addGarbageEntry(mode, 59);
+
+        // With hole fixed at 0, nextInt(width - 1) is always >= hole, so the
+        // small-garbage per-attack newHole++ branch at line 508 is deterministic.
+        setIntField(mode, "lastHole", 0);
+
+        mode.calcScore(engine, 0, 0);
+
+        assertNotNull(engine.field, "field should still exist after small garbage delivery");
+    }
+
     // ---------------------------------------------------------------
     // Helpers
     // ---------------------------------------------------------------

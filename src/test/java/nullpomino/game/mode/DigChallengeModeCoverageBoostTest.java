@@ -237,6 +237,11 @@ class DigChallengeModeCoverageBoostTest {
 		setInt(mode, "version", 2);   // version >= 1 => line 534
 		setInt(mode, "garbageTimer", 1000);
 		setInt(mode, "garbagePending", 0);
+		setBool(mode, "netIsNetPlay", true);
+		setBool(mode, "netIsWatch", false);
+		setInt(mode, "netNumSpectators", 1);
+		mode.netLobby = new NetLobbyFrame();
+		mode.netLobby.netPlayerClient = new NetPlayerClient();
 
 		mode.onLast(engine, 0);
 
@@ -257,6 +262,11 @@ class DigChallengeModeCoverageBoostTest {
 		setInt(mode, "goaltype", 1);   // REALTIME => addGarbage (line 550)
 		setInt(mode, "version", 2);
 		setInt(mode, "garbageTimer", 1000);
+		setBool(mode, "netIsNetPlay", true);
+		setBool(mode, "netIsWatch", false);
+		setInt(mode, "netNumSpectators", 1);
+		mode.netLobby = new NetLobbyFrame();
+		mode.netLobby.netPlayerClient = new NetPlayerClient();
 
 		mode.onLast(engine, 0);
 
@@ -284,12 +294,16 @@ class DigChallengeModeCoverageBoostTest {
 		engine.nowPieceObject.setColor(Block.BLOCK_COLOR_RED);
 		engine.nowPieceX = 3;
 		engine.nowPieceY = engine.field.getHeight() - 2;
+		for (int y = 0; y < engine.field.getHeight(); y++) {
+			for (int x = 0; x < engine.field.getWidth(); x++) {
+				engine.field.setBlock(x, y, new Block(Block.BLOCK_COLOR_GRAY));
+			}
+		}
 
 		mode.onLast(engine, 0);
 
-		// Either pushed up or game ended; both are valid outcomes that execute
-		// the targeted lines without throwing.
 		assertTrue(readInt(mode, "garbageTotal") >= 1);
+		assertEquals(GameEngine.Status.GAMEOVER, engine.stat);
 	}
 
 	// ---------------------------------------------------------------

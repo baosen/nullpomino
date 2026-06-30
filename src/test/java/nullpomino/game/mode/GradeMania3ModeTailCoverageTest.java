@@ -90,6 +90,7 @@ class GradeMania3ModeTailCoverageTest {
         engine.gameActive = true;
         setBoolean(mode, "promotionFlag", false);
         setBoolean(mode, "demotionFlag", false);
+        setBoolean(mode, "gradedisp", true);
         setInt(mode, "lastscore", 0);
         setInt(mode, "scgettime", 0);
         engine.statistics.score = 12345;
@@ -174,13 +175,12 @@ class GradeMania3ModeTailCoverageTest {
         engine.nowPieceObject = new Piece(Piece.PIECE_T);
         engine.createFieldIfNeeded();
 
-        // level == nextseclv - 1, so after adding 0 lines (lines=0) still == nextseclv-1
+        // level + 1 line == nextseclv - 1, so the scoring body reaches levelstop.
         setInt(mode, "nextseclv", 200);
-        engine.statistics.level = 199;
+        engine.statistics.level = 198;
         setBoolean(mode, "lvstopse", true);
 
-        // Call calcScore with 0 lines so level stays at 199 = nextseclv-1
-        mode.calcScore(engine, 0, 0);
+        mode.calcScore(engine, 0, 1);
 
         // The SE was played (no-op receiver), level unchanged at 199
         assertEquals(199, engine.statistics.level);

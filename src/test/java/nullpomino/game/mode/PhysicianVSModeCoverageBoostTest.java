@@ -527,7 +527,7 @@ class PhysicianVSModeCoverageBoostTest {
 		PhysicianVSMode mode = new PhysicianVSMode();
 		GameEngine engine = settingEngine(mode, 0);
 		engine.createFieldIfNeeded();
-		getIntArray(mode, "mapSet")[0] = 0;
+		getIntArray(mode, "mapSet")[0] = 123456; // nonexistent map file -> propMap stays null
 		// propMap null + nonexistent file -> stays null -> field.reset() branch
 		Method m = PhysicianVSMode.class.getDeclaredMethod(
 				"loadMapPreview", GameEngine.class, int.class, int.class, boolean.class);

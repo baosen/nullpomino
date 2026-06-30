@@ -91,6 +91,9 @@ class NetDummyVSModeBranchCoverageTest2 {
     @Test
     void onReadySetsAllSkinForNonZeroPlayerIdWhenSkinIsSet() throws Exception {
         setupNetCurrentRoomInfo(2, false);
+        ((NetRoomInfo) getObjField(mode, "netCurrentRoomInfo")).useMap = true;
+        ((NetLobbyFrame) getObjField(mode, "netLobby")).mapList.add("0g0\n");
+        setIntField(mode, "netvsMapNo", 0);
         setIntArray(mode, "netvsPlayerSkin", 1, 3);
 
         GameEngine engine1 = manager.engine[1];
@@ -117,15 +120,23 @@ class NetDummyVSModeBranchCoverageTest2 {
      */
     @Test
     void renderLastSetsX2To321WhenBigSideNextAndTwoMaxPlayers() throws Exception {
-        setupNetCurrentRoomInfo(2, false);
-        setBoolField(engine.owner.receiver, "sidenext", true);
-        setBoolField(engine.owner.receiver, "bigsidenext", true);
+        NetDummyVSMode localMode = new NetDummyVSMode();
+        GameManager localManager = new GameManager(new BigNextReceiver());
+        localManager.mode = localMode;
+        localMode.modeInit(localManager);
+        localManager.init();
+        localManager.engine[5].init();
+        localManager.engine[5].createFieldIfNeeded();
+        NetRoomInfo room = new NetRoomInfo();
+        room.maxPlayers = 2;
+        NetLobbyFrame lobby = new NetLobbyFrame();
+        NetPlayerClient client = new NetPlayerClient();
+        lobby.netPlayerClient = client;
+        client.getRoomInfoList().add(room);
+        setObjField(localMode, "netLobby", lobby);
+        setObjField(localMode, "netCurrentRoomInfo", room);
 
-        // playerID == getPlayers()-1. Default getPlayers() returns maxPlayers (6 here)
-        // We need getPlayers() == 2, set via netvsNumPlayers
-        setIntField(mode, "netvsNumPlayers", 2);
-
-        assertDoesNotThrow(() -> mode.renderLast(manager.engine[1], 1),
+        assertDoesNotThrow(() -> localMode.renderLast(localManager.engine[5], 5),
                 "renderLast should not throw with bigsidenext + maxPlayers=2");
     }
 
@@ -201,11 +212,15 @@ class NetDummyVSModeBranchCoverageTest2 {
      */
     @Test
     void renderResultDrawsOkWhenPlayerReadyAndExistAndDisplaysizeNotMinus1() throws Exception {
-        setBoolArray(mode, "netvsPlayerReady", 0, true);
-        setBoolArray(mode, "netvsPlayerExist", 0, true);
-        engine.displaysize = 0;
+        GameEngine engine1 = manager.engine[1];
+        engine1.init();
+        engine1.createFieldIfNeeded();
+        engine1.playerID = 1;
+        setBoolArray(mode, "netvsPlayerReady", 1, true);
+        setBoolArray(mode, "netvsPlayerExist", 1, true);
+        engine1.displaysize = 0;
 
-        assertDoesNotThrow(() -> mode.renderResult(engine, 0),
+        assertDoesNotThrow(() -> mode.renderResult(engine1, 1),
                 "renderResult should not throw when ready=true, exist=true, displaysize=0");
     }
 
@@ -446,5 +461,12 @@ class NetDummyVSModeBranchCoverageTest2 {
             }
         }
         throw new NoSuchFieldException(name);
+    }
+
+    private static final class BigNextReceiver extends EventReceiver {
+        @Override
+        public int getNextDisplayType() {
+            return 2;
+        }
     }
 }

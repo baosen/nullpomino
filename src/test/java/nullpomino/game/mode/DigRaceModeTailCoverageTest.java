@@ -191,6 +191,34 @@ class DigRaceModeTailCoverageTest {
 		mode.netSendOptions(e);
 	}
 
+	@Test
+	void onSettingOptionChangeNotifiesSpectators() throws Exception {
+		DigRaceMode mode = new DigRaceMode();
+		GameEngine e = freshEngine(mode);
+		mode.playerInit(e, 0);
+		attachNet(mode, e, 1);
+		setBool(mode, "netIsNetPlay", true);
+		setInt(mode, "menuCursor", 0);
+		setInt(mode, "menuTime", 10);
+		press(e, Controller.BUTTON_RIGHT);
+
+		mode.onSetting(e, 0);
+	}
+
+	@Test
+	void onSettingLoadPresetNotifiesSpectators() throws Exception {
+		DigRaceMode mode = new DigRaceMode();
+		GameEngine e = freshEngine(mode);
+		mode.playerInit(e, 0);
+		attachNet(mode, e, 1);
+		setBool(mode, "netIsNetPlay", true);
+		setInt(mode, "menuCursor", 9);
+		setInt(mode, "menuTime", 10);
+		press(e, Controller.BUTTON_A);
+
+		mode.onSetting(e, 0);
+	}
+
 	// --- helpers ---
 
 	private static void attachNet(DigRaceMode mode, GameEngine e, int spectators) throws Exception {
