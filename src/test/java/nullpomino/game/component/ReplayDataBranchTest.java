@@ -52,6 +52,18 @@ class ReplayDataBranchTest {
 	}
 
 	@Test
+	void writePropertyWithMaxFrameLargerThanSizeClampsToSize() {
+		ReplayData data = new ReplayData();
+		data.setInputData(1, 0);
+		data.setInputData(2, 1); // size == 2
+
+		CustomProperties props = new CustomProperties();
+		// maxFrame=5 > size=2 -> replayFrameCount returns the size, the maxFrame>size branch
+		data.writeProperty(props, 0, 5);
+		assertEquals(2, props.getProperty("0.r.max", -1));
+	}
+
+	@Test
 	void copyPreservesInputData() {
 		ReplayData original = new ReplayData();
 		original.setInputData(7, 0);
