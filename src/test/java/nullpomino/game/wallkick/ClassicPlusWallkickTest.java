@@ -323,6 +323,30 @@ class ClassicPlusWallkickTest {
 	}
 
 	@Test
+	void tPieceUpRotationWithUpwardDisallowedSkipsEscape() {
+		// piece.id==T is true but allowUpward is false, exercising the
+		// short-circuit false outcome of the T-escape guard at line 37.
+		ClassicPlusWallkick wallkick = new ClassicPlusWallkick();
+		WallkickResult result = wallkick.executeWallkick(
+				4, 4, 1, 0, Piece.DIRECTION_UP, false,
+				new Piece(Piece.PIECE_T), new Field(), null);
+
+		assertNull(result);
+	}
+
+	@Test
+	void iPieceSideRotationWithUpwardDisallowedSkipsFloorKick() {
+		// piece.id==I is true but allowUpward is false, exercising the
+		// short-circuit false outcome of the I-floor-kick guard at line 63.
+		ClassicPlusWallkick wallkick = new ClassicPlusWallkick();
+		WallkickResult result = wallkick.executeWallkick(
+				4, 4, 1, Piece.DIRECTION_UP, Piece.DIRECTION_LEFT, false,
+				new Piece(Piece.PIECE_I), new Field(), null);
+
+		assertNull(result);
+	}
+
+	@Test
 	void bigIPieceLeftRotationOnFloorLifts() {
 		ClassicPlusWallkick wallkick = new ClassicPlusWallkick();
 		Piece piece = new Piece(Piece.PIECE_I);
