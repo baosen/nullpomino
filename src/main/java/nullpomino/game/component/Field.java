@@ -1312,158 +1312,19 @@ public class Field implements Serializable {
 		return FieldColorClear.allClearColor(this, targetColor, flag, gemSame);
 	}
 
-	public boolean doCascadeGravity(GameEngine.LineGravity type) {
-		setAllAttribute(Block.BLOCK_ATTRIBUTE_LAST_COMMIT, false);
-		if (type == GameEngine.LineGravity.CASCADE_SLOW)
-			return doCascadeSlow();
-		else
-			return doCascadeGravity();
-	}
+	public boolean doCascadeGravity(GameEngine.LineGravity type) { return FieldCascade.doCascadeGravity(this, type); }
 
 	/**
 	 * Main routine for cascade gravity.
 	 * @return <code>true</code> if something falls. <code>false</code> if nothing falls.
 	 */
-	public boolean doCascadeGravity() {
-		boolean result = false;
-
-		setAllAttribute(Block.BLOCK_ATTRIBUTE_CASCADE_FALL, false);
-
-		for(int i = (getHeightWithoutHurryupFloor() - 1); i >= (hidden_height * -1); i--) {
-			for(int j = 0; j < width; j++) {
-				Block blk = getBlock(j, i);
-
-				if((blk != null) && !blk.isEmpty() && !blk.getAttribute(Block.BLOCK_ATTRIBUTE_ANTIGRAVITY)) {
-					boolean fall = true;
-					checkBlockLink(j, i);
-
-					for(int k = (getHeightWithoutHurryupFloor() - 1); k >= (hidden_height * -1); k--) {
-						for(int l = 0; l < width; l++) {
-							Block bTemp = getBlock(l, k);
-
-							if( (bTemp != null) && !bTemp.isEmpty() &&
-								bTemp.getAttribute(Block.BLOCK_ATTRIBUTE_TEMP_MARK) && !bTemp.getAttribute(Block.BLOCK_ATTRIBUTE_CASCADE_FALL) )
-							{
-								Block bBelow = getBlock(l, k + 1);
-
-								if( (getCoordAttribute(l, k + 1) == COORD_WALL) ||
-									((bBelow != null) && !bBelow.isEmpty() && !bBelow.getAttribute(Block.BLOCK_ATTRIBUTE_TEMP_MARK))
-								  )
-								{
-									fall = false;
-								}
-							}
-						}
-					}
-
-					if(fall) {
-						result = true;
-						for(int k = (getHeightWithoutHurryupFloor() - 1); k >= (hidden_height * -1); k--) {
-							for(int l = 0; l < width; l++) {
-								Block bTemp = getBlock(l, k);
-								Block bBelow = getBlock(l, k + 1);
-
-								if( (getCoordAttribute(l, k + 1) != COORD_WALL) &&
-								    (bTemp != null) && !bTemp.isEmpty() && (bBelow != null) && bBelow.isEmpty() &&
-								    bTemp.getAttribute(Block.BLOCK_ATTRIBUTE_TEMP_MARK) && !bTemp.getAttribute(Block.BLOCK_ATTRIBUTE_CASCADE_FALL) )
-								{
-									bTemp.setAttribute(Block.BLOCK_ATTRIBUTE_TEMP_MARK, false);
-									bTemp.setAttribute(Block.BLOCK_ATTRIBUTE_CASCADE_FALL, true);
-									if (bTemp.getAttribute(Block.BLOCK_ATTRIBUTE_IGNORE_BLOCKLINK))
-									{
-										bTemp.setAttribute(Block.BLOCK_ATTRIBUTE_CONNECT_LEFT, false);
-										bTemp.setAttribute(Block.BLOCK_ATTRIBUTE_CONNECT_DOWN, false);
-										bTemp.setAttribute(Block.BLOCK_ATTRIBUTE_CONNECT_UP, false);
-										bTemp.setAttribute(Block.BLOCK_ATTRIBUTE_CONNECT_RIGHT, false);
-									}
-									bTemp.setAttribute(Block.BLOCK_ATTRIBUTE_LAST_COMMIT, true);
-									setBlock(l, k + 1, bTemp);
-									setBlock(l, k, new Block());
-								}
-							}
-						}
-					}
-				}
-			}
-		}
-
-		setAllAttribute(Block.BLOCK_ATTRIBUTE_TEMP_MARK, false);
-		setAllAttribute(Block.BLOCK_ATTRIBUTE_CASCADE_FALL, false);
-
-		return result;
-	}
+	public boolean doCascadeGravity() { return FieldCascade.doCascadeGravity(this); }
 
 	/**
 	 * Routine for cascade gravity which checks from the top down for a slower fall animation.
 	 * @return <code>true</code> if something falls. <code>false</code> if nothing falls.
 	 */
-	public boolean doCascadeSlow() {
-		boolean result = false;
-
-		setAllAttribute(Block.BLOCK_ATTRIBUTE_CASCADE_FALL, false);
-
-		for(int i = (hidden_height * -1); i < getHeightWithoutHurryupFloor(); i++) {
-			for(int j = 0; j < width; j++) {
-				Block blk = getBlock(j, i);
-
-				if((blk != null) && !blk.isEmpty() && !blk.getAttribute(Block.BLOCK_ATTRIBUTE_ANTIGRAVITY)) {
-					boolean fall = true;
-					checkBlockLink(j, i);
-
-					for(int k = (getHeightWithoutHurryupFloor() - 1); k >= (hidden_height * -1); k--) {
-						for(int l = 0; l < width; l++) {
-							Block bTemp = getBlock(l, k);
-
-							if( (bTemp != null) && !bTemp.isEmpty() &&
-								bTemp.getAttribute(Block.BLOCK_ATTRIBUTE_TEMP_MARK) && !bTemp.getAttribute(Block.BLOCK_ATTRIBUTE_CASCADE_FALL) )
-							{
-								Block bBelow = getBlock(l, k + 1);
-
-								if( (getCoordAttribute(l, k + 1) == COORD_WALL) ||
-									((bBelow != null) && !bBelow.isEmpty() && !bBelow.getAttribute(Block.BLOCK_ATTRIBUTE_TEMP_MARK)) )
-								{
-									fall = false;
-								}
-							}
-						}
-					}
-
-					if(fall) {
-						result = true;
-						for(int k = (getHeightWithoutHurryupFloor() - 1); k >= (hidden_height * -1); k--) {
-							for(int l = 0; l < width; l++) {
-								Block bTemp = getBlock(l, k);
-								Block bBelow = getBlock(l, k + 1);
-
-								if( (getCoordAttribute(l, k + 1) != COORD_WALL) &&
-								    (bTemp != null) && !bTemp.isEmpty() && (bBelow != null) && bBelow.isEmpty() &&
-								    bTemp.getAttribute(Block.BLOCK_ATTRIBUTE_TEMP_MARK) && !bTemp.getAttribute(Block.BLOCK_ATTRIBUTE_CASCADE_FALL) )
-								{
-									bTemp.setAttribute(Block.BLOCK_ATTRIBUTE_TEMP_MARK, false);
-									bTemp.setAttribute(Block.BLOCK_ATTRIBUTE_CASCADE_FALL, true);
-									if (bTemp.getAttribute(Block.BLOCK_ATTRIBUTE_IGNORE_BLOCKLINK))
-									{
-										bTemp.setAttribute(Block.BLOCK_ATTRIBUTE_CONNECT_LEFT, false);
-										bTemp.setAttribute(Block.BLOCK_ATTRIBUTE_CONNECT_DOWN, false);
-										bTemp.setAttribute(Block.BLOCK_ATTRIBUTE_CONNECT_UP, false);
-										bTemp.setAttribute(Block.BLOCK_ATTRIBUTE_CONNECT_RIGHT, false);
-									}
-									bTemp.setAttribute(Block.BLOCK_ATTRIBUTE_LAST_COMMIT, true);
-									setBlock(l, k + 1, bTemp);
-									setBlock(l, k, new Block());
-								}
-							}
-						}
-					}
-				}
-			}
-		}
-
-		setAllAttribute(Block.BLOCK_ATTRIBUTE_TEMP_MARK, false);
-		setAllAttribute(Block.BLOCK_ATTRIBUTE_CASCADE_FALL, false);
-
-		return result;
-	}
+	public boolean doCascadeSlow() { return FieldCascade.doCascadeSlow(this); }
 
 	/**
 	 * Checks the connection of blocks and set "mark" to each block.
@@ -1869,40 +1730,7 @@ public class Field implements Serializable {
 		return false;
 	}
 
-	public boolean canCascade() {
-		for(int i = (getHeightWithoutHurryupFloor() - 1); i >= (hidden_height * -1); i--) {
-			for(int j = 0; j < width; j++) {
-				Block blk = getBlock(j, i);
-
-				if((blk != null) && !blk.isEmpty() && !blk.getAttribute(Block.BLOCK_ATTRIBUTE_ANTIGRAVITY)) {
-					boolean fall = true;
-					checkBlockLink(j, i);
-
-					for(int k = (getHeightWithoutHurryupFloor() - 1); k >= (hidden_height * -1); k--) {
-						for(int l = 0; l < width; l++) {
-							Block bTemp = getBlock(l, k);
-
-							if( (bTemp != null) && !bTemp.isEmpty() &&
-								bTemp.getAttribute(Block.BLOCK_ATTRIBUTE_TEMP_MARK) && !bTemp.getAttribute(Block.BLOCK_ATTRIBUTE_CASCADE_FALL) )
-							{
-								Block bBelow = getBlock(l, k + 1);
-
-								if( (getCoordAttribute(l, k + 1) == COORD_WALL) ||
-									((bBelow != null) && !bBelow.isEmpty() && !bBelow.getAttribute(Block.BLOCK_ATTRIBUTE_TEMP_MARK)) )
-								{
-									fall = false;
-								}
-							}
-						}
-					}
-
-					if(fall)
-						return true;
-				}
-			}
-		}
-		return false;
-	}
+	public boolean canCascade() { return FieldCascade.canCascade(this); }
 
 	public void addRandomHoverBlocks(GameEngine engine, int count, int[] colors, int minY,
 			boolean avoidLines)
