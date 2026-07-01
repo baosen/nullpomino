@@ -15,30 +15,9 @@ import nullpomino.util.GeneralUtil;
 /**
  * PHANTOM MANIA mode (Original from NullpoUE build 121909 by Zircean)
  */
-public class PhantomManiaMode extends AbstractMode {
+public class PhantomManiaMode extends AbstractDeathMode {
 	/** Current version */
 	private static final int CURRENT_VERSION = 1;
-
-	/** ARE table */
-	private static final int[] tableARE       = {15, 11, 11,  5,  4,  3};
-
-	/** ARE Line table */
-	private static final int[] tableARELine   = {11,  5,  5,  4,  4,  3};
-
-	/** Line Delay table */
-	private static final int[] tableLineDelay = {12,  6,  6,  7,  5,  4};
-
-	/** Lock Delay table */
-	private static final int[] tableLockDelay = {31, 27, 23, 19, 16, 16};
-
-	/** DAS table */
-	private static final int[] tableDAS =       {11, 11, 10,  9,  7,  7};
-
-	/** BGM fadeout level */
-	private static final int[] tableBGMFadeout = {280, 480, -1};
-
-	/** BGM change level */
-	private static final int[] tableBGMChange  = {300, 500, -1};
 
 	/** Grade names */
 	private static final String[] tableGradeName = {"", "M", "MK", "MV", "MO", "MM", "GM"};

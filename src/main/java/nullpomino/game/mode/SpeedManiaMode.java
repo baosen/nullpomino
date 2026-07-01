@@ -17,30 +17,9 @@ import nullpomino.util.GeneralUtil;
 /**
  * SPEED MANIA Mode
  */
-public class SpeedManiaMode extends AbstractMode {
+public class SpeedManiaMode extends AbstractDeathMode {
 	/** Current version */
 	private static final int CURRENT_VERSION = 3;
-
-	/** ARE table */
-	private static final int[] tableARE       = {15, 11, 11,  5,  4,  3};
-
-	/** ARE after line clear table */
-	private static final int[] tableARELine   = {11,  5,  5,  4,  4,  3};
-
-	/** Line clear time table */
-	private static final int[] tableLineDelay = {12,  6,  6,  7,  5,  4};
-
-	/** Fixation time table */
-	private static final int[] tableLockDelay = {31, 27, 23, 19, 16, 16};
-
-	/** DAS table */
-	private static final int[] tableDAS       = {11, 11, 10,  9,  7,  7};
-
-	/** BGM fadeout levels */
-	private static final int[] tableBGMFadeout = {280, 480, -1};
-
-	/** BGM change levels */
-	private static final int[] tableBGMChange  = {300, 500, -1};
 
 	/** Of danName */
 	private static final String[] tableGradeName = {"", "M", "GM"};
