@@ -7,7 +7,6 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.IOException;
-import java.lang.reflect.Method;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Comparator;
@@ -634,35 +633,27 @@ class GameEngineBranchEdgeTest {
 		assertEquals(1, e.dasDirection);
 	}
 
+	// Uses GameManager.readRef(Path, String) against a THROWAWAY temp dir, never the
+	// real .git (an earlier version wrote .git/packed-refs and corrupted the repo).
 	@Test void readRefSkipsPeeledLines() throws Exception {
-		Method m = GameManager.class.getDeclaredMethod("readRef", String.class);
-		m.setAccessible(true);
-		Path d = Path.of(".git"); Path p = d.resolve("packed-refs");
-		Path bak = null; boolean cr = false;
+		Path d = Files.createTempDirectory("gmref");
 		try {
-			if (!Files.isDirectory(d)) { Files.createDirectories(d); cr = true; }
-			if (Files.isRegularFile(p)) { bak = d.resolve("packed-refs.bak"); Files.copy(p, bak); }
-			Files.writeString(p, "# pk\nabcdef12 refs/heads/a\n^abcdef12\ndeadbeef refs/heads/b\n");
-			assertEquals("abcdef12", ((String) m.invoke(null, "refs/heads/a")).substring(0, 8));
+			Files.writeString(d.resolve("packed-refs"),
+				"# pk\nabcdef12 refs/heads/a\n^abcdef12\ndeadbeef refs/heads/b\n");
+			assertEquals("abcdef12", GameManager.readRef(d, "refs/heads/a").substring(0, 8));
 		} finally {
-			if (bak != null) { Files.copy(bak, p, java.nio.file.StandardCopyOption.REPLACE_EXISTING); Files.deleteIfExists(bak); }
-			else if (cr) { Files.deleteIfExists(p); cleanupPath(d); }
+			cleanupPath(d);
 		}
 	}
 
 	@Test void readRefHandlesMalformedLine() throws Exception {
-		Method m = GameManager.class.getDeclaredMethod("readRef", String.class);
-		m.setAccessible(true);
-		Path d = Path.of(".git"); Path p = d.resolve("packed-refs");
-		Path bak = null; boolean cr = false;
+		Path d = Files.createTempDirectory("gmref");
 		try {
-			if (!Files.isDirectory(d)) { Files.createDirectories(d); cr = true; }
-			if (Files.isRegularFile(p)) { bak = d.resolve("packed-refs.bak"); Files.copy(p, bak); }
-			Files.writeString(p, "# pk\nbad-line\nfeed1234 refs/heads/good\n");
-			assertEquals("feed1234", ((String) m.invoke(null, "refs/heads/good")).substring(0, 8));
+			Files.writeString(d.resolve("packed-refs"),
+				"# pk\nbad-line\nfeed1234 refs/heads/good\n");
+			assertEquals("feed1234", GameManager.readRef(d, "refs/heads/good").substring(0, 8));
 		} finally {
-			if (bak != null) { Files.copy(bak, p, java.nio.file.StandardCopyOption.REPLACE_EXISTING); Files.deleteIfExists(bak); }
-			else if (cr) { Files.deleteIfExists(p); cleanupPath(d); }
+			cleanupPath(d);
 		}
 	}
 

@@ -124,12 +124,18 @@ public class GameManager {
 	}
 
 	private static String resolveCommitHash() {
+		return resolveCommitHash(Paths.get(".git"));
+	}
+
+	// Package-private + git-dir parameter so tests can point it at a temporary
+	// directory instead of mutating the real .git (see GameManager*CommitHash tests).
+	static String resolveCommitHash(Path gitDir) {
 		try {
-			Path head = Paths.get(".git", "HEAD");
+			Path head = gitDir.resolve("HEAD");
 			if(!Files.isRegularFile(head)) return "unknown";
 			String contents = new String(Files.readAllBytes(head)).trim();
 			String hash = contents.startsWith("ref:")
-				? readRef(contents.substring(4).trim())
+				? readRef(gitDir, contents.substring(4).trim())
 				: contents;
 			if(hash == null || hash.length() < 7) return "unknown";
 			return hash.substring(0, 7);
@@ -138,13 +144,13 @@ public class GameManager {
 		}
 	}
 
-	private static String readRef(String refName) throws IOException {
+	static String readRef(Path gitDir, String refName) throws IOException {
 		// Loose ref first, then packed-refs as a fallback.
-		Path refPath = Paths.get(".git", refName.split("/"));
+		Path refPath = gitDir.resolve(refName);
 		if(Files.isRegularFile(refPath)) {
 			return new String(Files.readAllBytes(refPath)).trim();
 		}
-		Path packed = Paths.get(".git", "packed-refs");
+		Path packed = gitDir.resolve("packed-refs");
 		if(!Files.isRegularFile(packed)) return null;
 		for(String line : Files.readAllLines(packed)) {
 			if(line.isEmpty() || line.startsWith("#") || line.startsWith("^")) continue;
