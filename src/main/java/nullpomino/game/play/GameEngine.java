@@ -2015,121 +2015,7 @@ public class GameEngine {
 
 		// Processing at the time of emergence
 		if(statc[0] == 0) {
-			if((statc[1] == 0) && (initialHoldFlag == false)) {
-				// Normal appearance
-				nowPieceObject = getNextObjectCopy(nextPieceCount);
-				nextPieceCount++;
-				if(nextPieceCount < 0) nextPieceCount = 0;
-				holdDisable = false;
-			} else {
-				// Hold appearance
-				if(initialHoldFlag) {
-					// Hold preceding
-					if(holdPieceObject == null) {
-						// 1Th
-						holdPieceObject = getNextObjectCopy(nextPieceCount);
-						holdPieceObject.applyOffsetArray(ruleopt.pieceOffsetX[holdPieceObject.id], ruleopt.pieceOffsetY[holdPieceObject.id]);
-						nextPieceCount++;
-						if(nextPieceCount < 0) nextPieceCount = 0;
-
-						if(bone == true) getNextObject(nextPieceCount + ruleopt.nextDisplay - 1).setAttribute(Block.BLOCK_ATTRIBUTE_BONE, true);
-
-						nowPieceObject = getNextObjectCopy(nextPieceCount);
-						nextPieceCount++;
-						if(nextPieceCount < 0) nextPieceCount = 0;
-					} else {
-						// 2Subsequent
-						Piece pieceTemp = holdPieceObject;
-						holdPieceObject = getNextObjectCopy(nextPieceCount);
-						holdPieceObject.applyOffsetArray(ruleopt.pieceOffsetX[holdPieceObject.id], ruleopt.pieceOffsetY[holdPieceObject.id]);
-						nowPieceObject = pieceTemp;
-						nextPieceCount++;
-						if(nextPieceCount < 0) nextPieceCount = 0;
-					}
-				} else {
-					// Usually hold
-					if(holdPieceObject == null) {
-						// 1Th
-						nowPieceObject.big = false;
-						holdPieceObject = nowPieceObject;
-						nowPieceObject = getNextObjectCopy(nextPieceCount);
-						nextPieceCount++;
-						if(nextPieceCount < 0) nextPieceCount = 0;
-					} else {
-						// 2Subsequent
-						nowPieceObject.big = false;
-						Piece pieceTemp = holdPieceObject;
-						holdPieceObject = nowPieceObject;
-						nowPieceObject = pieceTemp;
-					}
-				}
-
-				// DirectionReturn
-				if((ruleopt.holdResetDirection) && (ruleopt.pieceDefaultDirection[holdPieceObject.id] < Piece.DIRECTION_COUNT)) {
-					holdPieceObject.direction = ruleopt.pieceDefaultDirection[holdPieceObject.id];
-					holdPieceObject.updateConnectData();
-				}
-
-				// Was used count+1
-				holdUsedCount++;
-				statistics.totalHoldUsed++;
-
-				// Disabling Hold
-				initialHoldFlag = false;
-				holdDisable = true;
-			}
-			playSE("piece" + getNextObject(nextPieceCount).id);
-
-			if(nowPieceObject.offsetApplied == false)
-				nowPieceObject.applyOffsetArray(ruleopt.pieceOffsetX[nowPieceObject.id], ruleopt.pieceOffsetY[nowPieceObject.id]);
-
-			nowPieceObject.big = big;
-
-			// Appearance position (Horizontal)
-			nowPieceX = getSpawnPosX(field, nowPieceObject);
-
-			// Appearance position (Vertical)
-			nowPieceY = getSpawnPosY(nowPieceObject);
-
-			nowPieceBottomY = nowPieceObject.getBottom(nowPieceX, nowPieceY, field);
-			nowPieceColorOverride = -1;
-
-			if(itemRollRollEnable) nowPieceColorOverride = Block.BLOCK_COLOR_GRAY;
-
-			// Precedingrotation
-			if(versionMajor < 7.5f) initialRotate(); //XXX: Weird active time IRS
-
-			if((speed.gravity > speed.denominator) && (speed.denominator > 0))
-				gcount = speed.gravity % speed.denominator;
-			else
-				gcount = 0;
-
-			lockDelayNow = 0;
-			dasSpeedCount = getDASDelay();
-			dasRepeat = false;
-			dasInstant = false;
-			extendedMoveCount = 0;
-			extendedRotateCount = 0;
-			softdropFall = 0;
-			harddropFall = 0;
-			manualLock = false;
-			nowPieceMoveCount = 0;
-			nowPieceRotateCount = 0;
-			nowPieceRotateFailCount = 0;
-			nowWallkickCount = 0;
-			nowUpwardWallkickCount = 0;
-			lineClearing = 0;
-			lastmove = LastMove.NONE;
-			kickused = false;
-			tspin = false;
-			tspinmini = false;
-			tspinez = false;
-
-			getNextObject(nextPieceCount + ruleopt.nextDisplay - 1).setAttribute(Block.BLOCK_ATTRIBUTE_BONE, bone);
-
-			if(ending == 0) timerActive = true;
-
-			if((ai != null) && (!owner.replayMode || owner.replayRerecord)) ai.newPiece(this, playerID);
+			statMoveNewPieceAppearance();
 		}
 
 		checkDropContinuousUse();
@@ -2141,160 +2027,7 @@ public class GameEngine {
 		if(ctrl.isPress(getUp()) && ctrl.isPress(getDown())) updown = true;
 
 		if(!dasInstant) {
-
-			// Hold
-			if(ctrl.isPush(Controller.BUTTON_D) || initialHoldFlag) {
-				if(isHoldOK()) {
-					statc[0] = 0;
-					statc[1] = 1;
-					if(!initialHoldFlag) playSE("hold");
-					initialHoldContinuousUse = true;
-					initialHoldFlag = false;
-					holdDisable = true;
-					initialRotate(); //Hold swap triggered IRS
-					statMove();
-					return;
-				} else if((statc[0] > 0) && (!initialHoldFlag)) {
-					playSE("holdfail");
-				}
-			}
-
-			// rotation
-			boolean onGroundBeforeRotate = nowPieceObject.checkCollision(nowPieceX, nowPieceY + 1, field);
-			int move = 0;
-			boolean rotated = false;
-
-			if(initialRotateDirection != 0) {
-				move = initialRotateDirection;
-				initialRotateLastDirection = initialRotateDirection;
-				initialRotateContinuousUse = true;
-				playSE("initialrotate");
-			} else if((statc[0] > 0) || (ruleopt.moveFirstFrame == true)) {
-				if((itemRollRollEnable) && (replayTimer % itemRollRollInterval == 0)) move = 1;	// Roll Roll
-
-				//  button input
-				if(ctrl.isPush(Controller.BUTTON_A) || ctrl.isPush(Controller.BUTTON_C)) move = -1;
-				else if(ctrl.isPush(Controller.BUTTON_B)) move = 1;
-				else if(ctrl.isPush(Controller.BUTTON_E)) move = 2;
-
-				if(move != 0) {
-					initialRotateLastDirection = move;
-					initialRotateContinuousUse = true;
-				}
-			}
-
-			if((ruleopt.rotateButtonAllowDouble == false) && (move == 2)) move = -1;
-			if((ruleopt.rotateButtonAllowReverse == false) && (move == 1)) move = -1;
-			if(isRotateButtonDefaultRight() && (move != 2)) move = move * -1;
-
-			if(move != 0) {
-				// Direction after rotationI decided to
-				int rt = getRotateDirection(move);
-
-				// rotationYou can determine whether the
-				if(nowPieceObject.checkCollision(nowPieceX, nowPieceY, rt, field) == false)
-				{
-					// WallkickWithoutrotationwhen you can
-					rotated = true;
-					kickused = false;
-					nowPieceObject.direction = rt;
-					nowPieceObject.updateConnectData();
-				} else if( (ruleopt.rotateWallkick == true) &&
-						   (wallkick != null) &&
-						   ((initialRotateDirection == 0) || (ruleopt.rotateInitialWallkick == true)) &&
-						   ((ruleopt.lockresetLimitOver != RuleOptions.LOCKRESET_LIMIT_OVER_NOWALLKICK) || (isRotateCountExceed() == false)) )
-				{
-					// WallkickAttempt to
-					boolean allowUpward = (ruleopt.rotateMaxUpwardWallkick < 0) || (nowUpwardWallkickCount < ruleopt.rotateMaxUpwardWallkick);
-					WallkickResult kick = wallkick.executeWallkick(nowPieceX, nowPieceY, move, nowPieceObject.direction, rt,
-										  allowUpward, nowPieceObject, field, ctrl);
-
-					if(kick != null) {
-						rotated = true;
-						kickused = true;
-						nowWallkickCount++;
-						if(kick.isUpward()) nowUpwardWallkickCount++;
-						nowPieceObject.direction = kick.direction;
-						nowPieceObject.updateConnectData();
-						nowPieceX += kick.offsetX;
-						nowPieceY += kick.offsetY;
-
-						if(ruleopt.lockresetWallkick && !isRotateCountExceed()) {
-							lockDelayNow = 0;
-							nowPieceObject.setDarkness(0f);
-						}
-					}
-				}
-
-				// Domino Quick Turn
-				if(!rotated && dominoQuickTurn && (nowPieceObject.id == Piece.PIECE_I2) && (nowPieceRotateFailCount >= 1)) {
-					rt = getRotateDirection(2);
-					rotated = true;
-					nowPieceObject.direction = rt;
-					nowPieceObject.updateConnectData();
-					nowPieceRotateFailCount = 0;
-
-					if(nowPieceObject.checkCollision(nowPieceX, nowPieceY, rt, field) == true) {
-						nowPieceY--;
-					} else if(onGroundBeforeRotate) {
-						nowPieceY++;
-					}
-				}
-
-				if(rotated == true) {
-					// rotationSuccess
-					nowPieceBottomY = nowPieceObject.getBottom(nowPieceX, nowPieceY, field);
-
-					if((ruleopt.lockresetRotate == true) && (isRotateCountExceed() == false)) {
-						lockDelayNow = 0;
-						nowPieceObject.setDarkness(0f);
-					}
-
-					if(onGroundBeforeRotate) {
-						extendedRotateCount++;
-						lastmove = LastMove.ROTATE_GROUND;
-					} else {
-						lastmove = LastMove.ROTATE_AIR;
-					}
-
-					if(initialRotateDirection == 0) {
-						playSE("rotate");
-					}
-
-					nowPieceRotateCount++;
-					if((ending == 0) || (staffrollEnableStatistics)) statistics.totalPieceRotate++;
-				} else {
-					// rotationFailure
-					playSE("rotfail");
-					nowPieceRotateFailCount++;
-				}
-			}
-			initialRotateDirection = 0;
-
-			// game over check
-			if((statc[0] == 0) && (nowPieceObject.checkCollision(nowPieceX, nowPieceY, field) == true)) {
-				// BlockSo if you can shift on the position of the emergence of
-				for(int i = 0; i < ruleopt.pieceEnterMaxDistanceY; i++) {
-					if(nowPieceObject.big) nowPieceY -= 2;
-					else nowPieceY--;
-
-					if(nowPieceObject.checkCollision(nowPieceX, nowPieceY, field) == false) {
-						nowPieceBottomY = nowPieceObject.getBottom(nowPieceX, nowPieceY, field);
-						break;
-					}
-				}
-
-				// Death
-				if(nowPieceObject.checkCollision(nowPieceX, nowPieceY, field) == true) {
-					nowPieceObject.placeToField(nowPieceX, nowPieceY, field);
-					nowPieceObject = null;
-					stat = Status.GAMEOVER;
-					if((ending == 2) && (staffrollNoDeath)) stat = Status.NOTHING;
-					resetStatc();
-					return;
-				}
-			}
-
+			if(statMoveHoldAndRotate()) return;
 		}
 
 		int move = 0;
@@ -2474,6 +2207,295 @@ public class GameEngine {
 			owner.receiver.afterSoftDropFall(this, playerID, softdropFallNow);
 		}
 
+		if(statMoveGroundLock(sidemoveflag, updown)) return;
+
+		// Horizontal reservoir
+		if((statc[0] > 0) || (ruleopt.dasInMoveFirstFrame)) {
+			if( (moveDirection != 0) && (moveDirection == dasDirection) && ((dasCount < getDAS()) || (getDAS() <= 0)) ) {
+				dasCount++;
+			}
+		}
+
+		statc[0]++;
+	}
+
+	private void statMoveNewPieceAppearance() {
+		if((statc[1] == 0) && (initialHoldFlag == false)) {
+			// Normal appearance
+			nowPieceObject = getNextObjectCopy(nextPieceCount);
+			nextPieceCount++;
+			if(nextPieceCount < 0) nextPieceCount = 0;
+			holdDisable = false;
+		} else {
+			// Hold appearance
+			if(initialHoldFlag) {
+				// Hold preceding
+				if(holdPieceObject == null) {
+					// 1Th
+					holdPieceObject = getNextObjectCopy(nextPieceCount);
+					holdPieceObject.applyOffsetArray(ruleopt.pieceOffsetX[holdPieceObject.id], ruleopt.pieceOffsetY[holdPieceObject.id]);
+					nextPieceCount++;
+					if(nextPieceCount < 0) nextPieceCount = 0;
+
+					if(bone == true) getNextObject(nextPieceCount + ruleopt.nextDisplay - 1).setAttribute(Block.BLOCK_ATTRIBUTE_BONE, true);
+
+					nowPieceObject = getNextObjectCopy(nextPieceCount);
+					nextPieceCount++;
+					if(nextPieceCount < 0) nextPieceCount = 0;
+				} else {
+					// 2Subsequent
+					Piece pieceTemp = holdPieceObject;
+					holdPieceObject = getNextObjectCopy(nextPieceCount);
+					holdPieceObject.applyOffsetArray(ruleopt.pieceOffsetX[holdPieceObject.id], ruleopt.pieceOffsetY[holdPieceObject.id]);
+					nowPieceObject = pieceTemp;
+					nextPieceCount++;
+					if(nextPieceCount < 0) nextPieceCount = 0;
+				}
+			} else {
+				// Usually hold
+				if(holdPieceObject == null) {
+					// 1Th
+					nowPieceObject.big = false;
+					holdPieceObject = nowPieceObject;
+					nowPieceObject = getNextObjectCopy(nextPieceCount);
+					nextPieceCount++;
+					if(nextPieceCount < 0) nextPieceCount = 0;
+				} else {
+					// 2Subsequent
+					nowPieceObject.big = false;
+					Piece pieceTemp = holdPieceObject;
+					holdPieceObject = nowPieceObject;
+					nowPieceObject = pieceTemp;
+				}
+			}
+
+			// DirectionReturn
+			if((ruleopt.holdResetDirection) && (ruleopt.pieceDefaultDirection[holdPieceObject.id] < Piece.DIRECTION_COUNT)) {
+				holdPieceObject.direction = ruleopt.pieceDefaultDirection[holdPieceObject.id];
+				holdPieceObject.updateConnectData();
+			}
+
+			// Was used count+1
+			holdUsedCount++;
+			statistics.totalHoldUsed++;
+
+			// Disabling Hold
+			initialHoldFlag = false;
+			holdDisable = true;
+		}
+		playSE("piece" + getNextObject(nextPieceCount).id);
+
+		if(nowPieceObject.offsetApplied == false)
+			nowPieceObject.applyOffsetArray(ruleopt.pieceOffsetX[nowPieceObject.id], ruleopt.pieceOffsetY[nowPieceObject.id]);
+
+		nowPieceObject.big = big;
+
+		// Appearance position (Horizontal)
+		nowPieceX = getSpawnPosX(field, nowPieceObject);
+
+		// Appearance position (Vertical)
+		nowPieceY = getSpawnPosY(nowPieceObject);
+
+		nowPieceBottomY = nowPieceObject.getBottom(nowPieceX, nowPieceY, field);
+		nowPieceColorOverride = -1;
+
+		if(itemRollRollEnable) nowPieceColorOverride = Block.BLOCK_COLOR_GRAY;
+
+		// Precedingrotation
+		if(versionMajor < 7.5f) initialRotate(); //XXX: Weird active time IRS
+
+		if((speed.gravity > speed.denominator) && (speed.denominator > 0))
+			gcount = speed.gravity % speed.denominator;
+		else
+			gcount = 0;
+
+		lockDelayNow = 0;
+		dasSpeedCount = getDASDelay();
+		dasRepeat = false;
+		dasInstant = false;
+		extendedMoveCount = 0;
+		extendedRotateCount = 0;
+		softdropFall = 0;
+		harddropFall = 0;
+		manualLock = false;
+		nowPieceMoveCount = 0;
+		nowPieceRotateCount = 0;
+		nowPieceRotateFailCount = 0;
+		nowWallkickCount = 0;
+		nowUpwardWallkickCount = 0;
+		lineClearing = 0;
+		lastmove = LastMove.NONE;
+		kickused = false;
+		tspin = false;
+		tspinmini = false;
+		tspinez = false;
+
+		getNextObject(nextPieceCount + ruleopt.nextDisplay - 1).setAttribute(Block.BLOCK_ATTRIBUTE_BONE, bone);
+
+		if(ending == 0) timerActive = true;
+
+		if((ai != null) && (!owner.replayMode || owner.replayRerecord)) ai.newPiece(this, playerID);
+	}
+
+	private boolean statMoveHoldAndRotate() {
+
+		// Hold
+		if(ctrl.isPush(Controller.BUTTON_D) || initialHoldFlag) {
+			if(isHoldOK()) {
+				statc[0] = 0;
+				statc[1] = 1;
+				if(!initialHoldFlag) playSE("hold");
+				initialHoldContinuousUse = true;
+				initialHoldFlag = false;
+				holdDisable = true;
+				initialRotate(); //Hold swap triggered IRS
+				statMove();
+				return true;
+			} else if((statc[0] > 0) && (!initialHoldFlag)) {
+				playSE("holdfail");
+			}
+		}
+
+		// rotation
+		boolean onGroundBeforeRotate = nowPieceObject.checkCollision(nowPieceX, nowPieceY + 1, field);
+		int move = 0;
+		boolean rotated = false;
+
+		if(initialRotateDirection != 0) {
+			move = initialRotateDirection;
+			initialRotateLastDirection = initialRotateDirection;
+			initialRotateContinuousUse = true;
+			playSE("initialrotate");
+		} else if((statc[0] > 0) || (ruleopt.moveFirstFrame == true)) {
+			if((itemRollRollEnable) && (replayTimer % itemRollRollInterval == 0)) move = 1;	// Roll Roll
+
+			//  button input
+			if(ctrl.isPush(Controller.BUTTON_A) || ctrl.isPush(Controller.BUTTON_C)) move = -1;
+			else if(ctrl.isPush(Controller.BUTTON_B)) move = 1;
+			else if(ctrl.isPush(Controller.BUTTON_E)) move = 2;
+
+			if(move != 0) {
+				initialRotateLastDirection = move;
+				initialRotateContinuousUse = true;
+			}
+		}
+
+		if((ruleopt.rotateButtonAllowDouble == false) && (move == 2)) move = -1;
+		if((ruleopt.rotateButtonAllowReverse == false) && (move == 1)) move = -1;
+		if(isRotateButtonDefaultRight() && (move != 2)) move = move * -1;
+
+		if(move != 0) {
+			// Direction after rotationI decided to
+			int rt = getRotateDirection(move);
+
+			// rotationYou can determine whether the
+			if(nowPieceObject.checkCollision(nowPieceX, nowPieceY, rt, field) == false)
+			{
+				// WallkickWithoutrotationwhen you can
+				rotated = true;
+				kickused = false;
+				nowPieceObject.direction = rt;
+				nowPieceObject.updateConnectData();
+			} else if( (ruleopt.rotateWallkick == true) &&
+					   (wallkick != null) &&
+					   ((initialRotateDirection == 0) || (ruleopt.rotateInitialWallkick == true)) &&
+					   ((ruleopt.lockresetLimitOver != RuleOptions.LOCKRESET_LIMIT_OVER_NOWALLKICK) || (isRotateCountExceed() == false)) )
+			{
+				// WallkickAttempt to
+				boolean allowUpward = (ruleopt.rotateMaxUpwardWallkick < 0) || (nowUpwardWallkickCount < ruleopt.rotateMaxUpwardWallkick);
+				WallkickResult kick = wallkick.executeWallkick(nowPieceX, nowPieceY, move, nowPieceObject.direction, rt,
+									  allowUpward, nowPieceObject, field, ctrl);
+
+				if(kick != null) {
+					rotated = true;
+					kickused = true;
+					nowWallkickCount++;
+					if(kick.isUpward()) nowUpwardWallkickCount++;
+					nowPieceObject.direction = kick.direction;
+					nowPieceObject.updateConnectData();
+					nowPieceX += kick.offsetX;
+					nowPieceY += kick.offsetY;
+
+					if(ruleopt.lockresetWallkick && !isRotateCountExceed()) {
+						lockDelayNow = 0;
+						nowPieceObject.setDarkness(0f);
+					}
+				}
+			}
+
+			// Domino Quick Turn
+			if(!rotated && dominoQuickTurn && (nowPieceObject.id == Piece.PIECE_I2) && (nowPieceRotateFailCount >= 1)) {
+				rt = getRotateDirection(2);
+				rotated = true;
+				nowPieceObject.direction = rt;
+				nowPieceObject.updateConnectData();
+				nowPieceRotateFailCount = 0;
+
+				if(nowPieceObject.checkCollision(nowPieceX, nowPieceY, rt, field) == true) {
+					nowPieceY--;
+				} else if(onGroundBeforeRotate) {
+					nowPieceY++;
+				}
+			}
+
+			if(rotated == true) {
+				// rotationSuccess
+				nowPieceBottomY = nowPieceObject.getBottom(nowPieceX, nowPieceY, field);
+
+				if((ruleopt.lockresetRotate == true) && (isRotateCountExceed() == false)) {
+					lockDelayNow = 0;
+					nowPieceObject.setDarkness(0f);
+				}
+
+				if(onGroundBeforeRotate) {
+					extendedRotateCount++;
+					lastmove = LastMove.ROTATE_GROUND;
+				} else {
+					lastmove = LastMove.ROTATE_AIR;
+				}
+
+				if(initialRotateDirection == 0) {
+					playSE("rotate");
+				}
+
+				nowPieceRotateCount++;
+				if((ending == 0) || (staffrollEnableStatistics)) statistics.totalPieceRotate++;
+			} else {
+				// rotationFailure
+				playSE("rotfail");
+				nowPieceRotateFailCount++;
+			}
+		}
+		initialRotateDirection = 0;
+
+		// game over check
+		if((statc[0] == 0) && (nowPieceObject.checkCollision(nowPieceX, nowPieceY, field) == true)) {
+			// BlockSo if you can shift on the position of the emergence of
+			for(int i = 0; i < ruleopt.pieceEnterMaxDistanceY; i++) {
+				if(nowPieceObject.big) nowPieceY -= 2;
+				else nowPieceY--;
+
+				if(nowPieceObject.checkCollision(nowPieceX, nowPieceY, field) == false) {
+					nowPieceBottomY = nowPieceObject.getBottom(nowPieceX, nowPieceY, field);
+					break;
+				}
+			}
+
+			// Death
+			if(nowPieceObject.checkCollision(nowPieceX, nowPieceY, field) == true) {
+				nowPieceObject.placeToField(nowPieceX, nowPieceY, field);
+				nowPieceObject = null;
+				stat = Status.GAMEOVER;
+				if((ending == 2) && (staffrollNoDeath)) stat = Status.NOTHING;
+				resetStatc();
+				return true;
+			}
+		}
+
+		return false;
+	}
+
+	private boolean statMoveGroundLock(boolean sidemoveflag, boolean updown) {
 		// And fixed ground
 		if( (nowPieceObject.checkCollision(nowPieceX, nowPieceY + 1, field) == true) &&
 			((statc[0] > 0) || (ruleopt.moveFirstFrame == true)) )
@@ -2649,18 +2671,10 @@ public class GameEngine {
 						if(ruleopt.moveFirstFrame == false) statMove();
 					}
 				}
-				return;
+				return true;
 			}
 		}
-
-		// Horizontal reservoir
-		if((statc[0] > 0) || (ruleopt.dasInMoveFirstFrame)) {
-			if( (moveDirection != 0) && (moveDirection == dasDirection) && ((dasCount < getDAS()) || (getDAS() <= 0)) ) {
-				dasCount++;
-			}
-		}
-
-		statc[0]++;
+		return false;
 	}
 
 	/**
