@@ -99,10 +99,6 @@ public class AIRanksTool extends JFrame implements ActionListener {
 	//Tab 3 (Ranks Info) variables
 	//***************************
 
-	//Ranks File To get info from
-	//private JLabel ranksFileInfoLabel;
-	//private JComboBox ranksFileInfoComboBox;
-
 
 
 	//*****************

@@ -24,7 +24,6 @@ public class RanksResult extends JDialog implements ActionListener, PropertyChan
 	 *
 	 */
 	private static final long serialVersionUID = 1L;
-	//private JFrame parent;
 	class SurfaceComparator implements Comparator<Integer>{
 
 		public int compare(Integer o1, Integer o2) {
