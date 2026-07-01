@@ -29,16 +29,16 @@ import java.util.Random;
 import java.util.TimeZone;
 import java.util.zip.Adler32;
 
+import nullpomino.crypto.Crypt;
+import nullpomino.crypto.RC4;
 import nullpomino.game.component.RuleOptions;
 import nullpomino.game.play.GameEngine;
 import nullpomino.game.play.GameManager;
 import nullpomino.util.CustomProperties;
 import nullpomino.util.GeneralUtil;
-import net.clarenceho.crypto.RC4;
 
 import org.apache.log4j.Logger;
 import org.apache.log4j.PropertyConfigurator;
-import org.cacas.java.gnu.tools.Crypt;
 
 /**
  * NullpoMino NetServer<br>

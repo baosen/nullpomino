@@ -7,20 +7,6 @@ LOG4J = "@maven//:ch_qos_reload4j_reload4j"
 JNA = "@maven//:net_java_dev_jna_jna"
 
 java_library(
-    name = "crypto",
-    srcs = glob(["net/clarenceho/crypto/*.java"]),
-    javacopts = JAVACOPTS,
-    visibility = ["//visibility:public"],
-)
-
-java_library(
-    name = "unix_crypt",
-    srcs = glob(["org/cacas/java/gnu/tools/*.java"]),
-    javacopts = JAVACOPTS,
-    visibility = ["//visibility:public"],
-)
-
-java_library(
     name = "sdl_binding",
     srcs = glob(["nullpomino/gui/sdl/binding/*.java"]),
     javacopts = JAVACOPTS,
@@ -42,6 +28,7 @@ java_library(
 java_library(
     name = "core",
     srcs = glob([
+        "nullpomino/crypto/*.java",
         "nullpomino/util/*.java",
         "nullpomino/game/**/*.java",
         "nullpomino/gui/*.java",
@@ -53,9 +40,7 @@ java_library(
     javacopts = JAVACOPTS,
     visibility = ["//visibility:public"],
     deps = [
-        ":crypto",
         ":sdl_binding",
-        ":unix_crypt",
         JNA,
         LOG4J,
     ],
@@ -103,7 +88,6 @@ java_library(
     visibility = ["//visibility:public"],
     deps = [
         ":core",
-        ":crypto",
         LOG4J,
     ],
 )
@@ -115,13 +99,11 @@ java_library(
     visibility = ["//visibility:public"],
     exports = [
         ":core",
-        ":crypto",
         ":sdl_binding",
         ":swing_tool_util",
         ":tool_musiclisteditor",
         ":tool_netadmin",
         ":tool_ruleeditor",
         ":tool_sequencer",
-        ":unix_crypt",
     ],
 )

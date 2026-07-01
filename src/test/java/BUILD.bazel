@@ -17,8 +17,6 @@ java_test(
     args = [
         "execute",
         "--select-package=nullpomino",
-        "--select-package=net.clarenceho",
-        "--select-package=org.cacas",
         "--include-classname=.*",
         "--disable-banner",
         "--fail-if-no-tests",

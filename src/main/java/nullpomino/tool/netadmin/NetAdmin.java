@@ -52,6 +52,7 @@ import javax.swing.text.SimpleAttributeSet;
 import javax.swing.text.StyleConstants;
 
 import nullpomino.game.net.NetBaseClient;
+import nullpomino.crypto.RC4;
 import nullpomino.game.net.NetMessageListener;
 import nullpomino.game.net.NetPlayerInfo;
 import nullpomino.game.net.NetRoomInfo;
@@ -61,7 +62,6 @@ import nullpomino.game.play.GameEngine;
 import nullpomino.game.play.GameManager;
 import nullpomino.util.CustomProperties;
 import nullpomino.util.GeneralUtil;
-import net.clarenceho.crypto.RC4;
 
 import org.apache.log4j.Logger;
 import org.apache.log4j.PropertyConfigurator;

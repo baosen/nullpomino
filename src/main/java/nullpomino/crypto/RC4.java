@@ -31,7 +31,7 @@
  * IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
-package net.clarenceho.crypto;
+package nullpomino.crypto;
 
 /**
  * This is a simple implementation of the RC4 (tm) encryption algorithm.  The

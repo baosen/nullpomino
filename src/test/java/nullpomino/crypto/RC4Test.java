@@ -1,4 +1,4 @@
-package net.clarenceho.crypto;
+package nullpomino.crypto;
 
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;

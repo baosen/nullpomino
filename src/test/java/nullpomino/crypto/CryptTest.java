@@ -1,4 +1,4 @@
-package org.cacas.java.gnu.tools;
+package nullpomino.crypto;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
