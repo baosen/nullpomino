@@ -42,14 +42,6 @@ public class Field implements Serializable {
 	/** Attributes of the coordinate (Wall) */
 	public static final int COORD_WALL = 3;
 
-	private static final int[][] T_SPIN_CORNERS = {
-			{0, 0}, {2, 0}, {0, 2}, {2, 2}
-	};
-
-	private static final int[][] BIG_T_SPIN_CORNERS = {
-			{1, 1}, {4, 1}, {1, 4}, {4, 4}
-	};
-
 	/** fieldThe width of the */
 	protected int width;
 
@@ -784,7 +776,7 @@ public class Field implements Serializable {
 	 * @return T-SpinIf it was the terrain to betrue
 	 */
 	public boolean isTSpinSpot(int x, int y, boolean big) {
-		return countFilledTCorners(x, y, big) >= 3;
+		return FieldAnalysis.isTSpinSpot(this, x, y, big);
 	}
 
 	/**
@@ -795,38 +787,7 @@ public class Field implements Serializable {
 	 * @return T-SpinIf it was a hole I cantrue
 	 */
 	public boolean isTSlot(int x, int y, boolean big) {
-		// I wonder if the central buried
-		if(big == true) {
-			if(!getBlockEmptyF(x + 2, y + 2)) {
-				return false;
-			}
-		} else {
-			//□ □ □ ※ ※ ※ □ □ □ □
-			//□ □ □ ★ ※ □ □ □ □ □
-			//□ □ □ ※ ※ ※ □ □ □ □
-			//□ □ □ ○ ※ ○ □ □ □ □
-
-			if(!getBlockEmptyF(x + 1, y + 0)) return false;
-			if(!getBlockEmptyF(x + 1, y + 1)) return false;
-			if(!getBlockEmptyF(x + 1, y + 2)) return false;
-
-			if(!getBlockEmptyF(x + 0, y + 1)) return false;
-			if(!getBlockEmptyF(x + 2, y + 1)) return false;
-
-			if(!getBlockEmptyF(x + 1, y - 1)) return false;
-		}
-
-		return countFilledTCorners(x, y, big) == 3;
-	}
-
-	private int countFilledTCorners(int x, int y, boolean big) {
-		int count = 0;
-		for(int[] corner : big ? BIG_T_SPIN_CORNERS : T_SPIN_CORNERS) {
-			if(getBlockColor(x + corner[0], y + corner[1]) != Block.BLOCK_COLOR_NONE) {
-				count++;
-			}
-		}
-		return count;
+		return FieldAnalysis.isTSlot(this, x, y, big);
 	}
 
 	/**
@@ -837,30 +798,7 @@ public class Field implements Serializable {
 	 * @return T-SpinI disappearLinescount(T-SpinFor example, if not the0)
 	 */
 	public int getTSlotLineClear(int x, int y, boolean big) {
-		if(!isTSlot(x, y, big)) return 0;
-
-		boolean[] lineflag = new boolean[2];
-		lineflag[0] = lineflag[1] = true;
-
-		for(int j = 0; j < width; j++) {
-			for(int i = 0; i < 2; i++) {
-				//■ ■ ■ ★ ※ ■ ■ ■ ■ ■
-				//□ □ □ ※ ※ ※ □ □ □ □
-				//□ □ □ ○ ※ ○ □ □ □ □
-				if((j < x) || (j >= x + 3)) {
-					if(getBlockEmptyF(j, y + 1 + i) == true) {
-						lineflag[i] = false;
-					}
-				}
-			}
-		}
-
-		int lines = 0;
-		for(int i = 0; i < lineflag.length; i++) {
-			if(lineflag[i]) lines++;
-		}
-
-		return lines;
+		return FieldAnalysis.getTSlotLineClear(this, x, y, big);
 	}
 
 	/**
@@ -869,17 +807,7 @@ public class Field implements Serializable {
 	 * @return T-SpinI disappearLinescount(T-SpinFor example, if not the0)
 	 */
 	public int getTSlotLineClearAll(boolean big) {
-		int result = 0;
-
-		for(int j = 0; j < width; j++) {
-			for(int i = 0; i < getHeightWithoutHurryupFloor() - 2; i++) {
-				if(getLineFlag(i) == false) {
-					result += getTSlotLineClear(j, i, big);
-				}
-			}
-		}
-
-		return result;
+		return FieldAnalysis.getTSlotLineClearAll(this, big);
 	}
 
 	/**
@@ -889,20 +817,7 @@ public class Field implements Serializable {
 	 * @return T-SpinI disappearLinescount(T-SpinOr if it is notminimumI do not meet theLinesEtc.0)
 	 */
 	public int getTSlotLineClearAll(boolean big, int minimum) {
-		int result = 0;
-
-		for(int j = 0; j < width; j++) {
-			for(int i = 0; i < getHeightWithoutHurryupFloor() - 2; i++) {
-				if(getLineFlag(i) == false) {
-					int temp = getTSlotLineClear(j, i, big);
-
-					if(temp >= minimum)
-						result += temp;
-				}
-			}
-		}
-
-		return result;
+		return FieldAnalysis.getTSlotLineClearAll(this, big, minimum);
 	}
 
 	/**
@@ -910,19 +825,7 @@ public class Field implements Serializable {
 	 * @return fieldAre withinBlockOfcount
 	 */
 	public int getHowManyBlocks() {
-		int count = 0;
-
-		for(int i = (hidden_height * -1); i < getHeightWithoutHurryupFloor(); i++) {
-			if(getLineFlag(i) == false) {
-				for(int j = 0; j < width; j++) {
-					if(!getBlockEmpty(j, i)) {
-						count++;
-					}
-				}
-			}
-		}
-
-		return count;
+		return FieldAnalysis.getHowManyBlocks(this);
 	}
 
 	/**
@@ -930,21 +833,7 @@ public class Field implements Serializable {
 	 * @return Are arranged from leftBlockThe totalcount
 	 */
 	public int getHowManyBlocksFromLeft() {
-		int count = 0;
-
-		for(int i = (hidden_height * -1); i < getHeightWithoutHurryupFloor(); i++) {
-			if(getLineFlag(i) == false) {
-				for(int j = 0; j < width; j++) {
-					if(!getBlockEmpty(j, i)) {
-						count++;
-					} else {
-						break;
-					}
-				}
-			}
-		}
-
-		return count;
+		return FieldAnalysis.getHowManyBlocksFromLeft(this);
 	}
 
 	/**
@@ -952,21 +841,7 @@ public class Field implements Serializable {
 	 * @return Side-by-side from the rightBlockThe totalcount
 	 */
 	public int getHowManyBlocksFromRight() {
-		int count = 0;
-
-		for(int i = (hidden_height * -1); i < getHeightWithoutHurryupFloor(); i++) {
-			if(getLineFlag(i) == false) {
-				for(int j = width - 1; j > 0; j--) {
-					if(!getBlockEmpty(j, i)) {
-						count++;
-					} else {
-						break;
-					}
-				}
-			}
-		}
-
-		return count;
+		return FieldAnalysis.getHowManyBlocksFromRight(this);
 	}
 
 	/**
@@ -974,15 +849,7 @@ public class Field implements Serializable {
 	 * @return At the topBlockOfY-coordinate
 	 */
 	public int getHighestBlockY() {
-		for(int i = (hidden_height * -1); i < getHeightWithoutHurryupFloor(); i++) {
-			if(getLineFlag(i) == false) {
-				for(int j = 0; j < width; j++) {
-					if(!getBlockEmpty(j, i)) return i;
-				}
-			}
-		}
-
-		return height;
+		return FieldAnalysis.getHighestBlockY(this);
 	}
 
 	/**
@@ -991,13 +858,7 @@ public class Field implements Serializable {
 	 * @return At the topBlockOfY-coordinate
 	 */
 	public int getHighestBlockY(int x) {
-		for(int i = (hidden_height * -1); i < getHeightWithoutHurryupFloor(); i++) {
-			if(getLineFlag(i) == false) {
-				if(!getBlockEmpty(x, i)) return i;
-			}
-		}
-
-		return height;
+		return FieldAnalysis.getHighestBlockY(this, x);
 	}
 
 	/**
@@ -1007,8 +868,7 @@ public class Field implements Serializable {
 	 * @return If there is a gap under the specified coordinatestrue
 	 */
 	public boolean isHoleBelow(int x, int y) {
-		if(!getBlockEmpty(x, y) && getBlockEmpty(x, y + 1)) return true;
-		return false;
+		return FieldAnalysis.isHoleBelow(this, x, y);
 	}
 
 	/**
@@ -1016,26 +876,7 @@ public class Field implements Serializable {
 	 * @return fieldThe gap in thecount
 	 */
 	public int getHowManyHoles() {
-		int hole = 0;
-		boolean samehole = false;
-
-		for(int j = 0; j < width; j++) {
-			samehole = false;
-
-			for(int i = getHighestBlockY(); i < getHeightWithoutHurryupFloor(); i++) {
-				if(getLineFlag(i) == false) {
-					if(isHoleBelow(j, i)) {
-						samehole = true;
-					} else if(samehole && getBlockEmpty(j, i)) {
-						hole++;
-					} else {
-						samehole = false;
-					}
-				}
-			}
-		}
-
-		return hole;
+		return FieldAnalysis.getHowManyHoles(this);
 	}
 
 	/**
@@ -1043,25 +884,7 @@ public class Field implements Serializable {
 	 * @return Are stackedBlockOfcount
 	 */
 	public int getHowManyLidAboveHoles() {
-		int blocks = 0;
-
-		for(int j = 0; j < width; j++) {
-			int count = 0;
-
-			for(int i = getHighestBlockY(); i < getHeightWithoutHurryupFloor() - 1; i++) {
-				if(getLineFlag(i) == false) {
-					if(isHoleBelow(j, i)) {
-						count++;
-						blocks += count;
-						count = 0;
-					} else if(!getBlockEmpty(j, i)) {
-						count++;
-					}
-				}
-			}
-		}
-
-		return blocks;
+		return FieldAnalysis.getHowManyLidAboveHoles(this);
 	}
 
 	/**
@@ -1069,14 +892,7 @@ public class Field implements Serializable {
 	 * @return I shall be the sum of the depth of the valley all
 	 */
 	public int getTotalValleyDepth() {
-		int depth = 0;
-
-		for(int j = 0; j < width; j++) {
-			int d = getValleyDepth(j);
-			if(d >= 2) depth += d;
-		}
-
-		return depth;
+		return FieldAnalysis.getTotalValleyDepth(this);
 	}
 
 	/**
@@ -1084,13 +900,7 @@ public class Field implements Serializable {
 	 * @return IValley type is requiredcount
 	 */
 	public int getTotalValleyNeedIPiece() {
-		int count = 0;
-
-		for(int j = 0; j < width; j++) {
-			if(getValleyDepth(j) >= 3) count++;
-		}
-
-		return count;
+		return FieldAnalysis.getTotalValleyNeedIPiece(this);
 	}
 
 	/**
@@ -1099,20 +909,7 @@ public class Field implements Serializable {
 	 * @return The depth of the valley (If you do not have0)
 	 */
 	public int getValleyDepth(int x) {
-		int depth = 0;
-
-		int highest = getHighestBlockY(x - 1);
-		highest = Math.min(highest, getHighestBlockY(x));
-		highest = Math.min(highest, getHighestBlockY(x + 1));
-
-		for(int i = highest; i < getHeightWithoutHurryupFloor(); i++) {
-			if(getLineFlag(i) == false) {
-				if( (!getBlockEmptyF(x - 1, i) || (x <= 0)) && getBlockEmptyF(x, i) && (!getBlockEmptyF(x + 1, i) || (x >= width - 1)) )
-					depth++;
-			}
-		}
-
-		return depth;
+		return FieldAnalysis.getValleyDepth(this, x);
 	}
 
 	/**
