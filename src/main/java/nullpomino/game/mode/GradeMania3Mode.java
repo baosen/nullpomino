@@ -1110,6 +1110,21 @@ public class GradeMania3Mode extends AbstractGradeMode {
 	 */
 	@Override
 	public void calcScore(GameEngine engine, int playerID, int lines) {
+		updateCombo(lines);
+
+		if((lines >= 1) && (engine.ending == 0)) {
+			calcGradePoints(engine, lines);
+			checkMedals(engine, lines);
+
+			int levelb = engine.statistics.level;
+			handleLevelUp(engine, lines, levelb);
+			addPlayScore(engine, lines, levelb);
+		} else if((lines >= 1) && (engine.ending == 2)) {
+			addRollScore(engine, lines);
+		}
+	}
+
+	private void updateCombo(int lines) {
 		// Combo
 		if(lines == 0) {
 			comboValue = 1;
@@ -1117,240 +1132,246 @@ public class GradeMania3Mode extends AbstractGradeMode {
 			comboValue = comboValue + (2 * lines) - 2;
 			if(comboValue < 1) comboValue = 1;
 		}
+	}
 
-		if((lines >= 1) && (engine.ending == 0)) {
-			// Dan point
-			int index = gradeBasicInternal;
-			if(index > 10) index = 10;
-			int basepoint = tableGradePoint[lines - 1][index];
+	private void calcGradePoints(GameEngine engine, int lines) {
+		// Dan point
+		int index = gradeBasicInternal;
+		if(index > 10) index = 10;
+		int basepoint = tableGradePoint[lines - 1][index];
 
-			int indexcombo = engine.combo - 1;
-			if(indexcombo < 0) indexcombo = 0;
-			if(indexcombo > tableGradeComboBonus[lines - 1].length - 1) indexcombo = tableGradeComboBonus[lines - 1].length - 1;
-			float combobonus = tableGradeComboBonus[lines - 1][indexcombo];
+		int indexcombo = engine.combo - 1;
+		if(indexcombo < 0) indexcombo = 0;
+		if(indexcombo > tableGradeComboBonus[lines - 1].length - 1) indexcombo = tableGradeComboBonus[lines - 1].length - 1;
+		float combobonus = tableGradeComboBonus[lines - 1][indexcombo];
 
-			int levelbonus = 1 + (engine.statistics.level / 250);
+		int levelbonus = 1 + (engine.statistics.level / 250);
 
-			float point = (basepoint * combobonus) * levelbonus;
-			gradeBasicPoint += (int)point;
+		float point = (basepoint * combobonus) * levelbonus;
+		gradeBasicPoint += (int)point;
 
-			// Dan rising internal
-			if(gradeBasicPoint >= 100) {
-				gradeBasicPoint = 0;
-				gradeBasicDecay = 0;
-				gradeBasicInternal++;
+		// Dan rising internal
+		if(gradeBasicPoint >= 100) {
+			gradeBasicPoint = 0;
+			gradeBasicDecay = 0;
+			gradeBasicInternal++;
 
-				if((tableGradeChange[gradeBasicReal] != -1) && (gradeBasicInternal >= tableGradeChange[gradeBasicReal])) {
-					if(gradedisp) engine.playSE("gradeup");
-					gradeBasicReal++;
-					grade++;
-					if(grade > 31) grade = 31;
-					gradeflash = 180;
-					lastGradeTime = engine.statistics.time;
-				}
-			}
-
-			// 4-line clearCount
-			if(lines >= 4) {
-				// SK medal
-				if(big == true) {
-					if((engine.statistics.totalFour == 1) || (engine.statistics.totalFour == 2) || (engine.statistics.totalFour == 4)) {
-						engine.playSE("medal");
-						medalSK++;
-					}
-				} else {
-					if((engine.statistics.totalFour == 10) || (engine.statistics.totalFour == 20) || (engine.statistics.totalFour == 35)) {
-						engine.playSE("medal");
-						medalSK++;
-					}
-				}
-			}
-
-			// AC medal
-			if(engine.field.isEmpty()) {
-				engine.playSE("bravo");
-
-				if(medalAC < 3) {
-					engine.playSE("medal");
-					medalAC++;
-				}
-			}
-
-			// CO medal
-			if(big == true) {
-				if((engine.combo >= 2) && (medalCO < 1)) {
-					engine.playSE("medal");
-					medalCO = 1;
-				} else if((engine.combo >= 3) && (medalCO < 2)) {
-					engine.playSE("medal");
-					medalCO = 2;
-				} else if((engine.combo >= 4) && (medalCO < 3)) {
-					engine.playSE("medal");
-					medalCO = 3;
-				}
-			} else {
-				if((engine.combo >= 4) && (medalCO < 1)) {
-					engine.playSE("medal");
-					medalCO = 1;
-				} else if((engine.combo >= 5) && (medalCO < 2)) {
-					engine.playSE("medal");
-					medalCO = 2;
-				} else if((engine.combo >= 7) && (medalCO < 3)) {
-					engine.playSE("medal");
-					medalCO = 3;
-				}
-			}
-
-			// Level up
-			int levelb = engine.statistics.level;
-
-			int levelplus = lines;
-			if(lines == 3) levelplus = 4;
-			if(lines >= 4) levelplus = 6;
-
-			engine.statistics.level += levelplus;
-			internalLevel += levelplus;
-
-			levelUp(engine);
-
-			if(engine.statistics.level >= 999) {
-				// Ending
-				engine.statistics.level = 999;
-				engine.timerActive = false;
-				engine.ending = 1;
-				rollclear = 1;
-
-				lastGradeTime = engine.statistics.time;
-
-				// Section TimeRecord
-				sectionlasttime = sectiontime[levelb / 100];
-				sectionscomp++;
-				setAverageSectionTime();
-
-				// ST medal
-				stMedalCheck(engine, levelb / 100);
-
-				// REGRETJudgment
-				checkRegret(engine, levelb);
-
-				// Disappear if all the conditions are metRoll Invocation
-				if(version >= 2) {
-					if((grade >= 24) && (coolcount >= 9)) mrollFlag = true;
-				} else {
-					if((grade >= 15) && (coolcount >= 9)) mrollFlag = true;
-				}
-			} else if((nextseclv == 500) && (engine.statistics.level >= 500) && (lv500torikan > 0) && (engine.statistics.time > lv500torikan) &&
-					  (!promotionFlag) && (!demotionFlag)) {
-				//  level500Kang birds
-				engine.statistics.level = 999;
-				engine.gameEnded();
-				engine.staffrollEnable = false;
-				engine.ending = 1;
-
-				secretGrade = engine.field.getSecretGrade();
-
-				// Section TimeRecord
-				sectionlasttime = sectiontime[levelb / 100];
-				sectionscomp++;
-				setAverageSectionTime();
-
-				// ST medal
-				stMedalCheck(engine, levelb / 100);
-
-				// REGRETJudgment
-				checkRegret(engine, levelb);
-			} else if(engine.statistics.level >= nextseclv) {
-				// Next Section
-				engine.playSE("levelup");
-
-				// BackgroundSwitching
-				owner.backgroundStatus.fadesw = true;
-				owner.backgroundStatus.fadecount = 0;
-				owner.backgroundStatus.fadebg = nextseclv / 100;
-
-				// BGMSwitching
-				if((tableBGMChange[bgmlv] != -1) && (internalLevel >= tableBGMChange[bgmlv])) {
-					bgmlv++;
-					owner.bgmStatus.fadesw = false;
-					owner.bgmStatus.bgm = bgmlv;
-				}
-
-				// Section TimeRecord
-				sectionlasttime = sectiontime[levelb / 100];
-				sectionscomp++;
-				setAverageSectionTime();
-
-				// ST medal
-				stMedalCheck(engine, levelb / 100);
-
-				// REGRETJudgment
-				checkRegret(engine, levelb);
-
-				// COOLI was taking
-				if(cool == true) {
-					previouscool = true;
-
-					coolcount++;
-					grade++;
-					if(grade > 31) grade = 31;
-					gradeflash = 180;
-
-					if(gradedisp) engine.playSE("gradeup");
-
-					internalLevel += 100;
-				} else {
-					previouscool = false;
-				}
-
-				cool = false;
-				coolchecked = false;
-				cooldisplayed = false;
-
-				// Update level for next section
-				nextseclv += 100;
-				if(nextseclv > 999) nextseclv = 999;
-			} else if((engine.statistics.level == nextseclv - 1) && (lvstopse == true)) {
-				engine.playSE("levelstop");
-			}
-
-			// Calculate score
-			int manuallock = 0;
-			if(engine.manualLock == true) manuallock = 1;
-
-			int bravo = 1;
-			if(engine.field.isEmpty()) bravo = 2;
-
-			int speedBonus = engine.getLockDelay() - engine.statc[0];
-			if(speedBonus < 0) speedBonus = 0;
-
-			lastscore = ( ((levelb + lines) / 4 + engine.softdropFall + manuallock + harddropBonus) * lines * comboValue + speedBonus +
-						(engine.statistics.level / 2) ) * bravo;
-
-			engine.statistics.score += lastscore;
-			scgettime = 120;
-		} else if((lines >= 1) && (engine.ending == 2)) {
-			// Roll InLine clear
-			float points = 0f;
-			if(mrollFlag == false) {
-				if(lines == 1) points = 0.04f;
-				if(lines == 2) points = 0.08f;
-				if(lines == 3) points = 0.12f;
-				if(lines == 4) points = 0.26f;
-			} else {
-				if(lines == 1) points = 0.1f;
-				if(lines == 2) points = 0.2f;
-				if(lines == 3) points = 0.3f;
-				if(lines == 4) points = 1.0f;
-			}
-			rollPoints += points;
-			rollPointsTotal += points;
-
-			while((rollPoints >= 1.0f) && (grade < 31)) {
-				rollPoints -= 1.0f;
-				grade++;
-				gradeflash = 180;
+			if((tableGradeChange[gradeBasicReal] != -1) && (gradeBasicInternal >= tableGradeChange[gradeBasicReal])) {
 				if(gradedisp) engine.playSE("gradeup");
+				gradeBasicReal++;
+				grade++;
+				if(grade > 31) grade = 31;
+				gradeflash = 180;
+				lastGradeTime = engine.statistics.time;
 			}
+		}
+	}
+
+	private void checkMedals(GameEngine engine, int lines) {
+		// 4-line clearCount
+		if(lines >= 4) {
+			// SK medal
+			if(big == true) {
+				if((engine.statistics.totalFour == 1) || (engine.statistics.totalFour == 2) || (engine.statistics.totalFour == 4)) {
+					engine.playSE("medal");
+					medalSK++;
+				}
+			} else {
+				if((engine.statistics.totalFour == 10) || (engine.statistics.totalFour == 20) || (engine.statistics.totalFour == 35)) {
+					engine.playSE("medal");
+					medalSK++;
+				}
+			}
+		}
+
+		// AC medal
+		if(engine.field.isEmpty()) {
+			engine.playSE("bravo");
+
+			if(medalAC < 3) {
+				engine.playSE("medal");
+				medalAC++;
+			}
+		}
+
+		// CO medal
+		if(big == true) {
+			if((engine.combo >= 2) && (medalCO < 1)) {
+				engine.playSE("medal");
+				medalCO = 1;
+			} else if((engine.combo >= 3) && (medalCO < 2)) {
+				engine.playSE("medal");
+				medalCO = 2;
+			} else if((engine.combo >= 4) && (medalCO < 3)) {
+				engine.playSE("medal");
+				medalCO = 3;
+			}
+		} else {
+			if((engine.combo >= 4) && (medalCO < 1)) {
+				engine.playSE("medal");
+				medalCO = 1;
+			} else if((engine.combo >= 5) && (medalCO < 2)) {
+				engine.playSE("medal");
+				medalCO = 2;
+			} else if((engine.combo >= 7) && (medalCO < 3)) {
+				engine.playSE("medal");
+				medalCO = 3;
+			}
+		}
+	}
+
+	private void handleLevelUp(GameEngine engine, int lines, int levelb) {
+		// Level up
+		int levelplus = lines;
+		if(lines == 3) levelplus = 4;
+		if(lines >= 4) levelplus = 6;
+
+		engine.statistics.level += levelplus;
+		internalLevel += levelplus;
+
+		levelUp(engine);
+
+		if(engine.statistics.level >= 999) {
+			// Ending
+			engine.statistics.level = 999;
+			engine.timerActive = false;
+			engine.ending = 1;
+			rollclear = 1;
+
+			lastGradeTime = engine.statistics.time;
+
+			// Section TimeRecord
+			sectionlasttime = sectiontime[levelb / 100];
+			sectionscomp++;
+			setAverageSectionTime();
+
+			// ST medal
+			stMedalCheck(engine, levelb / 100);
+
+			// REGRETJudgment
+			checkRegret(engine, levelb);
+
+			// Disappear if all the conditions are metRoll Invocation
+			if(version >= 2) {
+				if((grade >= 24) && (coolcount >= 9)) mrollFlag = true;
+			} else {
+				if((grade >= 15) && (coolcount >= 9)) mrollFlag = true;
+			}
+		} else if((nextseclv == 500) && (engine.statistics.level >= 500) && (lv500torikan > 0) && (engine.statistics.time > lv500torikan) &&
+				  (!promotionFlag) && (!demotionFlag)) {
+			//  level500Kang birds
+			engine.statistics.level = 999;
+			engine.gameEnded();
+			engine.staffrollEnable = false;
+			engine.ending = 1;
+
+			secretGrade = engine.field.getSecretGrade();
+
+			// Section TimeRecord
+			sectionlasttime = sectiontime[levelb / 100];
+			sectionscomp++;
+			setAverageSectionTime();
+
+			// ST medal
+			stMedalCheck(engine, levelb / 100);
+
+			// REGRETJudgment
+			checkRegret(engine, levelb);
+		} else if(engine.statistics.level >= nextseclv) {
+			// Next Section
+			engine.playSE("levelup");
+
+			// BackgroundSwitching
+			owner.backgroundStatus.fadesw = true;
+			owner.backgroundStatus.fadecount = 0;
+			owner.backgroundStatus.fadebg = nextseclv / 100;
+
+			// BGMSwitching
+			if((tableBGMChange[bgmlv] != -1) && (internalLevel >= tableBGMChange[bgmlv])) {
+				bgmlv++;
+				owner.bgmStatus.fadesw = false;
+				owner.bgmStatus.bgm = bgmlv;
+			}
+
+			// Section TimeRecord
+			sectionlasttime = sectiontime[levelb / 100];
+			sectionscomp++;
+			setAverageSectionTime();
+
+			// ST medal
+			stMedalCheck(engine, levelb / 100);
+
+			// REGRETJudgment
+			checkRegret(engine, levelb);
+
+			// COOLI was taking
+			if(cool == true) {
+				previouscool = true;
+
+				coolcount++;
+				grade++;
+				if(grade > 31) grade = 31;
+				gradeflash = 180;
+
+				if(gradedisp) engine.playSE("gradeup");
+
+				internalLevel += 100;
+			} else {
+				previouscool = false;
+			}
+
+			cool = false;
+			coolchecked = false;
+			cooldisplayed = false;
+
+			// Update level for next section
+			nextseclv += 100;
+			if(nextseclv > 999) nextseclv = 999;
+		} else if((engine.statistics.level == nextseclv - 1) && (lvstopse == true)) {
+			engine.playSE("levelstop");
+		}
+	}
+
+	private void addPlayScore(GameEngine engine, int lines, int levelb) {
+		// Calculate score
+		int manuallock = 0;
+		if(engine.manualLock == true) manuallock = 1;
+
+		int bravo = 1;
+		if(engine.field.isEmpty()) bravo = 2;
+
+		int speedBonus = engine.getLockDelay() - engine.statc[0];
+		if(speedBonus < 0) speedBonus = 0;
+
+		lastscore = ( ((levelb + lines) / 4 + engine.softdropFall + manuallock + harddropBonus) * lines * comboValue + speedBonus +
+					(engine.statistics.level / 2) ) * bravo;
+
+		engine.statistics.score += lastscore;
+		scgettime = 120;
+	}
+
+	private void addRollScore(GameEngine engine, int lines) {
+		// Roll InLine clear
+		float points = 0f;
+		if(mrollFlag == false) {
+			if(lines == 1) points = 0.04f;
+			if(lines == 2) points = 0.08f;
+			if(lines == 3) points = 0.12f;
+			if(lines == 4) points = 0.26f;
+		} else {
+			if(lines == 1) points = 0.1f;
+			if(lines == 2) points = 0.2f;
+			if(lines == 3) points = 0.3f;
+			if(lines == 4) points = 1.0f;
+		}
+		rollPoints += points;
+		rollPointsTotal += points;
+
+		while((rollPoints >= 1.0f) && (grade < 31)) {
+			rollPoints -= 1.0f;
+			grade++;
+			gradeflash = 180;
+			if(gradedisp) engine.playSE("gradeup");
 		}
 	}
 
