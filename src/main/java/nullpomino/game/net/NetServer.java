@@ -693,45 +693,14 @@ public class NetServer {
 	 * Load ban list from a file
 	 */
 	private static void loadBanList() {
-		banList = new LinkedList<NetServerBan>();
-
-		try {
-			BufferedReader txtBanList = new BufferedReader(new FileReader("config/setting/netserver_banlist.cfg"));
-
-			String str;
-			while((str = txtBanList.readLine()) != null) {
-				if(str.length() > 0) {
-					NetServerBan ban = new NetServerBan();
-					ban.importString(str);
-					if(!ban.isExpired()) banList.add(ban);
-				}
-			}
-		} catch (IOException e) {
-			log.debug("Ban list file doesn't exist");
-		} catch (Exception e) {
-			log.warn("Failed to load ban list", e);
-		}
+		banList = NetServerBanList.load();
 	}
 
 	/**
 	 * Write ban list to a file
 	 */
 	private static void saveBanList() {
-		try {
-			FileWriter outFile = new FileWriter("config/setting/netserver_banlist.cfg");
-			PrintWriter out = new PrintWriter(outFile);
-
-			for(NetServerBan ban: banList) {
-				out.println(ban.exportString());
-			}
-
-			out.flush();
-			out.close();
-
-			log.info("Ban list saved");
-		} catch (Exception e) {
-			log.error("Failed to save ban list", e);
-		}
+		NetServerBanList.save(banList);
 	}
 
 	/**
