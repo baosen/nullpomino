@@ -1628,106 +1628,32 @@ public class Field implements Serializable {
 	}
 
 	public void garbageDrop(GameEngine engine, int drop, boolean big) {
-		garbageDrop(engine, drop, big, 0, 0, -1, Block.BLOCK_COLOR_GRAY);
+		FieldGarbage.garbageDrop(this, engine, drop, big);
 	}
 	public void garbageDrop(GameEngine engine, int drop, boolean big, int hard) {
-		garbageDrop(engine, drop, big, hard, 0, -1, Block.BLOCK_COLOR_GRAY);
+		FieldGarbage.garbageDrop(this, engine, drop, big, hard);
 	}
 	public void garbageDrop(GameEngine engine, int drop, boolean big, int hard, int countdown) {
-		garbageDrop(engine, drop, big, hard, countdown, -1, Block.BLOCK_COLOR_GRAY);
+		FieldGarbage.garbageDrop(this, engine, drop, big, hard, countdown);
 	}
 	public void garbageDrop(GameEngine engine, int drop, boolean big, int hard, int countdown, int avoidColumn) {
-		garbageDrop(engine, drop, big, hard, countdown, avoidColumn, Block.BLOCK_COLOR_GRAY);
+		FieldGarbage.garbageDrop(this, engine, drop, big, hard, countdown, avoidColumn);
 	}
 	public void garbageDrop(GameEngine engine, int drop, boolean big, int hard, int countdown, int avoidColumn, int color) {
-		int y = -1 * hidden_height;
-		int actualWidth = width;
-		if (big)
-			actualWidth >>= 1;
-		int bigMove = big ? 2 : 1;
-		while (drop >= actualWidth)
-		{
-			drop -= actualWidth;
-			for (int x = 0; x < actualWidth; x+=bigMove)
-				garbageDropPlace(x, y, big, hard, color, countdown);
-			y+=bigMove;
-		}
-		if (drop == 0)
-			return;
-		boolean[] placeBlock = new boolean[actualWidth];
-		int j;
-		if (drop > (actualWidth>>1))
-		{
-			for (int x = 0; x < actualWidth; x++)
-				placeBlock[x] = true;
-			int start = actualWidth;
-			if (avoidColumn >= 0 && avoidColumn < actualWidth)
-			{
-				start--;
-				placeBlock[avoidColumn] = false;
-			}
-			for (int i = start; i > drop; i--)
-			{
-				do {
-					j = engine.random.nextInt(actualWidth);
-				} while (!placeBlock[j]);
-				placeBlock[j] = false;
-			}
-		}
-		else
-		{
-			for (int x = 0; x < actualWidth; x++)
-				placeBlock[x] = false;
-			for (int i = 0; i < drop; i++)
-			{
-				do {
-					j = engine.random.nextInt(actualWidth);
-				} while (placeBlock[j] && j != avoidColumn);
-				placeBlock[j] = true;
-			}
-		}
-
-		for (int x = 0; x < actualWidth; x++)
-			if (placeBlock[x])
-				garbageDropPlace(x*bigMove, y, big, hard, color, countdown);
+		FieldGarbage.garbageDrop(this, engine, drop, big, hard, countdown, avoidColumn, color);
 	}
 
 	public boolean garbageDropPlace (int x, int y, boolean big, int hard)
 	{
-		return garbageDropPlace(x, y, big, hard, Block.BLOCK_COLOR_GRAY, 0);
+		return FieldGarbage.garbageDropPlace(this, x, y, big, hard);
 	}
 	public boolean garbageDropPlace (int x, int y, boolean big, int hard, int color)
 	{
-		return garbageDropPlace(x, y, big, hard, color, 0);
+		return FieldGarbage.garbageDropPlace(this, x, y, big, hard, color);
 	}
 	public boolean garbageDropPlace (int x, int y, boolean big, int hard, int color, int countdown)
 	{
-		Block b = getBlock(x, y);
-		if (b == null)
-			return false;
-		if (big)
-		{
-			garbageDropPlace(x+1, y, false, hard);
-			garbageDropPlace(x, y+1, false, hard);
-			garbageDropPlace(x+1, y+1, false, hard);
-		}
-		if (getBlockEmptyF(x, y))
-		{
-			setBlockColor(x, y, color);
-			b.setAttribute(Block.BLOCK_ATTRIBUTE_ANTIGRAVITY, false);
-			b.setAttribute(Block.BLOCK_ATTRIBUTE_GARBAGE, true);
-			b.setAttribute(Block.BLOCK_ATTRIBUTE_BROKEN, true);
-			b.setAttribute(Block.BLOCK_ATTRIBUTE_VISIBLE, true);
-			b.setAttribute(Block.BLOCK_ATTRIBUTE_CONNECT_UP, false);
-			b.setAttribute(Block.BLOCK_ATTRIBUTE_CONNECT_DOWN, false);
-			b.setAttribute(Block.BLOCK_ATTRIBUTE_CONNECT_LEFT, false);
-			b.setAttribute(Block.BLOCK_ATTRIBUTE_CONNECT_RIGHT, false);
-			b.hard = hard;
-			b.secondaryColor = 0;
-			b.countdown = countdown;
-			return true;
-		}
-		return false;
+		return FieldGarbage.garbageDropPlace(this, x, y, big, hard, color, countdown);
 	}
 
 	public boolean canCascade() { return FieldCascade.canCascade(this); }
@@ -1735,320 +1661,22 @@ public class Field implements Serializable {
 	public void addRandomHoverBlocks(GameEngine engine, int count, int[] colors, int minY,
 			boolean avoidLines)
 	{
-		addRandomHoverBlocks(engine, count, colors, minY, avoidLines, false);
+		FieldGarbage.addRandomHoverBlocks(this, engine, count, colors, minY, avoidLines);
 	}
 
 	public void addRandomHoverBlocks(GameEngine engine, int count, int[] colors, int minY,
 			boolean avoidLines, boolean flashMode)
 	{
-		Random posRand = new Random(engine.random.nextLong());
-		Random colorRand = new Random(engine.random.nextLong());
-		int placeHeight = height-minY;
-		int placeSize = placeHeight * width;
-		boolean[][] placeBlock = new boolean[width][placeHeight];
-		int[] colorCounts = new int[colors.length];
-		for (int i = 0; i < colorCounts.length; i++)
-			colorCounts[i] = 0;
-
-		int blockColor;
-		if (count < (placeSize >> 1))
-		{
-			int colorShift = colorRand.nextInt(colors.length);
-			int x, y;
-			for (y = 0; y < placeHeight; y++)
-				for (x = 0; x < width; x++)
-					placeBlock[x][y] = false;
-			for (int i = 0; i < count; i++)
-			{
-				x = posRand.nextInt(width);
-				y = posRand.nextInt(placeHeight);
-				if (!getBlockEmpty(x, y+minY))
-					i--;
-				else
-				{
-					blockColor = ((i+colorShift)%colors.length);
-					colorCounts[blockColor]++;
-					addHoverBlock(x, y+minY, colors[blockColor]);
-					placeBlock[x][y] = true;
-				}
-			}
-		}
-		else
-		{
-			int x, y;
-			for (y = 0; y < placeHeight; y++)
-				for (x = 0; x < width; x++)
-					placeBlock[x][y] = true;
-			for (int i = placeSize; i > count; i--)
-			{
-				x = posRand.nextInt(width);
-				y = posRand.nextInt(placeHeight);
-				if (placeBlock[x][y])
-					placeBlock[x][y] = false;
-				else
-					i++;
-			}
-			for (y = 0; y < placeHeight; y++)
-				for (x = 0; x < width; x++)
-					if (placeBlock[x][y])
-					{
-						blockColor = colorRand.nextInt(colors.length);
-						colorCounts[blockColor]++;
-						addHoverBlock(x, y+minY, colors[blockColor]);
-					}
-		}
-		if (!avoidLines || colors.length == 1)
-			return;
-		int colorUp, colorLeft, cIndex;
-		for (int y = minY; y < height; y++)
-			for (int x = 0; x < width; x++)
-				if (placeBlock[x][y-minY])
-				{
-					colorUp = getBlockColor(x, y-2);
-					colorLeft = getBlockColor(x-2, y);
-					blockColor = getBlockColor(x, y);
-					if (blockColor != colorUp && blockColor != colorLeft)
-						continue;
-
-					cIndex = -1;
-					for (int i = 0; i < colorCounts.length; i++)
-						if (colors[i] == blockColor)
-						{
-							cIndex = i;
-							break;
-						}
-
-					if (colors.length == 2)
-					{
-						if ((colors[0] == colorUp && colors[1] != colorLeft) ||
-								(colors[0] == colorLeft && colors[1] != colorUp))
-						{
-							colorCounts[1]++;
-							colorCounts[cIndex]--;
-							setBlockColor(x, y, colors[1]);
-						}
-						else if ((colors[1] == colorUp && colors[0] != colorLeft) ||
-								(colors[1] == colorLeft && colors[0] != colorUp))
-						{
-							colorCounts[0]++;
-							colorCounts[cIndex]--;
-							setBlockColor(x, y, colors[0]);
-						}
-					}
-					else
-					{
-						int newColor;
-						do {
-							newColor = colorRand.nextInt(colors.length);
-						} while (colors[newColor] == colorUp || colors[newColor] == colorLeft);
-						colorCounts[cIndex]--;
-						colorCounts[newColor]++;
-						setBlockColor(x, y, colors[newColor]);
-					}
-				}
-		boolean[] canSwitch = new boolean[colors.length];
-		int minCount = count/colors.length;
-		int maxCount = (count+colors.length-1)/colors.length;
-		boolean done = true;
-		for (int i = 0; i < colorCounts.length; i++)
-			if (colorCounts[i] > maxCount)
-			{
-				done = false;
-				break;
-			}
-		int colorSide, bestSwitch, bestSwitchCount;
-		int excess = 0;
-		boolean fill = false;
-		while (!done)
-		{
-			done = true;
-			for (int y = minY; y < height; y++)
-				for (int x = 0; x < width; x++)
-				{
-					blockColor = getBlockColor(x, y);
-					fill = blockColor == Block.BLOCK_COLOR_NONE;
-					cIndex = -1;
-					if (!fill)
-					{
-						if (!placeBlock[x][y-minY])
-							continue;
-						for (int i = 0; i < colorCounts.length; i++)
-							if (colors[i] == blockColor)
-							{
-								cIndex = i;
-								break;
-							}
-						if (cIndex == -1)
-							continue;
-						if (colorCounts[cIndex] <= maxCount)
-							continue;
-					}
-					for (int i = 0; i < colorCounts.length; i++)
-						canSwitch[i] = colorCounts[i] < maxCount;
-
-					colorSide = getBlockColor(x, y-2);
-					for (int i = 0; i < colors.length; i++)
-						if (colors[i] == colorSide)
-						{
-							canSwitch[i] = false;
-							break;
-						}
-					colorSide = getBlockColor(x, y+2);
-					for (int i = 0; i < colors.length; i++)
-						if (colors[i] == colorSide)
-						{
-							canSwitch[i] = false;
-							break;
-						}
-					colorSide = getBlockColor(x-2, y);
-					for (int i = 0; i < colors.length; i++)
-						if (colors[i] == colorSide)
-						{
-							canSwitch[i] = false;
-							break;
-						}
-					colorSide = getBlockColor(x+2, y);
-					for (int i = 0; i < colors.length; i++)
-						if (colors[i] == colorSide)
-						{
-							canSwitch[i] = false;
-							break;
-						}
-					bestSwitch = -1;
-					bestSwitchCount = Integer.MAX_VALUE;
-					for (int i = 0; i < colorCounts.length; i++)
-						if (canSwitch[i] && colorCounts[i] < bestSwitchCount)
-						{
-							bestSwitch = i;
-							bestSwitchCount = colorCounts[i];
-						}
-					if (bestSwitch != -1)
-					{
-						if (fill)
-						{
-							excess++;
-							addHoverBlock(x, y, colors[bestSwitch]);
-							placeBlock[x][y-minY] = true;
-						}
-						else
-						{
-							colorCounts[cIndex]--;
-							setBlockColor(x, y, colors[bestSwitch]);
-						}
-						colorCounts[bestSwitch]++;
-						done = false;
-					}
-				}
-			while (excess > 0)
-			{
-				int x = posRand.nextInt(width);
-				int y = posRand.nextInt(placeHeight)+minY;
-				if (!placeBlock[x][y-minY])
-					continue;
-				blockColor = getBlockColor(x, y);
-				for (int i = 0; i < colors.length; i++)
-					if (colors[i] == blockColor)
-					{
-						if (colorCounts[i] > minCount)
-						{
-							setBlockColor(x, y, Block.BLOCK_COLOR_NONE);
-							colorCounts[i]--;
-							excess--;
-							placeBlock[x][y-minY] = false;
-						}
-						break;
-					}
-			}
-			boolean balanced = true;
-			for (int i = 0; i < colorCounts.length; i++)
-				if (colorCounts[i] > maxCount)
-				{
-					balanced = false;
-					break;
-				}
-			if (balanced)
-				done = true;
-		}
-		if (!flashMode)
-			return;
-		done = true;
-		boolean[] gemNeeded = new boolean[colors.length];
-		for (int i = 0; i < colors.length; i++)
-		{
-			if (colors[i] >= 2 && colors[i] <= 8 && colorCounts[i] > 0)
-			{
-				gemNeeded[i] = true;
-				done = false;
-			}
-			else
-				gemNeeded[i] = false;
-		}
-		while (!done)
-		{
-			int x = posRand.nextInt(width);
-			int y = posRand.nextInt(placeHeight)+minY;
-			if (!placeBlock[x][y-minY])
-				continue;
-			blockColor = getBlockColor(x, y);
-			for (int i = 0; i < colors.length; i++)
-				if (colors[i] == blockColor)
-				{
-					if (gemNeeded[i])
-					{
-						setBlockColor(x, y, blockColor+7);
-						gemNeeded[i] = false;
-					}
-					break;
-				}
-			done = true;
-			for (int i = 0; i < colors.length; i++)
-				if (gemNeeded[i])
-					done = false;
-		}
+		FieldGarbage.addRandomHoverBlocks(this, engine, count, colors, minY, avoidLines, flashMode);
 	}
+
 	public boolean addHoverBlock(int x, int y, int color)
 	{
-		Block b = getBlock(x, y);
-		if (b == null)
-			return false;
-		b.color = color;
-		b.setAttribute(Block.BLOCK_ATTRIBUTE_ANTIGRAVITY, true);
-		b.setAttribute(Block.BLOCK_ATTRIBUTE_GARBAGE, false);
-		b.setAttribute(Block.BLOCK_ATTRIBUTE_BROKEN, true);
-		b.setAttribute(Block.BLOCK_ATTRIBUTE_VISIBLE, true);
-		b.setAttribute(Block.BLOCK_ATTRIBUTE_CONNECT_UP, false);
-		b.setAttribute(Block.BLOCK_ATTRIBUTE_CONNECT_DOWN, false);
-		b.setAttribute(Block.BLOCK_ATTRIBUTE_CONNECT_LEFT, false);
-		b.setAttribute(Block.BLOCK_ATTRIBUTE_CONNECT_RIGHT, false);
-		b.setAttribute(Block.BLOCK_ATTRIBUTE_ERASE, false);
-		return true;
+		return FieldGarbage.addHoverBlock(this, x, y, color);
 	}
 
 	public void shuffleColors(int[] blockColors, int numColors, Random rand) {
-		blockColors = blockColors.clone();
-		int maxX = Math.min(blockColors.length, numColors);
-		int temp, j;
-		int i = maxX;
-		while (i > 1)
-		{
-			j = rand.nextInt(i);
-			i--;
-			if (j != i)
-			{
-				temp = blockColors[i];
-				blockColors[i] = blockColors[j];
-				blockColors[j] = temp;
-			}
-		}
-		for (int x = 0; x < width; x++)
-			for (int y = 0; y < height; y++)
-			{
-				temp = getBlockColor(x, y)-1;
-				if (numColors == 3 && temp >= 3)
-					temp--;
-				if (temp >= 0 && temp < maxX)
-					setBlockColor(x, y, blockColors[temp]);
-			}
+		FieldGarbage.shuffleColors(this, blockColors, numColors, rand);
 	}
 
 	public int gemColorCheck(int size, boolean flag, boolean garbageClear, boolean ignoreHidden) {
