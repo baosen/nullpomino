@@ -108,4 +108,15 @@ public abstract class AbstractGradeMode extends AbstractMode {
 	public void afterHardDropFall(GameEngine engine, int playerID, int fall) {
 		if(fall * 2 > harddropBonus) harddropBonus = fall * 2;
 	}
+
+	/** Update the combo counter for a line clear (shared by GRADE MANIA 2 and GRADE MANIA 3). */
+	protected void updateCombo(int lines) {
+		// Combo
+		if(lines == 0) {
+			comboValue = 1;
+		} else {
+			comboValue = comboValue + (2 * lines) - 2;
+			if(comboValue < 1) comboValue = 1;
+		}
+	}
 }

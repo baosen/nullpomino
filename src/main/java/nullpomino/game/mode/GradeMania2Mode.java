@@ -766,16 +766,6 @@ public class GradeMania2Mode extends AbstractGradeMode {
 		}
 	}
 
-	private void updateCombo(int lines) {
-		// Combo
-		if(lines == 0) {
-			comboValue = 1;
-		} else {
-			comboValue = comboValue + (2 * lines) - 2;
-			if(comboValue < 1) comboValue = 1;
-		}
-	}
-
 	private void calcGradePoints(GameEngine engine, int lines) {
 		// Dan point
 		int index = gradeInternal;
