@@ -184,7 +184,8 @@ public class AvalancheVSSPFMode extends AvalancheVSDummyMode {
 	 * @param engine GameEngine
 	 * @param prop Property file to read from
 	 */
-	private void loadOtherSetting(GameEngine engine, CustomProperties prop) {
+	@Override
+	protected void loadOtherSetting(GameEngine engine, CustomProperties prop) {
 		super.loadOtherSetting(engine, prop, "spf");
 		int playerID = engine.playerID;
 		ojamaHard[playerID] = 4;
@@ -246,15 +247,7 @@ public class AvalancheVSSPFMode extends AvalancheVSDummyMode {
 		countdownDecremented[playerID] = true;
 		ojamaChecked[playerID] = false;
 
-		if(engine.owner.replayMode == false) {
-			loadOtherSetting(engine, engine.owner.modeConfig);
-			loadPreset(engine, engine.owner.modeConfig, -1 - playerID, "spf");
-			version = CURRENT_VERSION;
-		} else {
-			loadOtherSetting(engine, engine.owner.replayProp);
-			loadPreset(engine, engine.owner.replayProp, -1 - playerID, "spf");
-			version = owner.replayProp.getProperty("avalanchevs.version", 0);
-		}
+		version = playerInitLoad(engine, playerID, "spf", "avalanchevs.version", CURRENT_VERSION);
 	}
 
 	/*

@@ -51,7 +51,8 @@ public class AvalancheVSBombBattleMode extends AvalancheVSDummyMode {
 	 * @param engine GameEngine
 	 * @param prop Property file to read from
 	 */
-	private void loadOtherSetting(GameEngine engine, CustomProperties prop) {
+	@Override
+	protected void loadOtherSetting(GameEngine engine, CustomProperties prop) {
 		super.loadOtherSetting(engine, prop, "bombbattle");
 		int playerID = engine.playerID;
 		ojamaRate[playerID] = prop.getProperty("avalanchevsbombbattle.ojamaRate.p" + playerID, 60);
@@ -81,15 +82,7 @@ public class AvalancheVSBombBattleMode extends AvalancheVSDummyMode {
 		receiver = engine.owner.receiver;
 		menuTime = 0;
 		menuCursor = 0;
-		if(engine.owner.replayMode == false) {
-			loadOtherSetting(engine, engine.owner.modeConfig);
-			loadPreset(engine, engine.owner.modeConfig, -1 - playerID, "bombbattle");
-			version = CURRENT_VERSION;
-		} else {
-			loadOtherSetting(engine, engine.owner.replayProp);
-			loadPreset(engine, engine.owner.replayProp, -1 - playerID, "bombbattle");
-			version = owner.replayProp.getProperty("avalanchevs.version", 0);
-		}
+		version = playerInitLoad(engine, playerID, "bombbattle", "avalanchevs.version", CURRENT_VERSION);
 	}
 
 	/*

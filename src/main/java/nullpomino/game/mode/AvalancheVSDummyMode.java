@@ -353,6 +353,24 @@ public abstract class AvalancheVSDummyMode extends AbstractMode {
 			loadMapSetFever(engine, playerID, feverMapSet[playerID], true);
 	}
 
+	/** Overridable hook: load mode-specific settings for this Avalanche VS mode. */
+	protected void loadOtherSetting(GameEngine engine, CustomProperties prop) { }
+
+	/**
+	 * Shared playerInit settings-load branch. Returns the schema version to store.
+	 */
+	protected int playerInitLoad(GameEngine engine, int playerID, String presetName, String versionKey, int currentVersion) {
+		if(engine.owner.replayMode == false) {
+			loadOtherSetting(engine, engine.owner.modeConfig);
+			loadPreset(engine, engine.owner.modeConfig, -1 - playerID, presetName);
+			return currentVersion;
+		} else {
+			loadOtherSetting(engine, engine.owner.replayProp);
+			loadPreset(engine, engine.owner.replayProp, -1 - playerID, presetName);
+			return owner.replayProp.getProperty(versionKey, 0);
+		}
+	}
+
 	/**
 	 * Save settings not related to speeds
 	 * @param engine GameEngine

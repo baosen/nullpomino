@@ -68,7 +68,8 @@ public class AvalancheVSFeverMode extends AvalancheVSDummyMode {
 	 * @param engine GameEngine
 	 * @param prop Property file to read from
 	 */
-	private void loadOtherSetting(GameEngine engine, CustomProperties prop) {
+	@Override
+	protected void loadOtherSetting(GameEngine engine, CustomProperties prop) {
 		super.loadOtherSetting(engine, prop, "fever");
 		int playerID = engine.playerID;
 		ojamaRate[playerID] = prop.getProperty("avalanchevsfever.ojamaRate.p" + playerID, 120);
@@ -103,15 +104,7 @@ public class AvalancheVSFeverMode extends AvalancheVSDummyMode {
 		ojama[playerID] = 0;
 		feverChainDisplay[playerID] = 0;
 
-		if(engine.owner.replayMode == false) {
-			loadOtherSetting(engine, engine.owner.modeConfig);
-			loadPreset(engine, engine.owner.modeConfig, -1 - playerID, "fever");
-			version = CURRENT_VERSION;
-		} else {
-			loadOtherSetting(engine, engine.owner.replayProp);
-			loadPreset(engine, engine.owner.replayProp, -1 - playerID, "fever");
-			version = owner.replayProp.getProperty("avalanchevsfever.version", 0);
-		}
+		version = playerInitLoad(engine, playerID, "fever", "avalanchevsfever.version", CURRENT_VERSION);
 	}
 
 	/*

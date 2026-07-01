@@ -48,7 +48,8 @@ public class AvalancheVSDigRaceMode extends AvalancheVSDummyMode {
 	 * @param engine GameEngine
 	 * @param prop Property file to read from
 	 */
-	private void loadOtherSetting(GameEngine engine, CustomProperties prop) {
+	@Override
+	protected void loadOtherSetting(GameEngine engine, CustomProperties prop) {
 		super.loadOtherSetting(engine, prop, "digrace");
 		int playerID = engine.playerID;
 		ojamaRate[playerID] = prop.getProperty("avalanchevsdigrace.ojamaRate.p" + playerID, 420);
@@ -79,15 +80,7 @@ public class AvalancheVSDigRaceMode extends AvalancheVSDummyMode {
 		useMap[playerID] = false;
 		feverMapSet[playerID] = -1;
 
-		if(engine.owner.replayMode == false) {
-			loadOtherSetting(engine, engine.owner.modeConfig);
-			loadPreset(engine, engine.owner.modeConfig, -1 - playerID, "digrace");
-			version = CURRENT_VERSION;
-		} else {
-			loadOtherSetting(engine, engine.owner.replayProp);
-			loadPreset(engine, engine.owner.replayProp, -1 - playerID, "digrace");
-			version = owner.replayProp.getProperty("avalanchevsdigrace.version", 0);
-		}
+		version = playerInitLoad(engine, playerID, "digrace", "avalanchevsdigrace.version", CURRENT_VERSION);
 	}
 
 	/*
