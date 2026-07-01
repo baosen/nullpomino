@@ -2,6 +2,8 @@
 // SPDX-License-Identifier: BSD-3-Clause
 package nullpomino.game.mode;
 
+import nullpomino.game.play.GameEngine;
+
 /**
  * Shared scalar-field scaffolding for GRADE MANIA 2 and GRADE MANIA 3.
  * These two modes track the same in-round telemetry (gravity index,
@@ -24,6 +26,18 @@ public abstract class AbstractGradeMode extends AbstractMode {
 
 	/** Default section time */
 	protected static final int DEFAULT_SECTION_TIME = 5400;
+
+	/** Fall velocity table (shared by GRADE MANIA 2 and GRADE MANIA 3) */
+	protected static final int[] tableGravityValue =
+	{
+		4, 6, 8, 10, 12, 16, 32, 48, 64, 80, 96, 112, 128, 144, 4, 32, 64, 96, 128, 160, 192, 224, 256, 512, 768, 1024, 1280, 1024, 768, -1
+	};
+
+	/** Fall velocity changes level (shared by GRADE MANIA 2 and GRADE MANIA 3) */
+	protected static final int[] tableGravityChangeLevel =
+	{
+		30, 35, 40, 50, 60, 70, 80, 90, 100, 120, 140, 160, 170, 200, 220, 230, 233, 236, 239, 243, 247, 251, 300, 330, 360, 400, 420, 450, 500, 10000
+	};
 
 	/** Current gravity index into the gravity/denominator table */
 	protected int gravityindex;
@@ -86,4 +100,12 @@ public abstract class AbstractGradeMode extends AbstractMode {
 	protected int version;
 	/** Current round's ranking rank (-1 if unranked) */
 	protected int rankingRank;
+
+	/*
+	 * Called when hard drop used
+	 */
+	@Override
+	public void afterHardDropFall(GameEngine engine, int playerID, int fall) {
+		if(fall * 2 > harddropBonus) harddropBonus = fall * 2;
+	}
 }

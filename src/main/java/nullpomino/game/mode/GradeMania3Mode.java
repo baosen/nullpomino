@@ -35,18 +35,6 @@ public class GradeMania3Mode extends AbstractGradeMode {
 		5400, 4500, 4500, 4080, 3600, 3600, 3000, 3000, 3000, 3000
 	};
 
-	/** Fall velocity table */
-	private static final int[] tableGravityValue =
-	{
-		4, 6, 8, 10, 12, 16, 32, 48, 64, 80, 96, 112, 128, 144, 4, 32, 64, 96, 128, 160, 192, 224, 256, 512, 768, 1024, 1280, 1024, 768, -1
-	};
-
-	/** Fall velocity changes level */
-	private static final int[] tableGravityChangeLevel =
-	{
-		30, 35, 40, 50, 60, 70, 80, 90, 100, 120, 140, 160, 170, 200, 220, 230, 233, 236, 239, 243, 247, 251, 300, 330, 360, 400, 420, 450, 500, 10000
-	};
-
 	/** ARE table */
 	private static final int[] tableARE       = {23, 23, 23, 23, 23, 23, 23, 14, 10, 10,  4,  3,  2};
 
@@ -1364,14 +1352,6 @@ public class GradeMania3Mode extends AbstractGradeMode {
 				if(gradedisp) engine.playSE("gradeup");
 			}
 		}
-	}
-
-	/*
-	 * Called when hard drop used
-	 */
-	@Override
-	public void afterHardDropFall(GameEngine engine, int playerID, int fall) {
-		if(fall * 2 > harddropBonus) harddropBonus = fall * 2;
 	}
 
 	/*
