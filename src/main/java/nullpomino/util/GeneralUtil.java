@@ -2,11 +2,12 @@
 // SPDX-License-Identifier: BSD-3-Clause
 package nullpomino.util;
 
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.ZoneOffset;
+import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
 import java.util.Calendar;
-import java.util.Date;
 import java.util.TimeZone;
 
 import org.apache.log4j.Logger;
@@ -25,6 +26,13 @@ public class GeneralUtil {
 	static Logger log = Logger.getLogger(GeneralUtil.class);
 
 	private static final TimeZone GMT = TimeZone.getTimeZone("GMT");
+
+	/** Replay filename timestamp format (thread-safe). */
+	private static final DateTimeFormatter REPLAY_FILENAME_FORMAT = DateTimeFormatter.ofPattern("yyyy_MM_dd_HH_mm_ss");
+	/** Human-readable date/time format (thread-safe). */
+	private static final DateTimeFormatter DISPLAY_FORMAT = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+	/** Wire/on-disk calendar format, GMT (thread-safe). */
+	private static final DateTimeFormatter EXPORT_FORMAT = DateTimeFormatter.ofPattern("yyyy-MM-dd-HH-mm-ss");
 
 	/**
 	 * Converts play time into a String
@@ -60,7 +68,7 @@ public class GeneralUtil {
 	 * @return Replay's filename
 	 */
 	public static String getReplayFilename() {
-		return new SimpleDateFormat("yyyy_MM_dd_HH_mm_ss").format(Calendar.getInstance().getTime()) + ".rep";
+		return LocalDateTime.now().format(REPLAY_FILENAME_FORMAT) + ".rep";
 	}
 
 	/**
@@ -69,7 +77,7 @@ public class GeneralUtil {
 	 * @return Date and Time String
 	 */
 	public static String getCalendarString(Calendar c) {
-		return calendarFormat("yyyy-MM-dd HH:mm:ss").format(c.getTime());
+		return c.toInstant().atZone(ZoneId.systemDefault()).format(DISPLAY_FORMAT);
 	}
 
 	/**
@@ -79,9 +87,7 @@ public class GeneralUtil {
 	 * @return Date and Time String
 	 */
 	public static String getCalendarString(Calendar c, TimeZone z) {
-		DateFormat dfm = calendarFormat("yyyy-MM-dd HH:mm:ss");
-		dfm.setTimeZone(z);
-		return dfm.format(c.getTime());
+		return c.toInstant().atZone(z.toZoneId()).format(DISPLAY_FORMAT);
 	}
 
 	/**
@@ -99,9 +105,7 @@ public class GeneralUtil {
 	 * @return Calendar String (Each field is separated with a hyphen '-')
 	 */
 	public static String exportCalendarString(Calendar c) {
-		DateFormat dfm = calendarFormat("yyyy-MM-dd-HH-mm-ss");
-		dfm.setTimeZone(GMT);
-		return dfm.format(c.getTime());
+		return c.toInstant().atZone(ZoneOffset.UTC).format(EXPORT_FORMAT);
 	}
 
 	/**
@@ -110,19 +114,14 @@ public class GeneralUtil {
 	 * @return Calendar (null if fails)
 	 */
 	public static Calendar importCalendarString(String s) {
-		DateFormat dfm = calendarFormat("yyyy-MM-dd-HH-mm-ss");
-		dfm.setTimeZone(GMT);
-
-		Calendar c = Calendar.getInstance(GMT);
-
 		try {
-			Date date = dfm.parse(s);
-			c.setTime(date);
+			LocalDateTime ldt = LocalDateTime.parse(s, EXPORT_FORMAT);
+			Calendar c = Calendar.getInstance(GMT);
+			c.setTimeInMillis(ldt.toInstant(ZoneOffset.UTC).toEpochMilli());
+			return c;
 		} catch (Exception e) {
 			return null;
 		}
-
-		return c;
 	}
 
 	/**
@@ -226,10 +225,6 @@ public class GeneralUtil {
 	{
 		if(startIndex >= strings.length) return "";
 		return String.join(separator, Arrays.copyOfRange(strings, startIndex, strings.length));
-	}
-
-	private static DateFormat calendarFormat(String pattern) {
-		return new SimpleDateFormat(pattern);
 	}
 
 	private static boolean isSZOPiece(int pieceID) {
