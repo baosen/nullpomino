@@ -51,52 +51,10 @@ public class PoochyBotDefensive extends PoochyBot {
 			}
 
 		//Find valleys that need an I, J, or L.
-		int needIValleyBefore = 0, needJValleyBefore = 0, needLValleyBefore = 0;
-		if (depthsBefore[0] > depthsBefore[1])
-			needIValleyBefore = (depthsBefore[0]-depthsBefore[1])/3;
-		if (depthsBefore[width-1] > depthsBefore[width-2])
-			needIValleyBefore = (depthsBefore[width-1]-depthsBefore[width-2])/3;
-		for (int i = 1; i < width-1; i++)
-		{
-			int left = depthsBefore[i-1], right = depthsBefore[i+1];
-			int lowerSide = Math.max(left, right);
-			int diff = depthsBefore[i] - lowerSide;
-			if (diff >= 3)
-				needIValleyBefore += diff/3;
-			if (left == right)
-			{
-				if (left == depthsBefore[i]+2)
-				{
-					needIValleyBefore++;
-					needLValleyBefore--;
-					needJValleyBefore--;
-				}
-				else if (left == depthsBefore[i]+1)
-				{
-					needLValleyBefore++;
-					needJValleyBefore++;
-				}
-			}
-			if (diff%4 == 2)
-			{
-				if (left > right)
-					needLValleyBefore+=2;
-				else if (left < right)
-					needJValleyBefore+=2;
-				else
-				{
-					needJValleyBefore++;
-					needLValleyBefore++;
-				}
-			}
-		}
-		if ((depthsBefore[0] - depthsBefore[1])%4 == 2)
-			needJValleyBefore += 2;
-		if ((depthsBefore[width-1] - depthsBefore[width-2])%4 == 2)
-			needLValleyBefore += 2;
-
-		needJValleyBefore >>= 1;
-		needLValleyBefore >>= 1;
+		int[] valleysBefore = calcNeededValleys(depthsBefore, width);
+		int needIValleyBefore = valleysBefore[0];
+		int needJValleyBefore = valleysBefore[1];
+		int needLValleyBefore = valleysBefore[2];
 
 		// Field height (before placement)
 		int heightBefore = fld.getHighestBlockY();
@@ -180,52 +138,10 @@ public class PoochyBotDefensive extends PoochyBot {
 			// Number of holes and valleys needing an I piece (after placement)
 
 			//Find valleys that need an I, J, or L.
-			int needIValleyAfter = 0, needJValleyAfter = 0, needLValleyAfter = 0;
-			if (depthsAfter[0] > depthsAfter[1])
-				needIValleyAfter = (depthsAfter[0]-depthsAfter[1])/3;
-			if (depthsAfter[width-1] > depthsAfter[width-2])
-				needIValleyAfter = (depthsAfter[width-1]-depthsAfter[width-2])/3;
-			for (int i = 1; i < width-1; i++)
-			{
-				int left = depthsAfter[i-1], right = depthsAfter[i+1];
-				int lowerSide = Math.max(left, right);
-				int diff = depthsAfter[i] - lowerSide;
-				if (diff >= 3)
-					needIValleyAfter += diff/3;
-				if (left == right)
-				{
-					if (left == depthsAfter[i]+2)
-					{
-						needIValleyAfter++;
-						needLValleyAfter--;
-						needJValleyAfter--;
-					}
-					else if (left == depthsAfter[i]+1)
-					{
-						needLValleyAfter++;
-						needJValleyAfter++;
-					}
-				}
-				if (diff%4 == 2)
-				{
-					if (left > right)
-						needLValleyAfter+=2;
-					else if (left < right)
-						needJValleyAfter+=2;
-					else
-					{
-						needJValleyAfter++;
-						needLValleyAfter++;
-					}
-				}
-			}
-			if ((depthsAfter[0] - depthsAfter[1])%4 == 2)
-				needJValleyAfter += 2;
-			if ((depthsAfter[width-1] - depthsAfter[width-2])%4 == 2)
-				needLValleyAfter += 2;
-
-			needJValleyAfter >>= 1;
-			needLValleyAfter >>= 1;
+			int[] valleysAfter = calcNeededValleys(depthsAfter, width);
+			int needIValleyAfter = valleysAfter[0];
+			int needJValleyAfter = valleysAfter[1];
+			int needLValleyAfter = valleysAfter[2];
 
 			if(holeAfter > holeBefore) {
 				// Demerits for new holes
@@ -322,5 +238,62 @@ public class PoochyBotDefensive extends PoochyBot {
 			}
 		}
 		return pts;
+	}
+
+	/**
+	 * Find valleys that need an I, J, or L piece to fill.
+	 * @param depths column depths as returned by getColumnDepths
+	 * @param width Field width
+	 * @return {needIValley, needJValley, needLValley}
+	 */
+	private static int[] calcNeededValleys(int[] depths, int width) {
+		int needIValley = 0, needJValley = 0, needLValley = 0;
+		if (depths[0] > depths[1])
+			needIValley = (depths[0]-depths[1])/3;
+		if (depths[width-1] > depths[width-2])
+			needIValley = (depths[width-1]-depths[width-2])/3;
+		for (int i = 1; i < width-1; i++)
+		{
+			int left = depths[i-1], right = depths[i+1];
+			int lowerSide = Math.max(left, right);
+			int diff = depths[i] - lowerSide;
+			if (diff >= 3)
+				needIValley += diff/3;
+			if (left == right)
+			{
+				if (left == depths[i]+2)
+				{
+					needIValley++;
+					needLValley--;
+					needJValley--;
+				}
+				else if (left == depths[i]+1)
+				{
+					needLValley++;
+					needJValley++;
+				}
+			}
+			if (diff%4 == 2)
+			{
+				if (left > right)
+					needLValley+=2;
+				else if (left < right)
+					needJValley+=2;
+				else
+				{
+					needJValley++;
+					needLValley++;
+				}
+			}
+		}
+		if ((depths[0] - depths[1])%4 == 2)
+			needJValley += 2;
+		if ((depths[width-1] - depths[width-2])%4 == 2)
+			needLValley += 2;
+
+		needJValley >>= 1;
+		needLValley >>= 1;
+
+		return new int[] {needIValley, needJValley, needLValley};
 	}
 }
