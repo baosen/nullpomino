@@ -106,6 +106,19 @@ public class MeshSession implements MeshEndpoint, MeshEventSink {
 	private volatile int memberCountForBeacon = 1;
 	private volatile String beaconLobbyName;
 
+	/** Volatile local state re-sent after a migration (at-most-once healing) */
+	private String pendingDeadControl;
+	private String pendingRacewinControl;
+	private Boolean lastReadySent;
+
+	/** Migration bookkeeping (non-arbiter waiting for a claim) */
+	private int expectedClaimUid = -1;
+	private long claimDeadline = 0;
+
+	/** Peerdown aggregation (arbiter only) */
+	private final Map<Integer, Integer> peerdownReports = new HashMap<Integer, Integer>();
+	private long peerdownWindowEnd = 0;
+
 	private MeshSession(String playerName, MeshConfig config, Listener listener) {
 		this.selfName = playerName;
 		this.config = config;
@@ -349,6 +362,9 @@ public class MeshSession implements MeshEndpoint, MeshEventSink {
 			if(a != null) mirror.applyAuthRoom(a);
 			return;
 		}
+		if(type.equals("arbiter")) { onArbiterClaim(link, parts); return; }
+		if(type.equals("peerdown")) { onPeerDownReport(parts); return; }
+		if(type.equals("kick")) { onKick(parts); return; }
 		if(line.equals(MeshProtocol.LINE_PING)) { link.sendLine(MeshProtocol.LINE_PONG); return; }
 		if(line.equals(MeshProtocol.LINE_PONG)) { return; }
 
@@ -652,12 +668,14 @@ public class MeshSession implements MeshEndpoint, MeshEventSink {
 			return;
 		}
 
+		// Track volatile state so it can be re-sent if the arbiter dies with
+		// the control in flight (all idempotent at the authority)
+		if(line.startsWith("dead")) pendingDeadControl = line;
+		else if(line.startsWith("racewin\t")) pendingRacewinControl = line;
+		else if(line.startsWith("ready\t")) lastReadySent = Boolean.valueOf(line.split("\t")[1]);
+
 		// Everything else is a control message for the arbiter
-		if(isArbiter()) {
-			authority.handleControl(localUid, line.split("\t", -1));
-		} else if(arbiterLink != null) {
-			arbiterLink.sendLine(MeshProtocol.wrapControl(line));
-		}
+		routeControl(line);
 	}
 
 	/** Local leaderboard replies show the mirror's current view of our stats */
@@ -739,6 +757,11 @@ public class MeshSession implements MeshEndpoint, MeshEventSink {
 			NetPlayerInfo self = mirror.getPlayer(localUid);
 			int myRoom = (self == null) ? -1 : self.roomID;
 			if(scope != myRoom) return;   // never leak another room's lines into the client
+
+			// The round progressed: the in-flight controls were not lost
+			if(payload.startsWith("dead\t" + localUid + "\t")) pendingDeadControl = null;
+			else if(payload.startsWith("finish\t")) pendingRacewinControl = null;
+			else if(payload.startsWith("start\t")) { pendingDeadControl = null; pendingRacewinControl = null; }
 
 			// Dedup dead/finish around migration resyncs
 			if(payload.startsWith("dead\t")) {
@@ -895,11 +918,177 @@ public class MeshSession implements MeshEndpoint, MeshEventSink {
 			memberCountForBeacon = roster.size();
 			authority.onMemberGone(entry.uid, "bye".equals(reason));
 		} else if(link == arbiterLink) {
-			// Arbiter lost: migration (extended in the migration commit)
-			doShutdown("ARBITER_LOST");
+			if(state != State.READY && state != State.MIGRATING) {
+				// Lost the arbiter mid-join: abort, no migration participation
+				doShutdown("JOIN_FAILED:arbiter lost during join");
+				return;
+			}
+			arbiterLink = null;
+			roster.remove(entry.uid);
+			memberCountForBeacon = roster.size();
+			beginMigration();
+		} else {
+			// A direct link to another member died while the arbiter link is
+			// fine: report it so the arbiter can arbitrate a split mesh
+			if((arbiterLink != null) && (roster.get(entry.uid) != null)) {
+				arbiterLink.sendLine(MeshProtocol.buildPeerDown(entry.uid));
+			}
 		}
-		// Non-arbiter losing a link to another member: the arbiter's own link
-		// to them decides membership; peerdown reporting arrives with migration
+	}
+
+	// ================================================================ arbiter migration
+
+	/** The arbiter is gone: deterministically pick the lowest surviving uid */
+	private void beginMigration() {
+		int successor = roster.lowestUid();
+		if(successor == -1) {
+			doShutdown("LAST_PEER");
+			return;
+		}
+
+		if(successor == localUid) {
+			promoteSelf();
+		} else {
+			setState(State.MIGRATING, "waiting for claim from uid " + successor);
+			expectedClaimUid = successor;
+			claimDeadline = System.currentTimeMillis() + config.claimTimeout;
+		}
+	}
+
+	/** Become the arbiter: adopt the mirror, claim, resync, bury the old arbiter */
+	private void promoteSelf() {
+		int oldArbiterUid = arbiterUid;
+		log.info("Promoting self (uid {}) to arbiter, replacing uid {}", localUid, oldArbiterUid);
+
+		mirror.promote();
+		authority = new MeshAuthority(new AuthoritySink(), rand);
+		authority.adoptState(mirror.getPlayers(), mirror.getRooms(), mirror.getRuleBlobs());
+		authority.restoreCounters(mirror.getNextUid(), mirror.getNextRoomId());
+		seq = mirror.getSeq();
+		arbiterUid = localUid;
+		arbiterLink = null;
+		expectedClaimUid = -1;
+		claimDeadline = 0;
+		beaconLobbyName = selfName;
+
+		for(MeshRoster.Entry e: roster.linkedMembers()) {
+			e.link.sendLine(MeshProtocol.buildArbiterClaim(localUid, seq));
+		}
+
+		// Re-baseline everyone, then process the old arbiter's departure
+		// through the normal path (mid-game: its dead line, maybe a finish)
+		authority.resyncAll();
+		authority.onMemberGone(oldArbiterUid, false);
+
+		setState(State.READY, "promoted");
+		if(listener != null) listener.onArbiterChanged(localUid, true);
+		resendVolatileState();
+	}
+
+	/** A successor announced itself on our existing link to it */
+	private void onArbiterClaim(MeshPeerLink link, String[] parts) {
+		int claimUid;
+		try {
+			claimUid = Integer.parseInt(parts[2]);
+		} catch (RuntimeException e) {
+			return;
+		}
+		if(link.uid != claimUid) return;   // claims only count on the claimant's own link
+
+		arbiterUid = claimUid;
+		arbiterLink = link;
+		expectedClaimUid = -1;
+		claimDeadline = 0;
+		MeshRoster.Entry entry = roster.get(claimUid);
+		if(entry != null) beaconLobbyName = entry.name;
+
+		setState(State.READY, "arbiter is now uid " + claimUid);
+		if(listener != null) listener.onArbiterChanged(claimUid, false);
+		resendVolatileState();
+	}
+
+	/** Heal controls lost in flight to the dead arbiter (all idempotent at the authority) */
+	private void resendVolatileState() {
+		NetPlayerInfo self = mirror.getPlayer(localUid);
+		if(pendingDeadControl != null) {
+			routeControl(pendingDeadControl);
+		}
+		if(pendingRacewinControl != null) {
+			routeControl(pendingRacewinControl);
+		}
+		if((lastReadySent != null) && (self != null) && (self.ready != lastReadySent.booleanValue())) {
+			routeControl("ready\t" + lastReadySent);
+		}
+	}
+
+	private void routeControl(String line) {
+		if(isArbiter()) {
+			authority.handleControl(localUid, line.split("\t", -1));
+		} else if(arbiterLink != null) {
+			arbiterLink.sendLine(MeshProtocol.wrapControl(line));
+		}
+	}
+
+	// ================================================================ peerdown / kick
+
+	/** Arbiter aggregates broken-link reports and kicks the worst-connected member */
+	private void onPeerDownReport(String[] parts) {
+		if(!isArbiter()) return;
+		int uid;
+		try {
+			uid = Integer.parseInt(parts[2]);
+		} catch (RuntimeException e) {
+			return;
+		}
+		if(roster.get(uid) == null) return;   // already gone
+
+		Integer count = peerdownReports.get(uid);
+		peerdownReports.put(uid, (count == null) ? 1 : count + 1);
+		if(peerdownWindowEnd == 0) {
+			peerdownWindowEnd = System.currentTimeMillis() + MeshProtocol.PEERDOWN_WINDOW;
+		}
+	}
+
+	private void resolvePeerDownWindow() {
+		int victim = -1;
+		int worst = 0;
+		for(Map.Entry<Integer, Integer> e: peerdownReports.entrySet()) {
+			if(roster.get(e.getKey()) == null) continue;
+			// Most broken links wins; ties go to the higher uid
+			if((e.getValue() > worst) || ((e.getValue() == worst) && (e.getKey() > victim))) {
+				worst = e.getValue();
+				victim = e.getKey();
+			}
+		}
+		peerdownReports.clear();
+		peerdownWindowEnd = 0;
+
+		if(victim == -1) return;
+		log.info("Kicking split-mesh member uid {}", victim);
+
+		for(MeshRoster.Entry e: roster.linkedMembers()) {
+			e.link.sendLine(MeshProtocol.buildKick(victim, "split mesh"));
+		}
+		MeshRoster.Entry entry = roster.remove(victim);
+		memberCountForBeacon = roster.size();
+		if((entry != null) && (entry.link != null)) entry.link.closeAfterFlush("kicked");
+		authority.onMemberGone(victim, false);
+	}
+
+	private void onKick(String[] parts) {
+		int uid;
+		try {
+			uid = Integer.parseInt(parts[2]);
+		} catch (RuntimeException e) {
+			return;
+		}
+		if(uid == localUid) {
+			doShutdown("KICKED");
+			return;
+		}
+		MeshRoster.Entry entry = roster.remove(uid);
+		memberCountForBeacon = roster.size();
+		if((entry != null) && (entry.link != null)) entry.link.close("kicked by arbiter");
 	}
 
 	private void onTick() {
@@ -913,6 +1102,19 @@ public class MeshSession implements MeshEndpoint, MeshEventSink {
 			return;
 		}
 
+		// Migration claim never arrived: drop the candidate and recompute
+		if((state == State.MIGRATING) && (claimDeadline > 0) && (now >= claimDeadline)) {
+			MeshRoster.Entry candidate = roster.remove(expectedClaimUid);
+			if((candidate != null) && (candidate.link != null)) candidate.link.close("claim timeout");
+			memberCountForBeacon = roster.size();
+			beginMigration();
+		}
+
+		// Split-mesh arbitration window expired
+		if(isArbiter() && (peerdownWindowEnd > 0) && (now >= peerdownWindowEnd)) {
+			resolvePeerDownWindow();
+		}
+
 		for(MeshRoster.Entry e: roster.linkedMembers()) {
 			long idle = now - e.link.lastInboundMillis;
 			if(idle > config.linkTimeout) {
@@ -921,6 +1123,20 @@ public class MeshSession implements MeshEndpoint, MeshEventSink {
 				e.link.sendLine(MeshProtocol.LINE_PING);
 			}
 		}
+	}
+
+	/** Package-private: tests sever one direct link (both TCP ends die) */
+	void severLinkForTest(int uid) {
+		MeshRoster.Entry entry = roster.get(uid);
+		if((entry != null) && (entry.link != null)) entry.link.close("test sever");
+	}
+
+	/** Package-private: tests sever this peer without a graceful bye */
+	void killAbruptly() {
+		state = State.CLOSED;
+		tickTimer.cancel();
+		transport.shutdown();
+		queue.add(MeshEvent.tick());   // wake the dispatcher so it observes CLOSED
 	}
 
 	private void doShutdown(String reason) {

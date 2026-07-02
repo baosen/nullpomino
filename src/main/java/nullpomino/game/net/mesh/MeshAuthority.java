@@ -994,6 +994,21 @@ public class MeshAuthority {
 		this.ruleBlobs.putAll(rules);
 	}
 
+	/**
+	 * Re-baseline every peer after a migration: fresh roomupdate/playerupdate
+	 * broadcasts plus auth frames heal any per-link divergence left behind by
+	 * the old arbiter's independent write queues.
+	 */
+	public void resyncAll() {
+		for(NetRoomInfo roomInfo: roomInfoList) {
+			broadcastRoomInfoUpdate(roomInfo);
+		}
+		for(NetPlayerInfo pInfo: players.values()) {
+			broadcastPlayerInfoUpdate(pInfo);
+		}
+		sink.authUpdate();
+	}
+
 	/** Build an AuthRoom snapshot of a room's non-derivable state */
 	public static MeshProtocol.AuthRoom buildAuthRoom(long seq, NetRoomInfo roomInfo) {
 		return new MeshProtocol.AuthRoom(seq, roomInfo.roomID, roomInfo.playing,
