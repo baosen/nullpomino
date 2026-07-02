@@ -212,8 +212,8 @@ public class NetServer {
 	/** RNG for map selection */
 	private Random rand = new Random();
 
-	/** true if shutdown is requested by the admin */
-	private boolean shutdownRequested = false;
+	/** true if shutdown is requested by the admin or by {@link #requestShutdown()} */
+	private volatile boolean shutdownRequested = false;
 
 	/** The port to listen on */
 	private int port;
@@ -832,6 +832,26 @@ public class NetServer {
 	}
 
 	/**
+	 * Create a server for embedding inside a client process (player hosting).
+	 * Loads the static server config the same way {@link #main(String[])} does,
+	 * but leaves log configuration to the host application.
+	 * Only one embedded server may run per JVM because the config state is static.
+	 * @param port The port to listen on, or a value &lt;= 0 to use the configured port
+	 * @return A server ready for {@link #startListening()} and {@link #run()}
+	 */
+	public static NetServer createEmbedded(int port) {
+		propServer = new CustomProperties();
+		try {
+			propServer = CustomProperties.loadFromFile("config/etc/netserver.cfg");
+		} catch (IOException e) {
+			log.warn("Failed to load config file", e);
+		}
+
+		int p = (port > 0) ? port : propServer.getProperty("netserver.port", DEFAULT_PORT);
+		return new NetServer(p);
+	}
+
+	/**
 	 * Constructor
 	 */
 	public NetServer() {
@@ -933,12 +953,43 @@ public class NetServer {
 	}
 
 	/**
+	 * Bind the listen port before starting the mainloop, so callers can detect
+	 * bind failures (port already in use) synchronously. Optional for the
+	 * standalone server; required for embedded hosting where the caller must
+	 * report the failure to the UI.
+	 * @throws IOException When the port can't be bound
+	 */
+	public void startListening() throws IOException {
+		this.selector = initSelector();
+	}
+
+	/**
+	 * Request a shutdown of the server mainloop from another thread.
+	 * Safe to call at any time; the mainloop closes all connections and
+	 * releases the listen port before its thread exits.
+	 */
+	public void requestShutdown() {
+		shutdownRequested = true;
+		Selector s = this.selector;
+		if(s != null) s.wakeup();
+	}
+
+	/**
+	 * @return The port the server is actually listening on, or -1 before {@link #startListening()}
+	 */
+	public int getLocalPort() {
+		ServerSocketChannel ch = this.serverChannel;
+		if((ch == null) || (ch.socket() == null)) return -1;
+		return ch.socket().getLocalPort();
+	}
+
+	/**
 	 * Server mainloop
 	 */
 	public void run() {
-		// Startup
+		// Startup (unless the caller already bound the port via startListening)
 		try {
-			this.selector = initSelector();
+			if(this.selector == null) this.selector = initSelector();
 		} catch (IOException e) {
 			log.error("Failed to startup the server", e);
 			return;
@@ -1028,6 +1079,27 @@ public class NetServer {
 		}
 
 		log.warn("Server Shutdown!");
+
+		// Close all client connections and release the listen port, so an
+		// embedded server can be restarted in the same JVM right away
+		for(SocketChannel client: new LinkedList<SocketChannel>(channelList)) {
+			try {
+				client.close();
+			} catch (Exception e) {
+				log.debug("Exception on client close during shutdown", e);
+			}
+		}
+		cleanup();
+		try {
+			if(serverChannel != null) serverChannel.close();
+		} catch (Exception e) {
+			log.debug("Exception on server channel close during shutdown", e);
+		}
+		try {
+			if(selector != null) selector.close();
+		} catch (Exception e) {
+			log.debug("Exception on selector close during shutdown", e);
+		}
 	}
 
 	/**
