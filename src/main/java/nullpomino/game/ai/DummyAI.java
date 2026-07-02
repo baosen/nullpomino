@@ -3,6 +3,8 @@
 package nullpomino.game.ai;
 
 import nullpomino.game.component.Controller;
+import nullpomino.game.component.Field;
+import nullpomino.game.component.Piece;
 import nullpomino.game.play.GameEngine;
 
 /**
@@ -59,5 +61,23 @@ public class DummyAI implements AIPlayer {
 	}
 
 	public void renderHint(GameEngine engine, int playerID) {
+	}
+
+	public static Piece checkOffset(Piece p, GameEngine engine)
+	{
+		Piece result = new Piece(p);
+		result.big = engine.big;
+		if (!p.offsetApplied)
+			result.applyOffsetArray(engine.ruleopt.pieceOffsetX[p.id], engine.ruleopt.pieceOffsetY[p.id]);
+		return result;
+	}
+
+	public static int[] getColumnDepths (Field fld)
+	{
+		int width = fld.getWidth();
+		int[] result = new int[width];
+		for (int x = 0; x < width; x++)
+			result[x] = fld.getHighestBlockY(x);
+		return result;
 	}
 }

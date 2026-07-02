@@ -201,14 +201,6 @@ public class ComboRaceSeedSearch extends DummyAI {
 		return bestPts;
 	}
 
-	public static Piece checkOffset(Piece p, GameEngine engine)
-	{
-		Piece result = new Piece(p);
-		result.big = engine.big;
-		if (!p.offsetApplied)
-			result.applyOffsetArray(engine.ruleopt.pieceOffsetX[p.id], engine.ruleopt.pieceOffsetY[p.id]);
-		return result;
-	}
 
 	/**
 	 * Constructs the moves table if necessary.
