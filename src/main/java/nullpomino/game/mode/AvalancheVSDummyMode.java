@@ -778,31 +778,40 @@ public abstract class AvalancheVSDummyMode extends AbstractMode {
 		if((playerID == 1) && (owner.engine[0].gameActive)) {
 			boolean p1Lose = (owner.engine[0].stat == GameEngine.Status.GAMEOVER);
 			boolean p2Lose = (owner.engine[1].stat == GameEngine.Status.GAMEOVER);
-			if(p1Lose && p2Lose) {
-				// Draw
-				winnerID = -1;
-				owner.engine[0].stat = GameEngine.Status.GAMEOVER;
-				owner.engine[1].stat = GameEngine.Status.GAMEOVER;
-			} else if(p2Lose && !p1Lose) {
-				// 1P win
-				winnerID = 0;
-				owner.engine[0].stat = GameEngine.Status.EXCELLENT;
-				owner.engine[1].stat = GameEngine.Status.GAMEOVER;
-			} else if(p1Lose && !p2Lose) {
-				// 2P win
-				winnerID = 1;
-				owner.engine[0].stat = GameEngine.Status.GAMEOVER;
-				owner.engine[1].stat = GameEngine.Status.EXCELLENT;
-			}
-			if (p1Lose || p2Lose) {
-				owner.engine[0].gameEnded();
-				owner.engine[1].gameEnded();
-				owner.engine[0].resetStatc();
-				owner.engine[1].resetStatc();
-				owner.engine[0].statc[1] = 1;
-				owner.engine[1].statc[1] = 1;
-				owner.bgmStatus.bgm = BGMStatus.BGM_NOTHING;
-			}
+			resolveVSResult(p1Lose, p2Lose);
+		}
+	}
+
+	/**
+	 * Settle the match once one or both players have lost
+	 * @param p1Lose true if 1P has lost
+	 * @param p2Lose true if 2P has lost
+	 */
+	protected void resolveVSResult(boolean p1Lose, boolean p2Lose) {
+		if(p1Lose && p2Lose) {
+			// Draw
+			winnerID = -1;
+			owner.engine[0].stat = GameEngine.Status.GAMEOVER;
+			owner.engine[1].stat = GameEngine.Status.GAMEOVER;
+		} else if(p2Lose && !p1Lose) {
+			// 1P win
+			winnerID = 0;
+			owner.engine[0].stat = GameEngine.Status.EXCELLENT;
+			owner.engine[1].stat = GameEngine.Status.GAMEOVER;
+		} else if(p1Lose && !p2Lose) {
+			// 2P win
+			winnerID = 1;
+			owner.engine[0].stat = GameEngine.Status.GAMEOVER;
+			owner.engine[1].stat = GameEngine.Status.EXCELLENT;
+		}
+		if (p1Lose || p2Lose) {
+			owner.engine[0].gameEnded();
+			owner.engine[1].gameEnded();
+			owner.engine[0].resetStatc();
+			owner.engine[1].resetStatc();
+			owner.engine[0].statc[1] = 1;
+			owner.engine[1].statc[1] = 1;
+			owner.bgmStatus.bgm = BGMStatus.BGM_NOTHING;
 		}
 	}
 

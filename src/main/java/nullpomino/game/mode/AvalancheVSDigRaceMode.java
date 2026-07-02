@@ -509,31 +509,7 @@ public class AvalancheVSDigRaceMode extends AvalancheVSDummyMode {
 			boolean p2Lose = (owner.engine[1].stat == GameEngine.Status.GAMEOVER);
 			if (!p2Lose && owner.engine[0].field != null && owner.engine[0].stat != GameEngine.Status.READY)
 				p2Lose = (owner.engine[0].field.getHowManyGems() == 0);
-			if(p1Lose && p2Lose) {
-				// Draw
-				winnerID = -1;
-				owner.engine[0].stat = GameEngine.Status.GAMEOVER;
-				owner.engine[1].stat = GameEngine.Status.GAMEOVER;
-			} else if(p2Lose && !p1Lose) {
-				// 1P win
-				winnerID = 0;
-				owner.engine[0].stat = GameEngine.Status.EXCELLENT;
-				owner.engine[1].stat = GameEngine.Status.GAMEOVER;
-			} else if(p1Lose && !p2Lose) {
-				// 2P win
-				winnerID = 1;
-				owner.engine[0].stat = GameEngine.Status.GAMEOVER;
-				owner.engine[1].stat = GameEngine.Status.EXCELLENT;
-			}
-			if (p1Lose || p2Lose) {
-				owner.engine[0].gameEnded();
-				owner.engine[1].gameEnded();
-				owner.engine[0].resetStatc();
-				owner.engine[1].resetStatc();
-				owner.engine[0].statc[1] = 1;
-				owner.engine[1].statc[1] = 1;
-				owner.bgmStatus.bgm = BGMStatus.BGM_NOTHING;
-			}
+			resolveVSResult(p1Lose, p2Lose);
 		}
 	}
 
