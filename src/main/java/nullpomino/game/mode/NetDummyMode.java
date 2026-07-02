@@ -757,6 +757,17 @@ public class NetDummyMode extends AbstractMode implements NetLobbyListener {
 	}
 
 	/**
+	 * NET: Save the netplay player name to a replay
+	 * @param prop CustomProperties the replay is saved to
+	 * @param playerID Player ID
+	 */
+	protected void netSaveReplayPlayerName(CustomProperties prop, int playerID) {
+		if((netPlayerName != null) && (netPlayerName.length() > 0)) {
+			prop.setProperty(playerID + ".net.netPlayerName", netPlayerName);
+		}
+	}
+
+	/**
 	 * NET: Draw personal best and replay-upload status on the results screen
 	 * @param engine GameEngine
 	 * @param playerID Player ID

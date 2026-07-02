@@ -924,10 +924,7 @@ public class TimeAttackMode extends NetDummyMode {
 	public void saveReplay(GameEngine engine, int playerID, CustomProperties prop) {
 		saveSetting(prop);
 
-		// NET: Save name
-		if((netPlayerName != null) && (netPlayerName.length() > 0)) {
-			prop.setProperty(playerID + ".net.netPlayerName", netPlayerName);
-		}
+		netSaveReplayPlayerName(prop, playerID);
 
 		if((owner.replayMode == false) && (startlevel == 0) && (big == false) && (engine.ai == null)) {
 			updateRanking(norm, engine.statistics.time, goaltype, engine.statistics.rollclear);

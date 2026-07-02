@@ -791,10 +791,7 @@ public class ScoreRaceMode extends NetDummyMode {
 		savePreset(engine, engine.owner.replayProp, -1);
 		engine.owner.replayProp.setProperty("scorerace.version", version);
 
-		// NET: Save name
-		if((netPlayerName != null) && (netPlayerName.length() > 0)) {
-			prop.setProperty(playerID + ".net.netPlayerName", netPlayerName);
-		}
+		netSaveReplayPlayerName(prop, playerID);
 
 		// Update rankings
 		if((owner.replayMode == false) && (engine.statistics.score >= GOAL_TABLE[goaltype]) && (big == false) && (engine.ai == null)) {

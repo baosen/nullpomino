@@ -587,10 +587,7 @@ public class MarathonMode extends AbstractMarathonMode {
 	public void saveReplay(GameEngine engine, int playerID, CustomProperties prop) {
 		saveSetting(prop);
 
-		// NET: Save name
-		if((netPlayerName != null) && (netPlayerName.length() > 0)) {
-			prop.setProperty(playerID + ".net.netPlayerName", netPlayerName);
-		}
+		netSaveReplayPlayerName(prop, playerID);
 
 		// Update rankings
 		if((owner.replayMode == false) && (big == false) && (engine.ai == null)) {

@@ -438,10 +438,7 @@ public class LineRaceMode extends NetDummyMode {
 	public void saveReplay(GameEngine engine, int playerID, CustomProperties prop) {
 		savePreset(engine, engine.owner.replayProp, -1);
 
-		// NET: Save name
-		if((netPlayerName != null) && (netPlayerName.length() > 0)) {
-			prop.setProperty(playerID + ".net.netPlayerName", netPlayerName);
-		}
+		netSaveReplayPlayerName(prop, playerID);
 
 		// Update rankings
 		if((!owner.replayMode) && (engine.statistics.lines >= GOAL_TABLE[goaltype]) && (!big) && (engine.ai == null) && (!netIsWatch))

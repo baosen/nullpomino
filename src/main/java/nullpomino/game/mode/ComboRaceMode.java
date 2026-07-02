@@ -783,10 +783,7 @@ public class ComboRaceMode extends NetDummyMode {
 		engine.owner.replayProp.setProperty("comborace.version", version);
 		savePreset(engine, engine.owner.replayProp, -1);
 
-		// NET: Save name
-		if((netPlayerName != null) && (netPlayerName.length() > 0)) {
-			prop.setProperty(playerID + ".net.netPlayerName", netPlayerName);
-		}
+		netSaveReplayPlayerName(prop, playerID);
 
 		// Update rankings
 		if((owner.replayMode == false) && (!big) && (engine.ai == null)) {

@@ -529,10 +529,7 @@ public class DigRaceMode extends NetDummyMode {
 		engine.owner.replayProp.setProperty("digrace.version", version);
 		savePreset(engine, engine.owner.replayProp, -1);
 
-		// NET: Save name
-		if((netPlayerName != null) && (netPlayerName.length() > 0)) {
-			prop.setProperty(playerID + ".net.netPlayerName", netPlayerName);
-		}
+		netSaveReplayPlayerName(prop, playerID);
 
 		// Update rankings
 		if((!owner.replayMode) && (getRemainGarbageLines(engine, goaltype) == 0) && (engine.ending != 0) && (engine.ai == null) && (!netIsWatch)) {
