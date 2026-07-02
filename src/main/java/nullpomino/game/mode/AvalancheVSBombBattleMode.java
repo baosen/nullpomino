@@ -577,22 +577,8 @@ public class AvalancheVSBombBattleMode extends AvalancheVSDummyMode {
 	}
 
 	@Override
-	protected void updateOjamaMeter (GameEngine engine, int playerID) {
-		int width = 6;
-		if (engine.field != null)
-			width = engine.field.getWidth();
-		width *= 6;
-		int blockHeight = receiver.getBlockGraphicsHeight(engine, playerID);
-		// Rising auctionMeter
-		int value = ojama[playerID] * blockHeight / width;
-		if(ojama[playerID] >= 5*width) engine.meterColor = GameEngine.METER_COLOR_RED;
-		else if(ojama[playerID] >= width) engine.meterColor = GameEngine.METER_COLOR_ORANGE;
-		else if(ojama[playerID] >= 1) engine.meterColor = GameEngine.METER_COLOR_YELLOW;
-		else engine.meterColor = GameEngine.METER_COLOR_GREEN;
-		if (value > engine.meterValue)
-			engine.meterValue++;
-		else if (value < engine.meterValue)
-			engine.meterValue--;
+	protected int ojamaMeterWidth(GameEngine engine) {
+		return super.ojamaMeterWidth(engine) * 6;
 	}
 
 	/*

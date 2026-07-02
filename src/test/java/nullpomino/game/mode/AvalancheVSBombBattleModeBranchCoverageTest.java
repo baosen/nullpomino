@@ -138,7 +138,7 @@ class AvalancheVSBombBattleModeBranchCoverageTest {
 		mode.modeInit(new GameManager(new EventReceiver()));
 		GameEngine e = freshEngine(mode); e.field = null;
 		setIntArray(mode, "ojama", 0, 36);
-		Method m = AvalancheVSBombBattleMode.class.getDeclaredMethod("updateOjamaMeter", GameEngine.class, int.class);
+		Method m = AvalancheVSDummyMode.class.getDeclaredMethod("updateOjamaMeter", GameEngine.class, int.class);
 		m.setAccessible(true); m.invoke(mode, e, 0);
 	}
 

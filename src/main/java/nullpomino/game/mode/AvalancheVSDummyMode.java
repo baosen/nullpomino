@@ -822,9 +822,7 @@ public abstract class AvalancheVSDummyMode extends AbstractMode {
 	}
 
 	protected void updateOjamaMeter (GameEngine engine, int playerID) {
-		int width = 6;
-		if (engine.field != null)
-			width = engine.field.getWidth();
+		int width = ojamaMeterWidth(engine);
 		int blockHeight = receiver.getBlockGraphicsHeight(engine, playerID);
 		// Rising auctionMeter
 		int value = ojama[playerID] * blockHeight / width;
@@ -836,6 +834,14 @@ public abstract class AvalancheVSDummyMode extends AbstractMode {
 			engine.meterValue++;
 		else if (value < engine.meterValue)
 			engine.meterValue--;
+	}
+
+	/** Width used to scale the rising ojama meter */
+	protected int ojamaMeterWidth(GameEngine engine) {
+		int width = 6;
+		if (engine.field != null)
+			width = engine.field.getWidth();
+		return width;
 	}
 
 	/*
