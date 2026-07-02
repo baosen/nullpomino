@@ -45,8 +45,14 @@ public class NetLanDiscovery {
 	/** First field of every announce packet */
 	public static final String MAGIC = "NullpoLAN";
 
-	/** Announce packet format version */
+	/** Announce packet format version (server announce) */
 	public static final int PROTOCOL_VERSION = 1;
+
+	/** Announce packet format version for mesh sessions (old clients reject it silently) */
+	public static final int MESH_PROTOCOL_VERSION = 2;
+
+	/** Type marker inside a v2 announce identifying a mesh session */
+	public static final String MESH_TYPE = "M";
 
 	/** Delay between announce broadcasts (ms) */
 	public static final int ANNOUNCE_INTERVAL_MS = 1500;
@@ -69,7 +75,25 @@ public class NetLanDiscovery {
 	}
 
 	/**
-	 * Decode an announce packet
+	 * Encode a v2 announce packet for a P2P mesh session
+	 * @param tcpPort Port this peer's mesh transport listens on
+	 * @param playerName Name of the announcing peer
+	 * @param sessionId Session identifier shared by every peer of the session
+	 * @param lobbyName Display name of the session
+	 * @param players Current number of players in the session
+	 * @return Packet payload
+	 */
+	public static byte[] encodeMeshAnnounce(int tcpPort, String playerName, String sessionId,
+		String lobbyName, int players)
+	{
+		return NetUtil.stringToBytes(
+			MAGIC + "\t" + MESH_PROTOCOL_VERSION + "\t" + tcpPort + "\t" +
+			NetUtil.urlEncode(playerName) + "\t" + GameManager.getVersionMajor() + "\t" +
+			MESH_TYPE + "\t" + sessionId + "\t" + NetUtil.urlEncode(lobbyName) + "\t" + players);
+	}
+
+	/**
+	 * Decode an announce packet (v1 server announce or v2 mesh announce)
 	 * @param data Packet payload
 	 * @param len Payload length
 	 * @param sourceAddr Address the packet was received from
@@ -83,13 +107,50 @@ public class NetLanDiscovery {
 		if(!MAGIC.equals(parts[0])) return null;
 
 		try {
-			if(Integer.parseInt(parts[1]) != PROTOCOL_VERSION) return null;
+			int version = Integer.parseInt(parts[1]);
 			int port = Integer.parseInt(parts[2]);
 			if((port < 1) || (port > 65535)) return null;
-			return new Announce(sourceAddr, port, NetUtil.urlDecode(parts[3]), parts[4]);
+			String name = NetUtil.urlDecode(parts[3]);
+
+			if(version == PROTOCOL_VERSION) {
+				return new Announce(sourceAddr, port, name, parts[4]);
+			}
+			if(version == MESH_PROTOCOL_VERSION) {
+				if((parts.length < 9) || !MESH_TYPE.equals(parts[5]) || (parts[6].length() == 0)) return null;
+				return new Announce(sourceAddr, port, name, parts[4],
+					parts[6], NetUtil.urlDecode(parts[7]), Integer.parseInt(parts[8]));
+			}
+			return null;
 		} catch (IllegalArgumentException e) {
 			return null;
 		}
+	}
+
+	/**
+	 * Collapse mesh announces of the same session (every peer announces) to one entry each.
+	 * The entry with the lexicographically lowest host:port wins, so the pick is stable
+	 * across refreshes. Non-mesh announces pass through untouched.
+	 * @param announces Announces (typically a listener snapshot, already hostPort-sorted)
+	 * @return Deduplicated list, original order preserved
+	 */
+	public static List<Announce> dedupeBySession(List<Announce> announces) {
+		List<Announce> result = new ArrayList<Announce>();
+		Set<String> seenSessions = new LinkedHashSet<String>();
+
+		for(Announce a: announces) {
+			if(!a.mesh) {
+				result.add(a);
+			} else if(!seenSessions.contains(a.sessionId)) {
+				Announce best = a;
+				for(Announce b: announces) {
+					if(b.mesh && b.sessionId.equals(a.sessionId)
+						&& (b.hostPort().compareTo(best.hostPort()) < 0)) best = b;
+				}
+				result.add(best);
+				seenSessions.add(a.sessionId);
+			}
+		}
+		return result;
 	}
 
 	/**
@@ -112,12 +173,35 @@ public class NetLanDiscovery {
 		/** Time the announce was received (System.currentTimeMillis()) */
 		public final long lastSeen;
 
+		/** true if this announce is a P2P mesh session (v2), false for a server (v1) */
+		public final boolean mesh;
+
+		/** Session identifier shared by all peers of a mesh session, "" for servers */
+		public final String sessionId;
+
+		/** Display name of the mesh session, "" for servers */
+		public final String lobbyName;
+
+		/** Number of players in the mesh session, 0 for servers */
+		public final int players;
+
 		public Announce(String address, int port, String playerName, String version) {
+			this(address, port, playerName, version, "", "", 0);
+			// v1 server announce - the mesh fields stay empty
+		}
+
+		public Announce(String address, int port, String playerName, String version,
+			String sessionId, String lobbyName, int players)
+		{
 			this.address = address;
 			this.port = port;
 			this.playerName = playerName;
 			this.version = version;
 			this.lastSeen = System.currentTimeMillis();
+			this.mesh = (sessionId != null) && (sessionId.length() > 0);
+			this.sessionId = (sessionId == null) ? "" : sessionId;
+			this.lobbyName = (lobbyName == null) ? "" : lobbyName;
+			this.players = players;
 		}
 
 		/** @return "address:port" as accepted by the server-select connect logic */
