@@ -893,14 +893,7 @@ public class TimeAttackMode extends NetDummyMode {
 			}
 		}
 
-		if(netIsPB) {
-			receiver.drawMenuFont(engine, playerID, 2, 20, "NEW PB", EventReceiver.COLOR_ORANGE);
-		}
-		if(netIsNetPlay && (netReplaySendStatus == 1)) {
-			receiver.drawMenuFont(engine, playerID, 0, 21, "SENDING...", EventReceiver.COLOR_PINK);
-		} else if(netIsNetPlay && !netIsWatch && (netReplaySendStatus == 2)) {
-			receiver.drawMenuFont(engine, playerID, 1, 21, "A: RETRY", EventReceiver.COLOR_RED);
-		}
+		netDrawResultStatus(engine, playerID, 20);
 	}
 
 	/**

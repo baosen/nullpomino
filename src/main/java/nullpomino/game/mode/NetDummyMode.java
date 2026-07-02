@@ -757,6 +757,24 @@ public class NetDummyMode extends AbstractMode implements NetLobbyListener {
 	}
 
 	/**
+	 * NET: Draw personal best and replay-upload status on the results screen
+	 * @param engine GameEngine
+	 * @param playerID Player ID
+	 * @param y Y-coordinate of the "NEW PB" line (the upload status goes one line below)
+	 */
+	protected void netDrawResultStatus(GameEngine engine, int playerID, int y) {
+		if(netIsPB) {
+			receiver.drawMenuFont(engine, playerID, 2, y, "NEW PB", EventReceiver.COLOR_ORANGE);
+		}
+
+		if(netIsNetPlay && (netReplaySendStatus == 1)) {
+			receiver.drawMenuFont(engine, playerID, 0, y + 1, "SENDING...", EventReceiver.COLOR_PINK);
+		} else if(netIsNetPlay && !netIsWatch && (netReplaySendStatus == 2)) {
+			receiver.drawMenuFont(engine, playerID, 1, y + 1, "A: RETRY", EventReceiver.COLOR_RED);
+		}
+	}
+
+	/**
 	 * NET: Send the current piece's movement to all spectators.
 	 * @param engine GameEngine
 	 * @param forceSend <code>true</code> to force send a message
