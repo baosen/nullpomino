@@ -2,8 +2,6 @@ load("@rules_java//java:defs.bzl", "java_library")
 
 JAVACOPTS = ["-encoding", "UTF-8"]
 
-LOG4J = "@maven//:ch_qos_reload4j_reload4j"
-
 SLF4J = "@maven//:org_slf4j_slf4j_api"
 
 LOGBACK = "@maven//:ch_qos_logback_logback_classic"

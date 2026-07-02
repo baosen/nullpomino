@@ -577,9 +577,13 @@ Libraries:
     http://www.libsdl.org/
     License: LGPL-2.1
 
-    Apache log4j 1.2.15
-    http://logging.apache.org/log4j/1.2/index.html
-    License: Apache-2.0
+    SLF4J 2.0.18
+    https://www.slf4j.org/
+    License: MIT
+
+    Logback 1.5.37
+    https://logback.qos.ch/
+    License: EPL-1.0 / LGPL-2.1
 
     Crypt.java (Java-based implementation of the unix crypt(3) command)
     http://www.cacas.org/java/gnu/tools/

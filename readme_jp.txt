@@ -564,8 +564,10 @@ A: 名前にトリップが入っていないと記録は保存されません�
 	https://github.com/java-native-access/jna
 	Simple DirectMedia Layer
 	http://www.libsdl.org/
-	Apache log4j 1.2.15
-	http://logging.apache.org/log4j/1.2/index.html
+	SLF4J 2.0.18
+	https://www.slf4j.org/
+	Logback 1.5.37
+	https://logback.qos.ch/
 	Crypt.java (Java-based implementation of the unix crypt(3) command)
 	http://www.cacas.org/java/gnu/tools/
 

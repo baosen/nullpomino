@@ -16,7 +16,6 @@ maven = use_extension("@rules_jvm_external//:extensions.bzl", "maven")
 maven.install(
     artifacts = [
         "ch.qos.logback:logback-classic:1.5.37",
-        "ch.qos.reload4j:reload4j:1.2.25",
         "net.java.dev.jna:jna:5.16.0",
         "org.slf4j:slf4j-api:2.0.18",
         "org.junit.jupiter:junit-jupiter:5.10.2",
