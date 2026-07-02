@@ -6,6 +6,7 @@ import java.util.LinkedList;
 
 import nullpomino.game.net.NetPlayerInfo;
 import nullpomino.game.net.NetRoomInfo;
+import nullpomino.game.net.NetServerRunner;
 import nullpomino.gui.net.NetLobbyFrame;
 import nullpomino.gui.sdl.binding.SDL3;
 import nullpomino.gui.sdl.binding.SDLConstants;
@@ -30,6 +31,9 @@ public class StateNetLobbySDL extends BaseStateSDL {
 
 	private WidgetSDL focused;
 	private String statusLine = "";
+
+	/** Cached "HOSTING ON host:port" header, so the NIC scan runs once per session */
+	private String hostingBanner;
 
 	@Override
 	public void enter() {
@@ -378,7 +382,14 @@ public class StateNetLobbySDL extends BaseStateSDL {
 		SDL3.INSTANCE.SDL_RenderTexture(NullpoMinoSDL.renderer, ResourceHolderSDL.imgMenu, null, null);
 
 		NormalFontSDL.printFont(8, 8, "LOBBY", NormalFontSDL.COLOR_CYAN);
-		if(nl.netPlayerClient != null) {
+		if((NullpoMinoSDL.embeddedServer != null) && NullpoMinoSDL.embeddedServer.isRunning()) {
+			// When hosting, show the address friends should join instead of 127.0.0.1
+			if(hostingBanner == null) {
+				hostingBanner = "HOSTING ON " + NetServerRunner.getLanAddress() + ":" + NullpoMinoSDL.embeddedServer.getPort();
+			}
+			NormalFontSDL.printFont(96, 8, NormalFontSDL.safeString(hostingBanner), NormalFontSDL.COLOR_GREEN);
+		} else if(nl.netPlayerClient != null) {
+			hostingBanner = null;
 			NormalFontSDL.printFont(96, 8,
 					NormalFontSDL.safeString(nl.netPlayerClient.getHost() + ":" + nl.netPlayerClient.getPort()),
 					NormalFontSDL.COLOR_WHITE);

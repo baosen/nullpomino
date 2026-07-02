@@ -16,6 +16,7 @@ import com.sun.jna.Pointer;
 import com.sun.jna.ptr.FloatByReference;
 
 import nullpomino.game.net.NetObserverClient;
+import nullpomino.game.net.NetServerRunner;
 import nullpomino.gui.GameKeyDummy;
 import nullpomino.gui.net.NetLobbyFrame;
 import nullpomino.game.play.GameEngine;
@@ -228,6 +229,9 @@ public class NullpoMinoSDL {
 
 	/** Observer client */
 	public static NetObserverClient netObserverClient;
+
+	/** Embedded netplay server when this client is hosting a game, null otherwise */
+	public static NetServerRunner embeddedServer;
 
 	/**
 	 * Shared netplay session (protocol client, chat buffers, room list, rule catalogue).
@@ -717,6 +721,7 @@ public class NullpoMinoSDL {
 		log.info("NullpoMinoSDL shutdown()");
 
 		try {
+			stopEmbeddedServer();
 			stopObserverClient();
 			for(int i = 0; i < joystickMax; i++) {
 				if(joystick[i] != null) {
@@ -750,6 +755,7 @@ public class NullpoMinoSDL {
 	 * netplay lobby states and for hard-disconnect recovery paths.
 	 */
 	public static void endNetplay() {
+		stopEmbeddedServer();
 		if(netLobby != null) {
 			try { netLobby.shutdown(); }
 			catch(Throwable t) { log.warn("netLobby shutdown failed", t); }
@@ -1160,6 +1166,22 @@ public class NullpoMinoSDL {
 		if((host.length() > 0) && (port > 0)) {
 			netObserverClient = new NetObserverClient(host, port);
 			netObserverClient.start();
+		}
+	}
+
+	/**
+	 * Stop the embedded netplay server, if this client is hosting one
+	 */
+	public static void stopEmbeddedServer() {
+		log.debug("stopEmbeddedServer called");
+
+		if(embeddedServer != null) {
+			try {
+				embeddedServer.stop();
+			} catch (Throwable e) {
+				log.warn("embedded server stop failed", e);
+			}
+			embeddedServer = null;
 		}
 	}
 

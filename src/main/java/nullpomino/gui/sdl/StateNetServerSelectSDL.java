@@ -2,7 +2,14 @@
 // SPDX-License-Identifier: BSD-3-Clause
 package nullpomino.gui.sdl;
 
+import java.io.IOException;
+import java.net.SocketException;
+import java.util.ArrayList;
+import java.util.List;
+
+import nullpomino.game.net.NetLanDiscovery;
 import nullpomino.game.net.NetPlayerClient;
+import nullpomino.game.net.NetServerRunner;
 import nullpomino.gui.net.NetLobbyFrame;
 import nullpomino.gui.sdl.binding.SDL3;
 import nullpomino.gui.sdl.binding.SDLConstants;
@@ -28,7 +35,23 @@ public class StateNetServerSelectSDL extends BaseStateSDL {
 	private ButtonSDL observeBtn;
 	private ButtonSDL addBtn;
 	private ButtonSDL deleteBtn;
+	private ButtonSDL hostBtn;
 	private ButtonSDL backBtn;
+
+	/** LAN discovery listener, null when the UDP port couldn't be bound */
+	private NetLanDiscovery.Listener lanListener;
+
+	/** LAN hosts currently shown in the table */
+	private List<NetLanDiscovery.Announce> lanHosts = new ArrayList<NetLanDiscovery.Announce>();
+
+	/** Change-detection key of the last LAN snapshot rendered into the table */
+	private String lanKey = "";
+
+	/** host:port target of each visible table row (saved entries first, then LAN rows) */
+	private final List<String> rowTargets = new ArrayList<String>();
+
+	/** Number of leading rows that come from the saved server list */
+	private int savedCount;
 
 	// Add-server sub-mode
 	private boolean adding;
@@ -66,6 +89,17 @@ public class StateNetServerSelectSDL extends BaseStateSDL {
 		TableSDL.Column[] cols = { new TableSDL.Column("SERVER", 580) };
 		serverTable = new TableSDL(16, 160, 608, 280, cols);
 		serverTable.showHeader = false;
+
+		// Listen for hosted games announced on the local network. Best-effort:
+		// if the UDP port can't be bound the screen just shows saved servers.
+		lanHosts = new ArrayList<NetLanDiscovery.Announce>();
+		lanKey = "";
+		try {
+			lanListener = new NetLanDiscovery.Listener();
+			lanListener.start();
+		} catch (SocketException e) {
+			lanListener = null;
+		}
 		refreshServerTable();
 
 		// Buttons pinned to the bottom (h=32, y=444 → ends at y=476, 4 px above
@@ -76,6 +110,8 @@ public class StateNetServerSelectSDL extends BaseStateSDL {
 		observeBtn = new ButtonSDL(148, btnY, 148, 32, "OBSERVE", new Runnable() { public void run() { toggleObserver(); } });
 		addBtn     = new ButtonSDL(300, btnY,  64, 32, "ADD",     new Runnable() { public void run() { openAddServer(); } });
 		deleteBtn  = new ButtonSDL(368, btnY, 112, 32, "DELETE",  new Runnable() { public void run() { deleteSelectedServer(); } });
+		hostBtn    = new ButtonSDL(484, btnY,  68, 32, "HOST",    new Runnable() { public void run() { hostOrStop(); } });
+		hostBtn.theme = ButtonSDL.THEME_GREEN;
 		backBtn    = new ButtonSDL(556, btnY,  68, 32, "BACK",    new Runnable() { public void run() { NullpoMinoSDL.endNetplay(); } });
 
 		addServerInput = new TextInputSDL(16, btnY, 400, 32);
@@ -94,17 +130,42 @@ public class StateNetServerSelectSDL extends BaseStateSDL {
 
 	@Override
 	public void leave() {
+		if(lanListener != null) {
+			lanListener.shutdown();
+			lanListener = null;
+		}
 		setFocus(null);
 		NullpoMinoSDL.stopTextInput();
 	}
 
 	private void refreshServerTable() {
+		// Remember the selected target so LAN refreshes don't move the cursor
+		String preferred = null;
+		int sel = serverTable.getSelectedIndex();
+		if(sel >= 0 && sel < rowTargets.size()) preferred = rowTargets.get(sel);
+		if(preferred == null || preferred.length() == 0) {
+			preferred = NullpoMinoSDL.netLobby.propConfig.getProperty("serverselect.listboxServerList.value", "");
+		}
+
 		serverTable.clear();
-		for(String s : NullpoMinoSDL.netLobby.serverList) serverTable.addRow(new String[] { s });
-		String preferred = NullpoMinoSDL.netLobby.propConfig.getProperty("serverselect.listboxServerList.value", "");
+		rowTargets.clear();
+		for(String s : NullpoMinoSDL.netLobby.serverList) {
+			serverTable.addRow(new String[] { s });
+			rowTargets.add(s);
+		}
+		savedCount = rowTargets.size();
+
+		// LAN-discovered hosts follow the saved entries, marked cyan.
+		// They are display-only: never written to the saved server list.
+		for(NetLanDiscovery.Announce a : lanHosts) {
+			if(isSavedServer(a)) continue;
+			serverTable.addRow(new String[] { a.hostPort() + "  (LAN) " + a.playerName }, NormalFontSDL.COLOR_CYAN);
+			rowTargets.add(a.hostPort());
+		}
+
 		if(preferred != null && preferred.length() > 0) {
-			for(int i = 0; i < NullpoMinoSDL.netLobby.serverList.size(); i++) {
-				if(preferred.equals(NullpoMinoSDL.netLobby.serverList.get(i))) {
+			for(int i = 0; i < rowTargets.size(); i++) {
+				if(preferred.equals(rowTargets.get(i))) {
 					serverTable.setSelectedIndex(i);
 					break;
 				}
@@ -112,6 +173,15 @@ public class StateNetServerSelectSDL extends BaseStateSDL {
 		} else if(serverTable.getRowCount() > 0) {
 			serverTable.setSelectedIndex(0);
 		}
+	}
+
+	/** @return true if a LAN announce points at a server that is already in the saved list */
+	private static boolean isSavedServer(NetLanDiscovery.Announce a) {
+		for(String s : NullpoMinoSDL.netLobby.serverList) {
+			String normalized = (s.indexOf(':') == -1) ? (s + ":" + NetPlayerClient.DEFAULT_PORT) : s;
+			if(normalized.trim().equals(a.hostPort())) return true;
+		}
+		return false;
 	}
 
 	private void setFocus(WidgetSDL w) {
@@ -133,6 +203,19 @@ public class StateNetServerSelectSDL extends BaseStateSDL {
 		boolean observerOn = nl.propObserver != null
 				&& nl.propObserver.getProperty("observer.enable", false);
 		observeBtn.label = observerOn ? "UNOBSERVE" : "OBSERVE";
+		hostBtn.label = (NullpoMinoSDL.embeddedServer != null) ? "STOP" : "HOST";
+
+		// Merge LAN-discovered hosts into the table when the set changes
+		if(lanListener != null) {
+			List<NetLanDiscovery.Announce> snapshot = lanListener.snapshot();
+			StringBuilder key = new StringBuilder();
+			for(NetLanDiscovery.Announce a : snapshot) key.append(a.hostPort()).append('/').append(a.playerName).append('\n');
+			if(!lanKey.equals(key.toString())) {
+				lanKey = key.toString();
+				lanHosts = snapshot;
+				refreshServerTable();
+			}
+		}
 
 		int mx = MouseInputSDL.mouseInput.getMouseX();
 		int my = MouseInputSDL.mouseInput.getMouseY();
@@ -165,6 +248,7 @@ public class StateNetServerSelectSDL extends BaseStateSDL {
 			observeBtn.update(mx, my, clicked);
 			addBtn.update(mx, my, clicked);
 			deleteBtn.update(mx, my, clicked);
+			hostBtn.update(mx, my, clicked);
 			backBtn.update(mx, my, clicked);
 		}
 
@@ -219,7 +303,7 @@ public class StateNetServerSelectSDL extends BaseStateSDL {
 	 * call — cheap and keeps the order explicit.
 	 */
 	private ButtonSDL[] buttonRow() {
-		return new ButtonSDL[] { connectBtn, observeBtn, addBtn, deleteBtn, backBtn };
+		return new ButtonSDL[] { connectBtn, observeBtn, addBtn, deleteBtn, hostBtn, backBtn };
 	}
 
 	/**
@@ -308,8 +392,8 @@ public class StateNetServerSelectSDL extends BaseStateSDL {
 		if(name.length() == 0) { statusLine = "Enter a name first"; return; }
 
 		int idx = serverTable.getSelectedIndex();
-		if(idx < 0 || idx >= nl.serverList.size()) { statusLine = "Select a server"; return; }
-		String server = nl.serverList.get(idx);
+		if(idx < 0 || idx >= rowTargets.size()) { statusLine = "Select a server"; return; }
+		String server = rowTargets.get(idx);
 
 		int portSplit = server.indexOf(':');
 		String host = portSplit == -1 ? server : server.substring(0, portSplit);
@@ -348,8 +432,8 @@ public class StateNetServerSelectSDL extends BaseStateSDL {
 
 		// Enabling: need a server and a non-empty nickname.
 		int idx = serverTable.getSelectedIndex();
-		if(idx < 0 || idx >= nl.serverList.size()) { statusLine = "Select a server"; return; }
-		String server = nl.serverList.get(idx);
+		if(idx < 0 || idx >= rowTargets.size()) { statusLine = "Select a server"; return; }
+		String server = rowTargets.get(idx);
 		int portSplit = server.indexOf(':');
 		String host = portSplit == -1 ? server : server.substring(0, portSplit);
 		int port = nullpomino.game.net.NetPlayerClient.DEFAULT_PORT;
@@ -387,10 +471,40 @@ public class StateNetServerSelectSDL extends BaseStateSDL {
 
 	private void deleteSelectedServer() {
 		int idx = serverTable.getSelectedIndex();
-		if(idx < 0 || idx >= NullpoMinoSDL.netLobby.serverList.size()) return;
+		// LAN-discovered rows (beyond savedCount) can't be deleted - they expire on their own
+		if(idx < 0 || idx >= savedCount) return;
 		NullpoMinoSDL.netLobby.serverList.remove(idx);
 		NullpoMinoSDL.netLobby.saveServerList();
 		refreshServerTable();
+	}
+
+	/**
+	 * HOST button: start an embedded server and connect to it, so this player
+	 * hosts a game without a dedicated server. STOP (while hosting) shuts the
+	 * embedded server down and disconnects everyone on it.
+	 */
+	private void hostOrStop() {
+		if(NullpoMinoSDL.embeddedServer != null) {
+			NullpoMinoSDL.stopEmbeddedServer();
+			statusLine = "";
+			return;
+		}
+
+		NetLobbyFrame nl = NullpoMinoSDL.netLobby;
+		String name = nameInput.getText().trim();
+		if(name.length() == 0) { statusLine = "Enter a name first"; return; }
+
+		NetServerRunner runner = new NetServerRunner();
+		try {
+			runner.start(name);
+		} catch(IOException e) {
+			statusLine = "HOST FAILED: PORT BUSY";
+			return;
+		}
+		NullpoMinoSDL.embeddedServer = runner;
+
+		nl.connectToServer(name, teamInput.getText(), "127.0.0.1", runner.getPort());
+		NullpoMinoSDL.enterState(NullpoMinoSDL.STATE_NET_LOBBY);
 	}
 
 	@Override
@@ -421,6 +535,7 @@ public class StateNetServerSelectSDL extends BaseStateSDL {
 			observeBtn.render();
 			addBtn.render();
 			deleteBtn.render();
+			hostBtn.render();
 			backBtn.render();
 		}
 
