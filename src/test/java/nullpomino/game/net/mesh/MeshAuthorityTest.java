@@ -337,6 +337,56 @@ class MeshAuthorityTest {
     }
 
     @Test
+    void ratedRoundEmitsEloRatingLines() {
+        admit(0, "Alice");
+        admit(1, "Bob");
+        NetRoomInfo template = new NetRoomInfo();
+        template.maxPlayers = 2;
+        template.rated = true;
+        template.strMode = "NET-VS-BATTLE";
+        control(0, "roomcreate\t" + NetUtil.urlEncode("Rated") + "\t"
+                + NetUtil.urlEncode(template.exportString()) + "\t" + NetUtil.urlEncode("NET-VS-BATTLE"));
+        control(1, "roomjoin\t0\tfalse");
+        control(0, "ready\ttrue");
+        control(1, "ready\ttrue");
+
+        sink.clear();
+        control(1, "dead\t0");
+
+        // First game between two 1500s: maxDelta(1)=116, expected 0.5 -> winner +58.
+        // NetServer's pairwise loop updates the winner BEFORE computing the loser's
+        // delta, so the loser is scored against 1558 and only drops 48 - pinned here.
+        Emitted winnerRating = sink.lastBroadcastStarting("rating\t0\t");
+        assertNotNull(winnerRating);
+        assertEquals("rating\t0\t0\t" + NetUtil.urlEncode("Alice") + "\t1558\t58", winnerRating.line);
+        assertEquals(0, winnerRating.scope);
+        Emitted loserRating = sink.lastBroadcastStarting("rating\t1\t");
+        assertNotNull(loserRating);
+        assertEquals("rating\t1\t1\t" + NetUtil.urlEncode("Bob") + "\t1452\t-48", loserRating.line);
+
+        assertEquals(1, auth.getPlayer(0).playCount[0]);
+        assertEquals(1, auth.getPlayer(0).winCount[0]);
+        assertEquals(1, auth.getPlayer(1).playCount[0]);
+        assertEquals(0, auth.getPlayer(1).winCount[0]);
+    }
+
+    @Test
+    void unratedRoundEmitsNoRatingLines() {
+        admit(0, "Alice");
+        admit(1, "Bob");
+        createRoom(0, "Casual", 2, 0);
+        control(1, "roomjoin\t0\tfalse");
+        control(0, "ready\ttrue");
+        control(1, "ready\ttrue");
+
+        sink.clear();
+        control(1, "dead\t0");
+
+        assertNull(sink.lastBroadcastStarting("rating\t"));
+        assertEquals(0, auth.getPlayer(0).playCount[0]);
+    }
+
+    @Test
     void watchJoinTakesNoSeat() {
         admit(0, "Alice");
         admit(1, "Bob");

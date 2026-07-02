@@ -72,15 +72,6 @@ public class MeshAuthority {
 		void authUpdate();
 	}
 
-	/** Rated-game bookkeeping (ELO math + persistence) plugs in here; see MeshLocalRecords */
-	public interface RatingHook {
-		/** A rated game is starting; called once per seated player */
-		void onRatedGameStart(NetRoomInfo roomInfo, NetPlayerInfo pInfo);
-
-		/** A rated game finished with a single winner; playerSeatDead is final (winner at front) */
-		void onRatedGameFinished(NetRoomInfo roomInfo, NetPlayerInfo winner);
-	}
-
 	private final Sink sink;
 
 	/** RNG for seeds and map selection */
@@ -104,16 +95,9 @@ public class MeshAuthority {
 	/** Next member uid */
 	private int nextUid = 0;
 
-	/** Rated-game hook, null = rated bookkeeping disabled */
-	private RatingHook ratingHook;
-
 	public MeshAuthority(Sink sink, Random rand) {
 		this.sink = sink;
 		this.rand = rand;
-	}
-
-	public void setRatingHook(RatingHook hook) {
-		this.ratingHook = hook;
 	}
 
 	// ================================================================ membership
@@ -140,6 +124,7 @@ public class MeshAuthority {
 		pInfo.roomID = -1;
 		pInfo.seatID = -1;
 		pInfo.queueID = -1;
+		for(int i = 0; i < pInfo.rating.length; i++) pInfo.rating[i] = MeshRating.RATING_DEFAULT;
 		players.put(uid, pInfo);
 
 		broadcastPlayerInfoUpdate(pInfo, "playernew");
@@ -768,8 +753,10 @@ public class MeshAuthority {
 				p.playing = true;
 				p.playCountNow++;
 
-				if(isRatedGame(roomInfo) && (ratingHook != null)) {
-					ratingHook.onRatedGameStart(roomInfo, p);
+				// If ranked room
+				if(isRatedGame(roomInfo)) {
+					p.playCount[roomInfo.style]++;
+					p.ratingBefore[roomInfo.style] = p.rating[roomInfo.style];
 				}
 
 				broadcastPlayerInfoUpdate(p);
@@ -810,8 +797,36 @@ public class MeshAuthority {
 				// Winner is a player
 				roomInfo.playerSeatDead.addFirst(winner);
 
-				if(isRatedGame(roomInfo) && (ratingHook != null)) {
-					ratingHook.onRatedGameFinished(roomInfo, winner);
+				// Rated game: pairwise ELO over the final placement order
+				// (winner at the front of playerSeatDead), NetServer 3218-3251.
+				// Persistence is per-peer, driven by these rating broadcasts.
+				if(isRatedGame(roomInfo)) {
+					winner.winCount[roomInfo.style]++;
+
+					int style = roomInfo.style;
+					int n = roomInfo.playerSeatDead.size();
+					for(int w = 0; w < n - 1; w++) {
+						for(int l = w + 1; l < n; l++) {
+							NetPlayerInfo wp = roomInfo.playerSeatDead.get(w);
+							NetPlayerInfo lp = roomInfo.playerSeatDead.get(l);
+
+							wp.rating[style] += (int) (MeshRating.rankDelta(wp.playCount[style], wp.rating[style], lp.rating[style], 1) / (n-1));
+							lp.rating[style] += (int) (MeshRating.rankDelta(lp.playCount[style], lp.rating[style], wp.rating[style], 0) / (n-1));
+
+							if(wp.rating[style] < MeshRating.RATING_MIN) wp.rating[style] = MeshRating.RATING_MIN;
+							if(lp.rating[style] < MeshRating.RATING_MIN) lp.rating[style] = MeshRating.RATING_MIN;
+							if(wp.rating[style] > MeshRating.RATING_MAX) wp.rating[style] = MeshRating.RATING_MAX;
+							if(lp.rating[style] > MeshRating.RATING_MAX) lp.rating[style] = MeshRating.RATING_MAX;
+						}
+					}
+
+					for(int i = 0; i < n; i++) {
+						NetPlayerInfo p = roomInfo.playerSeatDead.get(i);
+						int change = p.rating[style] - p.ratingBefore[style];
+						sink.broadcast(roomInfo.roomID,
+							"rating\t" + p.uid + "\t" + p.seatID + "\t" + NetUtil.urlEncode(p.strName) + "\t" +
+							p.rating[style] + "\t" + change, -1);
+					}
 				}
 
 				msg += winner.uid + "\t" + winner.seatID + "\t" + NetUtil.urlEncode(winner.strName) + "\t" + isTeamWin;
