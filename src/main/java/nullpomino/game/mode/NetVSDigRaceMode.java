@@ -4,7 +4,6 @@ import nullpomino.game.component.Block;
 import nullpomino.game.event.EventReceiver;
 import nullpomino.game.play.GameEngine;
 import nullpomino.game.play.GameManager;
-import nullpomino.util.GeneralUtil;
 
 /**
  * NET-VS-DIG RACE mode
@@ -328,53 +327,10 @@ public class NetVSDigRaceMode extends NetDummyVSMode {
 				}
 			}
 
-			if((netvsIsGameActive) && (engine.stat != GameEngine.Status.RESULT)) {
-				// Place
-				int place = getNowPlayerPlace(engine, playerID);
-				if(netvsPlayerDead[playerID]) place = netvsPlayerPlace[playerID];
-
-				if(engine.displaysize != -1) {
-					if(place == 0) {
-						owner.receiver.drawMenuFont(engine, playerID, -2, 22, "1ST", EventReceiver.COLOR_ORANGE);
-					} else if(place == 1) {
-						owner.receiver.drawMenuFont(engine, playerID, -2, 22, "2ND", EventReceiver.COLOR_WHITE);
-					} else if(place == 2) {
-						owner.receiver.drawMenuFont(engine, playerID, -2, 22, "3RD", EventReceiver.COLOR_RED);
-					} else if(place == 3) {
-						owner.receiver.drawMenuFont(engine, playerID, -2, 22, "4TH", EventReceiver.COLOR_GREEN);
-					} else if(place == 4) {
-						owner.receiver.drawMenuFont(engine, playerID, -2, 22, "5TH", EventReceiver.COLOR_BLUE);
-					} else if(place == 5) {
-						owner.receiver.drawMenuFont(engine, playerID, -2, 22, "6TH", EventReceiver.COLOR_PURPLE);
-					}
-				} else {
-					if(place == 0) {
-						owner.receiver.drawDirectFont(engine, playerID, x, y + 168, "1ST", EventReceiver.COLOR_ORANGE, 0.5f);
-					} else if(place == 1) {
-						owner.receiver.drawDirectFont(engine, playerID, x, y + 168, "2ND", EventReceiver.COLOR_WHITE, 0.5f);
-					} else if(place == 2) {
-						owner.receiver.drawDirectFont(engine, playerID, x, y + 168, "3RD", EventReceiver.COLOR_RED, 0.5f);
-					} else if(place == 3) {
-						owner.receiver.drawDirectFont(engine, playerID, x, y + 168, "4TH", EventReceiver.COLOR_GREEN, 0.5f);
-					} else if(place == 4) {
-						owner.receiver.drawDirectFont(engine, playerID, x, y + 168, "5TH", EventReceiver.COLOR_BLUE, 0.5f);
-					} else if(place == 5) {
-						owner.receiver.drawDirectFont(engine, playerID, x, y + 168, "6TH", EventReceiver.COLOR_PURPLE, 0.5f);
-					}
-				}
-			}
-			// Games count
-			else if(!netvsIsPractice || (playerID != 0)) {
-				String strTemp = netvsPlayerWinCount[playerID] + "/" + netvsPlayerPlayCount[playerID];
-
-				if(engine.displaysize != -1) {
-					int y2 = 21;
-					if(engine.stat == GameEngine.Status.RESULT) y2 = 22;
-					owner.receiver.drawMenuFont(engine, playerID, 0, y2, strTemp, EventReceiver.COLOR_WHITE);
-				} else {
-					owner.receiver.drawDirectFont(engine, playerID, x + 4, y + 168, strTemp, EventReceiver.COLOR_WHITE, 0.5f);
-				}
-			}
+			// Place and games count
+			int place = getNowPlayerPlace(engine, playerID);
+			if(netvsPlayerDead[playerID]) place = netvsPlayerPlace[playerID];
+			netvsDrawPlaceAndPlayCount(engine, playerID, x, y, place);
 		}
 	}
 
@@ -384,16 +340,7 @@ public class NetVSDigRaceMode extends NetDummyVSMode {
 	@Override
 	public void renderResult(GameEngine engine, int playerID) {
 		super.renderResult(engine, playerID);
-
-		float scale = 1.0f;
-		if(engine.displaysize == -1) scale = 0.5f;
-
-		drawResultScale(engine, playerID, owner.receiver, 2, EventReceiver.COLOR_ORANGE, scale,
-				"LINE", String.format("%10d", engine.statistics.lines),
-				"PIECE", String.format("%10d", engine.statistics.totalPieceLocked),
-				"LINE/MIN", String.format("%10g", engine.statistics.lpm),
-				"PIECE/SEC", String.format("%10g", engine.statistics.pps),
-				"TIME", String.format("%10s", GeneralUtil.getTime(engine.statistics.time)));
+		netvsDrawRaceResultStats(engine, playerID);
 	}
 
 	/*

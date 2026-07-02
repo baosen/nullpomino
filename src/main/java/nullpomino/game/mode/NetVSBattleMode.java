@@ -826,15 +826,7 @@ public class NetVSBattleMode extends NetDummyVSMode {
 			}
 			// Games count
 			else if(!netvsIsPractice || (playerID != 0)) {
-				String strTemp = netvsPlayerWinCount[playerID] + "/" + netvsPlayerPlayCount[playerID];
-
-				if(engine.displaysize != -1) {
-					int y2 = 21;
-					if(engine.stat == GameEngine.Status.RESULT) y2 = 22;
-					owner.receiver.drawMenuFont(engine, playerID, 0, y2, strTemp, EventReceiver.COLOR_WHITE);
-				} else {
-					owner.receiver.drawDirectFont(engine, playerID, x + 4, y + 168, strTemp, EventReceiver.COLOR_WHITE, 0.5f);
-				}
+				netvsDrawPlayCount(engine, playerID, x, y);
 			}
 		}
 	}
