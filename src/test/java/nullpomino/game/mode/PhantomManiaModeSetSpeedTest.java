@@ -97,7 +97,7 @@ class PhantomManiaModeSetSpeedTest {
 
 	private static void invokeSetSpeed(PhantomManiaMode mode, GameEngine engine)
 			throws Exception {
-		Method m = PhantomManiaMode.class.getDeclaredMethod(
+		Method m = AbstractDeathMode.class.getDeclaredMethod(
 				"setSpeed", GameEngine.class);
 		m.setAccessible(true);
 		m.invoke(mode, engine);

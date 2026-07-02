@@ -112,7 +112,7 @@ class SpeedManiaModeSetSpeedTest {
 
 	private static void invokeSetSpeed(SpeedManiaMode mode, GameEngine engine)
 			throws Exception {
-		Method m = SpeedManiaMode.class.getDeclaredMethod(
+		Method m = AbstractDeathMode.class.getDeclaredMethod(
 				"setSpeed", GameEngine.class);
 		m.setAccessible(true);
 		m.invoke(mode, engine);

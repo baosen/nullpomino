@@ -207,21 +207,6 @@ public class SpeedManiaMode extends AbstractDeathMode {
 		while((tableBGMChange[bgmlv] != -1) && (engine.statistics.level >= tableBGMChange[bgmlv])) bgmlv++;
 	}
 
-	/**
-	 * Update falling speed
-	 * @param engine GameEngine
-	 */
-	private void setSpeed(GameEngine engine) {
-		engine.speed.gravity = -1;
-
-		int section = engine.statistics.level / 100;
-		if(section > tableARE.length - 1) section = tableARE.length - 1;
-		engine.speed.are = tableARE[section];
-		engine.speed.areLine = tableARELine[section];
-		engine.speed.lineDelay = tableLineDelay[section];
-		engine.speed.lockDelay = tableLockDelay[section];
-		engine.speed.das = tableDAS[section];
-	}
 
 	/**
 	 * Update average section time

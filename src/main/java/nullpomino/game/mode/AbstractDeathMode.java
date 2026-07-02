@@ -2,6 +2,8 @@
 // SPDX-License-Identifier: BSD-3-Clause
 package nullpomino.game.mode;
 
+import nullpomino.game.play.GameEngine;
+
 /**
  * Shared 20G "death"-tier speed timing for SPEED MANIA and PHANTOM MANIA.
  *
@@ -33,4 +35,20 @@ public abstract class AbstractDeathMode extends AbstractManiaMode {
 
 	/** BGM change levels */
 	protected static final int[] tableBGMChange  = {300, 500, -1};
+
+	/**
+	 * Set the game speed for the current level (20G with per-section timings)
+	 * @param engine GameEngine
+	 */
+	protected void setSpeed(GameEngine engine) {
+		engine.speed.gravity = -1;
+
+		int section = engine.statistics.level / 100;
+		if(section > tableARE.length - 1) section = tableARE.length - 1;
+		engine.speed.are = tableARE[section];
+		engine.speed.areLine = tableARELine[section];
+		engine.speed.lineDelay = tableLineDelay[section];
+		engine.speed.lockDelay = tableLockDelay[section];
+		engine.speed.das = tableDAS[section];
+	}
 }
