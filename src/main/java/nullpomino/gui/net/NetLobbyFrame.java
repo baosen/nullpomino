@@ -17,8 +17,10 @@ import java.util.zip.Adler32;
 
 import nullpomino.game.component.RuleOptions;
 import nullpomino.game.net.NetBaseClient;
+import nullpomino.game.net.NetMeshPlayerClient;
 import nullpomino.game.net.NetMessageListener;
 import nullpomino.game.net.NetPlayerClient;
+import nullpomino.game.net.mesh.MeshEndpoint;
 import nullpomino.game.net.NetPlayerInfo;
 import nullpomino.game.net.NetRoomInfo;
 import nullpomino.game.net.NetUtil;
@@ -686,6 +688,33 @@ public class NetLobbyFrame implements NetMessageListener {
 
 		chatLogLobby.clear();
 		roomList.clear();
+	}
+
+	/**
+	 * Open a player connection over a P2P mesh session instead of a server
+	 * socket. Same session setup as {@link #connectToServer}, but the client
+	 * is the {@link NetMeshPlayerClient} seam attached to the given endpoint.
+	 */
+	public void connectToMesh(String playerName, String playerTeam, MeshEndpoint mesh) {
+		propConfig.setProperty("serverselect.txtfldPlayerName.text", playerName);
+		propConfig.setProperty("serverselect.txtfldPlayerTeam.text", playerTeam);
+		lastRawOwnName = (playerName == null) ? "" : playerName;
+		pendingOwnRaw = null;
+
+		NetMeshPlayerClient meshClient = new NetMeshPlayerClient(mesh, playerName,
+			playerTeam == null ? "" : playerTeam.trim());
+		netPlayerClient = meshClient;
+		meshClient.addListener(this);
+		meshClient.connect();
+		lastConnectAt = System.currentTimeMillis();
+
+		chatLogLobby.clear();
+		roomList.clear();
+	}
+
+	/** @return true while the current session runs over a P2P mesh */
+	public boolean isMeshSession() {
+		return netPlayerClient instanceof NetMeshPlayerClient;
 	}
 
 	/** Send a chat message to either the lobby or the current room. */
