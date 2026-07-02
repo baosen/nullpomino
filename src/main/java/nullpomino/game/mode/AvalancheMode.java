@@ -15,12 +15,6 @@ public class AvalancheMode extends Avalanche1PDummyMode {
 	/** Current version */
 	private static final int CURRENT_VERSION = 0;
 
-	/** Enabled piece types */
-	private static final int[] CHAIN_POWERS_FEVERTYPE =
-	{
-		4, 12, 24, 32, 48, 96, 160, 240, 320, 400, 500, 600, 700, 800, 900, 999
-	};
-
 	/** Number of ranking records */
 	private static final int RANKING_MAX = 10;
 

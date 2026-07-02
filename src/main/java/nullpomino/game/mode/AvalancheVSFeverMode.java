@@ -17,10 +17,6 @@ public class AvalancheVSFeverMode extends AvalancheVSDummyMode {
 	/** Current version */
 	private static final int CURRENT_VERSION = 1;
 
-	/** Chain multipliers */
-	private static final int[] FEVER_POWERS = {
-		4, 10, 18, 21, 29, 46, 76, 113, 150, 223, 259, 266, 313, 364, 398, 432, 468, 504, 540, 576, 612, 648, 684, 720 //Arle
-	};
 	/** Constants for chain display settings */
 	public static final int CHAIN_DISPLAY_FEVERSIZE = 4;
 
@@ -413,15 +409,6 @@ public class AvalancheVSFeverMode extends AvalancheVSDummyMode {
 	public void startGame(GameEngine engine, int playerID) {
 		super.startGame(engine, playerID);
 		loadFeverMap(engine, playerID, feverChain[playerID]);
-	}
-
-	/*
-	 * When the current piece is in action
-	 */
-	@Override
-	public void renderMove(GameEngine engine, int playerID) {
-		if(engine.gameStarted)
-			drawX(engine, playerID);
 	}
 
 	/*

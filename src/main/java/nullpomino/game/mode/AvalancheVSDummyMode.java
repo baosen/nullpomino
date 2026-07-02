@@ -42,6 +42,11 @@ public abstract class AvalancheVSDummyMode extends AbstractMode {
 		4, 12, 24, 33, 50, 101, 169, 254, 341, 428, 538, 648, 763, 876, 990, 999 //Arle
 	};
 
+	/** Chain multipliers in Fever */
+	public static final int[] FEVER_POWERS = {
+		4, 10, 18, 21, 29, 46, 76, 113, 150, 223, 259, 266, 313, 364, 398, 432, 468, 504, 540, 576, 612, 648, 684, 720 //Arle
+	};
+
 	/** Number of players */
 	public static final int MAX_PLAYERS = 2;
 
@@ -822,6 +827,15 @@ public abstract class AvalancheVSDummyMode extends AbstractMode {
 			engine.meterValue++;
 		else if (value < engine.meterValue)
 			engine.meterValue--;
+	}
+
+	/*
+	 * When the current piece is in action
+	 */
+	@Override
+	public void renderMove(GameEngine engine, int playerID) {
+		if(engine.gameStarted)
+			drawX(engine, playerID);
 	}
 
 	@Override

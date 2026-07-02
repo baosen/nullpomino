@@ -680,15 +680,6 @@ public class AvalancheVSSPFMode extends AvalancheVSDummyMode {
 	}
 
 	/*
-	 * When the current piece is in action
-	 */
-	@Override
-	public void renderMove(GameEngine engine, int playerID) {
-		if(engine.gameStarted)
-			drawX(engine, playerID);
-	}
-
-	/*
 	 * Render score
 	 */
 	@Override
