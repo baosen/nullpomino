@@ -709,16 +709,7 @@ public class Piece implements Serializable {
 			int x2 = x + dataX[rt][i];
 			int y2 = y + dataY[rt][i];
 
-			if(x2 >= fld.getWidth()) {
-				return true;
-			}
-			if(y2 >= fld.getHeight()) {
-				return true;
-			}
-			if(fld.getCoordAttribute(x2, y2) == Field.COORD_WALL) {
-				return true;
-			}
-			if((fld.getCoordAttribute(x2, y2) != Field.COORD_VANISH) && (fld.getBlockColor(x2, y2) != Block.BLOCK_COLOR_NONE)) {
+			if(cellBlocked(x2, y2, fld)) {
 				return true;
 			}
 		}
@@ -741,25 +732,33 @@ public class Piece implements Serializable {
 
 			// 4BlockMinutes to examine
 			for(int k = 0; k < 2; k++)for(int l = 0; l < 2; l++) {
-				int x3 = x2 + k;
-				int y3 = y2 + l;
-
-				if(x3 >= fld.getWidth()) {
-					return true;
-				}
-				if(y3 >= fld.getHeight()) {
-					return true;
-				}
-				if(fld.getCoordAttribute(x3, y3) == Field.COORD_WALL) {
-					return true;
-				}
-				if((fld.getCoordAttribute(x3, y3) != Field.COORD_VANISH) && (fld.getBlockColor(x3, y3) != Block.BLOCK_COLOR_NONE)) {
+				if(cellBlocked(x2 + k, y2 + l, fld)) {
 					return true;
 				}
 			}
 		}
 
 		return false;
+	}
+
+	/**
+	 * Whether a single cell is outside the field or already occupied
+	 * @param x X-coordinate
+	 * @param y Y-coordinate
+	 * @param fld field
+	 * @return Cell is blockedtrue, Cell is freefalse
+	 */
+	private static boolean cellBlocked(int x, int y, Field fld) {
+		if(x >= fld.getWidth()) {
+			return true;
+		}
+		if(y >= fld.getHeight()) {
+			return true;
+		}
+		if(fld.getCoordAttribute(x, y) == Field.COORD_WALL) {
+			return true;
+		}
+		return (fld.getCoordAttribute(x, y) != Field.COORD_VANISH) && (fld.getBlockColor(x, y) != Block.BLOCK_COLOR_NONE);
 	}
 
 	/**
@@ -796,20 +795,7 @@ public class Piece implements Serializable {
 	 * @return The width of the piece
 	 */
 	public int getWidth() {
-		int max = dataX[direction][0];
-		int min = dataX[direction][0];
-
-		for(int j = 1; j < getMaxBlock(); j++) {
-			int bx = dataX[direction][j];
-
-			max = Math.max(bx, max);
-			min = Math.min(bx, min);
-		}
-
-		int wide = 1;
-		if(big == true) wide = 2;
-
-		return (max - min) * wide;
+		return (maximumBlockData(dataX) - minimumBlockData(dataX)) * wide();
 	}
 
 	/**
@@ -817,20 +803,7 @@ public class Piece implements Serializable {
 	 * @return The height of the piece
 	 */
 	public int getHeight() {
-		int max = dataY[direction][0];
-		int min = dataY[direction][0];
-
-		for(int j = 1; j < getMaxBlock(); j++) {
-			int by = dataY[direction][j];
-
-			max = Math.max(by, max);
-			min = Math.min(by, min);
-		}
-
-		int wide = 1;
-		if(big == true) wide = 2;
-
-		return (max - min) * wide;
+		return (maximumBlockData(dataY) - minimumBlockData(dataY)) * wide();
 	}
 
 	/**
@@ -838,18 +811,7 @@ public class Piece implements Serializable {
 	 * @return Highest TetoraminoBlockOfX-coordinate
 	 */
 	public int getMinimumBlockX() {
-		int min = dataX[direction][0];
-
-		for(int j = 1; j < getMaxBlock(); j++) {
-			int by = dataX[direction][j];
-
-			min = Math.min(by, min);
-		}
-
-		int wide = 1;
-		if(big == true) wide = 2;
-
-		return min * wide;
+		return minimumBlockData(dataX) * wide();
 	}
 
 	/**
@@ -857,18 +819,7 @@ public class Piece implements Serializable {
 	 * @return Lowest TetoraminoBlockOfX-coordinate
 	 */
 	public int getMaximumBlockX() {
-		int max = dataX[direction][0];
-
-		for(int j = 1; j < getMaxBlock(); j++) {
-			int by = dataX[direction][j];
-
-			max = Math.max(by, max);
-		}
-
-		int wide = 1;
-		if(big == true) wide = 2;
-
-		return max * wide;
+		return maximumBlockData(dataX) * wide();
 	}
 
 	/**
@@ -876,18 +827,7 @@ public class Piece implements Serializable {
 	 * @return Highest TetoraminoBlockOfY-coordinate
 	 */
 	public int getMinimumBlockY() {
-		int min = dataY[direction][0];
-
-		for(int j = 1; j < getMaxBlock(); j++) {
-			int by = dataY[direction][j];
-
-			min = Math.min(by, min);
-		}
-
-		int wide = 1;
-		if(big == true) wide = 2;
-
-		return min * wide;
+		return minimumBlockData(dataY) * wide();
 	}
 
 	/**
@@ -895,18 +835,34 @@ public class Piece implements Serializable {
 	 * @return Lowest TetoraminoBlockOfY-coordinate
 	 */
 	public int getMaximumBlockY() {
-		int max = dataY[direction][0];
+		return maximumBlockData(dataY) * wide();
+	}
+
+	/** Smallest coordinate in the current direction's block data */
+	private int minimumBlockData(int[][] data) {
+		int min = data[direction][0];
 
 		for(int j = 1; j < getMaxBlock(); j++) {
-			int by = dataY[direction][j];
-
-			max = Math.max(by, max);
+			min = Math.min(data[direction][j], min);
 		}
 
-		int wide = 1;
-		if(big == true) wide = 2;
+		return min;
+	}
 
-		return max * wide;
+	/** Largest coordinate in the current direction's block data */
+	private int maximumBlockData(int[][] data) {
+		int max = data[direction][0];
+
+		for(int j = 1; j < getMaxBlock(); j++) {
+			max = Math.max(data[direction][j], max);
+		}
+
+		return max;
+	}
+
+	/** Coordinate multiplier: 2 when big, 1 otherwise */
+	private int wide() {
+		return big ? 2 : 1;
 	}
 
 	/**
@@ -943,17 +899,7 @@ public class Piece implements Serializable {
 	 * @return rotation buttonPiece after pressing theDirection
 	 */
 	public int getRotateDirection(int move) {
-		int rt = direction + move;
-
-		if(move == 2) {
-			if(rt > 3) rt -= 4;
-			if(rt < 0) rt += 4;
-		} else {
-			if(rt > 3) rt = 0;
-			if(rt < 0) rt = 3;
-		}
-
-		return rt;
+		return getRotateDirection(move, direction);
 	}
 
 	/**
