@@ -4,6 +4,12 @@ JAVACOPTS = ["-encoding", "UTF-8"]
 
 LOG4J = "@maven//:ch_qos_reload4j_reload4j"
 
+SLF4J = "@maven//:org_slf4j_slf4j_api"
+
+LOGBACK = "@maven//:ch_qos_logback_logback_classic"
+
+LOGBACK_CORE = "@maven//:ch_qos_logback_logback_core"
+
 JNA = "@maven//:net_java_dev_jna_jna"
 
 java_library(
@@ -43,6 +49,9 @@ java_library(
         ":sdl_binding",
         JNA,
         LOG4J,
+        LOGBACK,
+        LOGBACK_CORE,
+        SLF4J,
     ],
 )
 
