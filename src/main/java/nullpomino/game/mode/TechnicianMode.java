@@ -801,24 +801,6 @@ public class TechnicianMode extends AbstractMarathonMode {
 	}
 
 	/*
-	 * Soft drop
-	 */
-	@Override
-	public void afterSoftDropFall(GameEngine engine, int playerID, int fall) {
-		engine.statistics.scoreFromSoftDrop += fall;
-		engine.statistics.score += fall;
-	}
-
-	/*
-	 * Hard drop
-	 */
-	@Override
-	public void afterHardDropFall(GameEngine engine, int playerID, int fall) {
-		engine.statistics.scoreFromHardDrop += fall * 2;
-		engine.statistics.score += fall * 2;
-	}
-
-	/*
 	 * Render results screen
 	 */
 	@Override

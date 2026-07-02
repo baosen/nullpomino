@@ -607,20 +607,6 @@ public class ExtremeMode extends AbstractMarathonMode {
 	}
 
 	/*
-	 * Render results screen
-	 */
-	@Override
-	public void renderResult(GameEngine engine, int playerID) {
-		drawResultStats(engine, playerID, receiver, 0, EventReceiver.COLOR_BLUE,
-				Statistic.SCORE, Statistic.LINES, Statistic.LEVEL, Statistic.TIME, Statistic.SPL, Statistic.LPM);
-		drawResultRank(engine, playerID, receiver, 12, EventReceiver.COLOR_BLUE, rankingRank);
-		drawResultNetRank(engine, playerID, receiver, 14, EventReceiver.COLOR_BLUE, netRankingRank[0]);
-		drawResultNetRankDaily(engine, playerID, receiver, 16, EventReceiver.COLOR_BLUE, netRankingRank[1]);
-
-		netDrawResultStatus(engine, playerID, 21);
-	}
-
-	/*
 	 * Called when saving replay
 	 */
 	@Override
