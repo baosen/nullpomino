@@ -86,7 +86,28 @@ Anything not starting with `/` is sent as a normal chat message to the current c
 | SDL lobby screens | `src/main/java/nullpomino/gui/sdl/StateNet*SDL.java` |
 | SDL lobby widgets | `src/main/java/nullpomino/gui/sdl/widget/` |
 
+## Hosting a Game (No Dedicated Server)
+
+Any player can host a game straight from the client — no separately-run server needed. On the netplay server-select screen, enter a name and press **HOST**: the client starts the regular `NetServer` on a background thread (embedded, same protocol and features), connects to it, and enters the lobby. Friends then join your game like any other server.
+
+- The lobby header shows `HOSTING ON <lan-ip>:<port>` — that's the address to give friends.
+- Backing out of the lobby with **X** keeps your server running (the button reads **STOP**); **BACK** to the title or quitting the game shuts it down and disconnects everyone on it.
+- The listen port is `netserver.port` from `config/etc/netserver.cfg` (default 9200). If the port is taken (say a standalone server is already running), HOST fails with a status message and nothing starts.
+- All server persistence — ratings, leaderboards, ban list — lives in the hosting player's `config/setting/` files, exactly as with a standalone server.
+- For internet play the host must port-forward TCP 9200; joiners add `your-public-ip:9200` manually with **ADD**.
+
+### LAN Discovery
+
+While hosting, the client broadcasts a small UDP beacon so players on the same network can join with zero typing. Discovered games appear in the server list as cyan `<host:port>  (LAN) <player name>` rows; they expire a few seconds after the host stops and are never written to your saved server list.
+
+- Beacon: UDP port **9201**, every 1.5 s, to each interface's broadcast address. Packet format (tab-delimited UTF-8): `NullpoLAN\t1\t<tcpPort>\t<urlEncode(playerName)>\t<versionMajor>`. Entries expire after 5 s without a beacon.
+- Disable with `netserver.lanAnnounce=false` in `config/etc/netserver.cfg`.
+- Discovery is best-effort: VPNs, AP client isolation, or firewalls that block UDP 9201 will hide the beacon — manual **ADD** with `ip:port` always works as a fallback.
+- Code: `src/main/java/nullpomino/game/net/NetLanDiscovery.java` (beacon + listener) and `NetServerRunner.java` (embedded server lifecycle).
+
 ## Server Setup
+
+Standalone servers still work exactly as before and are the right choice for public, always-on hosting.
 
 ### Quick Start
 
