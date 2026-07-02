@@ -116,6 +116,16 @@ public class MeshAuthority {
 	 * @return The created player record
 	 */
 	public NetPlayerInfo admitMember(int uid, String name, String host) {
+		return admitMember(uid, name, host, new int[0], new int[0], new int[0]);
+	}
+
+	/**
+	 * Admit with the member's self-reported persisted stats (from the hello
+	 * frame); styles beyond the provided arrays fall back to the defaults.
+	 */
+	public NetPlayerInfo admitMember(int uid, String name, String host,
+		int[] ratings, int[] playCounts, int[] winCounts)
+	{
 		NetPlayerInfo pInfo = new NetPlayerInfo();
 		pInfo.uid = uid;
 		pInfo.strName = name;
@@ -124,7 +134,11 @@ public class MeshAuthority {
 		pInfo.roomID = -1;
 		pInfo.seatID = -1;
 		pInfo.queueID = -1;
-		for(int i = 0; i < pInfo.rating.length; i++) pInfo.rating[i] = MeshRating.RATING_DEFAULT;
+		for(int i = 0; i < pInfo.rating.length; i++) {
+			pInfo.rating[i] = (i < ratings.length) ? ratings[i] : MeshRating.RATING_DEFAULT;
+			if(i < playCounts.length) pInfo.playCount[i] = playCounts[i];
+			if(i < winCounts.length) pInfo.winCount[i] = winCounts[i];
+		}
 		players.put(uid, pInfo);
 
 		broadcastPlayerInfoUpdate(pInfo, "playernew");

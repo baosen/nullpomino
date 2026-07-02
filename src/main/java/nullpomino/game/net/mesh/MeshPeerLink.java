@@ -31,6 +31,9 @@ public class MeshPeerLink {
 	/** Poison pill that stops the writer thread */
 	private static final byte[] CLOSE_MARKER = new byte[0];
 
+	/** Marker that closes the link after flushing everything queued before it */
+	private static final byte[] FLUSH_CLOSE_MARKER = new byte[0];
+
 	private final Socket socket;
 	private final MeshEventSink sink;
 	private final LinkedBlockingQueue<byte[]> writeQueue;
@@ -92,6 +95,10 @@ public class MeshPeerLink {
 			while(true) {
 				byte[] data = writeQueue.take();
 				if(data == CLOSE_MARKER) return;
+				if(data == FLUSH_CLOSE_MARKER) {
+					close(flushCloseReason);
+					return;
+				}
 				out.write(data);
 				out.flush();
 			}
@@ -99,6 +106,22 @@ public class MeshPeerLink {
 			close(closed.get() ? "closed" : ("write error: " + e));
 		} catch (InterruptedException e) {
 			Thread.currentThread().interrupt();
+		}
+	}
+
+	/** Reason passed to close() when the flush-close marker is reached */
+	private volatile String flushCloseReason = "closed after flush";
+
+	/**
+	 * Close the link once everything queued so far has been written - for
+	 * farewell lines (deny/bye) that must reach the peer before the socket
+	 * dies. Falls back to an immediate close when the queue is full.
+	 */
+	public void closeAfterFlush(String reason) {
+		if(closed.get()) return;
+		flushCloseReason = reason;
+		if(!writeQueue.offer(FLUSH_CLOSE_MARKER)) {
+			close(reason);
 		}
 	}
 

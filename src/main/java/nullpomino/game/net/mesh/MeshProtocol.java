@@ -107,9 +107,12 @@ public final class MeshProtocol {
 		}
 	}
 
-	public static String buildHelloJoin(float verMajor, boolean devBuild, int listenPort, String name) {
+	public static String buildHelloJoin(float verMajor, boolean devBuild, int listenPort, String name,
+		int[] ratings, int[] playCounts, int[] winCounts)
+	{
 		return "mesh\thello\tjoin\t" + verMajor + "\t" + devBuild + "\t" + listenPort + "\t"
-			+ NetUtil.urlEncode(name);
+			+ NetUtil.urlEncode(name) + "\t" + joinUids(ratings) + "\t" + joinUids(playCounts)
+			+ "\t" + joinUids(winCounts);
 	}
 
 	/** Parsed {@code hello} frame (join variant has uid/token unset) */
@@ -121,9 +124,13 @@ public final class MeshProtocol {
 		public final int uid;        // peer variant only, else -1
 		public final int listenPort;
 		public final String name;    // join variant only, else ""
+		// Self-reported persisted stats (join variant; may be empty)
+		public final int[] ratings;
+		public final int[] playCounts;
+		public final int[] winCounts;
 
 		Hello(boolean joinVariant, float verMajor, boolean devBuild, String token, int uid,
-			int listenPort, String name)
+			int listenPort, String name, int[] ratings, int[] playCounts, int[] winCounts)
 		{
 			this.joinVariant = joinVariant;
 			this.verMajor = verMajor;
@@ -132,6 +139,9 @@ public final class MeshProtocol {
 			this.uid = uid;
 			this.listenPort = listenPort;
 			this.name = name;
+			this.ratings = ratings;
+			this.playCounts = playCounts;
+			this.winCounts = winCounts;
 		}
 	}
 
@@ -146,12 +156,17 @@ public final class MeshProtocol {
 	public static Hello parseHello(String[] parts) {
 		try {
 			if(parts.length >= 7 && "join".equals(parts[2])) {
+				boolean hasStats = parts.length >= 10;
 				return new Hello(true, Float.parseFloat(parts[3]), Boolean.parseBoolean(parts[4]),
-					"", -1, Integer.parseInt(parts[5]), NetUtil.urlDecode(parts[6]));
+					"", -1, Integer.parseInt(parts[5]), NetUtil.urlDecode(parts[6]),
+					hasStats ? parseUids(parts[7]) : new int[0],
+					hasStats ? parseUids(parts[8]) : new int[0],
+					hasStats ? parseUids(parts[9]) : new int[0]);
 			}
 			if(parts.length >= 8 && "peer".equals(parts[2])) {
 				return new Hello(false, Float.parseFloat(parts[3]), Boolean.parseBoolean(parts[4]),
-					parts[5], Integer.parseInt(parts[6]), Integer.parseInt(parts[7]), "");
+					parts[5], Integer.parseInt(parts[6]), Integer.parseInt(parts[7]), "",
+					new int[0], new int[0], new int[0]);
 			}
 			return null;
 		} catch (IllegalArgumentException e) {

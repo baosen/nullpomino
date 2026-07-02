@@ -21,7 +21,8 @@ class MeshProtocolTest {
 
     @Test
     void helloJoinRoundTrip() {
-        String line = MeshProtocol.buildHelloJoin(7.5f, true, 9202, "Player Ø ne");
+        String line = MeshProtocol.buildHelloJoin(7.5f, true, 9202, "Player Ø ne",
+                new int[]{1622, 1500}, new int[]{12, 0}, new int[]{7, 0});
         MeshProtocol.Hello h = MeshProtocol.parseHello(split(line));
 
         assertNotNull(h);
@@ -30,6 +31,9 @@ class MeshProtocolTest {
         assertTrue(h.devBuild);
         assertEquals(9202, h.listenPort);
         assertEquals("Player Ø ne", h.name);
+        assertArrayEquals(new int[]{1622, 1500}, h.ratings);
+        assertArrayEquals(new int[]{12, 0}, h.playCounts);
+        assertArrayEquals(new int[]{7, 0}, h.winCounts);
     }
 
     @Test

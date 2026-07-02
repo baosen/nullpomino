@@ -210,21 +210,29 @@ public class NetLanDiscovery {
 		}
 	}
 
+	/** Supplies the announce payload each broadcast cycle (payloads may change over time) */
+	public interface PayloadSupplier {
+		byte[] get();
+	}
+
 	/**
-	 * Daemon thread that broadcasts announce packets for a hosted server
+	 * Daemon thread that broadcasts announce packets for a hosted game
 	 * until {@link #shutdown()} is called.
 	 */
 	public static final class Announcer extends Thread {
-		private final int tcpPort;
-		private final String playerName;
+		private final PayloadSupplier payloadSupplier;
 		private volatile boolean shutdownRequested = false;
 		private volatile DatagramSocket socket;
 
 		public Announcer(int tcpPort, String playerName) {
+			this(() -> encodeAnnounce(tcpPort, playerName));
+		}
+
+		/** Announce a dynamic payload (e.g. mesh sessions with changing player counts) */
+		public Announcer(PayloadSupplier payloadSupplier) {
 			super("LanAnnouncer");
 			setDaemon(true);
-			this.tcpPort = tcpPort;
-			this.playerName = playerName;
+			this.payloadSupplier = payloadSupplier;
 		}
 
 		@Override
@@ -232,9 +240,9 @@ public class NetLanDiscovery {
 			try {
 				socket = new DatagramSocket();
 				socket.setBroadcast(true);
-				byte[] data = encodeAnnounce(tcpPort, playerName);
 
 				while(!shutdownRequested) {
+					byte[] data = payloadSupplier.get();
 					for(InetAddress target: broadcastTargets()) {
 						try {
 							socket.send(new DatagramPacket(data, data.length, target, DISCOVERY_PORT));
