@@ -49,6 +49,9 @@ public abstract class AbstractManiaMode extends AbstractMode {
 	/** ST medal */
 	protected int medalST;
 
+	/** Hard-drop bonus count */
+	protected int harddropBonus;
+
 	/** Grades in ranking */
 	protected int[] rankingGrade;
 
@@ -87,6 +90,14 @@ public abstract class AbstractManiaMode extends AbstractMode {
 		}
 
 		return false;
+	}
+
+	/*
+	 * Called when hard drop used
+	 */
+	@Override
+	public void afterHardDropFall(GameEngine engine, int playerID, int fall) {
+		if(fall * 2 > harddropBonus) harddropBonus = fall * 2;
 	}
 
 	/**

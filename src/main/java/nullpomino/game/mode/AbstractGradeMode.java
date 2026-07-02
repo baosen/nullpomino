@@ -46,8 +46,6 @@ public abstract class AbstractGradeMode extends AbstractManiaMode {
 	protected int grade;
 	/** Frame timestamp of the most recent grade-up */
 	protected int lastGradeTime;
-	/** Hard-drop bonus count */
-	protected int harddropBonus;
 	/** Combo bonus */
 	protected int comboValue;
 	/** Most recent increase in score */
@@ -79,14 +77,6 @@ public abstract class AbstractGradeMode extends AbstractManiaMode {
 
 	/** Persisted schema version */
 	protected int version;
-
-	/*
-	 * Called when hard drop used
-	 */
-	@Override
-	public void afterHardDropFall(GameEngine engine, int playerID, int fall) {
-		if(fall * 2 > harddropBonus) harddropBonus = fall * 2;
-	}
 
 	/** Update the combo counter for a line clear (shared by GRADE MANIA 2 and GRADE MANIA 3). */
 	protected void updateCombo(int lines) {

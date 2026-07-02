@@ -57,8 +57,6 @@ public class ScoreAttackMode extends AbstractManiaMode {
 	/** Level up flag (Set to true when the level increases) */
 	private boolean lvupflag;
 
-	/** Used by Hard-drop scoring */
-	private int harddropBonus;
 
 	/** Used by combo scoring */
 	private int comboValue;
@@ -543,13 +541,6 @@ public class ScoreAttackMode extends AbstractManiaMode {
 		}
 	}
 
-	/**
-	 * This function will be called when hard-drop is used
-	 */
-	@Override
-	public void afterHardDropFall(GameEngine engine, int playerID, int fall) {
-		if(fall * 2 > harddropBonus) harddropBonus = fall * 2;
-	}
 
 	/**
 	 * This function will be called when the game timer updates

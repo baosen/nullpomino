@@ -118,8 +118,6 @@ public class GarbageManiaMode extends AbstractManiaMode {
 	/** LevelHas increased flag */
 	private boolean lvupflag;
 
-	/** Hard dropStage wascount */
-	private int harddropBonus;
 
 	/** Combo bonus */
 	private int comboValue;
@@ -712,13 +710,6 @@ public class GarbageManiaMode extends AbstractManiaMode {
 		}
 	}
 
-	/*
-	 * Called when hard drop used
-	 */
-	@Override
-	public void afterHardDropFall(GameEngine engine, int playerID, int fall) {
-		if(fall * 2 > harddropBonus) harddropBonus = fall * 2;
-	}
 
 	/*
 	 * Each frame Processing at the end of
