@@ -101,7 +101,7 @@ class GradeMania2ModeBranchCoverageTest {
 		setInt(mode, "sectionlasttime", 2000); // < best -> gold-time branch
 		setInt(mode, "medalST", 3);             // L360 false arm (medalST < 3 is false)
 
-		Method m = GradeMania2Mode.class.getDeclaredMethod("stMedalCheck", GameEngine.class, int.class);
+		Method m = AbstractManiaMode.class.getDeclaredMethod("stMedalCheck", GameEngine.class, int.class);
 		m.setAccessible(true);
 		m.invoke(mode, e, 0);
 
@@ -125,7 +125,7 @@ class GradeMania2ModeBranchCoverageTest {
 		setInt(mode, "sectionlasttime", 3200); // best..best+300 -> silver window
 		setInt(mode, "medalST", 3);             // medalST < 2 false -> no award
 
-		Method m = GradeMania2Mode.class.getDeclaredMethod("stMedalCheck", GameEngine.class, int.class);
+		Method m = AbstractManiaMode.class.getDeclaredMethod("stMedalCheck", GameEngine.class, int.class);
 		m.setAccessible(true);
 		m.invoke(mode, e, 0);
 
@@ -147,7 +147,7 @@ class GradeMania2ModeBranchCoverageTest {
 		setInt(mode, "sectionlasttime", 3500); // best+300..best+600 -> bronze window
 		setInt(mode, "medalST", 2);             // medalST < 1 false -> no award
 
-		Method m = GradeMania2Mode.class.getDeclaredMethod("stMedalCheck", GameEngine.class, int.class);
+		Method m = AbstractManiaMode.class.getDeclaredMethod("stMedalCheck", GameEngine.class, int.class);
 		m.setAccessible(true);
 		m.invoke(mode, e, 0);
 

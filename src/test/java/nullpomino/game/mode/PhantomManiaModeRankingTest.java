@@ -203,22 +203,20 @@ class PhantomManiaModeRankingTest {
 
 	private static int invokeCheckRanking(PhantomManiaMode mode, int gr, int lv, int time, int clear)
 			throws Exception {
-		Method m = PhantomManiaMode.class.getDeclaredMethod(
-				"checkRanking", int.class, int.class, int.class, int.class);
+		Method m = AbstractManiaMode.class.getDeclaredMethod("checkRanking", int.class, int.class, int.class, int.class);
 		m.setAccessible(true);
 		return (int) m.invoke(mode, gr, lv, time, clear);
 	}
 
 	private static void invokeUpdateRanking(PhantomManiaMode mode, int gr, int lv, int time, int clear)
 			throws Exception {
-		Method m = PhantomManiaMode.class.getDeclaredMethod(
-				"updateRanking", int.class, int.class, int.class, int.class);
+		Method m = AbstractManiaMode.class.getDeclaredMethod("updateRanking", int.class, int.class, int.class, int.class);
 		m.setAccessible(true);
 		m.invoke(mode, gr, lv, time, clear);
 	}
 
 	private static void invokeUpdateBestSectionTime(PhantomManiaMode mode) throws Exception {
-		Method m = PhantomManiaMode.class.getDeclaredMethod("updateBestSectionTime");
+		Method m = AbstractManiaMode.class.getDeclaredMethod("updateBestSectionTime");
 		m.setAccessible(true);
 		m.invoke(mode);
 	}

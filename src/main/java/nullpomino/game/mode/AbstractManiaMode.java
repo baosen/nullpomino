@@ -3,6 +3,7 @@
 package nullpomino.game.mode;
 
 import nullpomino.game.component.Controller;
+import nullpomino.game.event.EventReceiver;
 import nullpomino.game.play.GameEngine;
 
 /**
@@ -86,5 +87,105 @@ public abstract class AbstractManiaMode extends AbstractMode {
 		}
 
 		return false;
+	}
+
+	/**
+	 * Check for ST medal
+	 * @param engine GameEngine
+	 * @param sectionNumber Section Number
+	 */
+	protected void stMedalCheck(GameEngine engine, int sectionNumber) {
+		int best = bestSectionTime[sectionNumber];
+
+		if(sectionlasttime < best) {
+			if(medalST < 3) {
+				engine.playSE("medal");
+				medalST = 3;
+			}
+			if(!owner.replayMode) {
+				sectionIsNewRecord[sectionNumber] = true;
+			}
+		} else if((sectionlasttime < best + 300) && (medalST < 2)) {
+			engine.playSE("medal");
+			medalST = 2;
+		} else if((sectionlasttime < best + 600) && (medalST < 1)) {
+			engine.playSE("medal");
+			medalST = 1;
+		}
+	}
+
+	/**
+	 * Check for new section time records
+	 * @param sectionNumber Section Number
+	 */
+	protected void stNewRecordCheck(int sectionNumber) {
+		if((sectiontime[sectionNumber] < bestSectionTime[sectionNumber]) && (!owner.replayMode)) {
+			sectionIsNewRecord[sectionNumber] = true;
+			sectionAnyNewRecord = true;
+		}
+	}
+
+	/**
+	 * Update best section time records after a game
+	 */
+	protected void updateBestSectionTime() {
+		for(int i = 0; i < sectionIsNewRecord.length; i++) {
+			if(sectionIsNewRecord[i]) {
+				bestSectionTime[i] = sectiontime[i];
+			}
+		}
+	}
+
+	/**
+	 * Get medal font color
+	 * @param medalColor Medal status
+	 * @return Font color constant, or -1 if no medal
+	 */
+	protected int getMedalFontColor(int medalColor) {
+		if(medalColor == 1) return EventReceiver.COLOR_RED;
+		if(medalColor == 2) return EventReceiver.COLOR_WHITE;
+		if(medalColor == 3) return EventReceiver.COLOR_YELLOW;
+		return -1;
+	}
+
+	/**
+	 * Update rankings
+	 * @param gr Grade
+	 * @param lv Level
+	 * @param time Time
+	 * @param clear Game completed flag
+	 */
+	protected void updateRanking(int gr, int lv, int time, int clear) {
+		rankingRank = checkRanking(gr, lv, time, clear);
+		RankingHelper.insertAt(rankingRank, RANKING_MAX,
+			(to, from) -> {
+				rankingGrade[to] = rankingGrade[from];
+				rankingLevel[to] = rankingLevel[from];
+				rankingTime[to] = rankingTime[from];
+				rankingRollclear[to] = rankingRollclear[from];
+			},
+			rank -> {
+				rankingGrade[rank] = gr;
+				rankingLevel[rank] = lv;
+				rankingTime[rank] = time;
+				rankingRollclear[rank] = clear;
+			});
+	}
+
+	/**
+	 * Calculate ranking position
+	 * @param gr Grade
+	 * @param lv Level
+	 * @param time Time
+	 * @param clear Game completed flag
+	 * @return Position (-1 if unranked)
+	 */
+	protected int checkRanking(int gr, int lv, int time, int clear) {
+		return RankingHelper.findRank(RANKING_MAX, i ->
+			(clear > rankingRollclear[i])
+				|| ((clear == rankingRollclear[i]) && (gr > rankingGrade[i]))
+				|| ((clear == rankingRollclear[i]) && (gr == rankingGrade[i]) && (lv > rankingLevel[i]))
+				|| ((clear == rankingRollclear[i]) && (gr == rankingGrade[i])
+					&& (lv == rankingLevel[i]) && (time < rankingTime[i])));
 	}
 }

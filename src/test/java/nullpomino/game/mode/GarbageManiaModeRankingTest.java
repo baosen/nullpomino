@@ -174,7 +174,7 @@ class GarbageManiaModeRankingTest {
 	}
 
 	private static void invokeUpdateBestSectionTime(GarbageManiaMode mode) throws Exception {
-		Method m = GarbageManiaMode.class.getDeclaredMethod("updateBestSectionTime");
+		Method m = AbstractManiaMode.class.getDeclaredMethod("updateBestSectionTime");
 		m.setAccessible(true);
 		m.invoke(mode);
 	}

@@ -306,17 +306,6 @@ public class GarbageManiaMode extends AbstractManiaMode {
 		}
 	}
 
-	/**
-	 * Section TimeUpdate process
-	 * @param sectionNumber Section number
-	 */
-	private void stNewRecordCheck(int sectionNumber) {
-		if((sectiontime[sectionNumber] < bestSectionTime[sectionNumber]) && (!owner.replayMode)) {
-			sectionIsNewRecord[sectionNumber] = true;
-			sectionAnyNewRecord = true;
-		}
-	}
-
 	/*
 	 * Called at settings screen
 	 */
@@ -899,16 +888,5 @@ public class GarbageManiaMode extends AbstractManiaMode {
 		return RankingHelper.findRank(RANKING_MAX, i ->
 			(lv > rankingLevel[i])
 				|| ((lv == rankingLevel[i]) && (time < rankingTime[i])));
-	}
-
-	/**
-	 * Update best section time records
-	 */
-	private void updateBestSectionTime() {
-		for(int i = 0; i < SECTION_MAX; i++) {
-			if(sectionIsNewRecord[i]) {
-				bestSectionTime[i] = sectiontime[i];
-			}
-		}
 	}
 }

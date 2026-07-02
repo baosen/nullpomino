@@ -241,43 +241,6 @@ public class FinalMode extends AbstractManiaMode {
 	}
 
 	/**
-	 * Checks ST medal
-	 * @param engine GameEngine
-	 * @param sectionNumber Section Number
-	 */
-	private void stMedalCheck(GameEngine engine, int sectionNumber) {
-		int best = bestSectionTime[sectionNumber];
-
-		if(sectionlasttime < best) {
-			if(medalST < 3) {
-				engine.playSE("medal");
-				medalST = 3;
-			}
-			if(!owner.replayMode) {
-				sectionIsNewRecord[sectionNumber] = true;
-			}
-		} else if((sectionlasttime < best + 300) && (medalST < 2)) {
-			engine.playSE("medal");
-			medalST = 2;
-		} else if((sectionlasttime < best + 600) && (medalST < 1)) {
-			engine.playSE("medal");
-			medalST = 1;
-		}
-	}
-
-	/**
-	 * Get medal font color
-	 * @param medalColor Medal status
-	 * @return Medal font color
-	 */
-	private int getMedalFontColor(int medalColor) {
-		if(medalColor == 1) return EventReceiver.COLOR_RED;
-		if(medalColor == 2) return EventReceiver.COLOR_WHITE;
-		if(medalColor == 3) return EventReceiver.COLOR_YELLOW;
-		return -1;
-	}
-
-	/**
 	 * Main routine for game setup screen
 	 */
 	@Override
@@ -874,58 +837,6 @@ public class FinalMode extends AbstractManiaMode {
 		}
 		for(int i = 0; i < SECTION_MAX; i++) {
 			prop.setProperty("final.bestSectionTime." + ruleName + "." + i, bestSectionTime[i]);
-		}
-	}
-
-	/**
-	 * Update the ranking
-	 * @param gr Grade
-	 * @param lv Level
-	 * @param time time
-	 * @param clear Game completed flag
-	 */
-	private void updateRanking(int gr, int lv, int time, int clear) {
-		rankingRank = checkRanking(gr, lv, time, clear);
-		RankingHelper.insertAt(rankingRank, RANKING_MAX,
-			(to, from) -> {
-				rankingGrade[to] = rankingGrade[from];
-				rankingLevel[to] = rankingLevel[from];
-				rankingTime[to] = rankingTime[from];
-				rankingRollclear[to] = rankingRollclear[from];
-			},
-			rank -> {
-				rankingGrade[rank] = gr;
-				rankingLevel[rank] = lv;
-				rankingTime[rank] = time;
-				rankingRollclear[rank] = clear;
-			});
-	}
-
-	/**
-	 * This function will check the ranking and returns which place you are.
-	 * @param gr Grade
-	 * @param lv Level
-	 * @param time Time
-	 * @param clear Game completed flag
-	 * @return Place (First place is 0. -1 is Out of Rank)
-	 */
-	private int checkRanking(int gr, int lv, int time, int clear) {
-		return RankingHelper.findRank(RANKING_MAX, i ->
-			(clear > rankingRollclear[i])
-				|| ((clear == rankingRollclear[i]) && (gr > rankingGrade[i]))
-				|| ((clear == rankingRollclear[i]) && (gr == rankingGrade[i]) && (lv > rankingLevel[i]))
-				|| ((clear == rankingRollclear[i]) && (gr == rankingGrade[i])
-					&& (lv == rankingLevel[i]) && (time < rankingTime[i])));
-	}
-
-	/**
-	 * Updates best section time records
-	 */
-	private void updateBestSectionTime() {
-		for(int i = 0; i < SECTION_MAX; i++) {
-			if(sectionIsNewRecord[i]) {
-				bestSectionTime[i] = sectiontime[i];
-			}
 		}
 	}
 }

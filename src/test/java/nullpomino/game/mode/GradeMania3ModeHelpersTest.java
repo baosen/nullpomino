@@ -545,7 +545,7 @@ class GradeMania3ModeHelpersTest {
 	}
 
 	private static int invokeGetMedalFontColor(GradeMania3Mode mode, int medalColor) throws Exception {
-		Method m = GradeMania3Mode.class.getDeclaredMethod("getMedalFontColor", int.class);
+		Method m = AbstractManiaMode.class.getDeclaredMethod("getMedalFontColor", int.class);
 		m.setAccessible(true);
 		return (int) m.invoke(mode, medalColor);
 	}

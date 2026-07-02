@@ -157,7 +157,7 @@ class GradeManiaModeHelpersTest {
 	}
 
 	private static void invokeStNewRecordCheck(GradeManiaMode mode, int sectionNumber) throws Exception {
-		Method m = GradeManiaMode.class.getDeclaredMethod("stNewRecordCheck", int.class);
+		Method m = AbstractManiaMode.class.getDeclaredMethod("stNewRecordCheck", int.class);
 		m.setAccessible(true);
 		m.invoke(mode, sectionNumber);
 	}

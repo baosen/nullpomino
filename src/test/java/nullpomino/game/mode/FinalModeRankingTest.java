@@ -216,22 +216,20 @@ class FinalModeRankingTest {
 
 	private static int invokeCheckRanking(FinalMode mode, int gr, int lv, int time, int clear)
 			throws Exception {
-		Method m = FinalMode.class.getDeclaredMethod(
-				"checkRanking", int.class, int.class, int.class, int.class);
+		Method m = AbstractManiaMode.class.getDeclaredMethod("checkRanking", int.class, int.class, int.class, int.class);
 		m.setAccessible(true);
 		return (int) m.invoke(mode, gr, lv, time, clear);
 	}
 
 	private static void invokeUpdateRanking(FinalMode mode, int gr, int lv, int time, int clear)
 			throws Exception {
-		Method m = FinalMode.class.getDeclaredMethod(
-				"updateRanking", int.class, int.class, int.class, int.class);
+		Method m = AbstractManiaMode.class.getDeclaredMethod("updateRanking", int.class, int.class, int.class, int.class);
 		m.setAccessible(true);
 		m.invoke(mode, gr, lv, time, clear);
 	}
 
 	private static void invokeUpdateBestSectionTime(FinalMode mode) throws Exception {
-		Method m = FinalMode.class.getDeclaredMethod("updateBestSectionTime");
+		Method m = AbstractManiaMode.class.getDeclaredMethod("updateBestSectionTime");
 		m.setAccessible(true);
 		m.invoke(mode);
 	}

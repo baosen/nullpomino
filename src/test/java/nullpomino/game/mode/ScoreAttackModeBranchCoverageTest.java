@@ -502,7 +502,7 @@ class ScoreAttackModeBranchCoverageTest {
 	}
 
 	private static void invokeStNewRecordCheck(ScoreAttackMode mode, int sectionNumber) throws Exception {
-		Method m = ScoreAttackMode.class.getDeclaredMethod("stNewRecordCheck", int.class);
+		Method m = AbstractManiaMode.class.getDeclaredMethod("stNewRecordCheck", int.class);
 		m.setAccessible(true);
 		m.invoke(mode, sectionNumber);
 	}

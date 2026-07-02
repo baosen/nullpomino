@@ -440,7 +440,7 @@ class FinalModeGameLogicTest {
 	}
 
 	private static void invokeUpdateRanking(FinalMode mode, int gr, int lv, int time, int clear) throws Exception {
-		Method m = FinalMode.class.getDeclaredMethod("updateRanking", int.class, int.class, int.class, int.class);
+		Method m = AbstractManiaMode.class.getDeclaredMethod("updateRanking", int.class, int.class, int.class, int.class);
 		m.setAccessible(true);
 		m.invoke(mode, gr, lv, time, clear);
 	}

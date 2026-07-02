@@ -258,31 +258,6 @@ public class PhantomManiaMode extends AbstractDeathMode {
 	}
 
 	/**
-	 * Checks ST medal
-	 * @param engine GameEngine
-	 * @param sectionNumber Section Number
-	 */
-	private void stMedalCheck(GameEngine engine, int sectionNumber) {
-		int best = bestSectionTime[sectionNumber];
-
-		if(sectionlasttime < best) {
-			if(medalST < 3) {
-				engine.playSE("medal");
-				medalST = 3;
-			}
-			if(!owner.replayMode) {
-				sectionIsNewRecord[sectionNumber] = true;
-			}
-		} else if((sectionlasttime < best + 300) && (medalST < 2)) {
-			engine.playSE("medal");
-			medalST = 2;
-		} else if((sectionlasttime < best + 600) && (medalST < 1)) {
-			engine.playSE("medal");
-			medalST = 1;
-		}
-	}
-
-	/**
 	 * Checks RO medal
 	 */
 	private void roMedalCheck(GameEngine engine) {
@@ -292,16 +267,6 @@ public class PhantomManiaMode extends AbstractDeathMode {
 			receiver.playSE("medal");
 			medalRO++;
 		}
-	}
-
-	/**
-	 * Get medal font color
-	 */
-	private int getMedalFontColor(int medalColor) {
-		if(medalColor == 1) return EventReceiver.COLOR_RED;
-		if(medalColor == 2) return EventReceiver.COLOR_WHITE;
-		if(medalColor == 3) return EventReceiver.COLOR_YELLOW;
-		return -1;
 	}
 
 	/**
@@ -928,49 +893,6 @@ public class PhantomManiaMode extends AbstractDeathMode {
 		}
 		for(int i = 0; i < SECTION_MAX; i++) {
 			prop.setProperty("phantommania.bestSectionTime." + ruleName + "." + i, bestSectionTime[i]);
-		}
-	}
-
-	/**
-	 * Update the ranking
-	 */
-	private void updateRanking(int gr, int lv, int time, int clear) {
-		rankingRank = checkRanking(gr, lv, time, clear);
-		RankingHelper.insertAt(rankingRank, RANKING_MAX,
-			(to, from) -> {
-				rankingGrade[to] = rankingGrade[from];
-				rankingLevel[to] = rankingLevel[from];
-				rankingTime[to] = rankingTime[from];
-				rankingRollclear[to] = rankingRollclear[from];
-			},
-			rank -> {
-				rankingGrade[rank] = gr;
-				rankingLevel[rank] = lv;
-				rankingTime[rank] = time;
-				rankingRollclear[rank] = clear;
-			});
-	}
-
-	/**
-	 * This function will check the ranking and returns which place you are. (-1: Out of rank)
-	 */
-	private int checkRanking(int gr, int lv, int time, int clear) {
-		return RankingHelper.findRank(RANKING_MAX, i ->
-			(clear > rankingRollclear[i])
-				|| ((clear == rankingRollclear[i]) && (gr > rankingGrade[i]))
-				|| ((clear == rankingRollclear[i]) && (gr == rankingGrade[i]) && (lv > rankingLevel[i]))
-				|| ((clear == rankingRollclear[i]) && (gr == rankingGrade[i])
-					&& (lv == rankingLevel[i]) && (time < rankingTime[i])));
-	}
-
-	/**
-	 * Updates best section time records
-	 */
-	private void updateBestSectionTime() {
-		for(int i = 0; i < SECTION_MAX; i++) {
-			if(sectionIsNewRecord[i]) {
-				bestSectionTime[i] = sectiontime[i];
-			}
 		}
 	}
 }

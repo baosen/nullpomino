@@ -181,7 +181,7 @@ class SpeedManiaModeRankingTest {
 	}
 
 	private static void invokeUpdateBestSectionTime(SpeedManiaMode mode) throws Exception {
-		Method m = SpeedManiaMode.class.getDeclaredMethod("updateBestSectionTime");
+		Method m = AbstractManiaMode.class.getDeclaredMethod("updateBestSectionTime");
 		m.setAccessible(true);
 		m.invoke(mode);
 	}

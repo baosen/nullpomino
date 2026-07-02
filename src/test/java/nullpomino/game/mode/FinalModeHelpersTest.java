@@ -183,13 +183,13 @@ class FinalModeHelpersTest {
 	}
 
 	private static void invokeStMedalCheck(FinalMode mode, GameEngine engine, int sectionNumber) throws Exception {
-		Method m = FinalMode.class.getDeclaredMethod("stMedalCheck", GameEngine.class, int.class);
+		Method m = AbstractManiaMode.class.getDeclaredMethod("stMedalCheck", GameEngine.class, int.class);
 		m.setAccessible(true);
 		m.invoke(mode, engine, sectionNumber);
 	}
 
 	private static int invokeGetMedalFontColor(FinalMode mode, int medalColor) throws Exception {
-		Method m = FinalMode.class.getDeclaredMethod("getMedalFontColor", int.class);
+		Method m = AbstractManiaMode.class.getDeclaredMethod("getMedalFontColor", int.class);
 		m.setAccessible(true);
 		return (int) m.invoke(mode, medalColor);
 	}

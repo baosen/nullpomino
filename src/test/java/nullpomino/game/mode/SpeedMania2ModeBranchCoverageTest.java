@@ -676,8 +676,7 @@ class SpeedMania2ModeBranchCoverageTest {
 	}
 
 	private static void invokeStMedalCheck(SpeedMania2Mode mode, GameEngine engine, int sectionNumber) throws Exception {
-		java.lang.reflect.Method m = mode.getClass().getDeclaredMethod(
-				"stMedalCheck", GameEngine.class, int.class);
+		java.lang.reflect.Method m = AbstractManiaMode.class.getDeclaredMethod("stMedalCheck", GameEngine.class, int.class);
 		m.setAccessible(true);
 		m.invoke(mode, engine, sectionNumber);
 	}
@@ -689,8 +688,7 @@ class SpeedMania2ModeBranchCoverageTest {
 	}
 
 	private static void invokeUpdateRanking(SpeedMania2Mode mode, int gr, int lv, int time, int clear) throws Exception {
-		java.lang.reflect.Method m = mode.getClass().getDeclaredMethod(
-				"updateRanking", int.class, int.class, int.class, int.class);
+		java.lang.reflect.Method m = AbstractManiaMode.class.getDeclaredMethod("updateRanking", int.class, int.class, int.class, int.class);
 		m.setAccessible(true);
 		m.invoke(mode, gr, lv, time, clear);
 	}

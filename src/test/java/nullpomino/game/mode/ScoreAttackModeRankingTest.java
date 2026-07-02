@@ -190,7 +190,7 @@ class ScoreAttackModeRankingTest {
 	}
 
 	private static void invokeUpdateBestSectionTime(ScoreAttackMode mode) throws Exception {
-		Method m = ScoreAttackMode.class.getDeclaredMethod("updateBestSectionTime");
+		Method m = AbstractManiaMode.class.getDeclaredMethod("updateBestSectionTime");
 		m.setAccessible(true);
 		m.invoke(mode);
 	}

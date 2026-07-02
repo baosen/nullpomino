@@ -474,7 +474,8 @@ public class GradeMania3Mode extends AbstractGradeMode {
 	 * @param engine GameEngine
 	 * @param sectionNumber Section number
 	 */
-	private void stMedalCheck(GameEngine engine, int sectionNumber) {
+	@Override
+	protected void stMedalCheck(GameEngine engine, int sectionNumber) {
 		int type = enableexam ? 1 : 0;
 		int best = bestSectionTime[sectionNumber][type];
 
@@ -493,18 +494,6 @@ public class GradeMania3Mode extends AbstractGradeMode {
 			engine.playSE("medal");
 			medalST = 1;
 		}
-	}
-
-	/**
-	 *  medal Gets the color of the character
-	 * @param medalColor  medal State
-	 * @return  medal Text color of the
-	 */
-	private int getMedalFontColor(int medalColor) {
-		if(medalColor == 1) return EventReceiver.COLOR_RED;
-		if(medalColor == 2) return EventReceiver.COLOR_WHITE;
-		if(medalColor == 3) return EventReceiver.COLOR_YELLOW;
-		return -1;
 	}
 
 	/**
@@ -1826,7 +1815,8 @@ public class GradeMania3Mode extends AbstractGradeMode {
 	/**
 	 * Update best section time records
 	 */
-	private void updateBestSectionTime() {
+	@Override
+	protected void updateBestSectionTime() {
 		for(int i = 0; i < SECTION_MAX; i++) {
 			if(sectionIsNewRecord[i]) {
 				int type = enableexam ? 1 : 0;

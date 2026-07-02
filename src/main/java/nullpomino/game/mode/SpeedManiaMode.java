@@ -239,31 +239,6 @@ public class SpeedManiaMode extends AbstractDeathMode {
 	}
 
 	/**
-	 * ST medal check
-	 * @param engine GameEngine
-	 * @param sectionNumber Section number
-	 */
-	private void stMedalCheck(GameEngine engine, int sectionNumber) {
-		int best = bestSectionTime[sectionNumber];
-
-		if(sectionlasttime < best) {
-			if(medalST < 3) {
-				engine.playSE("medal");
-				medalST = 3;
-			}
-			if(!owner.replayMode) {
-				sectionIsNewRecord[sectionNumber] = true;
-			}
-		} else if((sectionlasttime < best + 300) && (medalST < 2)) {
-			engine.playSE("medal");
-			medalST = 2;
-		} else if((sectionlasttime < best + 600) && (medalST < 1)) {
-			engine.playSE("medal");
-			medalST = 1;
-		}
-	}
-
-	/**
 	 * RO medal check
 	 * @param engine Engine
 	 */
@@ -274,18 +249,6 @@ public class SpeedManiaMode extends AbstractDeathMode {
 			engine.playSE("medal");
 			medalRO++;
 		}
-	}
-
-	/**
-	 *  medal Gets the color of the character
-	 * @param medalColor  medal State
-	 * @return  medal Text color of the
-	 */
-	private int getMedalFontColor(int medalColor) {
-		if(medalColor == 1) return EventReceiver.COLOR_RED;
-		if(medalColor == 2) return EventReceiver.COLOR_WHITE;
-		if(medalColor == 3) return EventReceiver.COLOR_YELLOW;
-		return -1;
 	}
 
 	/*
@@ -938,16 +901,5 @@ public class SpeedManiaMode extends AbstractDeathMode {
 		return RankingHelper.findRank(RANKING_MAX, i ->
 			(lv > rankingLevel[i])
 				|| ((lv == rankingLevel[i]) && (time < rankingTime[i])));
-	}
-
-	/**
-	 * Update best section time records
-	 */
-	private void updateBestSectionTime() {
-		for(int i = 0; i < SECTION_MAX; i++) {
-			if(sectionIsNewRecord[i]) {
-				bestSectionTime[i] = sectiontime[i];
-			}
-		}
 	}
 }

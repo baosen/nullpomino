@@ -219,17 +219,6 @@ public class ScoreAttackMode extends AbstractManiaMode {
 	}
 
 	/**
-	 * Best section time update check routine
-	 * @param sectionNumber Section Number
-	 */
-	private void stNewRecordCheck(int sectionNumber) {
-		if((sectiontime[sectionNumber] < bestSectionTime[sectionNumber]) && (!owner.replayMode)) {
-			sectionIsNewRecord[sectionNumber] = true;
-			sectionAnyNewRecord = true;
-		}
-	}
-
-	/**
 	 * Main routine for game setup screen
 	 */
 	@Override
@@ -718,16 +707,5 @@ public class ScoreAttackMode extends AbstractManiaMode {
 			(sc > rankingScore[i])
 				|| ((sc == rankingScore[i]) && (lv > rankingLevel[i]))
 				|| ((sc == rankingScore[i]) && (lv == rankingLevel[i]) && (time < rankingTime[i])));
-	}
-
-	/**
-	 * Updates best section time records
-	 */
-	private void updateBestSectionTime() {
-		for(int i = 0; i < SECTION_MAX; i++) {
-			if(sectionIsNewRecord[i]) {
-				bestSectionTime[i] = sectiontime[i];
-			}
-		}
 	}
 }

@@ -398,7 +398,7 @@ class SpeedMania2ModeGameLogicTest {
 	}
 
 	private static void invokeUpdateRanking(SpeedMania2Mode mode, int gr, int lv, int time, int clear) throws Exception {
-		Method m = SpeedMania2Mode.class.getDeclaredMethod("updateRanking", int.class, int.class, int.class, int.class);
+		Method m = AbstractManiaMode.class.getDeclaredMethod("updateRanking", int.class, int.class, int.class, int.class);
 		m.setAccessible(true);
 		m.invoke(mode, gr, lv, time, clear);
 	}

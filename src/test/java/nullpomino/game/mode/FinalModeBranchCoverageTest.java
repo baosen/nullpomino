@@ -771,7 +771,7 @@ class FinalModeBranchCoverageTest {
 	}
 
 	private static void invokeStMedalCheck(FinalMode mode, GameEngine engine, int section) throws Exception {
-		Method m = FinalMode.class.getDeclaredMethod("stMedalCheck", GameEngine.class, int.class);
+		Method m = AbstractManiaMode.class.getDeclaredMethod("stMedalCheck", GameEngine.class, int.class);
 		m.setAccessible(true);
 		m.invoke(mode, engine, section);
 	}

@@ -663,11 +663,13 @@ class SpeedManiaModeBranchCoverageTest {
 	}
 
 	private static void invoke(SpeedManiaMode mode, String name, Object... args) throws Exception {
-		for (Method m : SpeedManiaMode.class.getDeclaredMethods()) {
-			if (m.getName().equals(name) && m.getParameterCount() == args.length) {
-				m.setAccessible(true);
-				m.invoke(mode, args);
-				return;
+		for (Class<?> c = SpeedManiaMode.class; c != null; c = c.getSuperclass()) {
+			for (Method m : c.getDeclaredMethods()) {
+				if (m.getName().equals(name) && m.getParameterCount() == args.length) {
+					m.setAccessible(true);
+					m.invoke(mode, args);
+					return;
+				}
 			}
 		}
 		throw new NoSuchMethodException(name);

@@ -195,22 +195,20 @@ class GradeMania2ModeRankingTest {
 
 	private static int invokeCheckRanking(GradeMania2Mode mode, int gr, int lv, int time, int clear)
 			throws Exception {
-		Method m = GradeMania2Mode.class.getDeclaredMethod(
-				"checkRanking", int.class, int.class, int.class, int.class);
+		Method m = AbstractManiaMode.class.getDeclaredMethod("checkRanking", int.class, int.class, int.class, int.class);
 		m.setAccessible(true);
 		return (int) m.invoke(mode, gr, lv, time, clear);
 	}
 
 	private static void invokeUpdateRanking(GradeMania2Mode mode, int gr, int lv, int time, int clear)
 			throws Exception {
-		Method m = GradeMania2Mode.class.getDeclaredMethod(
-				"updateRanking", int.class, int.class, int.class, int.class);
+		Method m = AbstractManiaMode.class.getDeclaredMethod("updateRanking", int.class, int.class, int.class, int.class);
 		m.setAccessible(true);
 		m.invoke(mode, gr, lv, time, clear);
 	}
 
 	private static void invokeUpdateBestSectionTime(GradeMania2Mode mode) throws Exception {
-		Method m = GradeMania2Mode.class.getDeclaredMethod("updateBestSectionTime");
+		Method m = AbstractManiaMode.class.getDeclaredMethod("updateBestSectionTime");
 		m.setAccessible(true);
 		m.invoke(mode);
 	}

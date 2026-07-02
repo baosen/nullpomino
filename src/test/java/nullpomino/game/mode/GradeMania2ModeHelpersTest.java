@@ -382,7 +382,7 @@ class GradeMania2ModeHelpersTest {
 	}
 
 	private static void invokeStMedalCheck(GradeMania2Mode mode, GameEngine engine, int sectionNumber) throws Exception {
-		Method m = GradeMania2Mode.class.getDeclaredMethod("stMedalCheck", GameEngine.class, int.class);
+		Method m = AbstractManiaMode.class.getDeclaredMethod("stMedalCheck", GameEngine.class, int.class);
 		m.setAccessible(true);
 		m.invoke(mode, engine, sectionNumber);
 	}
@@ -394,7 +394,7 @@ class GradeMania2ModeHelpersTest {
 	}
 
 	private static int invokeGetMedalFontColor(GradeMania2Mode mode, int medalColor) throws Exception {
-		Method m = GradeMania2Mode.class.getDeclaredMethod("getMedalFontColor", int.class);
+		Method m = AbstractManiaMode.class.getDeclaredMethod("getMedalFontColor", int.class);
 		m.setAccessible(true);
 		return (int) m.invoke(mode, medalColor);
 	}

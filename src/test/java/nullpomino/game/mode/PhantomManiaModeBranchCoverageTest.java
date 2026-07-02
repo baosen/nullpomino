@@ -350,7 +350,7 @@ class PhantomManiaModeBranchCoverageTest {
 		GameEngine engine = freshEngine(mode);
 		mode.playerInit(engine, 0);
 
-		Method st = mode.getClass().getDeclaredMethod("stMedalCheck", GameEngine.class, int.class);
+		Method st = AbstractManiaMode.class.getDeclaredMethod("stMedalCheck", GameEngine.class, int.class);
 		st.setAccessible(true);
 
 		int[] best = (int[]) field(mode.getClass(), "bestSectionTime").get(mode);
@@ -382,7 +382,7 @@ class PhantomManiaModeBranchCoverageTest {
 		mode.playerInit(engine, 0);
 		engine.owner.replayMode = false;
 
-		Method st = mode.getClass().getDeclaredMethod("stMedalCheck", GameEngine.class, int.class);
+		Method st = AbstractManiaMode.class.getDeclaredMethod("stMedalCheck", GameEngine.class, int.class);
 		st.setAccessible(true);
 
 		int[] best = (int[]) field(mode.getClass(), "bestSectionTime").get(mode);
@@ -694,7 +694,7 @@ class PhantomManiaModeBranchCoverageTest {
 			grade[i] = 6; level[i] = 999; time[i] = 1; roll[i] = 2;
 		}
 
-		Method check = mode.getClass().getDeclaredMethod("checkRanking", int.class, int.class, int.class, int.class);
+		Method check = AbstractManiaMode.class.getDeclaredMethod("checkRanking", int.class, int.class, int.class, int.class);
 		check.setAccessible(true);
 		int rank = (int) check.invoke(mode, 0, 1, 99999, 0); // far worse
 		assertEquals(-1, rank, "a worse-than-everything score is out of rank");

@@ -242,7 +242,7 @@ class SpeedManiaModeHelpersTest {
 	}
 
 	private static void invokeStMedalCheck(SpeedManiaMode mode, GameEngine engine, int sectionNumber) throws Exception {
-		Method m = SpeedManiaMode.class.getDeclaredMethod("stMedalCheck", GameEngine.class, int.class);
+		Method m = AbstractManiaMode.class.getDeclaredMethod("stMedalCheck", GameEngine.class, int.class);
 		m.setAccessible(true);
 		m.invoke(mode, engine, sectionNumber);
 	}
@@ -254,7 +254,7 @@ class SpeedManiaModeHelpersTest {
 	}
 
 	private static int invokeGetMedalFontColor(SpeedManiaMode mode, int medalColor) throws Exception {
-		Method m = SpeedManiaMode.class.getDeclaredMethod("getMedalFontColor", int.class);
+		Method m = AbstractManiaMode.class.getDeclaredMethod("getMedalFontColor", int.class);
 		m.setAccessible(true);
 		return (int) m.invoke(mode, medalColor);
 	}

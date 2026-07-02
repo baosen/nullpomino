@@ -192,7 +192,7 @@ class GradeManiaModeRankingTest {
 	}
 
 	private static void invokeUpdateBestSectionTime(GradeManiaMode mode) throws Exception {
-		Method m = GradeManiaMode.class.getDeclaredMethod("updateBestSectionTime");
+		Method m = AbstractManiaMode.class.getDeclaredMethod("updateBestSectionTime");
 		m.setAccessible(true);
 		m.invoke(mode);
 	}

@@ -249,7 +249,7 @@ class PhantomManiaModeHelpersTest {
 	}
 
 	private static void invokeStMedalCheck(PhantomManiaMode mode, GameEngine engine, int sectionNumber) throws Exception {
-		Method m = PhantomManiaMode.class.getDeclaredMethod("stMedalCheck", GameEngine.class, int.class);
+		Method m = AbstractManiaMode.class.getDeclaredMethod("stMedalCheck", GameEngine.class, int.class);
 		m.setAccessible(true);
 		m.invoke(mode, engine, sectionNumber);
 	}
@@ -261,7 +261,7 @@ class PhantomManiaModeHelpersTest {
 	}
 
 	private static int invokeGetMedalFontColor(PhantomManiaMode mode, int medalColor) throws Exception {
-		Method m = PhantomManiaMode.class.getDeclaredMethod("getMedalFontColor", int.class);
+		Method m = AbstractManiaMode.class.getDeclaredMethod("getMedalFontColor", int.class);
 		m.setAccessible(true);
 		return (int) m.invoke(mode, medalColor);
 	}
