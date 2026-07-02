@@ -41,7 +41,6 @@ public class PhysicianVSMode extends AbstractMode {
 		Block.BLOCK_COLOR_GEM_BLUE,
 		Block.BLOCK_COLOR_GEM_YELLOW
 	};
-	//private static final int[] BASE_SPEEDS = {10, 20, 25};
 
 	/** Names of speed settings */
 	private static final String[] SPEED_NAME = {"LOW", "MED", "HI"};
@@ -59,12 +58,6 @@ public class PhysicianVSMode extends AbstractMode {
 
 	/** Each player's frame color */
 	private final int[] PLAYER_COLOR_FRAME = {GameEngine.FRAME_COLOR_RED, GameEngine.FRAME_COLOR_BLUE};
-
-	/** Has accumulatedojama blockOfcount */
-	//private int[] garbage;
-
-	/** Had sentojama blockOfcount */
-	//private int[] garbageSent;
 
 	/** Time to display the most recent increase in score */
 	private int[] scgettime;
@@ -105,14 +98,8 @@ public class PhysicianVSMode extends AbstractMode {
 	/** Version */
 	private int version;
 
-	/** Flag for all clear */
-	//private boolean[] zenKeshi;
-
 	/** Amount of points earned from most recent clear */
 	private int[] lastscore;
-
-	/** Amount of garbage added in current chain */
-	//private int[] garbageAdd;
 
 	/** Score */
 	private int[] score;
