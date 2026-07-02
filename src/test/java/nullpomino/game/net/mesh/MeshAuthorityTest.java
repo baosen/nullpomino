@@ -43,6 +43,8 @@ class MeshAuthorityTest {
         }
         public void direct(int uid, String line) { directs.add(uid + "|" + line); }
         public void ruleCache(int uid, String checksum, String data) {}
+        public void roomRuleCache(int roomId, String data) {}
+        public void mapCache(int roomId, String data) {}
         public void authUpdate() { authUpdates++; }
 
         Emitted lastBroadcastStarting(String prefix) {

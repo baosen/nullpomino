@@ -62,6 +62,12 @@ public class MeshAuthority {
 		/** Disseminate a member's compressed rule blob for successor arbiters */
 		void ruleCache(int uid, String checksum, String compressedData);
 
+		/** Disseminate a rule-locked room's compressed rule (not part of the room blob) */
+		void roomRuleCache(int roomId, String compressedData);
+
+		/** Disseminate a map room's compressed map list (not part of the room blob) */
+		void mapCache(int roomId, String compressedData);
+
 		/** Authority state mutated - ship fresh auth frames to all members */
 		void authUpdate();
 	}
@@ -395,9 +401,17 @@ public class MeshAuthority {
 		roomInfo.playerList.add(pInfo);
 		pInfo.seatID = roomInfo.joinSeat(pInfo);
 
-		// Send rule data if rule-lock is enabled
+		// Send rule data if rule-lock is enabled; replicate it mesh-wide so a
+		// successor arbiter can keep serving it (ruleOpt is not in the room blob)
 		if(roomInfo.ruleLock) {
-			sink.direct(pInfo.uid, "rulelock\t" + compressRule(roomInfo.ruleOpt));
+			String compressed = compressRule(roomInfo.ruleOpt);
+			sink.roomRuleCache(roomInfo.roomID, compressed);
+			sink.direct(pInfo.uid, "rulelock\t" + compressed);
+		}
+
+		// Replicate maps for the same reason
+		if(roomInfo.useMap && !roomInfo.mapList.isEmpty()) {
+			sink.mapCache(roomInfo.roomID, NetUtil.compressString(joinMaps(roomInfo)));
 		}
 
 		broadcastPlayerInfoUpdate(pInfo);
@@ -459,13 +473,7 @@ public class MeshAuthority {
 
 			// Map send
 			if(newRoom.useMap && !newRoom.mapList.isEmpty()) {
-				StringBuilder strMapTemp = new StringBuilder();
-				int maxMap = newRoom.mapList.size();
-				for(int i = 0; i < maxMap; i++) {
-					strMapTemp.append(newRoom.mapList.get(i));
-					if(i < maxMap - 1) strMapTemp.append('\t');
-				}
-				sink.direct(pInfo.uid, "map\t" + NetUtil.compressString(strMapTemp.toString()));
+				sink.direct(pInfo.uid, "map\t" + NetUtil.compressString(joinMaps(newRoom)));
 			}
 
 			sink.broadcast(newRoom.roomID,
@@ -994,5 +1002,16 @@ public class MeshAuthority {
 		CustomProperties prop = new CustomProperties();
 		ruleOpt.writeProperty(prop, 0);
 		return NetUtil.compressString(prop.encode("RuleData"));
+	}
+
+	/** Tab-join a room's map list (the wire format of the "map" message payload) */
+	private static String joinMaps(NetRoomInfo roomInfo) {
+		StringBuilder sb = new StringBuilder();
+		int maxMap = roomInfo.mapList.size();
+		for(int i = 0; i < maxMap; i++) {
+			sb.append(roomInfo.mapList.get(i));
+			if(i < maxMap - 1) sb.append('\t');
+		}
+		return sb.toString();
 	}
 }
