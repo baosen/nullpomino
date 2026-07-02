@@ -169,7 +169,7 @@ public class GeneralUtil {
 		try {
 			prop = CustomProperties.loadFromFile(filename);
 		} catch (Exception e) {
-			log.warn("Failed to load rule from " + filename, e);
+			log.warn("Failed to load rule from {}", filename, e);
 		}
 
 		RuleOptions ruleopt = new RuleOptions();
@@ -209,7 +209,7 @@ public class GeneralUtil {
 		try {
 			return ClassFactory.create(filename, expectedType);
 		} catch (Exception e) {
-			log.warn("Failed to load " + description + " from " + filename, e);
+			log.warn("Failed to load {} from {}", description, filename, e);
 			return null;
 		}
 	}

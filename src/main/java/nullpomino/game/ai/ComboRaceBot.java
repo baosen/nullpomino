@@ -745,7 +745,7 @@ public class ComboRaceBot extends DummyAI implements Runnable {
 				}
 			}
 		}
-		log.debug("Transition table created. Total entries: " + count);
+		log.debug("Transition table created. Total entries: {}", count);
 		//TODO: PageRank scores for each state
 	}
 

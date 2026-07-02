@@ -366,7 +366,7 @@ public class GemManiaMode extends AbstractMode {
 	 */
 	private void loadStageSet(int id) {
 		if(id >= 0) {
-			log.debug("Loading stage set from custom set #" + id);
+			log.debug("Loading stage set from custom set #{}", id);
 			propStageSet = receiver.loadProperties("config/map/gemmania/custom" + id + ".map");
 		} else {
 			log.debug("Loading stage set from default set");
@@ -383,7 +383,7 @@ public class GemManiaMode extends AbstractMode {
 	private void saveStageSet(int id) {
 		if((propStageSet != null) && (!owner.replayMode)) {
 			if(id >= 0) {
-				log.debug("Saving stage set to custom set #" + id);
+				log.debug("Saving stage set to custom set #{}", id);
 				receiver.saveProperties("config/map/gemmania/custom" + id + ".map", propStageSet);
 			} else {
 				log.debug("Saving stage set to default set");

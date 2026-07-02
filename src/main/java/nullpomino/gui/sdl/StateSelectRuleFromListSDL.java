@@ -74,7 +74,7 @@ public class StateSelectRuleFromListSDL extends DummyMenuScrollStateSDL {
 								entry.listPath.add(str);
 							}
 						} catch (IOException e2) {
-							log.error("File " + str + " doesn't exist", e2);
+							log.error("File {} doesn't exist", str, e2);
 						}
 					}
 				}

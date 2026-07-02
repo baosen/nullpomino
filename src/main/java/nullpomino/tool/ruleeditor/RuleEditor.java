@@ -453,7 +453,7 @@ public class RuleEditor extends JFrame implements ActionListener {
 				strNowFile = filename;
 				setTitle(getUIText("Title_RuleEditor") + ":" + strNowFile);
 			} catch (IOException e) {
-				log.error("Failed to load rule data from " + filename, e);
+				log.error("Failed to load rule data from {}", filename, e);
 				JOptionPane.showMessageDialog(this, getUIText("Message_FileLoadFailed")+"\n"+e, getUIText("Title_FileLoadFailed"),
 											  JOptionPane.ERROR_MESSAGE);
 			}
@@ -1289,7 +1289,7 @@ public class RuleEditor extends JFrame implements ActionListener {
 				break;
 			}
 		}
-		log.debug(numBlocks + " block skins found");
+		log.debug("{} block skins found", numBlocks);
 
 		imgBlockSkins = new BufferedImage[numBlocks];
 
@@ -1318,9 +1318,9 @@ public class RuleEditor extends JFrame implements ActionListener {
 		BufferedImage img = null;
 		try {
 			img = ImageIO.read(url);
-			log.debug("Loaded image from " + url);
+			log.debug("Loaded image from {}", url);
 		} catch (IOException e) {
-			log.error("Failed to load image from " + url, e);
+			log.error("Failed to load image from {}", url, e);
 		}
 		return img;
 	}
@@ -1334,7 +1334,7 @@ public class RuleEditor extends JFrame implements ActionListener {
 		try {
 			return SwingToolUtil.fileUrl(str);
 		} catch(MalformedURLException e) {
-			log.warn("Invalid URL:" + str, e);
+			log.warn("Invalid URL:{}", str, e);
 			return null;
 		}
 	}
@@ -1588,7 +1588,7 @@ public class RuleEditor extends JFrame implements ActionListener {
 
 		prop.storeToFile(filename, "NullpoMino RuleData");
 
-		log.debug("Saved rule file to " + filename);
+		log.debug("Saved rule file to {}", filename);
 	}
 
 	/**
@@ -1603,7 +1603,7 @@ public class RuleEditor extends JFrame implements ActionListener {
 		RuleOptions ruleopt = new RuleOptions();
 		ruleopt.readProperty(prop, 0);
 
-		log.debug("Loaded rule file from " + filename);
+		log.debug("Loaded rule file from {}", filename);
 
 		return ruleopt;
 	}
@@ -1679,7 +1679,7 @@ public class RuleEditor extends JFrame implements ActionListener {
 				try {
 					ruleopt = load(file.getPath());
 				} catch (IOException e2) {
-					log.error("Failed to load rule data from " + strNowFile, e2);
+					log.error("Failed to load rule data from {}", strNowFile, e2);
 					JOptionPane.showMessageDialog(this, getUIText("Message_FileLoadFailed")+"\n"+e2, getUIText("Title_FileLoadFailed"),
 												  JOptionPane.ERROR_MESSAGE);
 					return;
@@ -1692,7 +1692,7 @@ public class RuleEditor extends JFrame implements ActionListener {
 			try {
 				save(strNowFile);
 			} catch (IOException e2) {
-				log.error("Failed to save rule data to " + strNowFile, e2);
+				log.error("Failed to save rule data to {}", strNowFile, e2);
 				JOptionPane.showMessageDialog(this, getUIText("Message_FileSaveFailed")+"\n"+e2, getUIText("Title_FileSaveFailed"),
 											  JOptionPane.ERROR_MESSAGE);
 			}
@@ -1709,7 +1709,7 @@ public class RuleEditor extends JFrame implements ActionListener {
 				try {
 					save(filename);
 				} catch (Exception e2) {
-					log.error("Failed to save rule data to " + filename, e2);
+					log.error("Failed to save rule data to {}", filename, e2);
 					JOptionPane.showMessageDialog(this, getUIText("Message_FileSaveFailed")+"\n"+e2, getUIText("Title_FileSaveFailed"),
 												  JOptionPane.ERROR_MESSAGE);
 					return;

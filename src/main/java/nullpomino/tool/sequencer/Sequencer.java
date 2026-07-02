@@ -283,12 +283,12 @@ public class Sequencer extends JFrame implements ActionListener {
 	}
 
 	public CustomProperties load(String filename) throws IOException {
-		log.info("Loading replay file from " + filename);
+		log.info("Loading replay file from {}", filename);
 		return CustomProperties.loadFromFile(filename);
 	}
 
 	public void save(String filename) throws IOException {
-		log.info("Saving piece sequence file to " + filename);
+		log.info("Saving piece sequence file to {}", filename);
 		BufferedWriter out = new BufferedWriter(new FileWriter(filename));
 		out.write("# NullpoMino Piece Sequence"); out.newLine();
 		out.write(txtareaSequence.getText());
@@ -357,7 +357,7 @@ public class Sequencer extends JFrame implements ActionListener {
 				sequence[i] = randomizerObject.next();
 			}
 		} catch(Exception e) {
-			log.error("Randomizer class " + name + " load failed", e);
+			log.error("Randomizer class {} load failed", name, e);
 		}
 	}
 

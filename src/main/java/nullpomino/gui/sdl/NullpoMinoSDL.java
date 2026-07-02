@@ -441,7 +441,7 @@ public class NullpoMinoSDL {
 			if(mixer != null) {
 				log.info("SDL3_mixer initialized");
 			} else {
-				log.warn("SDL3_mixer MIX_CreateMixerDevice failed: " + SDL3.INSTANCE.SDL_GetError());
+				log.warn("SDL3_mixer MIX_CreateMixerDevice failed: {}", SDL3.INSTANCE.SDL_GetError());
 				mixerLib = null;
 			}
 		} else {
@@ -465,7 +465,7 @@ public class NullpoMinoSDL {
 		int[] countBuf = new int[1];
 		Pointer joystickList = SDL3.INSTANCE.SDL_GetJoysticks(countBuf);
 		joystickMax = countBuf[0];
-		log.info("Number of Joysticks:" + joystickMax);
+		log.info("Number of Joysticks:{}", joystickMax);
 
 		if(joystickMax > 0 && joystickList != null) {
 			joystick = new Pointer[joystickMax];
@@ -486,7 +486,7 @@ public class NullpoMinoSDL {
 						joyMaxHat[i] = SDL3.INSTANCE.SDL_GetNumJoystickHats(joystick[i]);
 					}
 				} catch (Throwable e) {
-					log.warn("Failed to open Joystick #" + i, e);
+					log.warn("Failed to open Joystick #{}", i, e);
 				}
 			}
 			joyPressedState = new boolean[joystickMax][Math.max(max, 1)];
@@ -511,7 +511,7 @@ public class NullpoMinoSDL {
 		SDL3.INSTANCE.SDL_SetWindowFullscreen(window, fullscreen ? 1 : 0);
 		propConfig.setProperty("option.fullscreen", fullscreen);
 		saveConfig();
-		log.debug("Fullscreen toggled: " + fullscreen);
+		log.debug("Fullscreen toggled: {}", fullscreen);
 	}
 
 	/**
@@ -933,14 +933,14 @@ public class NullpoMinoSDL {
 		Calendar c = Calendar.getInstance();
 		DateFormat dfm = new SimpleDateFormat("yyyy_MM_dd_HH_mm_ss");
 		String filename = dir + "/" + dfm.format(c.getTime()) + ".bmp";
-		log.info("Saving screenshot to " + filename);
+		log.info("Saving screenshot to {}", filename);
 
 		File ssfolder = new File(dir);
 		if (!ssfolder.exists()) {
 			if (ssfolder.mkdir()) {
-				log.info("Created screenshot folder: " + dir);
+				log.info("Created screenshot folder: {}", dir);
 			} else {
-				log.info("Couldn't create screenshot folder at " + dir);
+				log.info("Couldn't create screenshot folder at {}", dir);
 			}
 		}
 

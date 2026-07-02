@@ -529,8 +529,8 @@ public class Nohoho extends DummyAI implements Runnable {
 		
 		// Place the piece
 		if(!piece.placeToField(x, y, rt, fld)) {
-				log.debug("End of thinkMain(" + x + ", " + y + ", " + rt + ", " + rtOld +
-					", fld, piece " + piece.id + ", " + defcon + "). pts = MIN_VALUE (Cannot place piece)");
+				log.debug("End of thinkMain({}, {}, {}, {}, fld, piece {}, {}). pts = MIN_VALUE (Cannot place piece)",
+					x, y, rt, rtOld, piece.id, defcon);
 			return Integer.MIN_VALUE;
 		}
 
@@ -540,8 +540,8 @@ public class Nohoho extends DummyAI implements Runnable {
 		{
 			int maxX = piece.getMaximumBlockX()+x;
 			if(maxX < 2) {
-					log.debug("End of thinkMain(" + x + ", " + y + ", " + rt + ", " + rtOld + ", fld, piece "
-							+ piece.id + ", " + defcon + "). pts = MIN_VALUE (Invalid location/defcon combination)");
+					log.debug("End of thinkMain({}, {}, {}, {}, fld, piece {}, {}). pts = MIN_VALUE (Invalid location/defcon combination)",
+							x, y, rt, rtOld, piece.id, defcon);
 				return Integer.MIN_VALUE;
 			}
 			int maxY = fld.getHighestBlockY(maxX);
@@ -597,8 +597,8 @@ public class Nohoho extends DummyAI implements Runnable {
 		boolean allclear = fld.isEmpty();
 		if(allclear) pts += 1000;
 
-			log.debug("End of thinkMain(" + x + ", " + y + ", " + rt + ", " + rtOld +
-					", fld, piece " + piece.id + ", " + defcon + "). pts = " + pts);
+			log.debug("End of thinkMain({}, {}, {}, {}, fld, piece {}, {}). pts = {}",
+					x, y, rt, rtOld, piece.id, defcon, pts);
 		return pts;
 	}
 	//private static final int[][] HI_PENALTY = {{6, 2}, {7, 6}, {6, 2}, {1, 0}};
@@ -622,15 +622,9 @@ public class Nohoho extends DummyAI implements Runnable {
 
 	protected void logBest(int caseNum)
 	{
-		log.debug("New best position found (Case " + caseNum +
-				"): bestHold = " + bestHold +
-				", bestX = " + bestX +
-				", bestY = " + bestY +
-				", bestRt = " + bestRt +
-				", bestXSub = " + bestXSub +
-				", bestYSub = " + bestYSub +
-				", bestRtSub = " + bestRtSub +
-				", bestPts = " + bestPts);
+		log.debug("New best position found (Case {}): bestHold = {}, bestX = {}, bestY = {}, bestRt = {}" +
+				", bestXSub = {}, bestYSub = {}, bestRtSub = {}, bestPts = {}",
+				caseNum, bestHold, bestX, bestY, bestRt, bestXSub, bestYSub, bestRtSub, bestPts);
 	}
 
 	/*

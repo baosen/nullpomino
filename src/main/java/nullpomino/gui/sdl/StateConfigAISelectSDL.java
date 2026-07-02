@@ -133,9 +133,9 @@ public class StateConfigAISelectSDL extends BaseStateSDL {
 				AIPlayer aiObj = ClassFactory.create(aiPath[i], AIPlayer.class);
 				aiName[i] = aiObj.getName();
 			} catch(ClassNotFoundException e) {
-				log.warn("AI class " + aiPath[i] + " not found", e);
+				log.warn("AI class {} not found", aiPath[i], e);
 			} catch(Throwable e) {
-				log.warn("AI class " + aiPath[i] + " load failed", e);
+				log.warn("AI class {} load failed", aiPath[i], e);
 			}
 		}
 

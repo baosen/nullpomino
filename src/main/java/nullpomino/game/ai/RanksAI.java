@@ -103,7 +103,7 @@ public class RanksAI extends DummyAI implements Runnable {
 				}
 				surface[i]=diff;
 			}
-			log.debug("new surface ="+Arrays.toString(surface));
+			log.debug("new surface ={}", Arrays.toString(surface));
 
 			int	surfaceNb=ranks.encode(surface);
 			
@@ -428,7 +428,7 @@ public class RanksAI extends DummyAI implements Runnable {
 		 if (bestScore.rankStacking==0)
 			 threadRunning=false;
 		 thinkLastPieceNo++;
-		 log.debug("nowX : "+engine.nowPieceX+" X:" + bestX + " Y:" + bestY + " R:" + bestRt + " H:" + bestHold + " Pts:" + bestScore);
+		 log.debug("nowX : {} X:{} Y:{} R:{} H:{} Pts:{}", engine.nowPieceX, bestX, bestY, bestRt, bestHold, bestScore);
 
 	 }
 
@@ -532,7 +532,7 @@ public class RanksAI extends DummyAI implements Runnable {
 
 						 // Run thinkmain on that move to get its score
 						 score = thinkMain( x,  rt,  heights, piecesCopy, holdPiece, (useHold==1)?false:true, numPreviews);
-						 log.debug("MAIN  id="+pieceNow+" posX="+x+" rt="+rt+" hold :"+useHold+" score:"+score);
+						 log.debug("MAIN  id={} posX={} rt={} hold :{} score:{}", pieceNow, x, rt, useHold, score);
 
 						 //If the score is better than the previous best score, change it, and record the chosen move for further application by setControl
 						 if(score.compareTo(bestScore)>0) {
@@ -555,7 +555,7 @@ public class RanksAI extends DummyAI implements Runnable {
 
 						 // What are the consequences of scoring a 4-Line ?
 						 score = thinkMain( maxX+1,  rt,  heights, piecesCopy, holdPiece,(useHold==1)?false:true, numPreviews);
-						 log.debug("MAIN (4 Lines) id="+pieceNow+" posX="+(maxX+1)+" rt="+rt+" hold :"+useHold+" score:"+score);
+						 log.debug("MAIN (4 Lines) id={} posX={} rt={} hold :{} score:{}", pieceNow, maxX+1, rt, useHold, score);
 
 						 //If the score is better than the previous best score, change it, and record the chosen move for further application by setControl
 						 if(score.compareTo(bestScore)>0) {
@@ -602,7 +602,7 @@ public class RanksAI extends DummyAI implements Runnable {
 		//Convert the heights to a surface to be able to check if the piece fits the surface
 		 int []surface=ranks.heightsToSurface(heights);
 
-		 log.debug("piece id : " +pieces[0]+" rot : "+rt+" x :"+x+" surface :"+Arrays.toString(surface));
+		 log.debug("piece id : {} rot : {} x :{} surface :{}", pieces[0], rt, x, Arrays.toString(surface));
 
 		 //Boolean value representing the fact that the current piece is the I piece, vertical, and in the rightmost column.
 		 boolean isVerticalIRightMost=(pieces[0]==Piece.PIECE_I && ((rt==1)||(rt==3))&&(x==9));
@@ -667,7 +667,7 @@ public class RanksAI extends DummyAI implements Runnable {
 					 int maxX2=ranks.getStackWidth()-1;
 					// Recursive call to thinkMain to examine that move
 					 scoreCurrent = thinkMain( maxX2+1,  rt2,  heightsWork, pieces2, holdPiece2,true, numPreviews2);
-					 log.debug("SUB (4 Lines)"+ numPreviews+" id="+pieceNow+" posX="+(maxX2+1)+" rt="+rt2+" score:"+scoreCurrent);
+					 log.debug("SUB (4 Lines){} id={} posX={} rt={} score:{}", numPreviews, pieceNow, maxX2+1, rt2, scoreCurrent);
 
 					 // if the score is better than the previous best score, replace it.
 					 if(scoreCurrent.compareTo(bestScore)>0) {
@@ -715,7 +715,7 @@ public class RanksAI extends DummyAI implements Runnable {
 
 								 // Recursive call to thinkMain to examine that move
 								 scoreCurrent = thinkMain( x2,  rt2, heightsWork,pieces2,holdPiece2,(h2==1)?false:true,numPreviews2);
-								 log.debug("SUB "+numPreviews +" id="+pieceNow+" posX="+x2+" rt="+rt2+" hold :"+h2+" score "+scoreCurrent);
+								 log.debug("SUB {} id={} posX={} rt={} hold :{} score {}", numPreviews, pieceNow, x2, rt2, h2, scoreCurrent);
 
 								 // if the score is better than the previous best score, replace it.
 								 if(scoreCurrent.compareTo(bestScore)>0) {
@@ -730,7 +730,7 @@ public class RanksAI extends DummyAI implements Runnable {
 
 								 // Recursive call to thinkMain to examine that move
 								 scoreCurrent = thinkMain( maxX2+1,  rt2,  heightsWork, pieces2, holdPiece2,(h2==1)?false:true,numPreviews2);
-								 log.debug("SUB (4 Lines)"+ numPreviews+" id="+pieceNow+" posX="+(maxX2+1)+" rt="+rt2+" hold :"+h2+" score:"+scoreCurrent);
+								 log.debug("SUB (4 Lines){} id={} posX={} rt={} hold :{} score:{}", numPreviews, pieceNow, maxX2+1, rt2, h2, scoreCurrent);
 								 // if the score is better than the previous best score, replace it.
 								 if(scoreCurrent.compareTo(bestScore)>0) {
 									 log.debug("SUB new best piece !");

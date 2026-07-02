@@ -138,7 +138,7 @@ public class ModeManager {
 		try {
 			addMode(clazz.getDeclaredConstructor().newInstance());
 		} catch(Exception e) {
-			log.warn("Mode class " + clazz.getName() + " load failed", e);
+			log.warn("Mode class {} load failed", clazz.getName(), e);
 		}
 	}
 

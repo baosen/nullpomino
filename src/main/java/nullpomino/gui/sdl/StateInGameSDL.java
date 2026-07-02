@@ -86,7 +86,7 @@ public class StateInGameSDL extends BaseStateSDL {
 		modeName = NullpoMinoSDL.propGlobal.getProperty("name.mode", "");
 		GameMode modeObj = NullpoMinoSDL.modeManager.getMode(modeName);
 		if(modeObj == null) {
-			log.warn("Couldn't find mode:" + modeName);
+			log.warn("Couldn't find mode:{}", modeName);
 		} else {
 			gameManager.mode = modeObj;
 		}
@@ -116,7 +116,7 @@ public class StateInGameSDL extends BaseStateSDL {
 				}
 			}
 			if((rulename != null) && (rulename.length() > 0)) {
-				log.debug("Load rule options from " + rulename);
+				log.debug("Load rule options from {}", rulename);
 				ruleopt = GeneralUtil.loadRule(rulename);
 			} else {
 				log.debug("Load rule options from setting file");
@@ -174,7 +174,7 @@ public class StateInGameSDL extends BaseStateSDL {
 		modeName = prop.getProperty("name.mode", "");
 		GameMode modeObj = NullpoMinoSDL.modeManager.getMode(modeName);
 		if(modeObj == null) {
-			log.warn("Couldn't find mode:" + modeName);
+			log.warn("Couldn't find mode:{}", modeName);
 		} else {
 			gameManager.mode = modeObj;
 		}

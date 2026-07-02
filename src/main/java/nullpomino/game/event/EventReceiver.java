@@ -834,7 +834,7 @@ public class EventReceiver {
 		try {
 			return CustomProperties.loadFromFile(filename);
 		} catch(IOException e) {
-			log.debug("Failed to load custom property file from " + filename, e);
+			log.debug("Failed to load custom property file from {}", filename, e);
 			return null;
 		}
 	}
@@ -849,7 +849,7 @@ public class EventReceiver {
 		try {
 			prop.storeToFile(filename, "NullpoMino Custom Property File");
 		} catch(IOException e) {
-			log.debug("Failed to save custom property file to " + filename, e);
+			log.debug("Failed to save custom property file to {}", filename, e);
 			return false;
 		}
 
@@ -1157,16 +1157,16 @@ public class EventReceiver {
 			File repfolder = new File(foldername);
 			if (!repfolder.exists()) {
 				if (repfolder.mkdir()) {
-					log.info("Created replay folder: " + foldername);
+					log.info("Created replay folder: {}", foldername);
 				} else {
-					log.info("Couldn't create replay folder at "+ foldername);
+					log.info("Couldn't create replay folder at {}", foldername);
 				}
 			}
 
 			prop.storeToFile(filename, "NullpoMino Replay");
-			log.info("Saved replay file: " + filename);
+			log.info("Saved replay file: {}", filename);
 		} catch(IOException e) {
-			log.error("Couldn't save replay file to " + filename, e);
+			log.error("Couldn't save replay file to {}", filename, e);
 		}
 	}
 }

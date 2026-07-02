@@ -1016,7 +1016,7 @@ public class StateNetCreateRoomSDL extends BaseStateSDL {
 			nl.propConfig.setProperty("createroom.defaultPresetID", id);
 			statusLine = "LOADED SLOT " + id;
 		} catch(Exception e) {
-			log.error("Failed to load preset " + id, e);
+			log.error("Failed to load preset {}", id, e);
 			statusLine = "SLOT " + id + " INVALID";
 		}
 	}

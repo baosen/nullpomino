@@ -107,7 +107,7 @@ public class ResourceHolderSDL {
 				break;
 			}
 		}
-		log.debug(numBlocks + " block skins found");
+		log.debug("{} block skins found", numBlocks);
 
 		imgNormalBlockList = new LinkedList<Pointer>();
 		imgSmallBlockList = new LinkedList<Pointer>();
@@ -294,7 +294,7 @@ public class ResourceHolderSDL {
 	public static Pointer loadImage(String filename) {
 		Pointer surface = SDL3Image.INSTANCE.IMG_Load(filename);
 		if(surface == null) {
-			log.error("Failed to load image from " + filename + ": " + SDL3.INSTANCE.SDL_GetError());
+			log.error("Failed to load image from {}: {}", filename, SDL3.INSTANCE.SDL_GetError());
 			return null;
 		}
 
@@ -302,7 +302,7 @@ public class ResourceHolderSDL {
 		SDL3.INSTANCE.SDL_DestroySurface(surface);
 
 		if(texture == null) {
-			log.error("Failed to create texture from " + filename + ": " + SDL3.INSTANCE.SDL_GetError());
+			log.error("Failed to create texture from {}: {}", filename, SDL3.INSTANCE.SDL_GetError());
 			return null;
 		}
 
@@ -325,28 +325,28 @@ public class ResourceHolderSDL {
 
 		if(bgm[no] == null) {
 			if(showerr) {
-				log.info("Loading BGM " + no);
+				log.info("Loading BGM {}", no);
 			}
 
 			try {
 				String filename = NullpoMinoSDL.propMusic.getProperty("music.filename." + no, null);
 				if((filename == null) || (filename.length() < 1)) {
-					if(showerr) log.info("BGM" + no + " not available");
+					if(showerr) log.info("BGM{} not available", no);
 					return;
 				}
 
 				bgm[no] = NullpoMinoSDL.mixerLib.MIX_LoadAudio(NullpoMinoSDL.mixer, filename, 0);
 
 				if(bgm[no] == null) {
-					if(showerr) log.warn("BGM " + no + " load failed: " + SDL3.INSTANCE.SDL_GetError());
+					if(showerr) log.warn("BGM {} load failed: {}", no, SDL3.INSTANCE.SDL_GetError());
 				} else if(!showerr) {
-					log.info("Loaded BGM " + no);
+					log.info("Loaded BGM {}", no);
 				}
 			} catch(Throwable e) {
 				if(showerr) {
-					log.warn("BGM " + no + " load failed", e);
+					log.warn("BGM {} load failed", no, e);
 				} else {
-					log.warn("BGM " + no + " load failed");
+					log.warn("BGM {} load failed", no);
 				}
 			}
 		}
@@ -392,7 +392,7 @@ public class ResourceHolderSDL {
 
 				lib.MIX_PlayTrack(bgmTrack, 0);
 			} catch (Exception e) {
-				log.warn("BGM " + no + " start failed", e);
+				log.warn("BGM {} start failed", no, e);
 			}
 		}
 	}

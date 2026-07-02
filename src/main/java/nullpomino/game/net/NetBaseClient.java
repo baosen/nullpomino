@@ -101,7 +101,7 @@ public class NetBaseClient extends Thread {
 	public void run() {
 		threadRunning = true;
 		connectedFlag = false;
-		log.info("Connecting to " + host + ":" + port);
+		log.info("Connecting to {}:{}", host, port);
 
 		Throwable exDisconnectReason = null;
 
@@ -138,7 +138,7 @@ public class NetBaseClient extends Thread {
 			try {
 				listeners.get(i).netOnDisconnect(this, exDisconnectReason);
 			} catch (Exception e2) {
-				log.debug("Uncaught Exception on NetMessageListener #" + i + " (disconnect event)", e2);
+				log.debug("Uncaught Exception on NetMessageListener #{} (disconnect event)", i, e2);
 			}
 		}
 	}
@@ -154,7 +154,7 @@ public class NetBaseClient extends Thread {
 		// pingReply
 		if(message[0].equals("pong")) {
 			if(pingCount >= (PING_AUTO_DISCONNECT_COUNT / 2)) {
-				log.debug("pong " + pingCount);
+				log.debug("pong {}", pingCount);
 			}
 			pingCount = 0;
 		}
@@ -164,7 +164,7 @@ public class NetBaseClient extends Thread {
 			try {
 				listeners.get(i).netOnMessage(this, message);
 			} catch (Exception e) {
-				log.error("Uncaught Exception on NetMessageListener #" + i + " (message event)", e);
+				log.error("Uncaught Exception on NetMessageListener #{} (message event)", i, e);
 			}
 		}
 	}
@@ -193,7 +193,7 @@ public class NetBaseClient extends Thread {
 		try {
 			socket.getOutputStream().write(NetUtil.stringToBytes(msg));
 		} catch (Exception e) {
-			log.error("Failed to send message (" + msg + ")", e);
+			log.error("Failed to send message ({})", msg, e);
 			return false;
 		}
 		return true;
@@ -256,7 +256,7 @@ public class NetBaseClient extends Thread {
 	 * @param interval Interval
 	 */
 	public void startPingTask(long interval) {
-		log.debug("Ping interval:" + interval);
+		log.debug("Ping interval:{}", interval);
 		if(timerPing != null) timerPing.cancel();
 		if(interval <= 0) return;
 		pingCount = 0;
@@ -283,7 +283,7 @@ public class NetBaseClient extends Thread {
 						pingCount++;
 
 						if(pingCount >= (PING_AUTO_DISCONNECT_COUNT / 2)) {
-							log.debug("Ping " + pingCount + "/" + PING_AUTO_DISCONNECT_COUNT);
+							log.debug("Ping {}/{}", pingCount, PING_AUTO_DISCONNECT_COUNT);
 						}
 					}
 				} else {

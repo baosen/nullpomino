@@ -89,7 +89,7 @@ public class StateReplaySelectSDL extends DummyMenuScrollStateSDL {
 				prop = CustomProperties.loadFromFile(
 						NullpoMinoSDL.propGlobal.getProperty("custom.replay.directory", "replay") + "/" + list[i]);
 			} catch (IOException e) {
-				log.warn("Failed to load replay file from " + list[i], e);
+				log.warn("Failed to load replay file from {}", list[i], e);
 				prop = new CustomProperties();
 			}
 
@@ -133,7 +133,7 @@ public class StateReplaySelectSDL extends DummyMenuScrollStateSDL {
 			prop = CustomProperties.loadFromFile(
 					NullpoMinoSDL.propGlobal.getProperty("custom.replay.directory", "replay") + "/" + list[cursor]);
 		} catch (IOException e) {
-			log.error("Failed to load replay file from " + list[cursor], e);
+			log.error("Failed to load replay file from {}", list[cursor], e);
 			return true;
 		}
 

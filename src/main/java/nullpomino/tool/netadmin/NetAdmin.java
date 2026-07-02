@@ -1082,7 +1082,7 @@ public class NetAdmin extends JFrame implements ActionListener, NetMessageListen
 			String b64Password = Base64.getEncoder().encodeToString(ePassword);
 
 			String strLogin = "adminlogin\t" + clientMajorVer + "\t" + strUsername + "\t" + b64Password + "\t" + clientBuildType + "\n";
-			log.debug("Send login message:" + strLogin);
+			log.debug("Send login message:{}", strLogin);
 			client.send(strLogin);
 		}
 		// Login failed

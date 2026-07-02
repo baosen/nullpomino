@@ -368,11 +368,11 @@ public class GradeMania3Mode extends AbstractGradeMode {
 				}
 
 				log.debug("** Exam data from replay START **");
-				log.debug("Promotional Exam Grade:" + getGradeName(promotionalExam) + " (" + promotionalExam + ")");
-				log.debug("Promotional Exam Flag:" + promotionFlag);
-				log.debug("Demotion Points:" + demotionPoints);
-				log.debug("Demotional Exam Grade:" + getGradeName(demotionExamGrade) + " (" + demotionExamGrade + ")");
-				log.debug("Demotional Exam Flag:" + demotionFlag);
+				log.debug("Promotional Exam Grade:{} ({})", getGradeName(promotionalExam), promotionalExam);
+				log.debug("Promotional Exam Flag:{}", promotionFlag);
+				log.debug("Demotion Points:{}", demotionPoints);
+				log.debug("Demotional Exam Grade:{} ({})", getGradeName(demotionExamGrade), demotionExamGrade);
+				log.debug("Demotional Exam Flag:{}", demotionFlag);
 				log.debug("*** Exam data from replay END ***");
 			}
 		}
@@ -689,12 +689,12 @@ public class GradeMania3Mode extends AbstractGradeMode {
 					}
 
 					log.debug("** Exam debug log START **");
-					log.debug("Current Qualified Grade:" + getGradeName(qualifiedGrade) + " (" + qualifiedGrade + ")");
-					log.debug("Promotional Exam Grade:" + getGradeName(promotionalExam) + " (" + promotionalExam + ")");
-					log.debug("Promotional Exam Flag:" + promotionFlag);
-					log.debug("Demotion Points:" + demotionPoints);
-					log.debug("Demotional Exam Grade:" + getGradeName(demotionExamGrade) + " (" + demotionExamGrade + ")");
-					log.debug("Demotional Exam Flag:" + demotionFlag);
+					log.debug("Current Qualified Grade:{} ({})", getGradeName(qualifiedGrade), qualifiedGrade);
+					log.debug("Promotional Exam Grade:{} ({})", getGradeName(promotionalExam), promotionalExam);
+					log.debug("Promotional Exam Flag:{}", promotionFlag);
+					log.debug("Demotion Points:{}", demotionPoints);
+					log.debug("Demotional Exam Grade:{} ({})", getGradeName(demotionExamGrade), demotionExamGrade);
+					log.debug("Demotional Exam Flag:{}", demotionFlag);
 					log.debug("*** Exam debug log END ***");
 				}
 
@@ -1465,12 +1465,12 @@ public class GradeMania3Mode extends AbstractGradeMode {
 				}
 
 				log.debug("** Exam result log START **");
-				log.debug("Current Qualified Grade:" + getGradeName(qualifiedGrade) + " (" + qualifiedGrade + ")");
-				log.debug("Promotional Exam Grade:" + getGradeName(promotionalExam) + " (" + promotionalExam + ")");
-				log.debug("Promotional Exam Flag:" + promotionFlag);
-				log.debug("Demotion Points:" + demotionPoints);
-				log.debug("Demotional Exam Grade:" + getGradeName(demotionExamGrade) + " (" + demotionExamGrade + ")");
-				log.debug("Demotional Exam Flag:" + demotionFlag);
+				log.debug("Current Qualified Grade:{} ({})", getGradeName(qualifiedGrade), qualifiedGrade);
+				log.debug("Promotional Exam Grade:{} ({})", getGradeName(promotionalExam), promotionalExam);
+				log.debug("Promotional Exam Flag:{}", promotionFlag);
+				log.debug("Demotion Points:{}", demotionPoints);
+				log.debug("Demotional Exam Grade:{} ({})", getGradeName(demotionExamGrade), demotionExamGrade);
+				log.debug("Demotional Exam Flag:{}", demotionFlag);
 				log.debug("*** Exam result log END ***");
 			}
 		}
@@ -1789,7 +1789,7 @@ public class GradeMania3Mode extends AbstractGradeMode {
 		// Debug log
 		log.debug("** Exam grade history START **");
 		for(int i = 0; i < gradeHistory.length; i++) {
-			log.debug(i + ": " + getGradeName(gradeHistory[i]) + " (" + gradeHistory[i] + ")");
+			log.debug("{}: {} ({})", i, getGradeName(gradeHistory[i]), gradeHistory[i]);
 		}
 		log.debug("*** Exam grade history END ***");
 	}

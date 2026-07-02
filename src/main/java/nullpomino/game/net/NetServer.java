@@ -253,7 +253,7 @@ public class NetServer {
 				ratedInfoList.add(strInfo);
 			}
 		}
-		log.info("Loaded " + ratedInfoList.size() + " presets.");
+		log.info("Loaded {} presets.", ratedInfoList.size());
 	}
 
 	/** Default path to the rated-game rule list file. */
@@ -300,10 +300,10 @@ public class NetServer {
 					}
 
 					if(style == -1) {
-						log.warn("{StyleChange} Unknown Style:" + str);
+						log.warn("{StyleChange} Unknown Style:{}", str);
 						style = 0;
 					} else {
-						log.debug("{StyleChange} StyleID:" + style + " StyleName:" + strStyle);
+						log.debug("{StyleChange} StyleID:{} StyleName:{}", style, strStyle);
 					}
 				} else {
 					// Rule file
@@ -314,7 +314,7 @@ public class NetServer {
 							settingID = Integer.parseInt(strTempArray[1]);
 						}
 
-						log.debug("{RuleLoad} StyleID:" + style + " RuleFile:" + strTempArray[0] + " SettingID:" + settingID);
+						log.debug("{RuleLoad} StyleID:{} RuleFile:{} SettingID:{}", style, strTempArray[0], settingID);
 
 						CustomProperties prop = CustomProperties.loadFromFile(strTempArray[0]);
 
@@ -493,8 +493,8 @@ public class NetServer {
 				int rankingType = entry.rankingType();
 				int maxGameType = entry.maxGameType();
 
-				log.debug("{Mode} Style:" + style + " Name:" + strModeName
-						+ " RankingType:" + rankingType + " MaxGameType:" + maxGameType);
+				log.debug("{Mode} Style:{} Name:{} RankingType:{} MaxGameType:{}",
+						style, strModeName, rankingType, maxGameType);
 
 				spModeList[style].add(strModeName);
 
@@ -520,7 +520,7 @@ public class NetServer {
 							if(k == 0) {
 								rankingData.readProperty(propSPRankingAlltime);
 								spRankingListAlltime.add(rankingData);
-								log.debug(rankingData.strRuleName + "," + rankingData.strModeName + "," + rankingData.gameType);
+								log.debug("{},{},{}", rankingData.strRuleName, rankingData.strModeName, rankingData.gameType);
 							} else {
 								rankingData.readProperty(propSPRankingDaily);
 								spRankingListDaily.add(rankingData);
@@ -597,9 +597,9 @@ public class NetServer {
 		propSPRankingDaily.setProperty("daily.lastupdate", GeneralUtil.exportCalendarString(spDailyLastUpdate));
 
 		if(oldLastUpdate != null) {
-			log.debug("SP daily ranking previous-update:" + GeneralUtil.getCalendarString(oldLastUpdate));
+			log.debug("SP daily ranking previous-update:{}", GeneralUtil.getCalendarString(oldLastUpdate));
 		}
-		log.debug("SP daily ranking last-update:" + GeneralUtil.getCalendarString(c));
+		log.debug("SP daily ranking last-update:{}", GeneralUtil.getCalendarString(c));
 
 		if((oldLastUpdate == null) || (c.get(Calendar.DATE) == oldLastUpdate.get(Calendar.DATE))) {
 			return false;
@@ -927,7 +927,7 @@ public class NetServer {
 		// accepting new connections
 		serverChannel.register(socketSelector, SelectionKey.OP_ACCEPT);
 
-		log.info("Listening on port " + this.port + "...");
+		log.info("Listening on port {}...", this.port);
 
 		return socketSelector;
 	}
@@ -1055,7 +1055,7 @@ public class NetServer {
 		NetServerBan ban = getBan(socketChannel);
 		if(ban != null) {
 			// Banned
-			log.info("Connection is banned:" + getHostName(socketChannel));
+			log.info("Connection is banned:{}", getHostName(socketChannel));
 			Calendar endDate = ban.getEndDate();
 			String strStart = GeneralUtil.exportCalendarString(ban.startDate);
 			String strExpire = (endDate == null) ? "" : GeneralUtil.exportCalendarString(endDate);
@@ -1065,7 +1065,7 @@ public class NetServer {
 			}
 		} else {
 			// Send welcome message
-			log.debug("Accept:" + getHostName(socketChannel));
+			log.debug("Accept:{}", getHostName(socketChannel));
 			send(socketChannel, "welcome\t" + GameManager.getVersionMajor() + "\t" + playerInfoMap.size() + "\t" + observerList.size() + "\t" +
 				GameManager.getVersionMinor() + "\t" + GameManager.getVersionString() + "\t" + clientPingInterval + "\t" +
 				GameManager.isDevBuild() + "\n");
@@ -1176,7 +1176,7 @@ public class NetServer {
 		if(channel == null) return;
 
 		String remoteAddr = getHostFull(channel);
-		log.info("Logout: " + remoteAddr);
+		log.info("Logout: {}", remoteAddr);
 
 		try {
 			channel.register(selector, 0);
@@ -1206,7 +1206,7 @@ public class NetServer {
 
 			NetPlayerInfo pInfo = playerInfoMap.remove(channel);
 			if(pInfo != null) {
-				log.info(pInfo.strName + " has logged out");
+				log.info("{} has logged out", pInfo.strName);
 
 				playerDead(pInfo);
 				pInfo.connected = false;
@@ -1237,10 +1237,10 @@ public class NetServer {
 				}
 			}
 			if(observerList.remove(channel) == true) {
-				log.info("Observer logout (" + remoteAddr + ")");
+				log.info("Observer logout ({})", remoteAddr);
 			}
 			if(adminList.remove(channel) == true) {
-				log.info("Admin logout (" + remoteAddr + ")");
+				log.info("Admin logout ({})", remoteAddr);
 			}
 
 			if(pInfo != null) {
@@ -1308,7 +1308,7 @@ public class NetServer {
 			}
 		}
 
-		if(killCount > 0) log.info("Killed " + killCount + " dead connections");
+		if(killCount > 0) log.info("Killed {} dead connections", killCount);
 
 		return killCount;
 	}
@@ -1586,7 +1586,7 @@ public class NetServer {
 			broadcastUserCountToAll();
 			adminSendClientList();
 
-			log.info("New observer has logged in (" + client.toString() + ")");
+			log.info("New observer has logged in ({})", client.toString());
 			return;
 		}
 		// Player login
@@ -1704,7 +1704,7 @@ public class NetServer {
 			playerInfoMap.put(client, pInfo);
 			playerCount++;
 			send(client, "loginsuccess\t" + NetUtil.urlEncode(pInfo.strName) + "\t" + pInfo.uid + "\n");
-			log.info(pInfo.strName + " has logged in (Host:" + getHostName(client) + " Team:" + pInfo.strTeam + ")");
+			log.info("{} has logged in (Host:{} Team:{})", pInfo.strName, getHostName(client), pInfo.strTeam);
 
 			sendRatedRuleList(client);
 			sendPlayerList(client);
@@ -1967,7 +1967,7 @@ public class NetServer {
 				broadcastRoomInfoUpdate(roomInfo, "roomcreate");
 				send(client, "roomcreatesuccess\t" + roomInfo.roomID + "\t0\t-1\n");
 
-				log.info("NewSingleRoom ID:" + roomInfo.roomID + " Title:" + roomInfo.strName);
+				log.info("NewSingleRoom ID:{} Title:{}", roomInfo.roomID, roomInfo.strName);
 			}
 		}
 		// Multiplayer room
@@ -2004,10 +2004,10 @@ public class NetServer {
 					}
 
 					if(roomInfo.mapList.isEmpty()) {
-						log.debug("Room" + roomInfo.roomID + ": No maps");
+						log.debug("Room{}: No maps", roomInfo.roomID);
 						roomInfo.useMap = false;
 					} else {
-						log.debug("Room" + roomInfo.roomID + ": Received " + roomInfo.mapList.size() + " maps");
+						log.debug("Room{}: Received {} maps", roomInfo.roomID, roomInfo.mapList.size());
 					}
 				}
 
@@ -2039,8 +2039,8 @@ public class NetServer {
 				broadcastRoomInfoUpdate(roomInfo, "roomcreate");
 				send(client, "roomcreatesuccess\t" + roomInfo.roomID + "\t" + pInfo.seatID + "\t-1\n");
 
-				log.info("NewRoom ID:" + roomInfo.roomID + " Title:" + roomInfo.strName + " RuleLock:" + roomInfo.ruleLock +
-						 " Map:" + roomInfo.useMap + " Mode:" + roomInfo.strMode);
+				log.info("NewRoom ID:{} Title:{} RuleLock:{} Map:{} Mode:{}",
+						 roomInfo.roomID, roomInfo.strName, roomInfo.ruleLock, roomInfo.useMap, roomInfo.strMode);
 			}
 			return;
 		}
@@ -2081,8 +2081,8 @@ public class NetServer {
 				broadcastRoomInfoUpdate(roomInfo, "roomcreate");
 				send(client, "roomcreatesuccess\t" + roomInfo.roomID + "\t" + pInfo.seatID + "\t-1\n");
 
-				log.info("NewRatedRoom ID:" + roomInfo.roomID + " Title:" + roomInfo.strName + " RuleLock:" + roomInfo.ruleLock +
-						 " Map:" + roomInfo.useMap + " Mode:" + roomInfo.strMode);
+				log.info("NewRatedRoom ID:{} Title:{} RuleLock:{} Map:{} Mode:{}",
+						 roomInfo.roomID, roomInfo.strName, roomInfo.ruleLock, roomInfo.useMap, roomInfo.strMode);
 			}
 			return;
 		}
@@ -2269,7 +2269,7 @@ public class NetServer {
 			// success opcode.
 			broadcast("changename\t" + pInfo.uid + "\t" + NetUtil.urlEncode(oldName) + "\t" + NetUtil.urlEncode(newName) + "\n");
 			broadcastPlayerInfoUpdate(pInfo);
-			log.info("Player renamed: " + oldName + " -> " + newName);
+			log.info("Player renamed: {} -> {}", oldName, newName);
 			return;
 		}
 		// Change Player/Spectator status
@@ -2456,7 +2456,7 @@ public class NetServer {
 					long sChecksum = Long.parseLong(message[1]);
 					Adler32 checksumObj = new Adler32();
 					checksumObj.update(NetUtil.stringToBytes(message[2]));
-					log.info("Checksums are: "+sChecksum+" and "+checksumObj.getValue());
+					log.info("Checksums are: {} and {}", sChecksum, checksumObj.getValue());
 
 					if(sChecksum == checksumObj.getValue()) {
 						String strData = NetUtil.decompressString(message[2]);
@@ -2476,8 +2476,8 @@ public class NetServer {
 
 						NetSPRanking ranking = getSPRanking(rule, record.strModeName, record.gameType);
 						NetSPRanking rankingDaily = getSPRanking(rule, record.strModeName, record.gameType, true);
-						if(ranking == null) log.warn("All-time ranking not found:" + record.strModeName);
-						if(rankingDaily == null) log.warn("Daily ranking not found:" + record.strModeName);
+						if(ranking == null) log.warn("All-time ranking not found:{}", record.strModeName);
+						if(rankingDaily == null) log.warn("Daily ranking not found:{}", record.strModeName);
 
 						if((ranking != null || rankingDaily != null) && (gamerate >= spMinGameRate)) {
 							if(ranking != null)
@@ -2496,7 +2496,7 @@ public class NetServer {
 								}
 							}
 
-							log.info("Name:" + pInfo.strName + " Mode:" + record.strModeName + " AllTime:" + rank + " Daily:" + rankDaily);
+							log.info("Name:{} Mode:{} AllTime:{} Daily:{}", pInfo.strName, record.strModeName, rank, rankDaily);
 							broadcast("spsendok\t" + rank + "\t" + isPB + "\t" + rankDaily + "\n", pInfo.roomID);
 						} else {
 							broadcast("spsendok\t-1\tfalse\t-1\n", pInfo.roomID);
@@ -2606,13 +2606,13 @@ public class NetServer {
 					String strMsg = "spdownload\t" + sChecksum + "\t" + record.strReplayProp + "\n";
 					send(client, strMsg);
 				} else {
-					log.warn("Record not found (Mode:" + strMode + ", Rule:" + strRule + ", Type:" + gameType + " Name:" + strName + ")");
+					log.warn("Record not found (Mode:{}, Rule:{}, Type:{} Name:{})", strMode, strRule, gameType, strName);
 				}
 			} else {
 				if(!isDaily)
-					log.warn("All-time ranking not found (Mode:" + strMode + ", Rule:" + strRule + ", Type:" + gameType + ")");
+					log.warn("All-time ranking not found (Mode:{}, Rule:{}, Type:{})", strMode, strRule, gameType);
 				else
-					log.warn("Daily ranking not found (Mode:" + strMode + ", Rule:" + strRule + ", Type:" + gameType + ")");
+					log.warn("Daily ranking not found (Mode:{}, Rule:{}, Type:{})", strMode, strRule, gameType);
 			}
 		}
 		// Single player mode reset
@@ -2681,14 +2681,14 @@ public class NetServer {
 			String strServerUsername = propServer.getProperty("netserver.admin.username", "");
 			String strServerPassword = propServer.getProperty("netserver.admin.password", "");
 			if((strServerUsername.length() == 0) || (strServerPassword.length() == 0)) {
-				log.warn(strRemoteAddr + " has tried to access admin, but admin is disabled");
+				log.warn("{} has tried to access admin, but admin is disabled", strRemoteAddr);
 				send(client, "adminloginfail\tDISABLE\n");
 				return;
 			}
 
 			String strClientUsername = message[2];
 			if(!strClientUsername.equals(strServerUsername)) {
-				log.warn(strRemoteAddr + " has tried to access admin with incorrect username (" + strClientUsername + ")");
+				log.warn("{} has tried to access admin with incorrect username ({})", strRemoteAddr, strClientUsername);
 				send(client, "adminloginfail\tFAIL\n");
 				return;
 			}
@@ -2698,7 +2698,7 @@ public class NetServer {
 			byte[] bPass2 = rc4.rc4(bPass);
 			String strClientPasswordCheckData = NetUtil.bytesToString(bPass2);
 			if(!strClientPasswordCheckData.equals(strServerUsername)) {
-				log.warn(strRemoteAddr + " has tried to access admin with incorrect password (Username:" + strClientUsername + ")");
+				log.warn("{} has tried to access admin with incorrect password (Username:{})", strRemoteAddr, strClientUsername);
 				send(client, "adminloginfail\tFAIL\n");
 				return;
 			}
@@ -2711,7 +2711,7 @@ public class NetServer {
 			send(client, "adminloginsuccess\t" + getHostAddress(client) + "\t" + getHostName(client) + "\n");
 			adminSendClientList();
 			sendRoomList(client);
-			log.info("Admin has logged in (" + strRemoteAddr + ")");
+			log.info("Admin has logged in ({})", strRemoteAddr);
 		}
 		// ADMIN: Admin commands
 		if(message[0].equals("admin")) {
@@ -2720,7 +2720,7 @@ public class NetServer {
 				String[] strAdminCommandArray = strAdminCommandTemp.split("\t");
 				processAdminCommand(client, strAdminCommandArray);
 			} else {
-				log.warn(getHostFull(client) + " has tried to access admin command without login");
+				log.warn("{} has tried to access admin command without login", getHostFull(client));
 				logout(client);
 				return;
 			}
@@ -2868,7 +2868,7 @@ public class NetServer {
 		}
 		// Shutdown
 		if(message[0].equals("shutdown")) {
-			log.warn("Shutdown requested by the admin (" + getHostFull(client) + ")");
+			log.warn("Shutdown requested by the admin ({})", getHostFull(client));
 			shutdownRequested = true;
 			this.selector.wakeup();
 		}
@@ -2975,7 +2975,7 @@ public class NetServer {
 	 */
 	private boolean deleteRoom(NetRoomInfo roomInfo) {
 		if((roomInfo != null) && (roomInfo.playerList.isEmpty())) {
-			log.info("RoomDelete ID:" + roomInfo.roomID + " Title:" + roomInfo.strName);
+			log.info("RoomDelete ID:{} Title:{}", roomInfo.roomID, roomInfo.strName);
 			broadcastRoomInfoUpdate(roomInfo, "roomdelete");
 			roomInfoList.remove(roomInfo);
 			roomInfo.delete();
@@ -3169,7 +3169,7 @@ public class NetServer {
 					for(int i = 0; i < n; i++) {
 						NetPlayerInfo p = roomInfo.playerSeatDead.get(i);
 						int change = p.rating[style] - p.ratingBefore[style];
-						log.debug("#" + (i+1) + " Name:" + p.strName + " Rating:" + p.rating[style] + " (" + change + ")");
+						log.debug("#{} Name:{} Rating:{} ({})", i+1, p.strName, p.rating[style], change);
 						setPlayerDataToProperty(p);
 
 						String msgRatingChange =
@@ -3399,10 +3399,10 @@ public class NetServer {
 		String remoteAddr = getHostAddress(client);
 
 		if(banLength < 0) {
-			log.info("Kicked player: "+remoteAddr);
+			log.info("Kicked player: {}", remoteAddr);
 		} else {
 			banList.add(new NetServerBan(remoteAddr, banLength));
-			log.info("Banned player: "+remoteAddr);
+			log.info("Banned player: {}", remoteAddr);
 		}
 
 		logout(client);

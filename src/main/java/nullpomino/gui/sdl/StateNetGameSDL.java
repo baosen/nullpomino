@@ -237,17 +237,17 @@ public class StateNetGameSDL extends BaseStateSDL implements NetLobbyListener {
 		GameMode newModeTemp = (newModeName == null) ? new NetDummyMode() : NullpoMinoSDL.modeManager.getMode(newModeName);
 
 		if(newModeTemp == null) {
-			log.error("Cannot find a mode: " + newModeName);
+			log.error("Cannot find a mode: {}", newModeName);
 			return;
 		}
 		if(!(newModeTemp instanceof NetDummyMode)) {
-			log.error("Mode does not support netplay: " + newModeName);
+			log.error("Mode does not support netplay: {}", newModeName);
 			return;
 		}
 
 		NetDummyMode newMode = (NetDummyMode)newModeTemp;
 		modeName = newMode.getName();
-		log.info("Enter new netplay mode: " + modeName);
+		log.info("Enter new netplay mode: {}", modeName);
 
 		if(previousMode != null) {
 			if(gameManager.engine[0].ai != null) gameManager.engine[0].ai.shutdown(gameManager.engine[0], 0);
@@ -272,7 +272,7 @@ public class StateNetGameSDL extends BaseStateSDL implements NetLobbyListener {
 			rulename = NullpoMinoSDL.propGlobal.getProperty("0.rule." + gameManager.mode.getGameStyle(), "");
 		}
 		if(rulename != null && rulename.length() > 0) {
-			log.info("Load rule options from " + rulename);
+			log.info("Load rule options from {}", rulename);
 			ruleopt = GeneralUtil.loadRule(rulename);
 		} else {
 			ruleopt = new RuleOptions();

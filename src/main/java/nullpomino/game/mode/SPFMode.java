@@ -1249,8 +1249,7 @@ public class SPFMode extends AbstractMode {
 							break;
 						maxY++;
 					}
-					log.debug("Pre-existing square found: (" + minX + ", " + minY + ") to (" +
-							 maxX + ", " + maxY + ")");
+					log.debug("Pre-existing square found: ({}, {}) to ({}, {})", minX, minY, maxX, maxY);
 				}
 				else if (b.getAttribute(Block.BLOCK_ATTRIBUTE_BROKEN) &&
 						color == engine.field.getBlockColor(x+1, y) &&
@@ -1274,20 +1273,18 @@ public class SPFMode extends AbstractMode {
 						bDR.setAttribute(Block.BLOCK_ATTRIBUTE_BROKEN, false);
 						expanded = true;
 					}
-					log.debug("New square formed: (" + minX + ", " + minY + ") to (" +
-							 maxX + ", " + maxY + ")");
+					log.debug("New square formed: ({}, {}) to ({}, {})", minX, minY, maxX, maxY);
 				}
 				if (maxX <= minX || maxY <= minY)
 					continue; //No gem block, skip to next block
 				boolean expandHere, done;
 				int testX, testY;
 				Block bTest;
-				log.debug("Testing square for expansion. Coordinates before: (" + minX + ", " + minY + ") to (" +
-						 maxX + ", " + maxY + ")");
+				log.debug("Testing square for expansion. Coordinates before: ({}, {}) to ({}, {})", minX, minY, maxX, maxY);
 				//Expand up
 				for (testY = minY-1, done = false; testY >= (-1 * hiddenHeight) && !done; testY--)
 				{
-					log.debug("Testing to expand up. testY = " + testY);
+					log.debug("Testing to expand up. testY = {}", testY);
 					if (color != engine.field.getBlockColor(minX, testY) ||
 							color != engine.field.getBlockColor(maxX, testY))
 						break;
@@ -1389,12 +1386,11 @@ public class SPFMode extends AbstractMode {
 						expanded = true;
 					}
 				}
-				log.debug("expanded = " + expanded);
+				log.debug("expanded = {}", expanded);
 				if (expanded)
 				{
 
-					log.debug("Expanding square. Coordinates after: (" + minX + ", " + minY + ") to (" +
-							 maxX + ", " + maxY + ")");
+					log.debug("Expanding square. Coordinates after: ({}, {}) to ({}, {})", minX, minY, maxX, maxY);
 					int size = Math.min(maxX - minX + 1, maxY - minY + 1);
 					for (testX = minX; testX <= maxX; testX++)
 						for (testY = minY; testY <= maxY; testY++)

@@ -1296,7 +1296,7 @@ public class NetDummyMode extends AbstractMode implements NetLobbyListener {
 					netRankingPPS[d].add(Float.parseFloat(arrayData[6]));
 					netRankingRollclear[d].add(Integer.parseInt(arrayData[7]));
 				} else {
-					log.error("Unknown ranking type:" + netRankingType);
+					log.error("Unknown ranking type:{}", netRankingType);
 				}
 
 				if(pName.equals(netPlayerName)) {

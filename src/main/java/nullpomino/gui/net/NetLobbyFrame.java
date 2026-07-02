@@ -253,9 +253,9 @@ public class NetLobbyFrame implements NetMessageListener {
 			try {
 				dispatchMessage(msg);
 			} catch(IOException e) {
-				log.error("Exception while dispatching net message " + msg[0], e);
+				log.error("Exception while dispatching net message {}", msg[0], e);
 			} catch(Throwable t) {
-				log.error("Unexpected error in dispatchMessage " + msg[0], t);
+				log.error("Unexpected error in dispatchMessage {}", msg[0], t);
 			}
 		}
 		if(pendingDisconnect) {
@@ -351,7 +351,7 @@ public class NetLobbyFrame implements NetMessageListener {
 			CustomProperties prop = new CustomProperties();
 			prop.decode(strRuleData);
 			ruleOptLock.readProperty(prop, 0);
-			log.info("Received rule data (" + ruleOptLock.strRuleName + ")");
+			log.info("Received rule data ({})", ruleOptLock.strRuleName);
 
 		} else if("rulelist".equals(cmd) && message.length >= 2) {
 			int style = Integer.parseInt(message[1]);
@@ -487,7 +487,7 @@ public class NetLobbyFrame implements NetMessageListener {
 			String[] strMaps = decompressed.split("\t");
 			mapList.clear();
 			for(String m : strMaps) mapList.add(m);
-			log.debug("Received " + mapList.size() + " maps");
+			log.debug("Received {} maps", mapList.size());
 
 		} else if("lobbychat".equals(cmd) && message.length > 4) {
 			int uid = Integer.parseInt(message[1]);

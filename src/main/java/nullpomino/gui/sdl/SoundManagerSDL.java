@@ -99,13 +99,13 @@ public class SoundManagerSDL {
 		try {
 			Pointer audio = lib.MIX_LoadAudio(mixer, filename, 1);
 			if(audio == null) {
-				log.warn("Failed to load wav file from " + filename);
+				log.warn("Failed to load wav file from {}", filename);
 				return false;
 			}
 			clipMap.put(name, audio);
 			clipDurationMap.put(name, getAudioDurationMillis(lib, audio));
 		} catch(Throwable e) {
-			log.warn("Failed to load wav file from " + filename, e);
+			log.warn("Failed to load wav file from {}", filename, e);
 			return false;
 		}
 

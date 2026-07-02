@@ -1272,8 +1272,8 @@ public class PoochyBot extends DummyAI implements Runnable {
 
 		// Place the piece
 		if(!piece.placeToField(x, y, rt, fld)) {
-				log.debug("End of thinkMain(" + x + ", " + y + ", " + rt + ", " + rtOld +
-					", fld, piece " + Piece.PIECE_NAMES[piece.id] + ", " + depth + "). pts = 0 (Cannot place piece)");
+				log.debug("End of thinkMain({}, {}, {}, {}, fld, piece {}, {}). pts = 0 (Cannot place piece)",
+					x, y, rt, rtOld, Piece.PIECE_NAMES[piece.id], depth);
 			return Integer.MIN_VALUE;
 		}
 
@@ -1557,8 +1557,8 @@ public class PoochyBot extends DummyAI implements Runnable {
 					pts += 200;
 			}
 		}
-			log.debug("End of thinkMain(" + x + ", " + y + ", " + rt + ", " + rtOld +
-					", fld, piece " + Piece.PIECE_NAMES[piece.id] + ", " + depth + "). pts = " + pts);
+			log.debug("End of thinkMain({}, {}, {}, {}, fld, piece {}, {}). pts = {}",
+					x, y, rt, rtOld, Piece.PIECE_NAMES[piece.id], depth, pts);
 		return pts;
 	}
 	//private static final int[][] HI_PENALTY = {{6, 2}, {7, 6}, {6, 2}, {1, 0}};
@@ -1670,8 +1670,8 @@ public class PoochyBot extends DummyAI implements Runnable {
 		SpeedParam speed = engine.speed;
 		if (speed.gravity >= 0 && speed.gravity < speed.denominator)
 		{
-				log.debug("mostMovableX not applicable - low gravity (gravity = " +
-						speed.gravity + ", denominator = " + speed.denominator + ")");
+				log.debug("mostMovableX not applicable - low gravity (gravity = {}, denominator = {})",
+						speed.gravity, speed.denominator);
 			if (dir < 0)
 				return piece.getMostMovableLeft(testX, testY, rt, fld);
 			else if (dir > 0)
@@ -1734,8 +1734,8 @@ public class PoochyBot extends DummyAI implements Runnable {
 			}
 			else
 			{
-					log.debug("mostMovableX(" + x + ", " + y + ", " + dir +
-							", piece " + Piece.PIECE_NAMES[piece.id] + ", " + rt + ") = " + testX);
+					log.debug("mostMovableX({}, {}, {}, piece {}, {}) = {}",
+							x, y, dir, Piece.PIECE_NAMES[piece.id], rt, testX);
 				if (piece.id == Piece.PIECE_I && testX < 0 && (rt&1) == 1)
 				{
 					int height1 = fld.getHighestBlockY(1);
@@ -1753,15 +1753,9 @@ public class PoochyBot extends DummyAI implements Runnable {
 
 	protected void logBest(int caseNum)
 	{
-		log.debug("New best position found (Case " + caseNum +
-				"): bestHold = " + bestHold +
-				", bestX = " + bestX +
-				", bestY = " + bestY +
-				", bestRt = " + bestRt +
-				", bestXSub = " + bestXSub +
-				", bestYSub = " + bestYSub +
-				", bestRtSub = " + bestRtSub +
-				", bestPts = " + bestPts);
+		log.debug("New best position found (Case {}): bestHold = {}, bestX = {}, bestY = {}, bestRt = {}" +
+				", bestXSub = {}, bestYSub = {}, bestRtSub = {}, bestPts = {}",
+				caseNum, bestHold, bestX, bestY, bestRt, bestXSub, bestYSub, bestRtSub, bestPts);
 	}
 
 	/**

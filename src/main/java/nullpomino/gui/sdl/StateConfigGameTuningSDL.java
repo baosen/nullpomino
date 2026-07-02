@@ -185,7 +185,7 @@ public class StateConfigGameTuningSDL extends DummyMenuScrollStateSDL {
 				rulename = NullpoMinoSDL.propGlobal.getProperty(i + ".rule." + gameManager.mode.getGameStyle(), "");
 			}
 			if((rulename != null) && (rulename.length() > 0)) {
-				log.info("Load rule options from " + rulename);
+				log.info("Load rule options from {}", rulename);
 				ruleopt = GeneralUtil.loadRule(rulename);
 			} else {
 				log.info("Load rule options from setting file");

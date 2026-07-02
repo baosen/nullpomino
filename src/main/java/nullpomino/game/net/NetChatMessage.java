@@ -99,9 +99,9 @@ public class NetChatMessage implements Serializable {
 	 */
 	public void outputLog() {
 		if(roomID == -1) {
-			log.info("LobbyChat UID:" + uid + " Name:" + strUserName + " Msg:" + strMessage);
+			log.info("LobbyChat UID:{} Name:{} Msg:{}", uid, strUserName, strMessage);
 		} else {
-			log.info("RoomChat Room:" + strRoomName + " UID:" + uid + " Name:" + strUserName + " Msg:" + strMessage);
+			log.info("RoomChat Room:{} UID:{} Name:{} Msg:{}", strRoomName, uid, strUserName, strMessage);
 		}
 	}
 
