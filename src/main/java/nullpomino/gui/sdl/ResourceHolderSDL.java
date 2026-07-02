@@ -15,14 +15,15 @@ import nullpomino.gui.sdl.binding.SDL3Mixer;
 import nullpomino.gui.sdl.binding.SDL3TTF;
 import nullpomino.gui.sdl.binding.SDLConstants;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Class to manage images and sounds (SDL3 version)
  */
 public class ResourceHolderSDL {
 	/** Log */
-	static Logger log = Logger.getLogger(ResourceHolderSDL.class);
+	static Logger log = LoggerFactory.getLogger(ResourceHolderSDL.class);
 
 	/** Background count */
 	public static final int BACKGROUND_MAX = 20;

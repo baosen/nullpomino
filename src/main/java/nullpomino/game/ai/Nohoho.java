@@ -6,7 +6,8 @@ import nullpomino.game.component.Piece;
 import nullpomino.game.play.GameEngine;
 import nullpomino.game.play.GameManager;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Nohoho AI
@@ -15,7 +16,7 @@ import org.apache.log4j.Logger;
  */
 public class Nohoho extends DummyAI implements Runnable {
 	/** Log */
-	static Logger log = Logger.getLogger(Nohoho.class);
+	static Logger log = LoggerFactory.getLogger(Nohoho.class);
 
 	/** After that I was groundedX-coordinate */
 	public int bestXSub;

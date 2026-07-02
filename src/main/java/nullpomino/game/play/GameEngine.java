@@ -4,7 +4,8 @@ package nullpomino.game.play;
 
 import java.util.Calendar;
 import java.util.Random;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import nullpomino.game.component.BGMStatus;
 import nullpomino.game.component.Block;
@@ -26,8 +27,8 @@ import nullpomino.game.randomizer.Randomizer;
  * Each player's Game processing
  */
 public class GameEngine {
-	/** Log (Apache log4j) */
-	static Logger log = Logger.getLogger(GameEngine.class);
+	/** Log */
+	static Logger log = LoggerFactory.getLogger(GameEngine.class);
 
 	/** Constants of game style (Currently not directly used by GameEngine, but from game modes) */
 	public static final int GAMESTYLE_TETROMINO = 0,

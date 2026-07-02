@@ -9,7 +9,8 @@ import nullpomino.game.play.GameEngine;
 import nullpomino.game.play.GameManager;
 import nullpomino.util.GeneralUtil;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * PoochyBot Combo Race AI
@@ -18,7 +19,7 @@ import org.apache.log4j.Logger;
  */
 public class ComboRaceBot extends DummyAI implements Runnable {
 	/** Log */
-	static Logger log = Logger.getLogger(ComboRaceBot.class);
+	static Logger log = LoggerFactory.getLogger(ComboRaceBot.class);
 
 	/** List of field state codes which are possible to sustain a stable combo */
 	private static final short[] FIELDS = {

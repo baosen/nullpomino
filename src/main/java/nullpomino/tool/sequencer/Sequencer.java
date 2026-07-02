@@ -35,13 +35,14 @@ import javax.swing.KeyStroke;
 import javax.swing.UIManager;
 import javax.swing.filechooser.FileFilter;
 
-import org.apache.log4j.Logger;
-import org.apache.log4j.PropertyConfigurator;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import nullpomino.game.component.Piece;
 import nullpomino.tool.SwingToolUtil;
 import nullpomino.util.ClassFactory;
 import nullpomino.util.CustomProperties;
+import nullpomino.util.LogConfig;
 import nullpomino.util.RandomizerRegistry;
 import nullpomino.game.randomizer.Randomizer;
 
@@ -53,7 +54,7 @@ public class Sequencer extends JFrame implements ActionListener {
 	private static final long serialVersionUID = 1L;
 
 	/** Log */
-	static final Logger log = Logger.getLogger(Sequencer.class);
+	static final Logger log = LoggerFactory.getLogger(Sequencer.class);
 
 	/** Config File */
 	public CustomProperties propConfig;
@@ -463,7 +464,7 @@ public class Sequencer extends JFrame implements ActionListener {
 	}
 
 	public static void main(String[] args) {
-		PropertyConfigurator.configure("config/etc/log.cfg");
+		LogConfig.configure("config/etc/log.xml");
 		log.debug("Sequencer start");
 		new Sequencer();
 	}

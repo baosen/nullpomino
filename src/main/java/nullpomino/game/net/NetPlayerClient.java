@@ -8,14 +8,15 @@ import java.util.Locale;
 
 import nullpomino.game.play.GameManager;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Client(PlayerUse)
  */
 public class NetPlayerClient extends NetBaseClient {
 	/** Log */
-	static final Logger log = Logger.getLogger(NetPlayerClient.class);
+	static final Logger log = LoggerFactory.getLogger(NetPlayerClient.class);
 
 	/** PlayerInformation */
 	protected LinkedList<NetPlayerInfo> playerInfoList = new LinkedList<NetPlayerInfo>();

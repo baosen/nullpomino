@@ -16,7 +16,8 @@ import nullpomino.util.CustomProperties;
 import nullpomino.util.GeneralUtil;
 import nullpomino.game.randomizer.Randomizer;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Game Tuning menu state
@@ -37,7 +38,7 @@ public class StateConfigGameTuningSDL extends DummyMenuScrollStateSDL {
 	};
 
 	/** Log */
-	static Logger log = Logger.getLogger(StateConfigGameTuningSDL.class);
+	static Logger log = LoggerFactory.getLogger(StateConfigGameTuningSDL.class);
 
 	/** Outline type names */
 	protected static final String[] OUTLINE_TYPE_NAMES = {"AUTO", "NONE", "NORMAL", "CONNECT", "SAMECOLOR"};

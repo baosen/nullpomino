@@ -29,9 +29,10 @@ import javax.swing.UIManager;
 
 import nullpomino.game.component.BGMStatus;
 import nullpomino.util.CustomProperties;
+import nullpomino.util.LogConfig;
 
-import org.apache.log4j.Logger;
-import org.apache.log4j.PropertyConfigurator;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * MusicListEditor (Music editing tools list)
@@ -41,7 +42,7 @@ public class MusicListEditor extends JFrame implements ActionListener {
 	private static final long serialVersionUID = -6480034324392568869L;
 
 	/** Log */
-	static final Logger log = Logger.getLogger(MusicListEditor.class);
+	static final Logger log = LoggerFactory.getLogger(MusicListEditor.class);
 
 	/** SwingVersion ofSave settingsUseProperty file */
 	private CustomProperties propConfig;
@@ -318,7 +319,7 @@ public class MusicListEditor extends JFrame implements ActionListener {
 	 * @param args CommandLinesArgumentcount
 	 */
 	public static void main(String[] args) {
-		PropertyConfigurator.configure("config/etc/log.cfg");
+		LogConfig.configure("config/etc/log.xml");
 		log.debug("MusicListEditor start");
 		new MusicListEditor();
 	}

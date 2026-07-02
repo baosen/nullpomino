@@ -9,14 +9,15 @@ import java.util.LinkedList;
 
 import nullpomino.util.CustomProperties;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Rule select (after mode selection)
  */
 public class StateSelectRuleFromListSDL extends DummyMenuScrollStateSDL {
 	/** Log */
-	static Logger log = Logger.getLogger(StateSelectRuleFromListSDL.class);
+	static Logger log = LoggerFactory.getLogger(StateSelectRuleFromListSDL.class);
 
 	/** Number of rules in one page */
 	public static final int PAGE_HEIGHT = 24;

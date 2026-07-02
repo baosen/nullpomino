@@ -2,7 +2,8 @@
 // SPDX-License-Identifier: BSD-3-Clause
 package nullpomino.game.mode;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import nullpomino.game.component.BGMStatus;
 import nullpomino.game.component.Controller;
@@ -18,7 +19,7 @@ import nullpomino.util.GeneralUtil;
 public class LineRaceMode extends NetDummyMode {
 	/* ----- Main variables ----- */
 	/** Logger */
-	static Logger log = Logger.getLogger(LineRaceMode.class);
+	static Logger log = LoggerFactory.getLogger(LineRaceMode.class);
 
 	/** Number of entries in rankings */
 	private static final int RANKING_MAX = 10;

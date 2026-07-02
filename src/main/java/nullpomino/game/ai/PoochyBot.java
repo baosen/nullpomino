@@ -10,7 +10,8 @@ import nullpomino.game.play.GameEngine;
 import nullpomino.game.play.GameManager;
 import nullpomino.util.GeneralUtil;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * PoochyBot AI
@@ -82,7 +83,7 @@ import org.apache.log4j.Logger;
  */
 public class PoochyBot extends DummyAI implements Runnable {
 	/** Log */
-	static Logger log = Logger.getLogger(PoochyBot.class);
+	static Logger log = LoggerFactory.getLogger(PoochyBot.class);
 
 	/** After that I was groundedX-coordinate */
 	public int bestXSub;

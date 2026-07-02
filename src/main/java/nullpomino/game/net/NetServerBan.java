@@ -5,10 +5,11 @@ import java.util.TimeZone;
 
 import nullpomino.util.GeneralUtil;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class NetServerBan {
-	static Logger log = Logger.getLogger(NetServerBan.class);
+	static Logger log = LoggerFactory.getLogger(NetServerBan.class);
 
 	public String addr;
 

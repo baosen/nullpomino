@@ -11,14 +11,15 @@ import nullpomino.game.play.GameEngine;
 import nullpomino.util.CustomProperties;
 import nullpomino.util.GeneralUtil;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * GRADE MANIA 3 Mode
  */
 public class GradeMania3Mode extends AbstractGradeMode {
 	/** Log */
-	static final Logger log = Logger.getLogger(GradeMania3Mode.class);
+	static final Logger log = LoggerFactory.getLogger(GradeMania3Mode.class);
 
 	/** Current version */
 	private static final int CURRENT_VERSION = 2;

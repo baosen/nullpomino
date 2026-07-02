@@ -8,7 +8,8 @@ import java.util.zip.Adler32;
 
 import nullpomino.game.randomizer.Randomizer;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import nullpomino.game.component.Block;
 import nullpomino.game.component.Controller;
@@ -35,7 +36,7 @@ import nullpomino.util.GeneralUtil;
  */
 public class NetDummyMode extends AbstractMode implements NetLobbyListener {
 	/** Log (Declared in NetDummyMode) */
-	static Logger log = Logger.getLogger(NetDummyMode.class);
+	static Logger log = LoggerFactory.getLogger(NetDummyMode.class);
 
 	/** NET: Lobby (Declared in NetDummyMode) */
 	protected NetLobbyFrame netLobby;

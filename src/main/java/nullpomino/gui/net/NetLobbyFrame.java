@@ -30,7 +30,8 @@ import nullpomino.gui.sdl.widget.ChatLogSDL;
 import nullpomino.util.CustomProperties;
 import nullpomino.util.GeneralUtil;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * NullpoMino NetLobby — session and protocol holder used by the SDL3 netplay UI states.
@@ -56,7 +57,7 @@ public class NetLobbyFrame implements NetMessageListener {
 	public static final int LOBBYMODE_INROOM = 2;
 
 	/** Log */
-	public static final Logger log = Logger.getLogger(NetLobbyFrame.class);
+	public static final Logger log = LoggerFactory.getLogger(NetLobbyFrame.class);
 
 	// ---------------- Public session data (game modes read these) ----------------
 

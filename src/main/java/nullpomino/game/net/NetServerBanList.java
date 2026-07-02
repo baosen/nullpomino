@@ -7,7 +7,8 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.LinkedList;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * File persistence for the netplay server's ban list
@@ -16,7 +17,7 @@ import org.apache.log4j.Logger;
  */
 final class NetServerBanList {
 	/** Log */
-	static Logger log = Logger.getLogger(NetServerBanList.class);
+	static Logger log = LoggerFactory.getLogger(NetServerBanList.class);
 
 	private NetServerBanList() {}
 

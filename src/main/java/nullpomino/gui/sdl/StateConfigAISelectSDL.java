@@ -13,14 +13,15 @@ import nullpomino.util.ClassFactory;
 import nullpomino.util.GeneralUtil;
 import nullpomino.util.LegacyClassNames;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * AIState selection screen
  */
 public class StateConfigAISelectSDL extends BaseStateSDL {
 	/** Log */
-	static Logger log = Logger.getLogger(StateConfigAISelectSDL.class);
+	static Logger log = LoggerFactory.getLogger(StateConfigAISelectSDL.class);
 
 	/** 1Displayed on the screenMaximumAIcount */
 	public static final int MAX_AI_IN_ONE_PAGE = 20;

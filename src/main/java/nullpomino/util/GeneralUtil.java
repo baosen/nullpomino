@@ -10,7 +10,8 @@ import java.util.Arrays;
 import java.util.Calendar;
 import java.util.TimeZone;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import nullpomino.game.component.Piece;
 import nullpomino.game.component.RuleOptions;
@@ -23,7 +24,7 @@ import nullpomino.game.randomizer.Randomizer;
  */
 public class GeneralUtil {
 	/** Log */
-	static Logger log = Logger.getLogger(GeneralUtil.class);
+	static Logger log = LoggerFactory.getLogger(GeneralUtil.class);
 
 	private static final TimeZone GMT = TimeZone.getTimeZone("GMT");
 

@@ -9,14 +9,15 @@ import java.util.LinkedList;
 import java.util.Timer;
 import java.util.TimerTask;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Client(Basic part)
  */
 public class NetBaseClient extends Thread {
 	/** Log */
-	static final Logger log = Logger.getLogger(NetBaseClient.class);
+	static final Logger log = LoggerFactory.getLogger(NetBaseClient.class);
 
 	/**  default Port of number */
 	public static final int DEFAULT_PORT = 9200;

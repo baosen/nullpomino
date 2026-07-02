@@ -7,11 +7,12 @@ import nullpomino.game.play.GameEngine;
 import nullpomino.game.wallkick.StandardWallkick;
 import nullpomino.game.randomizer.BagNoSZORandomizer;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class ComboRaceSeedSearch extends DummyAI {
-	/** Log (Apache log4j) */
-	static Logger log = Logger.getLogger(ComboRaceSeedSearch.class);
+	/** Log */
+	static Logger log = LoggerFactory.getLogger(ComboRaceSeedSearch.class);
 
 	/** List of field state codes which are possible to sustain a stable combo */
 	private static final short[] FIELDS = {

@@ -48,7 +48,6 @@ java_library(
     deps = [
         ":sdl_binding",
         JNA,
-        LOG4J,
         LOGBACK,
         LOGBACK_CORE,
         SLF4J,
@@ -62,7 +61,7 @@ java_library(
     visibility = ["//visibility:public"],
     deps = [
         ":core",
-        LOG4J,
+        SLF4J,
     ],
 )
 
@@ -74,7 +73,7 @@ java_library(
     deps = [
         ":core",
         ":swing_tool_util",
-        LOG4J,
+        SLF4J,
     ],
 )
 
@@ -86,7 +85,7 @@ java_library(
     deps = [
         ":core",
         ":swing_tool_util",
-        LOG4J,
+        SLF4J,
     ],
 )
 
@@ -97,7 +96,7 @@ java_library(
     visibility = ["//visibility:public"],
     deps = [
         ":core",
-        LOG4J,
+        SLF4J,
     ],
 )
 

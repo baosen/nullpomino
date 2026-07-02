@@ -2,7 +2,8 @@
 // SPDX-License-Identifier: BSD-3-Clause
 package nullpomino.gui.sdl;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import nullpomino.game.component.Controller;
 import nullpomino.game.component.RuleOptions;
@@ -22,7 +23,7 @@ import nullpomino.game.randomizer.Randomizer;
  */
 public class StateInGameSDL extends BaseStateSDL {
 	/** Log */
-	static Logger log = Logger.getLogger(StateInGameSDL.class);
+	static Logger log = LoggerFactory.getLogger(StateInGameSDL.class);
 
 	/** Game main class */
 	protected GameManager gameManager;

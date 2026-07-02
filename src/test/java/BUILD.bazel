@@ -27,6 +27,8 @@ java_test(
     ],
     javacopts = ["-encoding", "UTF-8"],
     main_class = "org.junit.platform.console.ConsoleLauncher",
+    resource_strip_prefix = "src/test/resources",
+    resources = ["//src/test/resources:logback-test.xml"],
     use_testrunner = False,
     deps = [
         ":testutil",

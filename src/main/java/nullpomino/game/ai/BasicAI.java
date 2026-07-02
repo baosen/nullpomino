@@ -9,14 +9,15 @@ import nullpomino.game.component.WallkickResult;
 import nullpomino.game.play.GameEngine;
 import nullpomino.game.play.GameManager;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * CommonAI
  */
 public class BasicAI extends DummyAI implements Runnable {
 	/** Log */
-	static Logger log = Logger.getLogger(BasicAI.class);
+	static Logger log = LoggerFactory.getLogger(BasicAI.class);
 
 	/** After that I was groundedX-coordinate */
 	public int bestXSub;

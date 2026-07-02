@@ -25,7 +25,8 @@ import javax.swing.JSpinner;
 import javax.swing.JTabbedPane;
 import javax.swing.JTextField;
 import javax.swing.SpinnerNumberModel;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import javax.swing.GroupLayout;
 import javax.swing.GroupLayout.ParallelGroup;
 
@@ -34,7 +35,7 @@ import nullpomino.util.CustomProperties;
 public class AIRanksTool extends JFrame implements ActionListener {
 	private static final long serialVersionUID = 1L;
 	/** Log */
-	static final Logger log = Logger.getLogger(AIRanksConstants.class);
+	static final Logger log = LoggerFactory.getLogger(AIRanksConstants.class);
 
 	/** Default language file */
 	public static CustomProperties propLangDefault;

@@ -12,14 +12,15 @@ import nullpomino.game.play.GameEngine;
 import nullpomino.util.CustomProperties;
 import nullpomino.util.GeneralUtil;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * PRACTICE Mode
  */
 public class PracticeMode extends AbstractMode {
 	/** Log */
-	static Logger log = Logger.getLogger(PracticeMode.class);
+	static Logger log = LoggerFactory.getLogger(PracticeMode.class);
 
 	/** Current version */
 	private static final int CURRENT_VERSION = 5;

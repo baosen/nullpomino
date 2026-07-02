@@ -8,7 +8,8 @@ package nullpomino.gui.sdl;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import nullpomino.game.net.NetMPModeRegistry;
 import nullpomino.game.net.NetPlayerInfo;
@@ -47,7 +48,7 @@ import nullpomino.gui.sdl.widget.WidgetSDL;
  *     strip) switch tabs.
  */
 public class StateNetCreateRoomSDL extends BaseStateSDL {
-	private static final Logger log = Logger.getLogger(StateNetCreateRoomSDL.class);
+	private static final Logger log = LoggerFactory.getLogger(StateNetCreateRoomSDL.class);
 
 	private static final String[] TAB_LABELS = { "BASIC", "SPEED", "BONUS", "GARBAGE", "MISC", "PRESET" };
 

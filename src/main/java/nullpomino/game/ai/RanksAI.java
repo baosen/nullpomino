@@ -17,11 +17,12 @@ import nullpomino.tool.airankstool.Ranks;
 import nullpomino.tool.airankstool.AIRanksConstants;
 import nullpomino.util.CustomProperties;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class RanksAI extends DummyAI implements Runnable {
 
-	static Logger log = Logger.getLogger(RanksAI.class);
+	static Logger log = LoggerFactory.getLogger(RanksAI.class);
 
 	public int bestXSub;
 	public int bestYSub;

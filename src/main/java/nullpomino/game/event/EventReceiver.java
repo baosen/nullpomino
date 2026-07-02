@@ -5,7 +5,8 @@ package nullpomino.game.event;
 import java.io.File;
 import java.io.IOException;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import nullpomino.game.component.Block;
 import nullpomino.game.play.GameEngine;
@@ -18,7 +19,7 @@ import nullpomino.util.GeneralUtil;
  */
 public class EventReceiver {
 	/** Log */
-	static Logger log = Logger.getLogger(EventReceiver.class);
+	static Logger log = LoggerFactory.getLogger(EventReceiver.class);
 
 	/** Field X position */
 	public static final int[][][] NEW_FIELD_OFFSET_X = {

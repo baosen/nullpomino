@@ -6,14 +6,15 @@ import java.io.IOException;
 
 import nullpomino.game.play.GameManager;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Client(ObserverUse)
  */
 public class NetObserverClient extends NetBaseClient {
 	/** Log */
-	static final Logger log = Logger.getLogger(NetObserverClient.class);
+	static final Logger log = LoggerFactory.getLogger(NetObserverClient.class);
 
 	/** ServerVersion */
 	protected volatile float serverVersion = 0f;

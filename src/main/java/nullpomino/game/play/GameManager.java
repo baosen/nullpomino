@@ -13,14 +13,15 @@ import nullpomino.game.event.EventReceiver;
 import nullpomino.game.mode.GameMode;
 import nullpomino.util.CustomProperties;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * GameManager: The container of the game
  */
 public class GameManager {
-	/** Log (Apache log4j) */
-	static Logger log = Logger.getLogger(GameManager.class);
+	/** Log */
+	static Logger log = LoggerFactory.getLogger(GameManager.class);
 
 	/** Major version */
 	public static final float VERSION_MAJOR = 7.6f;

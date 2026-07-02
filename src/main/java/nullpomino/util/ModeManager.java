@@ -8,14 +8,15 @@ import java.util.stream.Stream;
 
 import nullpomino.game.mode.GameMode;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Mode Management class
  */
 public class ModeManager {
 	/** Log */
-	static Logger log = Logger.getLogger(ModeManager.class);
+	static Logger log = LoggerFactory.getLogger(ModeManager.class);
 
 	private final List<GameMode> modes = new ArrayList<GameMode>();
 

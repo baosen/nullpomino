@@ -25,18 +25,19 @@ import nullpomino.gui.sdl.binding.SDL3TTF;
 import nullpomino.gui.sdl.binding.SDLConstants;
 import nullpomino.gui.sdl.binding.SDLStructs;
 import nullpomino.util.CustomProperties;
+import nullpomino.util.LogConfig;
 import nullpomino.util.ModeManager;
 import nullpomino.util.ModeRegistry;
 
-import org.apache.log4j.Logger;
-import org.apache.log4j.PropertyConfigurator;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * NullpoMino SDL3 Version
  */
 public class NullpoMinoSDL {
 	/** Log */
-	static Logger log = Logger.getLogger(NullpoMinoSDL.class);
+	static Logger log = LoggerFactory.getLogger(NullpoMinoSDL.class);
 
 	/** State of the game ID */
 	public static final int STATE_TITLE = 0,
@@ -258,7 +259,7 @@ public class NullpoMinoSDL {
 	 * @param args command line arguments
 	 */
 	public static void main(String[] args) {
-		PropertyConfigurator.configure("config/etc/log_sdl.cfg");
+		LogConfig.configure("config/etc/log_sdl.xml");
 		log.info("NullpoMinoSDL Start");
 
 		programArgs = args;
@@ -368,7 +369,7 @@ public class NullpoMinoSDL {
 		try {
 			init();
 		} catch (Throwable e) {
-			log.fatal("SDL init failed", e);
+			log.error("SDL init failed", e);
 			String strErrorTitle = getUIText("InitFailedMessageGeneral_Title");
 			String strErrorMessage = String.format(getUIText("InitFailedMessageGeneral_Body"), e.toString());
 			try {
@@ -384,7 +385,7 @@ public class NullpoMinoSDL {
 		try {
 			run();
 		} catch (Throwable e) {
-			log.fatal("Uncaught Exception", e);
+			log.error("Uncaught Exception", e);
 		} finally {
 			shutdown();
 		}

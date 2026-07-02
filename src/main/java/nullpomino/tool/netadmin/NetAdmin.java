@@ -62,9 +62,10 @@ import nullpomino.game.play.GameEngine;
 import nullpomino.game.play.GameManager;
 import nullpomino.util.CustomProperties;
 import nullpomino.util.GeneralUtil;
+import nullpomino.util.LogConfig;
 
-import org.apache.log4j.Logger;
-import org.apache.log4j.PropertyConfigurator;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * NetAdmin - NetServer admin tool
@@ -102,7 +103,7 @@ public class NetAdmin extends JFrame implements ActionListener, NetMessageListen
 
 	//***** Variables *****
 	/** Log */
-	static Logger log = Logger.getLogger(NetAdmin.class);
+	static Logger log = LoggerFactory.getLogger(NetAdmin.class);
 
 	/** ServerAdmin properties */
 	private static CustomProperties propConfig;
@@ -862,7 +863,7 @@ public class NetAdmin extends JFrame implements ActionListener, NetMessageListen
 	 * @param args Command line options
 	 */
 	public static void main(String[] args) {
-		PropertyConfigurator.configure("config/etc/log.cfg");
+		LogConfig.configure("config/etc/log.xml");
 		new NetAdmin();
 	}
 

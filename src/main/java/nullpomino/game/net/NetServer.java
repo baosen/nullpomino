@@ -36,9 +36,10 @@ import nullpomino.game.play.GameEngine;
 import nullpomino.game.play.GameManager;
 import nullpomino.util.CustomProperties;
 import nullpomino.util.GeneralUtil;
+import nullpomino.util.LogConfig;
 
-import org.apache.log4j.Logger;
-import org.apache.log4j.PropertyConfigurator;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * NullpoMino NetServer<br>
@@ -46,7 +47,7 @@ import org.apache.log4j.PropertyConfigurator;
  */
 public class NetServer {
 	/** Log */
-	static Logger log = Logger.getLogger(NetServer.class);
+	static Logger log = LoggerFactory.getLogger(NetServer.class);
 
 	/** Default port number */
 	public static final int DEFAULT_PORT = 9200;
@@ -800,7 +801,7 @@ public class NetServer {
 	 */
 	public static void main(String[] args) {
 		// Init log system (should be first!)
-		PropertyConfigurator.configure("config/etc/log_server.cfg");
+		LogConfig.configure("config/etc/log_server.xml");
 
 		// get netserver.cfg file path from 2nd command-line argument, if specified
 		String servcfg = "config/etc/netserver.cfg";  // default location
@@ -939,7 +940,7 @@ public class NetServer {
 		try {
 			this.selector = initSelector();
 		} catch (IOException e) {
-			log.fatal("Failed to startup the server", e);
+			log.error("Failed to startup the server", e);
 			return;
 		}
 
@@ -1020,9 +1021,9 @@ public class NetServer {
 					log.debug("ConcurrentModificationException on server mainloop", e);
 				}
 			} catch (IOException e) {
-				log.fatal("IOException on server mainloop", e);
+				log.error("IOException on server mainloop", e);
 			} catch (Throwable e) {
-				log.fatal("Non-IOException throwed on server mainloop", e);
+				log.error("Non-IOException throwed on server mainloop", e);
 			}
 		}
 

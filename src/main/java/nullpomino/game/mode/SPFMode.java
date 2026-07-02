@@ -15,14 +15,15 @@ import nullpomino.game.play.GameManager;
 import nullpomino.util.CustomProperties;
 import nullpomino.util.GeneralUtil;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * SPF VS-BATTLE mode (Beta)
  */
 public class SPFMode extends AbstractMode {
-	/** Log (Apache log4j) */
-	static Logger log = Logger.getLogger(SPFMode.class);
+	/** Log */
+	static Logger log = LoggerFactory.getLogger(SPFMode.class);
 
 	/** Current version */
 	private static final int CURRENT_VERSION = 0;

@@ -11,14 +11,15 @@ import nullpomino.game.play.GameEngine;
 import nullpomino.util.CustomProperties;
 import nullpomino.util.GeneralUtil;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * GEM MANIA
  */
 public class GemManiaMode extends AbstractMode {
 	/** Log */
-	static Logger log = Logger.getLogger(GemManiaMode.class);
+	static Logger log = LoggerFactory.getLogger(GemManiaMode.class);
 
 	/** Current version */
 	private static final int CURRENT_VERSION = 1;

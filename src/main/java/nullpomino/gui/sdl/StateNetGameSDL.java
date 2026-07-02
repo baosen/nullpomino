@@ -4,7 +4,8 @@ package nullpomino.gui.sdl;
 
 import java.io.IOException;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import nullpomino.game.component.RuleOptions;
 import nullpomino.game.net.NetPlayerClient;
@@ -31,7 +32,7 @@ import nullpomino.game.randomizer.Randomizer;
  * (back-compat).</p>
  */
 public class StateNetGameSDL extends BaseStateSDL implements NetLobbyListener {
-	static final Logger log = Logger.getLogger(StateNetGameSDL.class);
+	static final Logger log = LoggerFactory.getLogger(StateNetGameSDL.class);
 
 	/**
 	 * Shared instance, set in {@link #enter()} and cleared in {@link #leave()}.

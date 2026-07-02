@@ -9,14 +9,15 @@ import java.util.Random;
 import nullpomino.game.play.GameEngine;
 import nullpomino.util.CustomProperties;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Gamefield
  */
 public class Field implements Serializable {
 	/** Log */
-	static Logger log = Logger.getLogger(Field.class);
+	static Logger log = LoggerFactory.getLogger(Field.class);
 
 	/** Serial version ID */
 	private static final long serialVersionUID = 7745183278794213487L;

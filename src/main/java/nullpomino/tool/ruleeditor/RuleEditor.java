@@ -51,11 +51,12 @@ import nullpomino.game.component.RuleOptions;
 import nullpomino.game.play.GameEngine;
 import nullpomino.tool.SwingToolUtil;
 import nullpomino.util.CustomProperties;
+import nullpomino.util.LogConfig;
 import nullpomino.util.RandomizerRegistry;
 import nullpomino.util.WallkickRegistry;
 
-import org.apache.log4j.Logger;
-import org.apache.log4j.PropertyConfigurator;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Rule Editor
@@ -65,7 +66,7 @@ public class RuleEditor extends JFrame implements ActionListener {
 	private static final long serialVersionUID = 1L;
 
 	/** Log */
-	static Logger log = Logger.getLogger(RuleEditor.class);
+	static Logger log = LoggerFactory.getLogger(RuleEditor.class);
 
 	/** SwingVersion ofSave settingsUseProperty file */
 	public CustomProperties propConfig;
@@ -1731,7 +1732,7 @@ public class RuleEditor extends JFrame implements ActionListener {
 	 * @param args CommandLinesArgumentcount
 	 */
 	public static void main(String[] args) {
-		PropertyConfigurator.configure("config/etc/log.cfg");
+		LogConfig.configure("config/etc/log.xml");
 		log.debug("RuleEditor start");
 
 		if(args.length > 0) {

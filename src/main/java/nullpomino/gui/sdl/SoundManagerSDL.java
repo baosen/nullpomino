@@ -11,7 +11,8 @@ import nullpomino.gui.sdl.binding.SDL3Mixer;
 import nullpomino.gui.sdl.binding.SDL3;
 import nullpomino.gui.sdl.binding.SDLStructs.SDL_AudioSpec;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Sound effects manager using pre-allocated tracks (like the old channel model).
@@ -21,7 +22,7 @@ import org.apache.log4j.Logger;
  */
 public class SoundManagerSDL {
 	/** Log */
-	static Logger log = Logger.getLogger(SoundManagerSDL.class);
+	static Logger log = LoggerFactory.getLogger(SoundManagerSDL.class);
 
 	/** Number of pre-allocated tracks (equivalent to old Mix_AllocateChannels) */
 	private static final int NUM_TRACKS = 16;

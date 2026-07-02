@@ -1,5 +1,9 @@
 filegroup(
     name = "test_resources",
-    srcs = glob(["**/*"], exclude = ["BUILD.bazel"]),
+    srcs = glob(["**/*"], exclude = ["BUILD.bazel", "logback-test.xml"]),
     visibility = ["//src/test/java:__pkg__"],
 )
+
+# Classpath resource (not runfiles data): logback picks it up automatically
+# to keep engine logging silent during tests.
+exports_files(["logback-test.xml"])

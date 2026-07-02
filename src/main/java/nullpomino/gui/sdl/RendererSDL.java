@@ -19,14 +19,15 @@ import nullpomino.gui.sdl.binding.SDLConstants;
 import nullpomino.gui.sdl.binding.SDLStructs;
 import nullpomino.util.CustomProperties;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Game event Processing and rendering process (SDLVersion)
  */
 public class RendererSDL extends EventReceiver {
 	/** Log */
-	static Logger log = Logger.getLogger(RendererSDL.class);
+	static Logger log = LoggerFactory.getLogger(RendererSDL.class);
 
 	/** Production Object */
 	protected ArrayList<EffectObject> effectlist;

@@ -5,7 +5,8 @@ import java.util.Calendar;
 
 import nullpomino.util.GeneralUtil;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Chat message
@@ -17,7 +18,7 @@ public class NetChatMessage implements Serializable {
 	private static final int EXPORT_FIELD_COUNT = 7;
 
 	/** Log */
-	static final Logger log = Logger.getLogger(NetChatMessage.class);
+	static final Logger log = LoggerFactory.getLogger(NetChatMessage.class);
 
 	/** User ID */
 	public int uid;

@@ -11,7 +11,8 @@ import nullpomino.game.component.Statistics;
 import nullpomino.util.CustomProperties;
 import nullpomino.util.GeneralUtil;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 
 /**
@@ -19,7 +20,7 @@ import org.apache.log4j.Logger;
  */
 public class StateReplaySelectSDL extends DummyMenuScrollStateSDL {
 	/** Log */
-	static Logger log = Logger.getLogger(StateReplaySelectSDL.class);
+	static Logger log = LoggerFactory.getLogger(StateReplaySelectSDL.class);
 
 	/** 1Displayed on the screenMaximumFilecount */
 	public static final int PAGE_HEIGHT = 20;
