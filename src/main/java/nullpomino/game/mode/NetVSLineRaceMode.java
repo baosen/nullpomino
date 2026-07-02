@@ -42,15 +42,7 @@ public class NetVSLineRaceMode extends NetDummyVSMode {
 	 */
 	@Override
 	protected void netvsApplyRoomSettings(GameEngine engine) {
-		if(netCurrentRoomInfo != null) {
-			engine.speed.gravity = netCurrentRoomInfo.gravity;
-			engine.speed.denominator = netCurrentRoomInfo.denominator;
-			engine.speed.are = netCurrentRoomInfo.are;
-			engine.speed.areLine = netCurrentRoomInfo.areLine;
-			engine.speed.lineDelay = netCurrentRoomInfo.lineDelay;
-			engine.speed.lockDelay = netCurrentRoomInfo.lockDelay;
-			engine.speed.das = netCurrentRoomInfo.das;
-		}
+		netvsApplySpeedSettings(engine);
 	}
 
 	/*
@@ -239,15 +231,7 @@ public class NetVSLineRaceMode extends NetDummyVSMode {
 	 */
 	@Override
 	protected void netSendEndGameStats(GameEngine engine) {
-		int playerID = engine.playerID;
-		String msg = "gstat\t";
-		msg += netvsPlayerPlace[playerID] + "\t";
-		msg += 0 + "\t" + 0 + "\t" + 0 + "\t";
-		msg += engine.statistics.lines + "\t" + engine.statistics.lpm + "\t";
-		msg += engine.statistics.totalPieceLocked + "\t" + engine.statistics.pps + "\t";
-		msg += netvsPlayTimer + "\t" + 0 + "\t" + netvsPlayerWinCount[playerID] + "\t" + netvsPlayerPlayCount[playerID];
-		msg += "\n";
-		netLobby.netPlayerClient.send(msg);
+		netvsSendRaceEndGameStats(engine);
 	}
 
 	/*
@@ -255,19 +239,6 @@ public class NetVSLineRaceMode extends NetDummyVSMode {
 	 */
 	@Override
 	protected void netvsRecvEndGameStats(String[] message) {
-		int seatID = Integer.parseInt(message[2]);
-		int playerID = netvsGetPlayerIDbySeatID(seatID);
-
-		if((playerID != 0) || (netvsIsWatch())) {
-			GameEngine engine = owner.engine[playerID];
-
-			engine.statistics.lines = Integer.parseInt(message[8]);
-			engine.statistics.lpm = Float.parseFloat(message[9]);
-			engine.statistics.totalPieceLocked = Integer.parseInt(message[10]);
-			engine.statistics.pps = Float.parseFloat(message[11]);
-			engine.statistics.time = Integer.parseInt(message[12]);
-
-			netvsPlayerResultReceived[playerID] = true;
-		}
+		netvsRecvRaceEndGameStats(message);
 	}
 }

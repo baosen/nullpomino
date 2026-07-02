@@ -503,13 +503,7 @@ public class NetDummyVSMode extends NetDummyMode {
 	 */
 	protected void netvsApplyRoomSettings(GameEngine engine) {
 		if(netCurrentRoomInfo != null) {
-			engine.speed.gravity = netCurrentRoomInfo.gravity;
-			engine.speed.denominator = netCurrentRoomInfo.denominator;
-			engine.speed.are = netCurrentRoomInfo.are;
-			engine.speed.areLine = netCurrentRoomInfo.areLine;
-			engine.speed.lineDelay = netCurrentRoomInfo.lineDelay;
-			engine.speed.lockDelay = netCurrentRoomInfo.lockDelay;
-			engine.speed.das = netCurrentRoomInfo.das;
+			netvsApplySpeedSettings(engine);
 
 			engine.b2bEnable = netCurrentRoomInfo.b2b;
 			engine.comboType = netCurrentRoomInfo.combo ? GameEngine.COMBO_TYPE_NORMAL : GameEngine.COMBO_TYPE_DISABLE;
@@ -524,6 +518,22 @@ public class NetDummyVSMode extends NetDummyMode {
 				engine.tspinEnable = true;
 				engine.useAllSpinBonus = true;
 			}
+		}
+	}
+
+	/**
+	 * NET-VS: Apply only the speed settings of the current room to the specific GameEngine
+	 * @param engine GameEngine to apply settings
+	 */
+	protected void netvsApplySpeedSettings(GameEngine engine) {
+		if(netCurrentRoomInfo != null) {
+			engine.speed.gravity = netCurrentRoomInfo.gravity;
+			engine.speed.denominator = netCurrentRoomInfo.denominator;
+			engine.speed.are = netCurrentRoomInfo.are;
+			engine.speed.areLine = netCurrentRoomInfo.areLine;
+			engine.speed.lineDelay = netCurrentRoomInfo.lineDelay;
+			engine.speed.lockDelay = netCurrentRoomInfo.lockDelay;
+			engine.speed.das = netCurrentRoomInfo.das;
 		}
 	}
 
@@ -592,6 +602,43 @@ public class NetDummyVSMode extends NetDummyMode {
 		int playerID = netvsGetPlayerIDbySeatID(seatID);
 
 		if((playerID != 0) || (netvsIsWatch())) {
+			netvsPlayerResultReceived[playerID] = true;
+		}
+	}
+
+	/**
+	 * NET-VS: Send the race modes' end-of-game stats
+	 * @param engine GameEngine
+	 */
+	protected void netvsSendRaceEndGameStats(GameEngine engine) {
+		int playerID = engine.playerID;
+		String msg = "gstat\t";
+		msg += netvsPlayerPlace[playerID] + "\t";
+		msg += 0 + "\t" + 0 + "\t" + 0 + "\t";
+		msg += engine.statistics.lines + "\t" + engine.statistics.lpm + "\t";
+		msg += engine.statistics.totalPieceLocked + "\t" + engine.statistics.pps + "\t";
+		msg += netvsPlayTimer + "\t" + 0 + "\t" + netvsPlayerWinCount[playerID] + "\t" + netvsPlayerPlayCount[playerID];
+		msg += "\n";
+		netLobby.netPlayerClient.send(msg);
+	}
+
+	/**
+	 * NET-VS: Receive the race modes' end-of-game stats (lines, lpm, pieces, pps, time)
+	 * @param message Message
+	 */
+	protected void netvsRecvRaceEndGameStats(String[] message) {
+		int seatID = Integer.parseInt(message[2]);
+		int playerID = netvsGetPlayerIDbySeatID(seatID);
+
+		if((playerID != 0) || (netvsIsWatch())) {
+			GameEngine engine = owner.engine[playerID];
+
+			engine.statistics.lines = Integer.parseInt(message[8]);
+			engine.statistics.lpm = Float.parseFloat(message[9]);
+			engine.statistics.totalPieceLocked = Integer.parseInt(message[10]);
+			engine.statistics.pps = Float.parseFloat(message[11]);
+			engine.statistics.time = Integer.parseInt(message[12]);
+
 			netvsPlayerResultReceived[playerID] = true;
 		}
 	}
