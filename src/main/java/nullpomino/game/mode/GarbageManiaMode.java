@@ -12,7 +12,7 @@ import nullpomino.util.GeneralUtil;
 /**
  * GARBAGE MANIA Mode
  */
-public class GarbageManiaMode extends AbstractMode {
+public class GarbageManiaMode extends AbstractManiaMode {
 	/** Current version */
 	private static final int CURRENT_VERSION = 3;
 
@@ -44,9 +44,6 @@ public class GarbageManiaMode extends AbstractMode {
 
 	/** LV999 roll time */
 	private static final int ROLLTIMELIMIT = 2024;
-
-	/** Number of entries in rankings */
-	private static final int RANKING_MAX = 10;
 
 	/** Number of sections */
 	private static final int SECTION_MAX = 10;
@@ -142,21 +139,6 @@ public class GarbageManiaMode extends AbstractMode {
 	/** Current BGM */
 	private int bgmlv;
 
-	/** Section Time */
-	private int[] sectiontime;
-
-	/** New record came outSection Thetrue */
-	private boolean[] sectionIsNewRecord;
-
-	/** SomewhereSection When I put out a new record intrue */
-	private boolean sectionAnyNewRecord;
-
-	/** Cleared Section count */
-	private int sectionscomp;
-
-	/** Average Section Time */
-	private int sectionavgtime;
-
 	/** Rising pattern auction number */
 	private int garbagePos;
 
@@ -165,9 +147,6 @@ public class GarbageManiaMode extends AbstractMode {
 
 	/** Seri was up count */
 	private int garbageTotal;
-
-	/** Section TimeShowing record iftrue */
-	private boolean isShowBestSectionTime;
 
 	/** Level at start */
 	private int startlevel;
@@ -189,18 +168,6 @@ public class GarbageManiaMode extends AbstractMode {
 
 	/** Version */
 	private int version;
-
-	/** Current round's ranking rank */
-	private int rankingRank;
-
-	/** Rankings'  level */
-	private int[] rankingLevel;
-
-	/** Rankings' times */
-	private int[] rankingTime;
-
-	/** Section TimeRecord */
-	private int[] bestSectionTime;
 
 	/*
 	 * Mode name
@@ -850,31 +817,6 @@ public class GarbageManiaMode extends AbstractMode {
 			drawResultStats(engine, playerID, receiver, 1, EventReceiver.COLOR_BLUE,
 					Statistic.LPM, Statistic.SPM, Statistic.PIECE, Statistic.PPS);
 		}
-	}
-
-	/*
-	 * Processing of the results screen
-	 */
-	@Override
-	public boolean onResult(GameEngine engine, int playerID) {
-		// Page switching
-		if(engine.ctrl.isMenuRepeatKey(Controller.BUTTON_UP)) {
-			engine.statc[1]--;
-			if(engine.statc[1] < 0) engine.statc[1] = 2;
-			engine.playSE("change");
-		}
-		if(engine.ctrl.isMenuRepeatKey(Controller.BUTTON_DOWN)) {
-			engine.statc[1]++;
-			if(engine.statc[1] > 2) engine.statc[1] = 0;
-			engine.playSE("change");
-		}
-		//  section time displaySwitching
-		if(engine.ctrl.isPush(Controller.BUTTON_F)) {
-			engine.playSE("change");
-			isShowBestSectionTime = !isShowBestSectionTime;
-		}
-
-		return false;
 	}
 
 	/*

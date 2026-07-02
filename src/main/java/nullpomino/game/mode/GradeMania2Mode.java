@@ -143,21 +143,6 @@ public class GradeMania2Mode extends AbstractGradeMode {
 	/** When true, section time display is enabled */
 	private OnOffMenuItem showsectiontime;
 
-	/** Rankings' Dan */
-	private int[] rankingGrade;
-
-	/** Rankings'  level */
-	private int[] rankingLevel;
-
-	/** Rankings' times */
-	private int[] rankingTime;
-
-	/** Rankings' Roll completely cleared flag */
-	private int[] rankingRollclear;
-
-	/** Section TimeRecord */
-	private int[] bestSectionTime;
-
 	public GradeMania2Mode() {
 		propName = "grademania2";
 		startlevel = new RollLevelMenuItem("startlevel", "LEVEL", EventReceiver.COLOR_BLUE, 0, 0, 9);
@@ -1068,31 +1053,6 @@ public class GradeMania2Mode extends AbstractGradeMode {
 			drawResultStats(engine, playerID, receiver, 6, EventReceiver.COLOR_BLUE,
 					Statistic.LPM, Statistic.SPM, Statistic.PIECE, Statistic.PPS);
 		}
-	}
-
-	/*
-	 * Processing of the results screen
-	 */
-	@Override
-	public boolean onResult(GameEngine engine, int playerID) {
-		// Page switching
-		if(engine.ctrl.isMenuRepeatKey(Controller.BUTTON_UP)) {
-			engine.statc[1]--;
-			if(engine.statc[1] < 0) engine.statc[1] = 2;
-			engine.playSE("change");
-		}
-		if(engine.ctrl.isMenuRepeatKey(Controller.BUTTON_DOWN)) {
-			engine.statc[1]++;
-			if(engine.statc[1] > 2) engine.statc[1] = 0;
-			engine.playSE("change");
-		}
-		//  section time displaySwitching
-		if(engine.ctrl.isPush(Controller.BUTTON_F)) {
-			engine.playSE("change");
-			isShowBestSectionTime = !isShowBestSectionTime;
-		}
-
-		return false;
 	}
 
 	/*

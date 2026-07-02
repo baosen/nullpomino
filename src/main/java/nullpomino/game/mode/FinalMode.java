@@ -12,7 +12,7 @@ import nullpomino.util.GeneralUtil;
 /**
  * FINAL mode (Original from NullpoUE build 010210 by Zircean)
  */
-public class FinalMode extends AbstractMode {
+public class FinalMode extends AbstractManiaMode {
 	/** Current version */
 	private static final int CURRENT_VERSION = 3;
 
@@ -44,9 +44,6 @@ public class FinalMode extends AbstractMode {
 
 	/** Ending time limit (version <= 2) */
 	private static final int ROLLTIMELIMIT_OLD = 1982;
-
-	/** Number of ranking records */
-	private static final int RANKING_MAX = 10;
 
 	/** Number of sections */
 	private static final int SECTION_MAX = 10;
@@ -91,35 +88,14 @@ public class FinalMode extends AbstractMode {
 	/** Secret Grade */
 	private int secretGrade;
 
-	/** Section Time */
-	private int[] sectiontime;
-
-	/** This will be true if the player achieves new section time record in specific section */
-	private boolean[] sectionIsNewRecord;
-
-	/** Amount of sections completed */
-	private int sectionscomp;
-
-	/** Average section time */
-	private int sectionavgtime;
-
-	/** Current section time */
-	private int sectionlasttime;
-
 	/** AC medal */
 	private int medalAC;
-
-	/** ST medal */
-	private int medalST;
 
 	/** SK medal */
 	private int medalSK;
 
 	/** CO medal */
 	private int medalCO;
-
-	/** false:Leaderboard, true:Section time record (Push F in settings screen to flip it) */
-	private boolean isShowBestSectionTime;
 
 	/** Selected start level */
 	private int startlevel;
@@ -135,24 +111,6 @@ public class FinalMode extends AbstractMode {
 
 	/** Version of this mode */
 	private int version;
-
-	/** Your place on leaderboard (-1: out of rank) */
-	private int rankingRank;
-
-	/** Grade records */
-	private int[] rankingGrade;
-
-	/** Level records */
-	private int[] rankingLevel;
-
-	/** Time records */
-	private int[] rankingTime;
-
-	/** Game completed flag records */
-	private int[] rankingRollclear;
-
-	/** Best section time records */
-	private int[] bestSectionTime;
 
 	/**
 	 * Returns the name of this mode
@@ -863,31 +821,6 @@ public class FinalMode extends AbstractMode {
 			drawResultStats(engine, playerID, receiver, 6, EventReceiver.COLOR_BLUE,
 					Statistic.LPS, Statistic.SPS, Statistic.PIECE, Statistic.PPS);
 		}
-	}
-
-	/**
-	 * Additional routine for game result screen
-	 */
-	@Override
-	public boolean onResult(GameEngine engine, int playerID) {
-		// Page change
-		if(engine.ctrl.isMenuRepeatKey(Controller.BUTTON_UP)) {
-			engine.statc[1]--;
-			if(engine.statc[1] < 0) engine.statc[1] = 2;
-			engine.playSE("change");
-		}
-		if(engine.ctrl.isMenuRepeatKey(Controller.BUTTON_DOWN)) {
-			engine.statc[1]++;
-			if(engine.statc[1] > 2) engine.statc[1] = 0;
-			engine.playSE("change");
-		}
-		// Flip Leaderboard/Best Section Time Records
-		if(engine.ctrl.isPush(Controller.BUTTON_F)) {
-			engine.playSE("change");
-			isShowBestSectionTime = !isShowBestSectionTime;
-		}
-
-		return false;
 	}
 
 	/**

@@ -380,7 +380,7 @@ class PhantomManiaModeGameLogicTest {
 	}
 
 	private static Object readFieldByClass(Object mode, Class<?> cls, String name) throws Exception {
-		Field f = cls.getDeclaredField(name);
+		Field f = findField(cls, name);
 		f.setAccessible(true);
 		return f.get(mode);
 	}

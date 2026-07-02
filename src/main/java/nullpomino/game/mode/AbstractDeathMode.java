@@ -11,7 +11,7 @@ package nullpomino.game.mode;
  * duplicated copy without changing behavior. (SPEED MANIA 2 uses a different,
  * fourteen-section curve and is intentionally NOT parented here.)
  */
-public abstract class AbstractDeathMode extends AbstractMode {
+public abstract class AbstractDeathMode extends AbstractManiaMode {
 
 	/** ARE table */
 	protected static final int[] tableARE       = {15, 11, 11,  5,  4,  3};

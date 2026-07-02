@@ -16,10 +16,7 @@ import nullpomino.game.play.GameEngine;
  * GRADE MANIA 1 uses a different (score-based) model and is intentionally
  * NOT parented here.
  */
-public abstract class AbstractGradeMode extends AbstractMode {
-
-	/** Number of entries in rankings */
-	protected static final int RANKING_MAX = 10;
+public abstract class AbstractGradeMode extends AbstractManiaMode {
 
 	/** Number of sections */
 	protected static final int SECTION_MAX = 10;
@@ -70,36 +67,18 @@ public abstract class AbstractGradeMode extends AbstractMode {
 	/** Frames remaining to flash the grade display */
 	protected int gradeflash;
 
-	/** Per-section elapsed time */
-	protected int[] sectiontime;
-	/** True for sections that set a new best */
-	protected boolean[] sectionIsNewRecord;
-	/** Number of completed sections */
-	protected int sectionscomp;
-	/** Average section time */
-	protected int sectionavgtime;
-	/** Previous section's time */
-	protected int sectionlasttime;
-
 	/** True once M-ROLL (vanish roll) has begun */
 	protected boolean mrollFlag;
 
 	/** AC medal state */
 	protected int medalAC;
-	/** ST medal state */
-	protected int medalST;
 	/** SK medal state */
 	protected int medalSK;
 	/** CO medal state */
 	protected int medalCO;
 
-	/** True when best-section-time display is enabled */
-	protected boolean isShowBestSectionTime;
-
 	/** Persisted schema version */
 	protected int version;
-	/** Current round's ranking rank (-1 if unranked) */
-	protected int rankingRank;
 
 	/*
 	 * Called when hard drop used

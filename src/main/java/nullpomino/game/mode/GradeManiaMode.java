@@ -15,7 +15,7 @@ import nullpomino.util.GeneralUtil;
 /**
  * GRADE MANIA Mode
  */
-public class GradeManiaMode extends AbstractMode {
+public class GradeManiaMode extends AbstractManiaMode {
 	/** Current version */
 	private static final int CURRENT_VERSION = 1;
 
@@ -77,9 +77,6 @@ public class GradeManiaMode extends AbstractMode {
 	/** GMI need to takeLV999When reaching theTime */
 	private static final int GM_999_TIME_REQUIRE = 48600;
 
-	/** Number of entries in rankings */
-	private static final int RANKING_MAX = 10;
-
 	/** Number of sections */
 	private static final int SECTION_MAX = 10;
 
@@ -128,24 +125,6 @@ public class GradeManiaMode extends AbstractMode {
 	/** Illuminate the display remaining dan frame count */
 	private int gradeflash;
 
-	/** Section Time */
-	private int[] sectiontime;
-
-	/** New record came outSection Thetrue */
-	private boolean[] sectionIsNewRecord;
-
-	/** SomewhereSection When I put out a new record intrue */
-	private boolean sectionAnyNewRecord;
-
-	/** Cleared Section count */
-	private int sectionscomp;
-
-	/** Average Section Time */
-	private int sectionavgtime;
-
-	/** Section TimeShowing record iftrue */
-	private boolean isShowBestSectionTime;
-
 	/** Level at start */
 	private IntegerMenuItem startlevel;
 
@@ -166,21 +145,6 @@ public class GradeManiaMode extends AbstractMode {
 
 	/** Version */
 	private int version;
-
-	/** Current round's ranking rank */
-	private int rankingRank;
-
-	/** Rankings' Dan */
-	private int[] rankingGrade;
-
-	/** Rankings'  level */
-	private int[] rankingLevel;
-
-	/** Rankings' times */
-	private int[] rankingTime;
-
-	/** Section TimeRecord */
-	private int[] bestSectionTime;
 
 	public GradeManiaMode() {
 		propName = "grademania";
@@ -747,31 +711,6 @@ public class GradeManiaMode extends AbstractMode {
 						"PIER GRADE", String.format("%10s", tablePier21GradeName[pierRank]));
 			}
 		}
-	}
-
-	/*
-	 * Processing of the results screen
-	 */
-	@Override
-	public boolean onResult(GameEngine engine, int playerID) {
-		// Page switching
-		if(engine.ctrl.isMenuRepeatKey(Controller.BUTTON_UP)) {
-			engine.statc[1]--;
-			if(engine.statc[1] < 0) engine.statc[1] = 2;
-			engine.playSE("change");
-		}
-		if(engine.ctrl.isMenuRepeatKey(Controller.BUTTON_DOWN)) {
-			engine.statc[1]++;
-			if(engine.statc[1] > 2) engine.statc[1] = 0;
-			engine.playSE("change");
-		}
-		//  section time displaySwitching
-		if(engine.ctrl.isPush(Controller.BUTTON_F)) {
-			engine.playSE("change");
-			isShowBestSectionTime = !isShowBestSectionTime;
-		}
-
-		return false;
 	}
 
 	/*

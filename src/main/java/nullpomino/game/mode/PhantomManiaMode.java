@@ -36,9 +36,6 @@ public class PhantomManiaMode extends AbstractDeathMode {
 	/** Ending time limit */
 	private static final int ROLLTIMELIMIT = 1982;
 
-	/** Number of hiscore records */
-	private static final int RANKING_MAX = 10;
-
 	/** Level 300 time limit */
 	private static final int LV300TORIKAN = 8880;
 
@@ -94,21 +91,6 @@ public class PhantomManiaMode extends AbstractDeathMode {
 	/** Current BGM */
 	private int bgmlv;
 
-	/** Section Time */
-	private int[] sectiontime;
-
-	/** This will be true if the player achieves new section time record in specific section */
-	private boolean[] sectionIsNewRecord;
-
-	/** Amount of sections completed */
-	private int sectionscomp;
-
-	/** Average section time */
-	private int sectionavgtime;
-
-	/** Current section time */
-	private int sectionlasttime;
-
 	/** Number of 4-Line clears in current section */
 	private int sectionfourline;
 
@@ -117,9 +99,6 @@ public class PhantomManiaMode extends AbstractDeathMode {
 
 	/** AC medal (0:None, 1:Bronze, 2:Silver, 3:Gold) */
 	private int medalAC;
-
-	/** ST medal */
-	private int medalST;
 
 	/** SK medal */
 	private int medalSK;
@@ -139,9 +118,6 @@ public class PhantomManiaMode extends AbstractDeathMode {
 	/** Total rotations */
 	private int rotateCount;
 
-	/** false:Leaderboard, true:Section time record (Push F in settings screen to flip it) */
-	private boolean isShowBestSectionTime;
-
 	/** Selected start level */
 	private IntegerMenuItem startlevel;
 
@@ -156,24 +132,6 @@ public class PhantomManiaMode extends AbstractDeathMode {
 
 	/** Version of this mode */
 	private int version;
-
-	/** Your place on leaderboard (-1: out of rank) */
-	private int rankingRank;
-
-	/** Grade records */
-	private int[] rankingGrade;
-
-	/** Level records */
-	private int[] rankingLevel;
-
-	/** Time records */
-	private int[] rankingTime;
-
-	/** Roll-Cleared records */
-	private int[] rankingRollclear;
-
-	/** Best section time records */
-	private int[] bestSectionTime;
 
 	public PhantomManiaMode()
 	{
@@ -922,31 +880,6 @@ public class PhantomManiaMode extends AbstractDeathMode {
 			drawResultStats(engine, playerID, receiver, 6, EventReceiver.COLOR_BLUE,
 					Statistic.LPM, Statistic.SPM, Statistic.PIECE, Statistic.PPS);
 		}
-	}
-
-	/**
-	 * Additional routine for game result screen
-	 */
-	@Override
-	public boolean onResult(GameEngine engine, int playerID) {
-		// Page change
-		if(engine.ctrl.isMenuRepeatKey(Controller.BUTTON_UP)) {
-			engine.statc[1]--;
-			if(engine.statc[1] < 0) engine.statc[1] = 2;
-			engine.playSE("change");
-		}
-		if(engine.ctrl.isMenuRepeatKey(Controller.BUTTON_DOWN)) {
-			engine.statc[1]++;
-			if(engine.statc[1] > 2) engine.statc[1] = 0;
-			engine.playSE("change");
-		}
-		// Flip Leaderboard/Best Section Time Records
-		if(engine.ctrl.isPush(Controller.BUTTON_F)) {
-			engine.playSE("change");
-			isShowBestSectionTime = !isShowBestSectionTime;
-		}
-
-		return false;
 	}
 
 	/**

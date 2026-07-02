@@ -11,7 +11,7 @@ import nullpomino.util.GeneralUtil;
 /**
  * SCORE ATTACK mode (Original from NullpoUE build 121909 by Zircean)
  */
-public class ScoreAttackMode extends AbstractMode {
+public class ScoreAttackMode extends AbstractManiaMode {
 	/** Current version */
 	private static final int CURRENT_VERSION = 0;
 
@@ -29,9 +29,6 @@ public class ScoreAttackMode extends AbstractMode {
 
 	/** Ending time limit */
 	private static final int ROLLTIMELIMIT = 1956;
-
-	/** Number of hiscore records */
-	private static final int RANKING_MAX = 10;
 
 	/** Secret grade names */
 	private static final String[] tableSecretGradeName =
@@ -81,24 +78,6 @@ public class ScoreAttackMode extends AbstractMode {
 	/** Current BGM number */
 	private int bgmlv;
 
-	/** Section Time */
-	private int[] sectiontime;
-
-	/** This will be true if the player achieves new section time record in specific section */
-	private boolean[] sectionIsNewRecord;
-
-	/** This will be true if the player achieves new section time record somewhere */
-	private boolean sectionAnyNewRecord;
-
-	/** Amount of sections completed */
-	private int sectionscomp;
-
-	/** Average section time */
-	private int sectionavgtime;
-
-	/** false:Leaderboard, true:Section time record (Push F in settings screen to flip it) */
-	private boolean isShowBestSectionTime;
-
 	/** Selected start level */
 	private int startlevel;
 
@@ -117,20 +96,8 @@ public class ScoreAttackMode extends AbstractMode {
 	/** Version of this mode */
 	private int version;
 
-	/** Your place on leaderboard (-1: out of rank) */
-	private int rankingRank;
-
 	/** Score records */
 	private int[] rankingScore;
-
-	/** Level records */
-	private int[] rankingLevel;
-
-	/** Time records */
-	private int[] rankingTime;
-
-	/** Best section time records */
-	private int[] bestSectionTime;
 
 	/**
 	 * Returns the name of this mode
@@ -677,31 +644,6 @@ public class ScoreAttackMode extends AbstractMode {
 			drawResultStats(engine, playerID, receiver, 2, EventReceiver.COLOR_BLUE,
 					Statistic.LPM, Statistic.SPM, Statistic.PIECE, Statistic.PPS);
 		}
-	}
-
-	/**
-	 * Additional routine for game result screen
-	 */
-	@Override
-	public boolean onResult(GameEngine engine, int playerID) {
-		// Page change
-		if(engine.ctrl.isMenuRepeatKey(Controller.BUTTON_UP)) {
-			engine.statc[1]--;
-			if(engine.statc[1] < 0) engine.statc[1] = 2;
-			engine.playSE("change");
-		}
-		if(engine.ctrl.isMenuRepeatKey(Controller.BUTTON_DOWN)) {
-			engine.statc[1]++;
-			if(engine.statc[1] > 2) engine.statc[1] = 0;
-			engine.playSE("change");
-		}
-		// Flip Leaderboard/Best Section Time Records
-		if(engine.ctrl.isPush(Controller.BUTTON_F)) {
-			engine.playSE("change");
-			isShowBestSectionTime = !isShowBestSectionTime;
-		}
-
-		return false;
 	}
 
 	/**

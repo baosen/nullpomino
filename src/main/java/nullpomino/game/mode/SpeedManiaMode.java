@@ -35,9 +35,6 @@ public class SpeedManiaMode extends AbstractDeathMode {
 	/** LV999 roll time */
 	private static final int ROLLTIMELIMIT = 1982;
 
-	/** Number of entries in rankings */
-	private static final int RANKING_MAX = 10;
-
 	/** Number of sections */
 	private static final int SECTION_MAX = 10;
 
@@ -77,26 +74,8 @@ public class SpeedManiaMode extends AbstractDeathMode {
 	/** Dan back */
 	private int secretGrade;
 
-	/** Section Time */
-	private int[] sectiontime;
-
-	/** New record came outSection Thetrue */
-	private boolean[] sectionIsNewRecord;
-
-	/** Cleared Section count */
-	private int sectionscomp;
-
-	/** Average Section Time */
-	private int sectionavgtime;
-
-	/** PreviousSection Time */
-	private int sectionlasttime;
-
 	/** AC medal State */
 	private int medalAC;
-
-	/** ST medal State */
-	private int medalST;
 
 	/** SK medal State */
 	private int medalSK;
@@ -116,9 +95,6 @@ public class SpeedManiaMode extends AbstractDeathMode {
 	/** rotationOf total count (Maximum4Incremented by one) */
 	private int rotateCount;
 
-	/** Section TimeShowing record iftrue */
-	private boolean isShowBestSectionTime;
-
 	/** Level at start */
 	private IntegerMenuItem startlevel;
 
@@ -136,21 +112,6 @@ public class SpeedManiaMode extends AbstractDeathMode {
 
 	/** Version */
 	private int version;
-
-	/** Current round's ranking rank */
-	private int rankingRank;
-
-	/** Rankings' Dan */
-	private int[] rankingGrade;
-
-	/** Rankings'  level */
-	private int[] rankingLevel;
-
-	/** Rankings' times */
-	private int[] rankingTime;
-
-	/** Section TimeRecord */
-	private int[] bestSectionTime;
 
 	public SpeedManiaMode() {
 		propName = "speedmania";
@@ -891,31 +852,6 @@ public class SpeedManiaMode extends AbstractDeathMode {
 			drawResultStats(engine, playerID, receiver, 6, EventReceiver.COLOR_BLUE,
 					Statistic.LPM, Statistic.SPM, Statistic.PIECE, Statistic.PPS);
 		}
-	}
-
-	/*
-	 * Processing of the results screen
-	 */
-	@Override
-	public boolean onResult(GameEngine engine, int playerID) {
-		// Page switching
-		if(engine.ctrl.isMenuRepeatKey(Controller.BUTTON_UP)) {
-			engine.statc[1]--;
-			if(engine.statc[1] < 0) engine.statc[1] = 2;
-			engine.playSE("change");
-		}
-		if(engine.ctrl.isMenuRepeatKey(Controller.BUTTON_DOWN)) {
-			engine.statc[1]++;
-			if(engine.statc[1] > 2) engine.statc[1] = 0;
-			engine.playSE("change");
-		}
-		//  section time displaySwitching
-		if(engine.ctrl.isPush(Controller.BUTTON_F)) {
-			engine.playSE("change");
-			isShowBestSectionTime = !isShowBestSectionTime;
-		}
-
-		return false;
 	}
 
 	/*

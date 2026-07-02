@@ -177,20 +177,27 @@ class GradeManiaModeTest {
 		return manager.engine[0];
 	}
 
+	private static Field findField(Class<?> cls, String name) throws NoSuchFieldException {
+		for (Class<?> c = cls; c != null; c = c.getSuperclass()) {
+			try { return c.getDeclaredField(name); } catch (NoSuchFieldException e) { /* try super */ }
+		}
+		throw new NoSuchFieldException(name);
+	}
+
 	private static int readInt(GradeManiaMode mode, String name) throws Exception {
-		Field f = GradeManiaMode.class.getDeclaredField(name);
+		Field f = findField(GradeManiaMode.class, name);
 		f.setAccessible(true);
 		return f.getInt(mode);
 	}
 
 	private static boolean readBoolean(GradeManiaMode mode, String name) throws Exception {
-		Field f = GradeManiaMode.class.getDeclaredField(name);
+		Field f = findField(GradeManiaMode.class, name);
 		f.setAccessible(true);
 		return f.getBoolean(mode);
 	}
 
 	private static Object readField(GradeManiaMode mode, String name) throws Exception {
-		Field f = GradeManiaMode.class.getDeclaredField(name);
+		Field f = findField(GradeManiaMode.class, name);
 		f.setAccessible(true);
 		return f.get(mode);
 	}
