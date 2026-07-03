@@ -27,6 +27,6 @@ Java sources under `src/main/java/nullpomino/tool/`:
 - `./ruleeditor` — edit game rulesets
 - `./sequencer` — inspect replay piece sequences (by Zircean)
 - `./musiclisteditor` — configure BGM files
-- `./netserver` — run a netplay server
-- `./netadmin` — manage a running NetServer
 - `./airankstool` — generate a Ranks AI data file
+
+Netplay is peer-to-peer and needs no server — see [NETPLAY.md](NETPLAY.md).
