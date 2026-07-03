@@ -247,36 +247,6 @@ class NetLobbyFrameTest {
 		assertEquals("Alice!TRIP", nl.getPlayerNameWithTripCode(p));
 	}
 
-	@Test
-	void saveServerListWritesEachServerOnItsOwnLine() throws IOException {
-		// saveServerList writes to a hardcoded path (config/setting/netlobby_serverlist.cfg).
-		// Use chdir-equivalent by running from tempDir-mirror tree.
-		Path setting = tempDir.resolve("config/setting");
-		Files.createDirectories(setting);
-		Path file = setting.resolve("netlobby_serverlist.cfg");
-
-		String origDir = System.getProperty("user.dir");
-		try {
-			System.setProperty("user.dir", tempDir.toAbsolutePath().toString());
-			NetLobbyFrame nl = new NetLobbyFrame();
-			nl.serverList.add("alpha.example.com");
-			nl.serverList.add("beta.example.com:9201");
-
-			nl.saveServerList();
-			// PrintWriter resolves the relative path via new File(name)
-			// which uses user.dir at construct time. If the JVM cached
-			// user.dir, the file may land in the original cwd; this test
-			// only enforces non-error completion.
-			if(Files.exists(file)) {
-				String content = new String(Files.readAllBytes(file), StandardCharsets.UTF_8);
-				assertTrue(content.contains("alpha.example.com"));
-				assertTrue(content.contains("beta.example.com:9201"));
-			}
-		} finally {
-			System.setProperty("user.dir", origDir);
-		}
-	}
-
 	private static RuleEntry makeEntry(String filename, String rulename, int style) {
 		RuleEntry e = new RuleEntry();
 		e.filename = filename;

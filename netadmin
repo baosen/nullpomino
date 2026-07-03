@@ -1,4 +1,0 @@
-#!/bin/sh
-cd "$(dirname "$0")"
-bazel build //:NetAdmin_deploy.jar || exit $?
-java -jar bazel-bin/NetAdmin_deploy.jar "$@"

@@ -39,8 +39,6 @@ public class StateTitleSDL extends DummyMenuChooseStateSDL {
 	public void enter() {
 		// Update title bar
 		SDL3.INSTANCE.SDL_SetWindowTitle(NullpoMinoSDL.window, "NullpoMino version" + GameManager.getVersionString());
-		// Observer start
-		NullpoMinoSDL.startObserverClient();
 		// Call GC
 		System.gc();
 

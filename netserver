@@ -1,4 +1,0 @@
-#!/bin/sh
-cd "$(dirname "$0")"
-bazel build //:NetServer_deploy.jar || exit $?
-java -jar bazel-bin/NetServer_deploy.jar "$@"

@@ -108,9 +108,6 @@ public class NetLobbyFrame implements NetMessageListener {
 	/** Set to true by {@code dispatchMessage} whenever a new mpranking response arrives. */
 	public volatile boolean mpRankingDirty;
 
-	/** Server list for the server-select screen. Edited via {@link #saveServerList()}. */
-	public final LinkedList<String> serverList = new LinkedList<String>();
-
 	/** Current high-level lobby mode — read by SDL states to enable/disable widgets. */
 	public int lobbyMode = LOBBYMODE_DISCONNECTED;
 
@@ -130,7 +127,7 @@ public class NetLobbyFrame implements NetMessageListener {
 	public volatile boolean presetsDirty;
 
 	/**
-	 * Wall-clock time of the most recent {@link #connectToServer} call.
+	 * Wall-clock time of the most recent {@link #connectToMesh} call.
 	 * States that guard on {@code netPlayerClient.isConnected()} honour a short
 	 * grace window after this timestamp so mid-flight reconnects (e.g. /name
 	 * command) don't bounce the user back to server-select while the socket
@@ -143,7 +140,7 @@ public class NetLobbyFrame implements NetMessageListener {
 
 	/**
 	 * Raw (un-hashed) form of our current player name — whatever the user typed,
-	 * including any {@code #tripkey} suffix. Seeded by {@link #connectToServer}
+	 * including any {@code #tripkey} suffix. Seeded by {@link #connectToMesh}
 	 * and updated on our own {@code changename} broadcast. Used to persist the
 	 * original trip key to config instead of the server's hashed form so that
 	 * next-session login re-derives the same tripcode.
@@ -180,7 +177,6 @@ public class NetLobbyFrame implements NetMessageListener {
 
 	public CustomProperties propConfig;
 	public CustomProperties propGlobal;
-	public CustomProperties propObserver;
 	protected CustomProperties propDefaultModeDesc;
 	protected CustomProperties propModeDesc;
 	protected CustomProperties propLangDefault;
@@ -199,7 +195,6 @@ public class NetLobbyFrame implements NetMessageListener {
 	public void init() {
 		propConfig = CustomProperties.loadFromFileOrEmpty("config/setting/netlobby.cfg");
 		propGlobal = CustomProperties.loadFromFileOrEmpty("config/setting/global.cfg");
-		propObserver = CustomProperties.loadFromFileOrEmpty("config/setting/netobserver.cfg");
 		propDefaultModeDesc = CustomProperties.loadFromFileOrEmpty("config/lang/modedesc_default.properties");
 		propModeDesc = CustomProperties.loadFromFileOrEmpty(
 				"config/lang/modedesc_" + Locale.getDefault().getCountry() + ".properties");
@@ -215,9 +210,6 @@ public class NetLobbyFrame implements NetMessageListener {
 		String[] ruleFiles = getRuleFileList();
 		if(ruleFiles != null) createRuleEntries(ruleFiles);
 		else log.error("Rule file directory (config/rule) not found");
-
-		// Server list — prefer the user-edited file, fall back to the bundled default
-		loadServerList();
 
 		// Fire init callbacks
 		for(NetLobbyListener l : listeners) if(l != null) l.netlobbyOnInit(this);
@@ -671,29 +663,9 @@ public class NetLobbyFrame implements NetMessageListener {
 	// ---------------- Actions ----------------
 
 	/**
-	 * Open a player connection.  The caller provides the server host:port and the
-	 * displayed name/team.  Starts a background reader thread on {@link NetPlayerClient}.
-	 */
-	public void connectToServer(String playerName, String playerTeam, String host, int port) {
-		propConfig.setProperty("serverselect.txtfldPlayerName.text", playerName);
-		propConfig.setProperty("serverselect.txtfldPlayerTeam.text", playerTeam);
-		lastRawOwnName = (playerName == null) ? "" : playerName;
-		pendingOwnRaw = null;
-
-		netPlayerClient = new NetPlayerClient(host, port, playerName, playerTeam == null ? "" : playerTeam.trim());
-		netPlayerClient.setDaemon(true);
-		netPlayerClient.addListener(this);
-		netPlayerClient.start();
-		lastConnectAt = System.currentTimeMillis();
-
-		chatLogLobby.clear();
-		roomList.clear();
-	}
-
-	/**
-	 * Open a player connection over a P2P mesh session instead of a server
-	 * socket. Same session setup as {@link #connectToServer}, but the client
-	 * is the {@link NetMeshPlayerClient} seam attached to the given endpoint.
+	 * Open a player connection over a P2P mesh session: persists the
+	 * name/team, attaches the {@link NetMeshPlayerClient} seam to the given
+	 * endpoint, and resets the chat/room state for the new session.
 	 */
 	public void connectToMesh(String playerName, String playerTeam, MeshEndpoint mesh) {
 		propConfig.setProperty("serverselect.txtfldPlayerName.text", playerName);
@@ -937,45 +909,6 @@ public class NetLobbyFrame implements NetMessageListener {
 			propGlobal.storeToFile("config/setting/global.cfg", "NullpoMino Global Config");
 		} catch(IOException e) {
 			log.warn("Failed to save global config", e);
-		}
-	}
-
-	// ---------------- Server list ----------------
-
-	public void loadServerList() {
-		serverList.clear();
-		String primary = "config/setting/netlobby_serverlist.cfg";
-		String fallback = GameManager.isDevBuild()
-				? "config/list/netlobby_serverlist_default_dev.lst"
-				: "config/list/netlobby_serverlist_default.lst";
-		String devPrimary = "config/setting/netlobby_serverlist_dev.cfg";
-
-		String src = GameManager.isDevBuild() && new File(devPrimary).exists() ? devPrimary
-				: (new File(primary).exists() ? primary : fallback);
-
-		BufferedReader br = null;
-		try {
-			br = new BufferedReader(new FileReader(src));
-			String line;
-			while((line = br.readLine()) != null) {
-				line = line.trim();
-				if(line.length() > 0 && !line.startsWith("#")) serverList.add(line);
-			}
-		} catch(IOException ignore) {
-		} finally {
-			if(br != null) try { br.close(); } catch(IOException ignore2) {}
-		}
-	}
-
-	public void saveServerList() {
-		PrintWriter pw = null;
-		try {
-			pw = new PrintWriter("config/setting/netlobby_serverlist.cfg");
-			for(String s : serverList) pw.println(s);
-		} catch(IOException e) {
-			log.warn("Failed to save server list", e);
-		} finally {
-			if(pw != null) pw.close();
 		}
 	}
 

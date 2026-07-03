@@ -87,17 +87,6 @@ java_library(
     ],
 )
 
-java_library(
-    name = "tool_netadmin",
-    srcs = glob(["nullpomino/tool/netadmin/*.java"]),
-    javacopts = JAVACOPTS,
-    visibility = ["//visibility:public"],
-    deps = [
-        ":core",
-        SLF4J,
-    ],
-)
-
 # Umbrella target preserving the historical :nullpomino label so existing
 # consumers (tests, downstream BUILD files) keep working unchanged.
 java_library(
@@ -108,7 +97,6 @@ java_library(
         ":sdl_binding",
         ":swing_tool_util",
         ":tool_musiclisteditor",
-        ":tool_netadmin",
         ":tool_ruleeditor",
         ":tool_sequencer",
     ],

@@ -27,13 +27,15 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * LAN discovery for player-hosted netplay servers.
- * A hosting client broadcasts a small UDP announce packet at a fixed interval;
- * clients on the server-select screen listen for these packets and show the
- * discovered hosts alongside the saved server list.
+ * LAN discovery for P2P mesh sessions.
+ * Every peer of a joinable session broadcasts a small UDP announce packet at
+ * a fixed interval; the session-select screen listens and shows discovered
+ * sessions (deduplicated per session, since every peer announces).
  *
  * <p>Packet format (tab-delimited, UTF-8):
- * {@code NullpoLAN\t[PROTOCOL_VERSION]\t[tcpPort]\t[urlEncode(playerName)]\t[versionMajor]}
+ * {@code NullpoLAN\t2\t[tcpPort]\t[nameEnc]\t[versionMajor]\tM\t[sessionId]\t[lobbyNameEnc]\t[players]}
+ * <p>Version-1 (legacy hosted-server) announces still decode as non-mesh
+ * entries so stale clients on the LAN cause no parse noise; the UI ignores them.
  */
 public class NetLanDiscovery {
 	/** Log */
@@ -61,18 +63,6 @@ public class NetLanDiscovery {
 	public static final int ENTRY_TTL_MS = 5000;
 
 	private NetLanDiscovery() {}
-
-	/**
-	 * Encode an announce packet
-	 * @param tcpPort Port the game server listens on
-	 * @param playerName Name of the hosting player
-	 * @return Packet payload
-	 */
-	public static byte[] encodeAnnounce(int tcpPort, String playerName) {
-		return NetUtil.stringToBytes(
-			MAGIC + "\t" + PROTOCOL_VERSION + "\t" + tcpPort + "\t" +
-			NetUtil.urlEncode(playerName) + "\t" + GameManager.getVersionMajor());
-	}
 
 	/**
 	 * Encode a v2 announce packet for a P2P mesh session
@@ -224,11 +214,6 @@ public class NetLanDiscovery {
 		private volatile boolean shutdownRequested = false;
 		private volatile DatagramSocket socket;
 
-		public Announcer(int tcpPort, String playerName) {
-			this(() -> encodeAnnounce(tcpPort, playerName));
-		}
-
-		/** Announce a dynamic payload (e.g. mesh sessions with changing player counts) */
 		public Announcer(PayloadSupplier payloadSupplier) {
 			super("LanAnnouncer");
 			setDaemon(true);

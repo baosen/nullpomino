@@ -19,13 +19,17 @@ import org.junit.jupiter.api.Test;
 class NetLanDiscoveryTest {
 
     @Test
-    void announceRoundTripPreservesPortAndName() {
-        byte[] data = NetLanDiscovery.encodeAnnounce(9200, "Player One\tテスト");
+    void legacyV1AnnounceStillDecodes() {
+        // No code emits v1 anymore, but stale clients on the LAN might;
+        // their packets must decode cleanly (the UI then ignores non-mesh rows)
+        byte[] data = ("NullpoLAN\t1\t9200\t" + NetUtil.urlEncode("Player One\tテスト") + "\t7.5")
+                .getBytes(StandardCharsets.UTF_8);
 
         NetLanDiscovery.Announce announce =
                 NetLanDiscovery.decodeAnnounce(data, data.length, "192.168.1.10");
 
         assertNotNull(announce);
+        assertFalse(announce.mesh);
         assertEquals("192.168.1.10", announce.address);
         assertEquals(9200, announce.port);
         assertEquals("Player One\tテスト", announce.playerName);
@@ -89,7 +93,7 @@ class NetLanDiscoveryTest {
     }
 
     private static void sendAnnounce(int listenerPort, int tcpPort, String name) throws Exception {
-        byte[] data = NetLanDiscovery.encodeAnnounce(tcpPort, name);
+        byte[] data = NetLanDiscovery.encodeMeshAnnounce(tcpPort, name, "testsession", "Lobby", 1);
         try (DatagramSocket sender = new DatagramSocket()) {
             sender.send(new DatagramPacket(data, data.length,
                     InetAddress.getByName("127.0.0.1"), listenerPort));

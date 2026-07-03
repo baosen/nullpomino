@@ -35,7 +35,7 @@ class NetLanDiscoveryMeshTest {
 
     @Test
     void serverAnnounceStillDecodesAsNonMesh() {
-        byte[] data = NetLanDiscovery.encodeAnnounce(9200, "Server Guy");
+        byte[] data = "NullpoLAN\t1\t9200\tServer+Guy\t7.5".getBytes(StandardCharsets.UTF_8);
 
         NetLanDiscovery.Announce a = NetLanDiscovery.decodeAnnounce(data, data.length, "10.0.0.2");
 

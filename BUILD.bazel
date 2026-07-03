@@ -16,18 +16,6 @@ java_binary(
 )
 
 java_binary(
-    name = "NetServer",
-    main_class = "nullpomino.game.net.NetServer",
-    runtime_deps = ["//src/main/java:core"],
-)
-
-java_binary(
-    name = "NetAdmin",
-    main_class = "nullpomino.tool.netadmin.NetAdmin",
-    runtime_deps = ["//src/main/java:tool_netadmin"],
-)
-
-java_binary(
     name = "AIRanksTool",
     main_class = "nullpomino.tool.airankstool.AIRanksTool",
     runtime_deps = ["//src/main/java:core"],

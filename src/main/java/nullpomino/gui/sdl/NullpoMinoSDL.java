@@ -15,8 +15,6 @@ import java.util.Locale;
 import com.sun.jna.Pointer;
 import com.sun.jna.ptr.FloatByReference;
 
-import nullpomino.game.net.NetObserverClient;
-import nullpomino.game.net.NetServerRunner;
 import nullpomino.game.net.mesh.MeshSession;
 import nullpomino.gui.GameKeyDummy;
 import nullpomino.gui.net.NetLobbyFrame;
@@ -83,9 +81,6 @@ public class NullpoMinoSDL {
 
 	/** Music list property file */
 	public static CustomProperties propMusic;
-
-	/** Observer property file */
-	public static CustomProperties propObserver;
 
 	/** Default language file */
 	public static CustomProperties propLangDefault;
@@ -227,12 +222,6 @@ public class NullpoMinoSDL {
 
 	/** Maximum FPS */
 	public static int maxFPS;
-
-	/** Observer client */
-	public static NetObserverClient netObserverClient;
-
-	/** Embedded netplay server when this client is hosting a game, null otherwise */
-	public static NetServerRunner embeddedServer;
 
 	/** P2P mesh session while one is active, null otherwise */
 	public static MeshSession meshSession;
@@ -645,16 +634,6 @@ public class NullpoMinoSDL {
 			// FPS drawing
 			if(showfps) NormalFontSDL.printFont(0, 480 - 16, df.format(actualFPS), NormalFontSDL.COLOR_BLUE, 1.0f);
 
-			// Observer client
-			if((netObserverClient != null) && netObserverClient.isConnected()) {
-				int fontcolor = NormalFontSDL.COLOR_BLUE;
-				if(netObserverClient.getObserverCount() > 1) fontcolor = NormalFontSDL.COLOR_GREEN;
-				if(netObserverClient.getObserverCount() > 0 && netObserverClient.getPlayerCount() > 0) fontcolor = NormalFontSDL.COLOR_RED;
-				String strObserverInfo = String.format("%d/%d", netObserverClient.getObserverCount(), netObserverClient.getPlayerCount());
-				String strObserverString = String.format("%40s", strObserverInfo);
-				NormalFontSDL.printFont(0, 480 - 16, strObserverString, fontcolor);
-			}
-
 			// Special keys
 			if(enableSpecialKeys) {
 				if(GameKeySDL.gamekey[0].isPushKey(GameKeySDL.BUTTON_SCREENSHOT) || GameKeySDL.gamekey[1].isPushKey(GameKeySDL.BUTTON_SCREENSHOT))
@@ -726,8 +705,6 @@ public class NullpoMinoSDL {
 
 		try {
 			stopMeshSession();
-			stopEmbeddedServer();
-			stopObserverClient();
 			for(int i = 0; i < joystickMax; i++) {
 				if(joystick[i] != null) {
 					SDL3.INSTANCE.SDL_CloseJoystick(joystick[i]);
@@ -761,7 +738,6 @@ public class NullpoMinoSDL {
 	 */
 	public static void endNetplay() {
 		stopMeshSession();
-		stopEmbeddedServer();
 		if(netLobby != null) {
 			try { netLobby.shutdown(); }
 			catch(Throwable t) { log.warn("netLobby shutdown failed", t); }
@@ -1156,26 +1132,6 @@ public class NullpoMinoSDL {
 	}
 
 	/**
-	 * Start observer client
-	 */
-	public static void startObserverClient() {
-		log.debug("startObserverClient called");
-
-		propObserver = CustomProperties.loadFromFileOrEmpty("config/setting/netobserver.cfg");
-
-		if(propObserver.getProperty("observer.enable", false) == false) return;
-		if((netObserverClient != null) && netObserverClient.isConnected()) return;
-
-		String host = propObserver.getProperty("observer.host", "");
-		int port = propObserver.getProperty("observer.port", NetObserverClient.DEFAULT_PORT);
-
-		if((host.length() > 0) && (port > 0)) {
-			netObserverClient = new NetObserverClient(host, port);
-			netObserverClient.start();
-		}
-	}
-
-	/**
 	 * Leave the P2P mesh session, if one is active
 	 */
 	public static void stopMeshSession() {
@@ -1191,36 +1147,4 @@ public class NullpoMinoSDL {
 		}
 	}
 
-	/**
-	 * Stop the embedded netplay server, if this client is hosting one
-	 */
-	public static void stopEmbeddedServer() {
-		log.debug("stopEmbeddedServer called");
-
-		if(embeddedServer != null) {
-			try {
-				embeddedServer.stop();
-			} catch (Throwable e) {
-				log.warn("embedded server stop failed", e);
-			}
-			embeddedServer = null;
-		}
-	}
-
-	/**
-	 * Stop observer client
-	 */
-	public static void stopObserverClient() {
-		log.debug("stopObserverClient called");
-
-		if(netObserverClient != null) {
-			if(netObserverClient.isConnected()) {
-				netObserverClient.send("disconnect\n");
-			}
-			netObserverClient.threadRunning = false;
-			netObserverClient.connectedFlag = false;
-			netObserverClient = null;
-		}
-		propObserver = null;
-	}
 }
