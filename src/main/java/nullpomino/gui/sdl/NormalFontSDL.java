@@ -103,6 +103,17 @@ public class NormalFontSDL {
 	}
 
 	/**
+	 * Reusable rect scratch space for {@link #printFont}. HUD labels and
+	 * values are redrawn character-by-character every frame; allocating a
+	 * fresh source/destination rect per glyph is cheap on a desktop JVM but
+	 * adds up to enough garbage under CheerpJ's GC to crash a running game.
+	 * Consumed synchronously by SDL_RenderTexture before the next glyph
+	 * reuses them, so sharing across calls on the single game thread is safe.
+	 */
+	private static final SDLStructs.SDL_FRect fontRectSrc = new SDLStructs.SDL_FRect();
+	private static final SDLStructs.SDL_FRect fontRectDst = new SDLStructs.SDL_FRect();
+
+	/**
 	 * Draws the string using bitmap font
 	 * @param fontX X-coordinate
 	 * @param fontY Y-coordinate
@@ -132,27 +143,29 @@ public class NormalFontSDL {
 				if(scale == 2.0f) {
 					int sx = ((stringChar - 32) % 32) * 32;
 					int sy = ((stringChar - 32) / 32) * 32 + fontColor * 96;
-					SDLStructs.SDL_FRect rectSrc = new SDLStructs.SDL_FRect(sx, sy, 32, 32);
-					SDLStructs.SDL_FRect rectDst = new SDLStructs.SDL_FRect(dx, dy, 32, 32);
-					SDL3.INSTANCE.SDL_RenderTexture(renderer, ResourceHolderSDL.imgFontBig, rectSrc, rectDst);
+					setFontRects(sx, sy, dx, dy, 32);
+					SDL3.INSTANCE.SDL_RenderTexture(renderer, ResourceHolderSDL.imgFontBig, fontRectSrc, fontRectDst);
 					dx = dx + 32;
 				} else if(scale == 1.0f) {
 					int sx = ((stringChar - 32) % 32) * 16;
 					int sy = ((stringChar - 32) / 32) * 16 + fontColor * 48;
-					SDLStructs.SDL_FRect rectSrc = new SDLStructs.SDL_FRect(sx, sy, 16, 16);
-					SDLStructs.SDL_FRect rectDst = new SDLStructs.SDL_FRect(dx, dy, 16, 16);
-					SDL3.INSTANCE.SDL_RenderTexture(renderer, ResourceHolderSDL.imgFont, rectSrc, rectDst);
+					setFontRects(sx, sy, dx, dy, 16);
+					SDL3.INSTANCE.SDL_RenderTexture(renderer, ResourceHolderSDL.imgFont, fontRectSrc, fontRectDst);
 					dx = dx + 16;
 				} else if(scale == 0.5f) {
 					int sx = ((stringChar - 32) % 32) * 8;
 					int sy = ((stringChar - 32) / 32) * 8 + fontColor * 24;
-					SDLStructs.SDL_FRect rectSrc = new SDLStructs.SDL_FRect(sx, sy, 8, 8);
-					SDLStructs.SDL_FRect rectDst = new SDLStructs.SDL_FRect(dx, dy, 8, 8);
-					SDL3.INSTANCE.SDL_RenderTexture(renderer, ResourceHolderSDL.imgFontSmall, rectSrc, rectDst);
+					setFontRects(sx, sy, dx, dy, 8);
+					SDL3.INSTANCE.SDL_RenderTexture(renderer, ResourceHolderSDL.imgFontSmall, fontRectSrc, fontRectDst);
 					dx = dx + 8;
 				}
 			}
 		}
+	}
+
+	private static void setFontRects(int sx, int sy, int dx, int dy, int size) {
+		fontRectSrc.x = sx; fontRectSrc.y = sy; fontRectSrc.w = size; fontRectSrc.h = size;
+		fontRectDst.x = dx; fontRectDst.y = dy; fontRectDst.w = size; fontRectDst.h = size;
 	}
 
 	public static void printFont(int fontX, int fontY, String fontStr, int fontColor) {

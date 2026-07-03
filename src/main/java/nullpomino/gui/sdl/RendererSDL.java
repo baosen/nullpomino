@@ -54,6 +54,21 @@ public class RendererSDL extends EventReceiver {
 	protected int lineeffectspeed;
 
 	/**
+	 * Reusable rect scratch space for {@link #drawBlock}. A filled Marathon
+	 * field draws hundreds of blocks per frame, each needing a source and
+	 * destination rect (plus up to four more pairs for sticky-skin corners);
+	 * allocating fresh rects for all of them every frame is cheap on a
+	 * desktop JVM but produces enough garbage under CheerpJ's GC to crash a
+	 * running game. The rects are fully overwritten and consumed
+	 * synchronously by {@link #renderTexture} before the next reuse, so
+	 * sharing them across calls on the single game thread is safe.
+	 */
+	private final SDLStructs.SDL_FRect blockRectSrc = new SDLStructs.SDL_FRect();
+	private final SDLStructs.SDL_FRect blockRectDst = new SDLStructs.SDL_FRect();
+	private final SDLStructs.SDL_FRect blockRectSrc2 = new SDLStructs.SDL_FRect();
+	private final SDLStructs.SDL_FRect blockRectDst2 = new SDLStructs.SDL_FRect();
+
+	/**
 	 * Constructor
 	 */
 	public RendererSDL() {
@@ -76,6 +91,10 @@ public class RendererSDL extends EventReceiver {
 	/** Helper: get the global renderer handle. */
 	private SdlRenderer renderer() {
 		return NullpoMinoSDL.renderer;
+	}
+
+	private static void setRect(SDLStructs.SDL_FRect rect, float x, float y, float w, float h) {
+		rect.x = x; rect.y = y; rect.w = w; rect.h = h;
 	}
 
 	/**
@@ -412,8 +431,8 @@ public class RendererSDL extends EventReceiver {
 		int imageHeight = getTextureHeight(img);
 		if((sy >= imageHeight) && (imageHeight != -1)) sy = 0;
 
-		SDLStructs.SDL_FRect rectSrc = new SDLStructs.SDL_FRect(sx, sy, size, size);
-		SDLStructs.SDL_FRect rectDst = new SDLStructs.SDL_FRect(x, y, size, size);
+		blockRectSrc.x = sx; blockRectSrc.y = sy; blockRectSrc.w = size; blockRectSrc.h = size;
+		blockRectDst.x = x; blockRectDst.y = y; blockRectDst.w = size; blockRectDst.h = size;
 
 		if(alpha < 1.0f) {
 			int alphalv = (int)(255 * alpha);
@@ -422,34 +441,31 @@ public class RendererSDL extends EventReceiver {
 			SDL3.setTextureAlpha(img, 255);
 		}
 
-		renderTexture(img, rectSrc, rectDst);
+		renderTexture(img, blockRectSrc, blockRectDst);
 
 		if(isSticky && !isSpecialBlocks) {
 			int d = 16 * size;
 			int h = (size/2);
 
-			SDLStructs.SDL_FRect rectDst2 = null;
-			SDLStructs.SDL_FRect rectSrc2 = null;
-
 			if( ((attr & Block.BLOCK_ATTRIBUTE_CONNECT_UP) != 0) && ((attr & Block.BLOCK_ATTRIBUTE_CONNECT_LEFT) != 0) ) {
-				rectDst2 = new SDLStructs.SDL_FRect(x, y, h, h);
-				rectSrc2 = new SDLStructs.SDL_FRect(d, sy, h, h);
-				renderTexture(img, rectSrc2, rectDst2);
+				setRect(blockRectDst2, x, y, h, h);
+				setRect(blockRectSrc2, d, sy, h, h);
+				renderTexture(img, blockRectSrc2, blockRectDst2);
 			}
 			if( ((attr & Block.BLOCK_ATTRIBUTE_CONNECT_UP) != 0) && ((attr & Block.BLOCK_ATTRIBUTE_CONNECT_RIGHT) != 0) ) {
-				rectDst2 = new SDLStructs.SDL_FRect(x + h, y, h, h);
-				rectSrc2 = new SDLStructs.SDL_FRect(d + h, sy, h, h);
-				renderTexture(img, rectSrc2, rectDst2);
+				setRect(blockRectDst2, x + h, y, h, h);
+				setRect(blockRectSrc2, d + h, sy, h, h);
+				renderTexture(img, blockRectSrc2, blockRectDst2);
 			}
 			if( ((attr & Block.BLOCK_ATTRIBUTE_CONNECT_DOWN) != 0) && ((attr & Block.BLOCK_ATTRIBUTE_CONNECT_LEFT) != 0) ) {
-				rectDst2 = new SDLStructs.SDL_FRect(x, y + h, h, h);
-				rectSrc2 = new SDLStructs.SDL_FRect(d, sy + h, h, h);
-				renderTexture(img, rectSrc2, rectDst2);
+				setRect(blockRectDst2, x, y + h, h, h);
+				setRect(blockRectSrc2, d, sy + h, h, h);
+				renderTexture(img, blockRectSrc2, blockRectDst2);
 			}
 			if( ((attr & Block.BLOCK_ATTRIBUTE_CONNECT_DOWN) != 0) && ((attr & Block.BLOCK_ATTRIBUTE_CONNECT_RIGHT) != 0) ) {
-				rectDst2 = new SDLStructs.SDL_FRect(x + h, y + h, h, h);
-				rectSrc2 = new SDLStructs.SDL_FRect(d + h, sy + h, h, h);
-				renderTexture(img, rectSrc2, rectDst2);
+				setRect(blockRectDst2, x + h, y + h, h, h);
+				setRect(blockRectSrc2, d + h, sy + h, h, h);
+				renderTexture(img, blockRectSrc2, blockRectDst2);
 			}
 		}
 
