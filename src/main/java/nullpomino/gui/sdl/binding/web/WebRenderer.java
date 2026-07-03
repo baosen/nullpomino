@@ -13,8 +13,26 @@ import nullpomino.gui.sdl.binding.SdlHandles.SdlRenderer;
 /**
  * Java2D implementation of the SDL renderer: a back buffer the game thread
  * draws into, and a front snapshot swapped on present for the EDT to paint.
+ *
+ * Block/background/font-glyph draws run into the hundreds per frame during
+ * gameplay (one texture draw per bitmap-font character alone), so every
+ * per-draw-call allocation here is multiplied by a large, fixed factor at
+ * 60 FPS. AlphaComposite instances and the opaque draw Color are therefore
+ * cached rather than allocated fresh on each call — under CheerpJ's WASM JIT
+ * the resulting GC churn was heavy enough to make Marathon gameplay crash.
  */
 final class WebRenderer implements SdlRenderer {
+
+	/** One AlphaComposite per possible alpha byte, indexed by value. */
+	private static final AlphaComposite[] ALPHA_COMPOSITES = buildAlphaComposites();
+
+	private static AlphaComposite[] buildAlphaComposites() {
+		AlphaComposite[] table = new AlphaComposite[256];
+		for(int i = 0; i < table.length; i++) {
+			table[i] = AlphaComposite.getInstance(AlphaComposite.SRC_OVER, i / 255f);
+		}
+		return table;
+	}
 
 	final WebWindow window;
 
@@ -27,8 +45,10 @@ final class WebRenderer implements SdlRenderer {
 
 	final Object frontLock = new Object();
 	volatile BufferedImage front;
+	private Graphics2D frontGraphics;
 
 	private Color drawColor = Color.BLACK;
+	private Color drawColorOpaque = Color.BLACK;
 	private int blendMode = SDLConstants.SDL_BLENDMODE_NONE;
 
 	WebRenderer(WebWindow window, int w, int h) {
@@ -50,12 +70,15 @@ final class WebRenderer implements SdlRenderer {
 		g.setRenderingHint(RenderingHints.KEY_INTERPOLATION,
 			RenderingHints.VALUE_INTERPOLATION_NEAREST_NEIGHBOR);
 		synchronized(frontLock) {
+			if(frontGraphics != null) frontGraphics.dispose();
 			front = new BufferedImage(w, h, BufferedImage.TYPE_INT_RGB);
+			frontGraphics = front.createGraphics();
 		}
 	}
 
 	void setDrawColor(int r, int gr, int b, int a) {
 		drawColor = new Color(r & 0xFF, gr & 0xFF, b & 0xFF, a & 0xFF);
+		drawColorOpaque = (a == 255) ? drawColor : new Color(r & 0xFF, gr & 0xFF, b & 0xFF);
 	}
 
 	void setBlendMode(int mode) {
@@ -64,7 +87,7 @@ final class WebRenderer implements SdlRenderer {
 
 	void clear() {
 		g.setComposite(AlphaComposite.Src);
-		g.setColor(new Color(drawColor.getRed(), drawColor.getGreen(), drawColor.getBlue()));
+		g.setColor(drawColorOpaque);
 		g.fillRect(0, 0, logicalW, logicalH);
 	}
 
@@ -93,7 +116,7 @@ final class WebRenderer implements SdlRenderer {
 		} else {
 			// BLENDMODE_NONE: overwrite, alpha ignored (buffer is opaque).
 			g.setComposite(AlphaComposite.Src);
-			g.setColor(new Color(drawColor.getRed(), drawColor.getGreen(), drawColor.getBlue()));
+			g.setColor(drawColorOpaque);
 		}
 	}
 
@@ -117,7 +140,7 @@ final class WebRenderer implements SdlRenderer {
 			dx2 = (int) (dst.x + dst.w); dy2 = (int) (dst.y + dst.h);
 		}
 
-		g.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, texture.alphaMod / 255f));
+		g.setComposite(ALPHA_COMPOSITES[texture.alphaMod & 0xFF]);
 		g.drawImage(img, dx1, dy1, dx2, dy2, sx1, sy1, sx2, sy2, null);
 	}
 
@@ -132,9 +155,7 @@ final class WebRenderer implements SdlRenderer {
 
 	void present() {
 		synchronized(frontLock) {
-			Graphics2D fg = front.createGraphics();
-			fg.drawImage(backBuffer, 0, 0, null);
-			fg.dispose();
+			frontGraphics.drawImage(backBuffer, 0, 0, null);
 		}
 		window.panel.repaint();
 	}
@@ -143,6 +164,12 @@ final class WebRenderer implements SdlRenderer {
 		if(g != null) {
 			g.dispose();
 			g = null;
+		}
+		synchronized(frontLock) {
+			if(frontGraphics != null) {
+				frontGraphics.dispose();
+				frontGraphics = null;
+			}
 		}
 		if(window.renderer == this) window.renderer = null;
 	}
