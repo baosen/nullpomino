@@ -1,6 +1,6 @@
 // SPDX-FileCopyrightText: 2010 NullNoname
 // SPDX-License-Identifier: BSD-3-Clause
-package nullpomino.game.net.mesh;
+package nullpomino.game.net.room;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -16,57 +16,57 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 /**
- * Round-trip tests for {@link MeshMirror}: a mirror fed through the real
+ * Round-trip tests for {@link RoomMirror}: a mirror fed through the real
  * frame codecs must reconstruct the authority state so exactly that a
  * successor authority adopted from it continues the game correctly.
  */
-class MeshMirrorTest {
+class RoomMirrorTest {
 
     /** Sink that feeds a mirror through the actual wire-frame codecs */
-    private final class LoopSink implements MeshAuthority.Sink {
+    private final class LoopSink implements RoomAuthority.Sink {
         long seq = 0;
         final List<String> broadcastLines = new ArrayList<String>();
 
         public void broadcast(int scope, String line, int exceptUid) {
             seq++;
             // Round-trip through the broadcast frame codec
-            MeshProtocol.Broadcast b = MeshProtocol.parseBroadcast(MeshProtocol.wrapBroadcast(seq, scope, line));
+            RoomProtocol.Broadcast b = RoomProtocol.parseBroadcast(RoomProtocol.wrapBroadcast(seq, scope, line));
             mirror.applyBroadcast(b.seq, b.scope, b.payload);
             broadcastLines.add(line);
         }
         public void direct(int uid, String line) {}
         public void ruleCache(int uid, String checksum, String data) {
-            String[] parts = MeshProtocol.buildSnapRule(uid, checksum, data).split("\t", -1);
+            String[] parts = RoomProtocol.buildSnapRule(uid, checksum, data).split("\t", -1);
             mirror.applySnapshot(parts);
         }
         public void roomRuleCache(int roomId, String data) {
-            mirror.applySnapshot(MeshProtocol.buildSnapRoomRule(roomId, data).split("\t", -1));
+            mirror.applySnapshot(RoomProtocol.buildSnapRoomRule(roomId, data).split("\t", -1));
         }
         public void mapCache(int roomId, String data) {
-            mirror.applySnapshot(MeshProtocol.buildSnapMap(roomId, data).split("\t", -1));
+            mirror.applySnapshot(RoomProtocol.buildSnapMap(roomId, data).split("\t", -1));
         }
         public void authUpdate() {
             seq++;
-            MeshProtocol.AuthGlobal g = MeshProtocol.parseAuthGlobal(
-                    MeshProtocol.buildAuthGlobal(seq, auth.getNextUid(), auth.getNextRoomId()).split("\t", -1));
+            RoomProtocol.AuthGlobal g = RoomProtocol.parseAuthGlobal(
+                    RoomProtocol.buildAuthGlobal(seq, auth.getNextUid(), auth.getNextRoomId()).split("\t", -1));
             mirror.applyAuthGlobal(g);
             for (NetRoomInfo room : auth.getRooms()) {
-                MeshProtocol.AuthRoom a = MeshProtocol.parseAuthRoom(
-                        MeshProtocol.buildAuthRoom(MeshAuthority.buildAuthRoom(seq, room)).split("\t", -1));
+                RoomProtocol.AuthRoom a = RoomProtocol.parseAuthRoom(
+                        RoomProtocol.buildAuthRoom(RoomAuthority.buildAuthRoom(seq, room)).split("\t", -1));
                 mirror.applyAuthRoom(a);
             }
         }
     }
 
-    private MeshMirror mirror;
-    private MeshAuthority auth;
+    private RoomMirror mirror;
+    private RoomAuthority auth;
     private LoopSink loopSink;
 
     @BeforeEach
     void setUp() {
-        mirror = new MeshMirror();
+        mirror = new RoomMirror();
         loopSink = new LoopSink();
-        auth = new MeshAuthority(loopSink, new Random(7));
+        auth = new RoomAuthority(loopSink, new Random(7));
     }
 
     private void admit(String name) {
@@ -120,8 +120,8 @@ class MeshMirrorTest {
         NetRoomInfo mirrorRoom = mirror.getRoom(0);
 
         // Compare the full non-derivable state via the frame builder
-        assertEquals(MeshProtocol.buildAuthRoom(MeshAuthority.buildAuthRoom(0, authRoom)),
-                MeshProtocol.buildAuthRoom(MeshAuthority.buildAuthRoom(0, mirrorRoom)));
+        assertEquals(RoomProtocol.buildAuthRoom(RoomAuthority.buildAuthRoom(0, authRoom)),
+                RoomProtocol.buildAuthRoom(RoomAuthority.buildAuthRoom(0, mirrorRoom)));
         assertTrue(mirrorRoom.playing);
         assertEquals(3, mirrorRoom.startPlayers);
         assertEquals(1, mirrorRoom.deadCount);
@@ -142,7 +142,7 @@ class MeshMirrorTest {
         // Arbiter (Alice, uid 0) vanishes: promote the mirror into a successor authority
         mirror.promote();
         final List<String> successorLines = new ArrayList<String>();
-        MeshAuthority successor = new MeshAuthority(new MeshAuthority.Sink() {
+        RoomAuthority successor = new RoomAuthority(new RoomAuthority.Sink() {
             public void broadcast(int scope, String line, int exceptUid) { successorLines.add(scope + "|" + line); }
             public void direct(int uid, String line) {}
             public void ruleCache(int uid, String checksum, String data) {}

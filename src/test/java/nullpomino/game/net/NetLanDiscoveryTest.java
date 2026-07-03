@@ -29,7 +29,7 @@ class NetLanDiscoveryTest {
                 NetLanDiscovery.decodeAnnounce(data, data.length, "192.168.1.10");
 
         assertNotNull(announce);
-        assertFalse(announce.mesh);
+        assertFalse(announce.room);
         assertEquals("192.168.1.10", announce.address);
         assertEquals(9200, announce.port);
         assertEquals("Player One\tテスト", announce.playerName);
@@ -93,7 +93,7 @@ class NetLanDiscoveryTest {
     }
 
     private static void sendAnnounce(int listenerPort, int tcpPort, String name) throws Exception {
-        byte[] data = NetLanDiscovery.encodeMeshAnnounce(tcpPort, name, "testsession", "Lobby", 1);
+        byte[] data = NetLanDiscovery.encodeRoomAnnounce(tcpPort, name, "testsession", "Lobby", 1);
         try (DatagramSocket sender = new DatagramSocket()) {
             sender.send(new DatagramPacket(data, data.length,
                     InetAddress.getByName("127.0.0.1"), listenerPort));

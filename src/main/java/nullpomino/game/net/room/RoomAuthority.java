@@ -1,6 +1,6 @@
 // SPDX-FileCopyrightText: 2010 NullNoname
 // SPDX-License-Identifier: BSD-3-Clause
-package nullpomino.game.net.mesh;
+package nullpomino.game.net.room;
 
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
@@ -21,7 +21,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * The room/seat/game state machine for a mesh session - a faithful port of
+ * The room/seat/game state machine for a room session - a faithful port of
  * NetServer's session logic (multi-room lobby, seats and FIFO queues, ready
  * and auto-start, shared-seed game start, death places, win detection, race
  * results, chat) over the same {@link NetRoomInfo}/{@link NetPlayerInfo}
@@ -30,15 +30,15 @@ import org.slf4j.LoggerFactory;
  * <p>Runs ONLY on the current arbiter peer, ONLY on the dispatcher thread.
  * All output goes through the {@link Sink} so the class is unit-testable
  * without sockets. Room-scoped lines carry their roomID as scope; lines every
- * client needs (playerupdate/roomupdate/...) are {@link MeshProtocol#SCOPE_GLOBAL}.
+ * client needs (playerupdate/roomupdate/...) are {@link RoomProtocol#SCOPE_GLOBAL}.
  *
  * <p>Differences from NetServer, by design: no rated presets, no bans, no
  * observers, no admin, no changename, no lobby-chat private messages, and the
- * same-IP rating restriction is dropped (mesh play is LAN-oriented).
+ * same-IP rating restriction is dropped (P2P play is LAN-oriented).
  */
-public class MeshAuthority {
+public class RoomAuthority {
 	/** Log */
-	private static final Logger log = LoggerFactory.getLogger(MeshAuthority.class);
+	private static final Logger log = LoggerFactory.getLogger(RoomAuthority.class);
 
 	/** Chat history caps (NetServer defaults) */
 	public static final int MAX_LOBBYCHAT_HISTORY = 10;
@@ -95,7 +95,7 @@ public class MeshAuthority {
 	/** Next member uid */
 	private int nextUid = 0;
 
-	public MeshAuthority(Sink sink, Random rand) {
+	public RoomAuthority(Sink sink, Random rand) {
 		this.sink = sink;
 		this.rand = rand;
 	}
@@ -108,7 +108,7 @@ public class MeshAuthority {
 	}
 
 	/**
-	 * Admit a member at mesh level (before their client logs in).
+	 * Admit a member at session level (before their client logs in).
 	 * Broadcasts {@code playernew}.
 	 * @param uid uid from {@link #reserveUid()} (or the welcome frame)
 	 * @param name Player name
@@ -135,7 +135,7 @@ public class MeshAuthority {
 		pInfo.seatID = -1;
 		pInfo.queueID = -1;
 		for(int i = 0; i < pInfo.rating.length; i++) {
-			pInfo.rating[i] = (i < ratings.length) ? ratings[i] : MeshRating.RATING_DEFAULT;
+			pInfo.rating[i] = (i < ratings.length) ? ratings[i] : RoomRating.RATING_DEFAULT;
 			if(i < playCounts.length) pInfo.playCount[i] = playCounts[i];
 			if(i < winCounts.length) pInfo.winCount[i] = winCounts[i];
 		}
@@ -144,7 +144,7 @@ public class MeshAuthority {
 		broadcastPlayerInfoUpdate(pInfo, "playernew");
 		sink.authUpdate();
 
-		log.info("Mesh member admitted uid:{} name:{}", uid, name);
+		log.info("Room member admitted uid:{} name:{}", uid, name);
 		return pInfo;
 	}
 
@@ -158,7 +158,7 @@ public class MeshAuthority {
 		ruleBlobs.remove(uid);
 		if(pInfo == null) return;
 
-		log.info("Mesh member gone uid:{} name:{} graceful:{}", uid, pInfo.strName, graceful);
+		log.info("Room member gone uid:{} name:{} graceful:{}", uid, pInfo.strName, graceful);
 
 		playerDead(pInfo);
 		pInfo.connected = false;
@@ -278,13 +278,13 @@ public class MeshAuthority {
 	// ---------------------------------------------------------------- chat
 
 	private void onLobbyChat(NetPlayerInfo pInfo, String[] message) {
-		//lobbychat\t[MESSAGE]  (no /msg private messages in mesh)
+		//lobbychat\t[MESSAGE]  (no /msg private messages in P2P rooms)
 		NetChatMessage chat = new NetChatMessage(NetUtil.urlDecode(message[1]), pInfo);
 		chat.outputLog();
 		lobbyChatList.add(chat);
 		while(lobbyChatList.size() > MAX_LOBBYCHAT_HISTORY) lobbyChatList.removeFirst();
 
-		sink.broadcast(MeshProtocol.SCOPE_GLOBAL, "lobbychat\t" + chat.uid + "\t" + NetUtil.urlEncode(chat.strUserName) + "\t" +
+		sink.broadcast(RoomProtocol.SCOPE_GLOBAL, "lobbychat\t" + chat.uid + "\t" + NetUtil.urlEncode(chat.strUserName) + "\t" +
 			GeneralUtil.exportCalendarString(chat.timestamp) + "\t" + NetUtil.urlEncode(chat.strMessage), -1);
 	}
 
@@ -319,7 +319,7 @@ public class MeshAuthority {
 
 		roomInfo.maxPlayers = 1;
 
-		// No rated rules in mesh: always play on the creator's own rule
+		// No rated rules in P2P rooms: always play on the creator's own rule
 		roomInfo.ruleName = pInfo.ruleOpt.strRuleName;
 		roomInfo.ruleOpt = new RuleOptions(pInfo.ruleOpt);
 		roomInfo.ruleLock = false;
@@ -400,7 +400,7 @@ public class MeshAuthority {
 		roomInfo.playerList.add(pInfo);
 		pInfo.seatID = roomInfo.joinSeat(pInfo);
 
-		// Send rule data if rule-lock is enabled; replicate it mesh-wide so a
+		// Send rule data if rule-lock is enabled; replicate it session-wide so a
 		// successor arbiter can keep serving it (ruleOpt is not in the room blob)
 		if(roomInfo.ruleLock) {
 			String compressed = compressRule(roomInfo.ruleOpt);
@@ -824,13 +824,13 @@ public class MeshAuthority {
 							NetPlayerInfo wp = roomInfo.playerSeatDead.get(w);
 							NetPlayerInfo lp = roomInfo.playerSeatDead.get(l);
 
-							wp.rating[style] += (int) (MeshRating.rankDelta(wp.playCount[style], wp.rating[style], lp.rating[style], 1) / (n-1));
-							lp.rating[style] += (int) (MeshRating.rankDelta(lp.playCount[style], lp.rating[style], wp.rating[style], 0) / (n-1));
+							wp.rating[style] += (int) (RoomRating.rankDelta(wp.playCount[style], wp.rating[style], lp.rating[style], 1) / (n-1));
+							lp.rating[style] += (int) (RoomRating.rankDelta(lp.playCount[style], lp.rating[style], wp.rating[style], 0) / (n-1));
 
-							if(wp.rating[style] < MeshRating.RATING_MIN) wp.rating[style] = MeshRating.RATING_MIN;
-							if(lp.rating[style] < MeshRating.RATING_MIN) lp.rating[style] = MeshRating.RATING_MIN;
-							if(wp.rating[style] > MeshRating.RATING_MAX) wp.rating[style] = MeshRating.RATING_MAX;
-							if(lp.rating[style] > MeshRating.RATING_MAX) lp.rating[style] = MeshRating.RATING_MAX;
+							if(wp.rating[style] < RoomRating.RATING_MIN) wp.rating[style] = RoomRating.RATING_MIN;
+							if(lp.rating[style] < RoomRating.RATING_MIN) lp.rating[style] = RoomRating.RATING_MIN;
+							if(wp.rating[style] > RoomRating.RATING_MAX) wp.rating[style] = RoomRating.RATING_MAX;
+							if(lp.rating[style] > RoomRating.RATING_MAX) lp.rating[style] = RoomRating.RATING_MAX;
 						}
 					}
 
@@ -926,7 +926,7 @@ public class MeshAuthority {
 	}
 
 	private void broadcastPlayerInfoUpdate(NetPlayerInfo pInfo, String command) {
-		sink.broadcast(MeshProtocol.SCOPE_GLOBAL, command + "\t" + pInfo.exportString(), -1);
+		sink.broadcast(RoomProtocol.SCOPE_GLOBAL, command + "\t" + pInfo.exportString(), -1);
 	}
 
 	private void broadcastRoomInfoUpdate(NetRoomInfo roomInfo) {
@@ -935,7 +935,7 @@ public class MeshAuthority {
 
 	private void broadcastRoomInfoUpdate(NetRoomInfo roomInfo, String command) {
 		roomInfo.updatePlayerCount();
-		sink.broadcast(MeshProtocol.SCOPE_GLOBAL, command + "\t" + roomInfo.exportString(), -1);
+		sink.broadcast(RoomProtocol.SCOPE_GLOBAL, command + "\t" + roomInfo.exportString(), -1);
 	}
 
 	// ================================================================ queries (session layer + snapshots)
@@ -1010,8 +1010,8 @@ public class MeshAuthority {
 	}
 
 	/** Build an AuthRoom snapshot of a room's non-derivable state */
-	public static MeshProtocol.AuthRoom buildAuthRoom(long seq, NetRoomInfo roomInfo) {
-		return new MeshProtocol.AuthRoom(seq, roomInfo.roomID, roomInfo.playing,
+	public static RoomProtocol.AuthRoom buildAuthRoom(long seq, NetRoomInfo roomInfo) {
+		return new RoomProtocol.AuthRoom(seq, roomInfo.roomID, roomInfo.playing,
 			roomInfo.startPlayers, roomInfo.deadCount, roomInfo.autoStartActive,
 			roomInfo.isSomeoneCancelled, roomInfo.mapPrevious,
 			uidsOf(roomInfo.playerSeat), uidsOf(roomInfo.playerSeatNowPlaying),
@@ -1030,7 +1030,7 @@ public class MeshAuthority {
 	// ================================================================ small helpers
 
 	/** Rated iff the room says so and it's not a team game. The server's same-IP
-	 *  restriction is dropped: mesh play is LAN-oriented by design. */
+	 *  restriction is dropped: P2P play is LAN-oriented by design. */
 	private static boolean isRatedGame(NetRoomInfo roomInfo) {
 		return roomInfo.rated && !roomInfo.isTeamGame();
 	}

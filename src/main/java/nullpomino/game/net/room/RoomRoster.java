@@ -1,6 +1,6 @@
 // SPDX-FileCopyrightText: 2010 NullNoname
 // SPDX-License-Identifier: BSD-3-Clause
-package nullpomino.game.net.mesh;
+package nullpomino.game.net.room;
 
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -8,23 +8,23 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Dispatcher-confined mesh membership table: which uid is reachable over
+ * Dispatcher-confined room membership table: which uid is reachable over
  * which link. Purely transport-level - room/seat state lives in
- * {@link MeshAuthority}/the mirror.
+ * {@link RoomAuthority}/the mirror.
  */
-public class MeshRoster {
-	/** One mesh member as known at transport level */
+public class RoomRoster {
+	/** One room member as known at transport level */
 	public static final class Entry {
 		public final int uid;
 		public String name;
 		public String host;
 		public int listenPort;
 		/** Link to this member; null for the local peer's own entry */
-		public MeshPeerLink link;
+		public RoomPeerLink link;
 		/** true once the member reported all its peer links are up */
-		public boolean meshOk;
+		public boolean linksOk;
 
-		public Entry(int uid, String name, String host, int listenPort, MeshPeerLink link) {
+		public Entry(int uid, String name, String host, int listenPort, RoomPeerLink link) {
 			this.uid = uid;
 			this.name = name;
 			this.host = host;
@@ -48,7 +48,7 @@ public class MeshRoster {
 	}
 
 	/** @return The entry bound to this link, or null */
-	public Entry getByLink(MeshPeerLink link) {
+	public Entry getByLink(RoomPeerLink link) {
 		for(Entry entry: members.values()) {
 			if(entry.link == link) return entry;
 		}

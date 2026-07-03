@@ -1,6 +1,6 @@
 // SPDX-FileCopyrightText: 2010 NullNoname
 // SPDX-License-Identifier: BSD-3-Clause
-package nullpomino.game.net.mesh;
+package nullpomino.game.net.room;
 
 import java.io.IOException;
 import java.net.Inet4Address;
@@ -28,7 +28,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * One peer's participation in a P2P mesh netplay session: the single
+ * One peer's participation in a P2P room: the single
  * dispatcher thread that owns all session state, the handshake state
  * machine, the login synthesis for the local client, routing (control to
  * the arbiter, game traffic directly to same-room peers, records queries
@@ -37,11 +37,11 @@ import org.slf4j.LoggerFactory;
  *
  * <p>Created via {@link #create} (become the first arbiter) or
  * {@link #join} (dial an existing session). The local client attaches
- * through the {@link MeshEndpoint} face.
+ * through the {@link RoomEndpoint} face.
  */
-public class MeshSession implements MeshEndpoint, MeshEventSink {
+public class RoomSession implements RoomEndpoint, RoomEventSink {
 	/** Log */
-	private static final Logger log = LoggerFactory.getLogger(MeshSession.class);
+	private static final Logger log = LoggerFactory.getLogger(RoomSession.class);
 
 	public enum State { CONNECTING, JOINING, READY, MIGRATING, CLOSED }
 
@@ -53,21 +53,21 @@ public class MeshSession implements MeshEndpoint, MeshEventSink {
 
 	// ---------------------------------------------------------------- construction
 
-	private final MeshConfig config;
+	private final RoomConfig config;
 	private final Listener listener;
 	private final String selfName;
-	private final MeshTransport transport;
-	private final MeshRoster roster = new MeshRoster();
-	private final MeshMirror mirror = new MeshMirror();
-	private final MeshLocalRecords records;
+	private final RoomTransport transport;
+	private final RoomRoster roster = new RoomRoster();
+	private final RoomMirror mirror = new RoomMirror();
+	private final RoomLocalRecords records;
 	private final Random rand = new Random();
 
-	private final LinkedBlockingQueue<MeshEvent> queue = new LinkedBlockingQueue<MeshEvent>();
+	private final LinkedBlockingQueue<RoomEvent> queue = new LinkedBlockingQueue<RoomEvent>();
 	private final Thread dispatcherThread;
-	private final Timer tickTimer = new Timer("MeshTick", true);
+	private final Timer tickTimer = new Timer("RoomTick", true);
 
 	/** Non-null iff this peer is the arbiter */
-	private MeshAuthority authority;
+	private RoomAuthority authority;
 	/** Broadcast sequence counter (arbiter only) */
 	private long seq = 0;
 
@@ -75,14 +75,14 @@ public class MeshSession implements MeshEndpoint, MeshEventSink {
 	private String token = "";
 	private int localUid = -1;
 	private int arbiterUid = -1;
-	private volatile MeshPeerLink arbiterLink;   // null when local peer is arbiter; set from the dialer thread
+	private volatile RoomPeerLink arbiterLink;   // null when local peer is arbiter; set from the dialer thread
 	private String displayHost = "?";
 
 	/** Local stats identity (personal bests etc.), independent of the mirror */
 	private final NetPlayerInfo selfLocal = new NetPlayerInfo();
 
 	/** Links accepted/dialed but not yet uid-bound */
-	private final Set<MeshPeerLink> pendingLinks = new HashSet<MeshPeerLink>();
+	private final Set<RoomPeerLink> pendingLinks = new HashSet<RoomPeerLink>();
 
 	/** Joiner handshake bookkeeping */
 	private int peerOksAwaited = 0;
@@ -119,30 +119,30 @@ public class MeshSession implements MeshEndpoint, MeshEventSink {
 	private final Map<Integer, Integer> peerdownReports = new HashMap<Integer, Integer>();
 	private long peerdownWindowEnd = 0;
 
-	private MeshSession(String playerName, MeshConfig config, Listener listener) {
+	private RoomSession(String playerName, RoomConfig config, Listener listener) {
 		this.selfName = playerName;
 		this.config = config;
 		this.listener = listener;
-		this.records = new MeshLocalRecords();
-		this.transport = new MeshTransport(this);
+		this.records = new RoomLocalRecords();
+		this.transport = new RoomTransport(this);
 		this.beaconLobbyName = playerName;
 		selfLocal.strName = playerName;
 		records.loadInto(selfLocal);
-		dispatcherThread = new Thread(this::dispatchLoop, "MeshDispatcher");
+		dispatcherThread = new Thread(this::dispatchLoop, "RoomDispatcher");
 		dispatcherThread.setDaemon(true);
 	}
 
 	/** Create a session and become the first arbiter. The listen port is bound when this returns. */
-	public static MeshSession create(String playerName, MeshConfig config, Listener listener) throws IOException {
-		MeshSession session = new MeshSession(playerName, config, listener);
+	public static RoomSession create(String playerName, RoomConfig config, Listener listener) throws IOException {
+		RoomSession session = new RoomSession(playerName, config, listener);
 		session.transport.startListening(config.listenPort);
-		session.token = MeshProtocol.generateToken(session.rand);
+		session.token = RoomProtocol.generateToken(session.rand);
 		session.displayHost = getLanAddress();
 
-		session.authority = new MeshAuthority(session.new AuthoritySink(), session.rand);
+		session.authority = new RoomAuthority(session.new AuthoritySink(), session.rand);
 		session.localUid = session.authority.reserveUid();
 		session.arbiterUid = session.localUid;
-		session.roster.add(new MeshRoster.Entry(session.localUid, playerName, "127.0.0.1",
+		session.roster.add(new RoomRoster.Entry(session.localUid, playerName, "127.0.0.1",
 			session.transport.getListenPort(), null));
 		session.authority.admitMember(session.localUid, playerName, "127.0.0.1",
 			session.selfLocal.rating, session.selfLocal.playCount, session.selfLocal.winCount);
@@ -151,15 +151,15 @@ public class MeshSession implements MeshEndpoint, MeshEventSink {
 		session.startAnnouncer();
 		session.dispatcherThread.start();
 		session.startTicks();
-		log.info("Mesh session created, listening on {}", session.transport.getListenPort());
+		log.info("Room session created, listening on {}", session.transport.getListenPort());
 		return session;
 	}
 
 	/** Join an existing session via its arbiter. Progress is reported through the listener. */
-	public static MeshSession join(String host, int port, String playerName, MeshConfig config,
+	public static RoomSession join(String host, int port, String playerName, RoomConfig config,
 		Listener listener) throws IOException
 	{
-		MeshSession session = new MeshSession(playerName, config, listener);
+		RoomSession session = new RoomSession(playerName, config, listener);
 		session.transport.startListening(config.listenPort);
 		session.displayHost = host;
 		session.joinStartedAt = System.currentTimeMillis();
@@ -169,19 +169,19 @@ public class MeshSession implements MeshEndpoint, MeshEventSink {
 		// Dial off-thread: transport.dial blocks
 		Thread dialer = new Thread(() -> {
 			try {
-				MeshPeerLink link = session.transport.dial(host, port, config.joinTimeout);
+				RoomPeerLink link = session.transport.dial(host, port, config.joinTimeout);
 				synchronized(session.pendingLinks) {
 					session.pendingLinks.add(link);
 				}
 				session.arbiterLink = link;
-				link.sendLine(MeshProtocol.buildHelloJoin(GameManager.getVersionMajor(),
+				link.sendLine(RoomProtocol.buildHelloJoin(GameManager.getVersionMajor(),
 					GameManager.isDevBuild(), session.transport.getListenPort(), playerName,
 					session.selfLocal.rating, session.selfLocal.playCount, session.selfLocal.winCount));
 			} catch (IOException e) {
-				log.info("Mesh join dial failed", e);
-				session.queue.add(MeshEvent.shutdown("JOIN_FAILED:" + e.getMessage()));
+				log.info("Room join dial failed", e);
+				session.queue.add(RoomEvent.shutdown("JOIN_FAILED:" + e.getMessage()));
 			}
-		}, "MeshDialer");
+		}, "RoomDialer");
 		dialer.setDaemon(true);
 		dialer.start();
 		return session;
@@ -190,19 +190,19 @@ public class MeshSession implements MeshEndpoint, MeshEventSink {
 	private void startTicks() {
 		tickTimer.schedule(new TimerTask() {
 			@Override public void run() {
-				queue.add(MeshEvent.tick());
+				queue.add(RoomEvent.tick());
 			}
 		}, 1000, 1000);
 	}
 
 	private void startAnnouncer() {
 		if(!config.lanAnnounce || (announcer != null)) return;
-		announcer = new NetLanDiscovery.Announcer(() -> NetLanDiscovery.encodeMeshAnnounce(
+		announcer = new NetLanDiscovery.Announcer(() -> NetLanDiscovery.encodeRoomAnnounce(
 			transport.getListenPort(), selfName, token, beaconLobbyName, memberCountForBeacon));
 		announcer.start();
 	}
 
-	// ================================================================ MeshEndpoint (client seam)
+	// ================================================================ RoomEndpoint (client seam)
 
 	@Override
 	public void setLineListener(LineListener listener) {
@@ -219,12 +219,12 @@ public class MeshSession implements MeshEndpoint, MeshEventSink {
 		if(state == State.CLOSED) return;
 		String trimmed = line.endsWith("\n") ? line.substring(0, line.length() - 1) : line;
 		if(trimmed.length() == 0) return;
-		queue.add(MeshEvent.localSend(trimmed));
+		queue.add(RoomEvent.localSend(trimmed));
 	}
 
 	@Override
 	public void clientReady() {
-		queue.add(MeshEvent.localSend(" clientready"));
+		queue.add(RoomEvent.localSend(" clientready"));
 	}
 
 	@Override
@@ -249,7 +249,7 @@ public class MeshSession implements MeshEndpoint, MeshEventSink {
 
 	@Override
 	public void shutdown() {
-		queue.add(MeshEvent.shutdown("LEFT"));
+		queue.add(RoomEvent.shutdown("LEFT"));
 	}
 
 	public boolean isArbiter() {
@@ -274,13 +274,13 @@ public class MeshSession implements MeshEndpoint, MeshEventSink {
 		} catch (InterruptedException e) {
 			Thread.currentThread().interrupt();
 		} catch (Throwable e) {
-			log.error("Mesh dispatcher died", e);
+			log.error("Room dispatcher died", e);
 			doShutdown("dispatcher error: " + e);
 		}
 	}
 
 	/** Package-private so tests can drive events deterministically */
-	void processOneEvent(MeshEvent event) {
+	void processOneEvent(RoomEvent event) {
 		switch(event.type) {
 		case LINK_ACCEPTED:
 			synchronized(pendingLinks) {
@@ -305,34 +305,34 @@ public class MeshSession implements MeshEndpoint, MeshEventSink {
 		}
 	}
 
-	// MeshEventSink (transport threads -> queue)
+	// RoomEventSink (transport threads -> queue)
 	@Override
-	public void onLinkAccepted(MeshPeerLink link) {
-		queue.add(MeshEvent.linkAccepted(link));
+	public void onLinkAccepted(RoomPeerLink link) {
+		queue.add(RoomEvent.linkAccepted(link));
 	}
 
 	@Override
-	public void onLine(MeshPeerLink link, String line) {
-		queue.add(MeshEvent.line(link, line));
+	public void onLine(RoomPeerLink link, String line) {
+		queue.add(RoomEvent.line(link, line));
 	}
 
 	@Override
-	public void onLinkClosed(MeshPeerLink link, String reason) {
-		queue.add(MeshEvent.linkClosed(link, reason));
+	public void onLinkClosed(RoomPeerLink link, String reason) {
+		queue.add(RoomEvent.linkClosed(link, reason));
 	}
 
 	// ================================================================ inbound lines
 
-	private void onLineEvent(MeshPeerLink link, String line) {
-		if(!MeshProtocol.isMeshFrame(line)) {
+	private void onLineEvent(RoomPeerLink link, String line) {
+		if(!RoomProtocol.isRoomFrame(line)) {
 			// Pre-stamped game/gstat traffic from a peer
 			if(line.startsWith("game\t") || line.startsWith("gstat\t")) {
 				deliverPeerGameLine(line);
 			} else {
-				// A stale (non-mesh) client connected and sent a plain protocol line
-				link.sendLine(MeshProtocol.buildDeny(MeshProtocol.DENY_DIFFERENT_VERSION,
+				// A stale (non-room) client connected and sent a plain protocol line
+				link.sendLine(RoomProtocol.buildDeny(RoomProtocol.DENY_DIFFERENT_VERSION,
 					GameManager.getVersionString()));
-				link.closeAfterFlush("not a mesh peer");
+				link.closeAfterFlush("not a room peer");
 			}
 			return;
 		}
@@ -346,33 +346,33 @@ public class MeshSession implements MeshEndpoint, MeshEventSink {
 		if(type.equals("snapend")) { onSnapEnd(); return; }
 		if(type.equals("peerok")) { onPeerOk(link, parts); return; }
 		if(type.equals("peer")) { onPeerAnnounce(parts); return; }
-		if(type.equals("meshok")) { onMeshOk(link); return; }
+		if(type.equals("roomok")) { onRoomOk(link); return; }
 		if(type.equals("deny")) { onDeny(link, parts); return; }
 		if(type.equals("bye")) { onBye(link); return; }
 		if(type.equals("c")) { onControlFrame(link, line); return; }
 		if(type.equals("b")) { onBroadcastFrame(line); return; }
 		if(type.equals("d")) { onDirectFrame(line); return; }
 		if(type.equals("authg")) {
-			MeshProtocol.AuthGlobal g = MeshProtocol.parseAuthGlobal(parts);
+			RoomProtocol.AuthGlobal g = RoomProtocol.parseAuthGlobal(parts);
 			if(g != null) mirror.applyAuthGlobal(g);
 			return;
 		}
 		if(type.equals("authr")) {
-			MeshProtocol.AuthRoom a = MeshProtocol.parseAuthRoom(parts);
+			RoomProtocol.AuthRoom a = RoomProtocol.parseAuthRoom(parts);
 			if(a != null) mirror.applyAuthRoom(a);
 			return;
 		}
 		if(type.equals("arbiter")) { onArbiterClaim(link, parts); return; }
 		if(type.equals("peerdown")) { onPeerDownReport(parts); return; }
 		if(type.equals("kick")) { onKick(parts); return; }
-		if(line.equals(MeshProtocol.LINE_PING)) { link.sendLine(MeshProtocol.LINE_PONG); return; }
-		if(line.equals(MeshProtocol.LINE_PONG)) { return; }
+		if(line.equals(RoomProtocol.LINE_PING)) { link.sendLine(RoomProtocol.LINE_PONG); return; }
+		if(line.equals(RoomProtocol.LINE_PONG)) { return; }
 
-		log.debug("Unhandled mesh frame: {}", parts[1]);
+		log.debug("Unhandled room frame: {}", parts[1]);
 	}
 
-	private void onHello(MeshPeerLink link, String[] parts) {
-		MeshProtocol.Hello hello = MeshProtocol.parseHello(parts);
+	private void onHello(RoomPeerLink link, String[] parts) {
+		RoomProtocol.Hello hello = RoomProtocol.parseHello(parts);
 		if(hello == null) {
 			link.close("malformed hello");
 			return;
@@ -380,13 +380,13 @@ public class MeshSession implements MeshEndpoint, MeshEventSink {
 
 		// Version gate (both variants)
 		if(hello.verMajor != GameManager.getVersionMajor()) {
-			link.sendLine(MeshProtocol.buildDeny(MeshProtocol.DENY_DIFFERENT_VERSION,
+			link.sendLine(RoomProtocol.buildDeny(RoomProtocol.DENY_DIFFERENT_VERSION,
 				String.valueOf(GameManager.getVersionMajor())));
 			link.closeAfterFlush("version mismatch");
 			return;
 		}
 		if(hello.devBuild != GameManager.isDevBuild()) {
-			link.sendLine(MeshProtocol.buildDeny(MeshProtocol.DENY_DIFFERENT_BUILD,
+			link.sendLine(RoomProtocol.buildDeny(RoomProtocol.DENY_DIFFERENT_BUILD,
 				GameManager.getVersionString()));
 			link.closeAfterFlush("build mismatch");
 			return;
@@ -395,7 +395,7 @@ public class MeshSession implements MeshEndpoint, MeshEventSink {
 		if(hello.joinVariant) {
 			// Only the arbiter admits joiners
 			if(!isArbiter()) {
-				link.sendLine(MeshProtocol.buildDeny(MeshProtocol.DENY_BAD_TOKEN, "not the arbiter"));
+				link.sendLine(RoomProtocol.buildDeny(RoomProtocol.DENY_BAD_TOKEN, "not the arbiter"));
 				link.closeAfterFlush("join at non-arbiter");
 				return;
 			}
@@ -409,29 +409,29 @@ public class MeshSession implements MeshEndpoint, MeshEventSink {
 			synchronized(pendingLinks) {
 				pendingLinks.remove(link);
 			}
-			roster.add(new MeshRoster.Entry(uid, hello.name, link.getRemoteAddress(), hello.listenPort, link));
+			roster.add(new RoomRoster.Entry(uid, hello.name, link.getRemoteAddress(), hello.listenPort, link));
 			memberCountForBeacon = roster.size();
 
 			// Welcome + full snapshot + snapend, all on this link in one step
-			List<MeshProtocol.RosterEntry> entries = new ArrayList<MeshProtocol.RosterEntry>();
-			for(MeshRoster.Entry e: roster.all().values()) {
-				if(e.uid != uid) entries.add(new MeshProtocol.RosterEntry(e.uid, e.host, e.listenPort, e.name));
+			List<RoomProtocol.RosterEntry> entries = new ArrayList<RoomProtocol.RosterEntry>();
+			for(RoomRoster.Entry e: roster.all().values()) {
+				if(e.uid != uid) entries.add(new RoomProtocol.RosterEntry(e.uid, e.host, e.listenPort, e.name));
 			}
-			link.sendLine(MeshProtocol.buildWelcome(token, uid, hello.name, arbiterUid, seq, entries));
+			link.sendLine(RoomProtocol.buildWelcome(token, uid, hello.name, arbiterUid, seq, entries));
 			sendSnapshot(link);
-			link.sendLine(MeshProtocol.LINE_SNAPEND);
+			link.sendLine(RoomProtocol.LINE_SNAPEND);
 
 			// Announce to the other members; the joiner will dial them
-			for(MeshRoster.Entry e: roster.linkedMembers()) {
+			for(RoomRoster.Entry e: roster.linkedMembers()) {
 				if(e.uid != uid) {
-					e.link.sendLine(MeshProtocol.buildPeerAnnounce(uid, link.getRemoteAddress(),
+					e.link.sendLine(RoomProtocol.buildPeerAnnounce(uid, link.getRemoteAddress(),
 						hello.listenPort, hello.name));
 				}
 			}
 		} else {
 			// hello peer: a welcomed joiner dialing an existing member
 			if(!token.equals(hello.token)) {
-				link.sendLine(MeshProtocol.buildDeny(MeshProtocol.DENY_BAD_TOKEN, ""));
+				link.sendLine(RoomProtocol.buildDeny(RoomProtocol.DENY_BAD_TOKEN, ""));
 				link.closeAfterFlush("bad token");
 				return;
 			}
@@ -439,53 +439,53 @@ public class MeshSession implements MeshEndpoint, MeshEventSink {
 			synchronized(pendingLinks) {
 				pendingLinks.remove(link);
 			}
-			MeshRoster.Entry entry = roster.get(hello.uid);
+			RoomRoster.Entry entry = roster.get(hello.uid);
 			if(entry == null) {
 				// Announce may not have arrived yet; token proves membership
-				entry = new MeshRoster.Entry(hello.uid, "?", link.getRemoteAddress(), hello.listenPort, link);
+				entry = new RoomRoster.Entry(hello.uid, "?", link.getRemoteAddress(), hello.listenPort, link);
 				roster.add(entry);
 			} else {
 				entry.link = link;
 				entry.listenPort = hello.listenPort;
 			}
 			memberCountForBeacon = roster.size();
-			link.sendLine(MeshProtocol.buildPeerOk(localUid));
+			link.sendLine(RoomProtocol.buildPeerOk(localUid));
 		}
 	}
 
 	/** Send the full state snapshot to a joiner's link */
-	private void sendSnapshot(MeshPeerLink link) {
+	private void sendSnapshot(RoomPeerLink link) {
 		for(NetRoomInfo room: authority.getRooms()) {
-			link.sendLine(MeshProtocol.buildSnapRoom(room.roomID, room.exportString()));
+			link.sendLine(RoomProtocol.buildSnapRoom(room.roomID, room.exportString()));
 		}
 		for(NetPlayerInfo p: authority.getPlayers().values()) {
-			link.sendLine(MeshProtocol.buildSnapPlayer(p.exportString()));
+			link.sendLine(RoomProtocol.buildSnapPlayer(p.exportString()));
 		}
 		for(Map.Entry<Integer, String[]> e: authority.getRuleBlobs().entrySet()) {
-			link.sendLine(MeshProtocol.buildSnapRule(e.getKey(), e.getValue()[0], e.getValue()[1]));
+			link.sendLine(RoomProtocol.buildSnapRule(e.getKey(), e.getValue()[0], e.getValue()[1]));
 		}
 		for(Map.Entry<Integer, String> e: mirror.getRoomRuleBlobs().entrySet()) {
-			link.sendLine(MeshProtocol.buildSnapRoomRule(e.getKey(), e.getValue()));
+			link.sendLine(RoomProtocol.buildSnapRoomRule(e.getKey(), e.getValue()));
 		}
 		for(Map.Entry<Integer, String> e: mirror.getMapBlobs().entrySet()) {
-			link.sendLine(MeshProtocol.buildSnapMap(e.getKey(), e.getValue()));
+			link.sendLine(RoomProtocol.buildSnapMap(e.getKey(), e.getValue()));
 		}
 		for(NetRoomInfo room: authority.getRooms()) {
 			for(nullpomino.game.net.NetChatMessage chat: room.chatList) {
-				link.sendLine(MeshProtocol.buildSnapChat(room.roomID, chat.exportString()));
+				link.sendLine(RoomProtocol.buildSnapChat(room.roomID, chat.exportString()));
 			}
 		}
 		for(nullpomino.game.net.NetChatMessage chat: authority.getLobbyChatList()) {
-			link.sendLine(MeshProtocol.buildSnapLobbyChat(chat.exportString()));
+			link.sendLine(RoomProtocol.buildSnapLobbyChat(chat.exportString()));
 		}
-		link.sendLine(MeshProtocol.buildAuthGlobal(seq, authority.getNextUid(), authority.getNextRoomId()));
+		link.sendLine(RoomProtocol.buildAuthGlobal(seq, authority.getNextUid(), authority.getNextRoomId()));
 		for(NetRoomInfo room: authority.getRooms()) {
-			link.sendLine(MeshProtocol.buildAuthRoom(MeshAuthority.buildAuthRoom(seq, room)));
+			link.sendLine(RoomProtocol.buildAuthRoom(RoomAuthority.buildAuthRoom(seq, room)));
 		}
 	}
 
-	private void onWelcome(MeshPeerLink link, String[] parts) {
-		MeshProtocol.Welcome welcome = MeshProtocol.parseWelcome(parts);
+	private void onWelcome(RoomPeerLink link, String[] parts) {
+		RoomProtocol.Welcome welcome = RoomProtocol.parseWelcome(parts);
 		if(welcome == null) {
 			doShutdown("JOIN_FAILED:malformed welcome");
 			return;
@@ -500,13 +500,13 @@ public class MeshSession implements MeshEndpoint, MeshEventSink {
 		synchronized(pendingLinks) {
 			pendingLinks.remove(link);
 		}
-		roster.add(new MeshRoster.Entry(localUid, welcome.name, "127.0.0.1", transport.getListenPort(), null));
-		roster.add(new MeshRoster.Entry(arbiterUid, "?", link.getRemoteAddress(), -1, link));
-		for(MeshProtocol.RosterEntry e: welcome.roster) {
+		roster.add(new RoomRoster.Entry(localUid, welcome.name, "127.0.0.1", transport.getListenPort(), null));
+		roster.add(new RoomRoster.Entry(arbiterUid, "?", link.getRemoteAddress(), -1, link));
+		for(RoomProtocol.RosterEntry e: welcome.roster) {
 			if((e.uid != arbiterUid) && (e.uid != localUid)) {
-				roster.add(new MeshRoster.Entry(e.uid, e.name, e.host, e.listenPort, null));
+				roster.add(new RoomRoster.Entry(e.uid, e.name, e.host, e.listenPort, null));
 			} else if(e.uid == arbiterUid) {
-				MeshRoster.Entry arb = roster.get(arbiterUid);
+				RoomRoster.Entry arb = roster.get(arbiterUid);
 				arb.name = e.name;
 				arb.listenPort = e.listenPort;
 			}
@@ -517,8 +517,8 @@ public class MeshSession implements MeshEndpoint, MeshEventSink {
 
 	private void onSnapEnd() {
 		// Snapshot applied; dial every member that isn't the arbiter or us
-		final List<MeshRoster.Entry> toDial = new ArrayList<MeshRoster.Entry>();
-		for(MeshRoster.Entry e: roster.all().values()) {
+		final List<RoomRoster.Entry> toDial = new ArrayList<RoomRoster.Entry>();
+		for(RoomRoster.Entry e: roster.all().values()) {
 			if((e.uid != localUid) && (e.uid != arbiterUid) && (e.link == null)) {
 				toDial.add(e);
 			}
@@ -531,27 +531,27 @@ public class MeshSession implements MeshEndpoint, MeshEventSink {
 		}
 
 		Thread dialer = new Thread(() -> {
-			for(MeshRoster.Entry e: toDial) {
+			for(RoomRoster.Entry e: toDial) {
 				try {
-					MeshPeerLink link = transport.dial(e.host, e.listenPort, config.joinTimeout);
+					RoomPeerLink link = transport.dial(e.host, e.listenPort, config.joinTimeout);
 					link.uid = e.uid;
-					link.sendLine(MeshProtocol.buildHelloPeer(GameManager.getVersionMajor(),
+					link.sendLine(RoomProtocol.buildHelloPeer(GameManager.getVersionMajor(),
 						GameManager.isDevBuild(), token, localUid, transport.getListenPort()));
 				} catch (IOException ex) {
-					log.info("Mesh peer dial to uid {} failed", e.uid, ex);
-					queue.add(MeshEvent.shutdown("JOIN_FAILED:peer dial " + e.uid));
+					log.info("Room peer dial to uid {} failed", e.uid, ex);
+					queue.add(RoomEvent.shutdown("JOIN_FAILED:peer dial " + e.uid));
 					return;
 				}
 			}
-		}, "MeshDialer");
+		}, "RoomDialer");
 		dialer.setDaemon(true);
 		dialer.start();
 	}
 
-	private void onPeerOk(MeshPeerLink link, String[] parts) {
+	private void onPeerOk(RoomPeerLink link, String[] parts) {
 		int uid = Integer.parseInt(parts[2]);
 		link.uid = uid;
-		MeshRoster.Entry entry = roster.get(uid);
+		RoomRoster.Entry entry = roster.get(uid);
 		if(entry != null) entry.link = link;
 
 		if((state == State.JOINING) && (peerOksAwaited > 0)) {
@@ -561,18 +561,18 @@ public class MeshSession implements MeshEndpoint, MeshEventSink {
 	}
 
 	private void completeJoin() {
-		if(arbiterLink != null) arbiterLink.sendLine(MeshProtocol.LINE_MESHOK);
+		if(arbiterLink != null) arbiterLink.sendLine(RoomProtocol.LINE_ROOMOK);
 		setState(State.READY, "joined");
 		startAnnouncer();
 		if(clientAttached) synthesizeWelcome();
 	}
 
 	private void onPeerAnnounce(String[] parts) {
-		MeshProtocol.RosterEntry e = MeshProtocol.parsePeerAnnounce(parts);
+		RoomProtocol.RosterEntry e = RoomProtocol.parsePeerAnnounce(parts);
 		if(e == null) return;
-		MeshRoster.Entry existing = roster.get(e.uid);
+		RoomRoster.Entry existing = roster.get(e.uid);
 		if(existing == null) {
-			roster.add(new MeshRoster.Entry(e.uid, e.name, e.host, e.listenPort, null));
+			roster.add(new RoomRoster.Entry(e.uid, e.name, e.host, e.listenPort, null));
 		} else {
 			existing.name = e.name;
 			existing.host = e.host;
@@ -581,42 +581,42 @@ public class MeshSession implements MeshEndpoint, MeshEventSink {
 		memberCountForBeacon = roster.size();
 	}
 
-	private void onMeshOk(MeshPeerLink link) {
-		MeshRoster.Entry entry = roster.getByLink(link);
-		if(entry != null) entry.meshOk = true;
+	private void onRoomOk(RoomPeerLink link) {
+		RoomRoster.Entry entry = roster.getByLink(link);
+		if(entry != null) entry.linksOk = true;
 	}
 
-	private void onDeny(MeshPeerLink link, String[] parts) {
+	private void onDeny(RoomPeerLink link, String[] parts) {
 		String reason = (parts.length > 2) ? parts[2] : "?";
-		log.info("Mesh deny: {}", reason);
+		log.info("Room deny: {}", reason);
 		if(link == arbiterLink) doShutdown("JOIN_FAILED:" + reason);
 		else link.close("denied");
 	}
 
-	private void onBye(MeshPeerLink link) {
+	private void onBye(RoomPeerLink link) {
 		link.close("bye");
 		// LINK_CLOSED handles the rest
 	}
 
-	private void onControlFrame(MeshPeerLink link, String line) {
+	private void onControlFrame(RoomPeerLink link, String line) {
 		if(!isArbiter()) return;
-		String payload = MeshProtocol.unwrapControl(line);
+		String payload = RoomProtocol.unwrapControl(line);
 		if((payload == null) || (link.uid < 0)) return;
-		MeshRoster.Entry entry = roster.get(link.uid);
-		// A half-joined member (no meshok yet) may not enter rooms
-		if((entry != null) && !entry.meshOk && payload.startsWith("roomjoin\t")) return;
+		RoomRoster.Entry entry = roster.get(link.uid);
+		// A half-joined member (no roomok yet) may not enter rooms
+		if((entry != null) && !entry.linksOk && payload.startsWith("roomjoin\t")) return;
 		authority.handleControl(link.uid, payload.split("\t", -1));
 	}
 
 	private void onBroadcastFrame(String line) {
-		MeshProtocol.Broadcast b = MeshProtocol.parseBroadcast(line);
+		RoomProtocol.Broadcast b = RoomProtocol.parseBroadcast(line);
 		if(b == null) return;
 		mirror.applyBroadcast(b.seq, b.scope, b.payload);
 		deliverBroadcastLocal(b.scope, b.payload);
 	}
 
 	private void onDirectFrame(String line) {
-		String payload = MeshProtocol.unwrapDirect(line);
+		String payload = RoomProtocol.unwrapDirect(line);
 		if(payload != null) deliverToClient(payload);
 	}
 
@@ -696,7 +696,7 @@ public class MeshSession implements MeshEndpoint, MeshEventSink {
 			stamped = "game\t" + localUid + "\t" + self.seatID + "\t" + rest;
 		}
 
-		for(MeshRoster.Entry e: roster.linkedMembers()) {
+		for(RoomRoster.Entry e: roster.linkedMembers()) {
 			NetPlayerInfo p = mirror.getPlayer(e.uid);
 			if((p != null) && (p.roomID == self.roomID)) {
 				e.link.sendLine(stamped);
@@ -753,7 +753,7 @@ public class MeshSession implements MeshEndpoint, MeshEventSink {
 	private void deliverBroadcastLocal(int scope, String payload) {
 		captureRatingFlow(scope, payload);
 
-		if(scope != MeshProtocol.SCOPE_GLOBAL) {
+		if(scope != RoomProtocol.SCOPE_GLOBAL) {
 			NetPlayerInfo self = mirror.getPlayer(localUid);
 			int myRoom = (self == null) ? -1 : self.roomID;
 			if(scope != myRoom) return;   // never leak another room's lines into the client
@@ -784,7 +784,7 @@ public class MeshSession implements MeshEndpoint, MeshEventSink {
 
 	/** Track rating lines per round and commit them to the local records at finish */
 	private void captureRatingFlow(int scope, String payload) {
-		if(scope == MeshProtocol.SCOPE_GLOBAL) return;
+		if(scope == RoomProtocol.SCOPE_GLOBAL) return;
 
 		if(payload.startsWith("start\t")) {
 			pendingRatings.remove(scope);
@@ -837,13 +837,13 @@ public class MeshSession implements MeshEndpoint, MeshEventSink {
 
 	// ================================================================ arbiter sink
 
-	/** Routes MeshAuthority output onto the mesh + own mirror + own client */
-	private final class AuthoritySink implements MeshAuthority.Sink {
+	/** Routes RoomAuthority output onto the mesh + own mirror + own client */
+	private final class AuthoritySink implements RoomAuthority.Sink {
 		@Override
 		public void broadcast(int scope, String line, int exceptUid) {
 			seq++;
-			String frame = MeshProtocol.wrapBroadcast(seq, scope, line);
-			for(MeshRoster.Entry e: roster.linkedMembers()) {
+			String frame = RoomProtocol.wrapBroadcast(seq, scope, line);
+			for(RoomRoster.Entry e: roster.linkedMembers()) {
 				if(e.uid != exceptUid) e.link.sendLine(frame);
 			}
 			mirror.applyBroadcast(seq, scope, line);
@@ -855,28 +855,28 @@ public class MeshSession implements MeshEndpoint, MeshEventSink {
 			if(uid == localUid) {
 				deliverToClient(line);
 			} else {
-				MeshRoster.Entry e = roster.get(uid);
-				if((e != null) && (e.link != null)) e.link.sendLine(MeshProtocol.wrapDirect(line));
+				RoomRoster.Entry e = roster.get(uid);
+				if((e != null) && (e.link != null)) e.link.sendLine(RoomProtocol.wrapDirect(line));
 			}
 		}
 
 		@Override
 		public void ruleCache(int uid, String checksum, String compressedData) {
-			sendCacheFrame(MeshProtocol.buildSnapRule(uid, checksum, compressedData));
+			sendCacheFrame(RoomProtocol.buildSnapRule(uid, checksum, compressedData));
 		}
 
 		@Override
 		public void roomRuleCache(int roomId, String compressedData) {
-			sendCacheFrame(MeshProtocol.buildSnapRoomRule(roomId, compressedData));
+			sendCacheFrame(RoomProtocol.buildSnapRoomRule(roomId, compressedData));
 		}
 
 		@Override
 		public void mapCache(int roomId, String compressedData) {
-			sendCacheFrame(MeshProtocol.buildSnapMap(roomId, compressedData));
+			sendCacheFrame(RoomProtocol.buildSnapMap(roomId, compressedData));
 		}
 
 		private void sendCacheFrame(String frame) {
-			for(MeshRoster.Entry e: roster.linkedMembers()) {
+			for(RoomRoster.Entry e: roster.linkedMembers()) {
 				e.link.sendLine(frame);
 			}
 			mirror.applySnapshot(frame.split("\t", -1));
@@ -885,30 +885,30 @@ public class MeshSession implements MeshEndpoint, MeshEventSink {
 		@Override
 		public void authUpdate() {
 			seq++;
-			String authg = MeshProtocol.buildAuthGlobal(seq, authority.getNextUid(), authority.getNextRoomId());
+			String authg = RoomProtocol.buildAuthGlobal(seq, authority.getNextUid(), authority.getNextRoomId());
 			List<String> frames = new ArrayList<String>();
 			frames.add(authg);
 			for(NetRoomInfo room: authority.getRooms()) {
-				frames.add(MeshProtocol.buildAuthRoom(MeshAuthority.buildAuthRoom(seq, room)));
+				frames.add(RoomProtocol.buildAuthRoom(RoomAuthority.buildAuthRoom(seq, room)));
 			}
-			for(MeshRoster.Entry e: roster.linkedMembers()) {
+			for(RoomRoster.Entry e: roster.linkedMembers()) {
 				for(String frame: frames) e.link.sendLine(frame);
 			}
-			mirror.applyAuthGlobal(MeshProtocol.parseAuthGlobal(authg.split("\t", -1)));
+			mirror.applyAuthGlobal(RoomProtocol.parseAuthGlobal(authg.split("\t", -1)));
 			for(int i = 1; i < frames.size(); i++) {
-				mirror.applyAuthRoom(MeshProtocol.parseAuthRoom(frames.get(i).split("\t", -1)));
+				mirror.applyAuthRoom(RoomProtocol.parseAuthRoom(frames.get(i).split("\t", -1)));
 			}
 		}
 	}
 
 	// ================================================================ link loss / liveness / shutdown
 
-	private void onLinkClosedEvent(MeshPeerLink link, String reason) {
+	private void onLinkClosedEvent(RoomPeerLink link, String reason) {
 		synchronized(pendingLinks) {
 			if(pendingLinks.remove(link)) return;   // unbound link died: nothing else to do
 		}
 
-		MeshRoster.Entry entry = roster.getByLink(link);
+		RoomRoster.Entry entry = roster.getByLink(link);
 		if(entry == null) return;
 		entry.link = null;
 
@@ -931,7 +931,7 @@ public class MeshSession implements MeshEndpoint, MeshEventSink {
 			// A direct link to another member died while the arbiter link is
 			// fine: report it so the arbiter can arbitrate a split mesh
 			if((arbiterLink != null) && (roster.get(entry.uid) != null)) {
-				arbiterLink.sendLine(MeshProtocol.buildPeerDown(entry.uid));
+				arbiterLink.sendLine(RoomProtocol.buildPeerDown(entry.uid));
 			}
 		}
 	}
@@ -961,7 +961,7 @@ public class MeshSession implements MeshEndpoint, MeshEventSink {
 		log.info("Promoting self (uid {}) to arbiter, replacing uid {}", localUid, oldArbiterUid);
 
 		mirror.promote();
-		authority = new MeshAuthority(new AuthoritySink(), rand);
+		authority = new RoomAuthority(new AuthoritySink(), rand);
 		authority.adoptState(mirror.getPlayers(), mirror.getRooms(), mirror.getRuleBlobs());
 		authority.restoreCounters(mirror.getNextUid(), mirror.getNextRoomId());
 		seq = mirror.getSeq();
@@ -971,8 +971,8 @@ public class MeshSession implements MeshEndpoint, MeshEventSink {
 		claimDeadline = 0;
 		beaconLobbyName = selfName;
 
-		for(MeshRoster.Entry e: roster.linkedMembers()) {
-			e.link.sendLine(MeshProtocol.buildArbiterClaim(localUid, seq));
+		for(RoomRoster.Entry e: roster.linkedMembers()) {
+			e.link.sendLine(RoomProtocol.buildArbiterClaim(localUid, seq));
 		}
 
 		// Re-baseline everyone, then process the old arbiter's departure
@@ -986,7 +986,7 @@ public class MeshSession implements MeshEndpoint, MeshEventSink {
 	}
 
 	/** A successor announced itself on our existing link to it */
-	private void onArbiterClaim(MeshPeerLink link, String[] parts) {
+	private void onArbiterClaim(RoomPeerLink link, String[] parts) {
 		int claimUid;
 		try {
 			claimUid = Integer.parseInt(parts[2]);
@@ -999,7 +999,7 @@ public class MeshSession implements MeshEndpoint, MeshEventSink {
 		arbiterLink = link;
 		expectedClaimUid = -1;
 		claimDeadline = 0;
-		MeshRoster.Entry entry = roster.get(claimUid);
+		RoomRoster.Entry entry = roster.get(claimUid);
 		if(entry != null) beaconLobbyName = entry.name;
 
 		setState(State.READY, "arbiter is now uid " + claimUid);
@@ -1025,7 +1025,7 @@ public class MeshSession implements MeshEndpoint, MeshEventSink {
 		if(isArbiter()) {
 			authority.handleControl(localUid, line.split("\t", -1));
 		} else if(arbiterLink != null) {
-			arbiterLink.sendLine(MeshProtocol.wrapControl(line));
+			arbiterLink.sendLine(RoomProtocol.wrapControl(line));
 		}
 	}
 
@@ -1045,7 +1045,7 @@ public class MeshSession implements MeshEndpoint, MeshEventSink {
 		Integer count = peerdownReports.get(uid);
 		peerdownReports.put(uid, (count == null) ? 1 : count + 1);
 		if(peerdownWindowEnd == 0) {
-			peerdownWindowEnd = System.currentTimeMillis() + MeshProtocol.PEERDOWN_WINDOW;
+			peerdownWindowEnd = System.currentTimeMillis() + RoomProtocol.PEERDOWN_WINDOW;
 		}
 	}
 
@@ -1064,12 +1064,12 @@ public class MeshSession implements MeshEndpoint, MeshEventSink {
 		peerdownWindowEnd = 0;
 
 		if(victim == -1) return;
-		log.info("Kicking split-mesh member uid {}", victim);
+		log.info("Kicking partially-connected member uid {}", victim);
 
-		for(MeshRoster.Entry e: roster.linkedMembers()) {
-			e.link.sendLine(MeshProtocol.buildKick(victim, "split mesh"));
+		for(RoomRoster.Entry e: roster.linkedMembers()) {
+			e.link.sendLine(RoomProtocol.buildKick(victim, "split links"));
 		}
-		MeshRoster.Entry entry = roster.remove(victim);
+		RoomRoster.Entry entry = roster.remove(victim);
 		memberCountForBeacon = roster.size();
 		if((entry != null) && (entry.link != null)) entry.link.closeAfterFlush("kicked");
 		authority.onMemberGone(victim, false);
@@ -1086,7 +1086,7 @@ public class MeshSession implements MeshEndpoint, MeshEventSink {
 			doShutdown("KICKED");
 			return;
 		}
-		MeshRoster.Entry entry = roster.remove(uid);
+		RoomRoster.Entry entry = roster.remove(uid);
 		memberCountForBeacon = roster.size();
 		if((entry != null) && (entry.link != null)) entry.link.close("kicked by arbiter");
 	}
@@ -1104,7 +1104,7 @@ public class MeshSession implements MeshEndpoint, MeshEventSink {
 
 		// Migration claim never arrived: drop the candidate and recompute
 		if((state == State.MIGRATING) && (claimDeadline > 0) && (now >= claimDeadline)) {
-			MeshRoster.Entry candidate = roster.remove(expectedClaimUid);
+			RoomRoster.Entry candidate = roster.remove(expectedClaimUid);
 			if((candidate != null) && (candidate.link != null)) candidate.link.close("claim timeout");
 			memberCountForBeacon = roster.size();
 			beginMigration();
@@ -1115,19 +1115,19 @@ public class MeshSession implements MeshEndpoint, MeshEventSink {
 			resolvePeerDownWindow();
 		}
 
-		for(MeshRoster.Entry e: roster.linkedMembers()) {
+		for(RoomRoster.Entry e: roster.linkedMembers()) {
 			long idle = now - e.link.lastInboundMillis;
 			if(idle > config.linkTimeout) {
 				e.link.close("timeout");
 			} else if(idle > config.pingInterval) {
-				e.link.sendLine(MeshProtocol.LINE_PING);
+				e.link.sendLine(RoomProtocol.LINE_PING);
 			}
 		}
 	}
 
 	/** Package-private: tests sever one direct link (both TCP ends die) */
 	void severLinkForTest(int uid) {
-		MeshRoster.Entry entry = roster.get(uid);
+		RoomRoster.Entry entry = roster.get(uid);
 		if((entry != null) && (entry.link != null)) entry.link.close("test sever");
 	}
 
@@ -1136,7 +1136,7 @@ public class MeshSession implements MeshEndpoint, MeshEventSink {
 		state = State.CLOSED;
 		tickTimer.cancel();
 		transport.shutdown();
-		queue.add(MeshEvent.tick());   // wake the dispatcher so it observes CLOSED
+		queue.add(RoomEvent.tick());   // wake the dispatcher so it observes CLOSED
 	}
 
 	private void doShutdown(String reason) {
@@ -1148,8 +1148,8 @@ public class MeshSession implements MeshEndpoint, MeshEventSink {
 			announcer.shutdown();
 			announcer = null;
 		}
-		for(MeshRoster.Entry e: roster.linkedMembers()) {
-			e.link.sendLine(MeshProtocol.LINE_BYE);
+		for(RoomRoster.Entry e: roster.linkedMembers()) {
+			e.link.sendLine(RoomProtocol.LINE_BYE);
 			e.link.closeAfterFlush("bye sent");
 		}
 		tickTimer.cancel();

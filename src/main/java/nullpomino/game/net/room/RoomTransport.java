@@ -1,6 +1,6 @@
 // SPDX-FileCopyrightText: 2010 NullNoname
 // SPDX-License-Identifier: BSD-3-Clause
-package nullpomino.game.net.mesh;
+package nullpomino.game.net.room;
 
 import java.io.IOException;
 import java.net.BindException;
@@ -13,20 +13,20 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Listens for and dials mesh peer connections. Contains no protocol
- * logic - it only creates {@link MeshPeerLink}s and pumps events into
- * the {@link MeshEventSink}.
+ * Listens for and dials room peer connections. Contains no protocol
+ * logic - it only creates {@link RoomPeerLink}s and pumps events into
+ * the {@link RoomEventSink}.
  */
-public class MeshTransport {
+public class RoomTransport {
 	/** Log */
-	private static final Logger log = LoggerFactory.getLogger(MeshTransport.class);
+	private static final Logger log = LoggerFactory.getLogger(RoomTransport.class);
 
-	private final MeshEventSink sink;
+	private final RoomEventSink sink;
 	private ServerSocket serverSocket;
 	private volatile boolean shutdownRequested = false;
-	private final CopyOnWriteArrayList<MeshPeerLink> links = new CopyOnWriteArrayList<MeshPeerLink>();
+	private final CopyOnWriteArrayList<RoomPeerLink> links = new CopyOnWriteArrayList<RoomPeerLink>();
 
-	public MeshTransport(MeshEventSink sink) {
+	public RoomTransport(RoomEventSink sink) {
 		this.sink = sink;
 	}
 
@@ -47,11 +47,11 @@ public class MeshTransport {
 			serverSocket = new ServerSocket(0);
 		}
 
-		Thread acceptThread = new Thread(this::acceptLoop, "MeshAccept");
+		Thread acceptThread = new Thread(this::acceptLoop, "RoomAccept");
 		acceptThread.setDaemon(true);
 		acceptThread.start();
 
-		log.info("Mesh transport listening on port {}", serverSocket.getLocalPort());
+		log.info("Room transport listening on port {}", serverSocket.getLocalPort());
 		return serverSocket.getLocalPort();
 	}
 
@@ -59,13 +59,13 @@ public class MeshTransport {
 		try {
 			while(!shutdownRequested) {
 				Socket socket = serverSocket.accept();
-				MeshPeerLink link = new MeshPeerLink(socket, false, sink);
+				RoomPeerLink link = new RoomPeerLink(socket, false, sink);
 				links.add(link);
 				link.start();
 				sink.onLinkAccepted(link);
 			}
 		} catch (IOException e) {
-			if(!shutdownRequested) log.warn("Mesh accept loop stopped", e);
+			if(!shutdownRequested) log.warn("Room accept loop stopped", e);
 		}
 	}
 
@@ -75,10 +75,10 @@ public class MeshTransport {
 	 * @return The started link (handshake is the caller's job)
 	 * @throws IOException When the connection fails
 	 */
-	public MeshPeerLink dial(String host, int port, int timeoutMs) throws IOException {
+	public RoomPeerLink dial(String host, int port, int timeoutMs) throws IOException {
 		Socket socket = new Socket();
 		socket.connect(new InetSocketAddress(host, port), timeoutMs);
-		MeshPeerLink link = new MeshPeerLink(socket, true, sink);
+		RoomPeerLink link = new RoomPeerLink(socket, true, sink);
 		links.add(link);
 		link.start();
 		return link;
@@ -98,8 +98,8 @@ public class MeshTransport {
 		} catch (IOException e) {
 			log.debug("Exception on server socket close", e);
 		}
-		for(MeshPeerLink link: links) {
-			link.close(MeshProtocol.DENY_SHUTDOWN);
+		for(RoomPeerLink link: links) {
+			link.close(RoomProtocol.DENY_SHUTDOWN);
 		}
 	}
 }

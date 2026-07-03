@@ -27,14 +27,14 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * LAN discovery for P2P mesh sessions.
+ * LAN discovery for P2P room sessions.
  * Every peer of a joinable session broadcasts a small UDP announce packet at
  * a fixed interval; the session-select screen listens and shows discovered
  * sessions (deduplicated per session, since every peer announces).
  *
  * <p>Packet format (tab-delimited, UTF-8):
  * {@code NullpoLAN\t2\t[tcpPort]\t[nameEnc]\t[versionMajor]\tM\t[sessionId]\t[lobbyNameEnc]\t[players]}
- * <p>Version-1 (legacy hosted-server) announces still decode as non-mesh
+ * <p>Version-1 (legacy hosted-server) announces still decode as non-room
  * entries so stale clients on the LAN cause no parse noise; the UI ignores them.
  */
 public class NetLanDiscovery {
@@ -50,11 +50,11 @@ public class NetLanDiscovery {
 	/** Announce packet format version (server announce) */
 	public static final int PROTOCOL_VERSION = 1;
 
-	/** Announce packet format version for mesh sessions (old clients reject it silently) */
-	public static final int MESH_PROTOCOL_VERSION = 2;
+	/** Announce packet format version for room sessions (old clients reject it silently) */
+	public static final int ROOM_PROTOCOL_VERSION = 2;
 
-	/** Type marker inside a v2 announce identifying a mesh session */
-	public static final String MESH_TYPE = "M";
+	/** Type marker inside a v2 announce identifying a room session */
+	public static final String ROOM_TYPE = "M";
 
 	/** Delay between announce broadcasts (ms) */
 	public static final int ANNOUNCE_INTERVAL_MS = 1500;
@@ -65,25 +65,25 @@ public class NetLanDiscovery {
 	private NetLanDiscovery() {}
 
 	/**
-	 * Encode a v2 announce packet for a P2P mesh session
-	 * @param tcpPort Port this peer's mesh transport listens on
+	 * Encode a v2 announce packet for a P2P room session
+	 * @param tcpPort Port this peer's room transport listens on
 	 * @param playerName Name of the announcing peer
 	 * @param sessionId Session identifier shared by every peer of the session
 	 * @param lobbyName Display name of the session
 	 * @param players Current number of players in the session
 	 * @return Packet payload
 	 */
-	public static byte[] encodeMeshAnnounce(int tcpPort, String playerName, String sessionId,
+	public static byte[] encodeRoomAnnounce(int tcpPort, String playerName, String sessionId,
 		String lobbyName, int players)
 	{
 		return NetUtil.stringToBytes(
-			MAGIC + "\t" + MESH_PROTOCOL_VERSION + "\t" + tcpPort + "\t" +
+			MAGIC + "\t" + ROOM_PROTOCOL_VERSION + "\t" + tcpPort + "\t" +
 			NetUtil.urlEncode(playerName) + "\t" + GameManager.getVersionMajor() + "\t" +
-			MESH_TYPE + "\t" + sessionId + "\t" + NetUtil.urlEncode(lobbyName) + "\t" + players);
+			ROOM_TYPE + "\t" + sessionId + "\t" + NetUtil.urlEncode(lobbyName) + "\t" + players);
 	}
 
 	/**
-	 * Decode an announce packet (v1 server announce or v2 mesh announce)
+	 * Decode an announce packet (v1 legacy server announce or v2 room announce)
 	 * @param data Packet payload
 	 * @param len Payload length
 	 * @param sourceAddr Address the packet was received from
@@ -105,8 +105,8 @@ public class NetLanDiscovery {
 			if(version == PROTOCOL_VERSION) {
 				return new Announce(sourceAddr, port, name, parts[4]);
 			}
-			if(version == MESH_PROTOCOL_VERSION) {
-				if((parts.length < 9) || !MESH_TYPE.equals(parts[5]) || (parts[6].length() == 0)) return null;
+			if(version == ROOM_PROTOCOL_VERSION) {
+				if((parts.length < 9) || !ROOM_TYPE.equals(parts[5]) || (parts[6].length() == 0)) return null;
 				return new Announce(sourceAddr, port, name, parts[4],
 					parts[6], NetUtil.urlDecode(parts[7]), Integer.parseInt(parts[8]));
 			}
@@ -117,9 +117,9 @@ public class NetLanDiscovery {
 	}
 
 	/**
-	 * Collapse mesh announces of the same session (every peer announces) to one entry each.
+	 * Collapse room announces of the same session (every peer announces) to one entry each.
 	 * The entry with the lexicographically lowest host:port wins, so the pick is stable
-	 * across refreshes. Non-mesh announces pass through untouched.
+	 * across refreshes. Non-room announces pass through untouched.
 	 * @param announces Announces (typically a listener snapshot, already hostPort-sorted)
 	 * @return Deduplicated list, original order preserved
 	 */
@@ -128,12 +128,12 @@ public class NetLanDiscovery {
 		Set<String> seenSessions = new LinkedHashSet<String>();
 
 		for(Announce a: announces) {
-			if(!a.mesh) {
+			if(!a.room) {
 				result.add(a);
 			} else if(!seenSessions.contains(a.sessionId)) {
 				Announce best = a;
 				for(Announce b: announces) {
-					if(b.mesh && b.sessionId.equals(a.sessionId)
+					if(b.room && b.sessionId.equals(a.sessionId)
 						&& (b.hostPort().compareTo(best.hostPort()) < 0)) best = b;
 				}
 				result.add(best);
@@ -163,21 +163,21 @@ public class NetLanDiscovery {
 		/** Time the announce was received (System.currentTimeMillis()) */
 		public final long lastSeen;
 
-		/** true if this announce is a P2P mesh session (v2), false for a server (v1) */
-		public final boolean mesh;
+		/** true if this announce is a P2P room session (v2), false for a server (v1) */
+		public final boolean room;
 
-		/** Session identifier shared by all peers of a mesh session, "" for servers */
+		/** Session identifier shared by all peers of a room session, "" for servers */
 		public final String sessionId;
 
-		/** Display name of the mesh session, "" for servers */
+		/** Display name of the room session, "" for servers */
 		public final String lobbyName;
 
-		/** Number of players in the mesh session, 0 for servers */
+		/** Number of players in the room session, 0 for servers */
 		public final int players;
 
 		public Announce(String address, int port, String playerName, String version) {
 			this(address, port, playerName, version, "", "", 0);
-			// v1 server announce - the mesh fields stay empty
+			// v1 server announce - the room fields stay empty
 		}
 
 		public Announce(String address, int port, String playerName, String version,
@@ -188,7 +188,7 @@ public class NetLanDiscovery {
 			this.playerName = playerName;
 			this.version = version;
 			this.lastSeen = System.currentTimeMillis();
-			this.mesh = (sessionId != null) && (sessionId.length() > 0);
+			this.room = (sessionId != null) && (sessionId.length() > 0);
 			this.sessionId = (sessionId == null) ? "" : sessionId;
 			this.lobbyName = (lobbyName == null) ? "" : lobbyName;
 			this.players = players;

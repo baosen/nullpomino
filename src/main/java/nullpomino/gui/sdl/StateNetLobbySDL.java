@@ -379,7 +379,7 @@ public class StateNetLobbySDL extends BaseStateSDL {
 
 		NormalFontSDL.printFont(8, 8, "LOBBY", NormalFontSDL.COLOR_CYAN);
 		if(nl.netPlayerClient != null) {
-			// For mesh sessions this is the address to give friends who need
+			// For room sessions this is the address to give friends who need
 			// a DIRECT join (the seam reports the arbiter/LAN address)
 			NormalFontSDL.printFont(96, 8,
 					NormalFontSDL.safeString(nl.netPlayerClient.getHost() + ":" + nl.netPlayerClient.getPort()),

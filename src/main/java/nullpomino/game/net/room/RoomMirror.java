@@ -1,6 +1,6 @@
 // SPDX-FileCopyrightText: 2010 NullNoname
 // SPDX-License-Identifier: BSD-3-Clause
-package nullpomino.game.net.mesh;
+package nullpomino.game.net.room;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -23,14 +23,14 @@ import org.slf4j.LoggerFactory;
  * Passive replica of the authority state, maintained on EVERY peer (arbiter
  * included) from the broadcast stream, the auth-extras frames, and the cache
  * frames. When the arbiter disappears, {@link #promote()} turns the replica
- * into live objects a fresh {@link MeshAuthority} can adopt losslessly.
+ * into live objects a fresh {@link RoomAuthority} can adopt losslessly.
  *
  * <p>All methods are dispatcher-confined. Application is idempotent and
  * order-tolerant within one seq: auth frames overwrite wholesale.
  */
-public class MeshMirror {
+public class RoomMirror {
 	/** Log */
-	private static final Logger log = LoggerFactory.getLogger(MeshMirror.class);
+	private static final Logger log = LoggerFactory.getLogger(RoomMirror.class);
 
 	/** Players by uid (identity preserved across updates) */
 	private final LinkedHashMap<Integer, NetPlayerInfo> players = new LinkedHashMap<Integer, NetPlayerInfo>();
@@ -87,25 +87,25 @@ public class MeshMirror {
 			NetRoomInfo room = getRoom(scope);
 			if(room != null) {
 				room.chatList.add(chatFromBroadcast(m, scope));
-				while(room.chatList.size() > MeshAuthority.MAX_ROOMCHAT_HISTORY) room.chatList.removeFirst();
+				while(room.chatList.size() > RoomAuthority.MAX_ROOMCHAT_HISTORY) room.chatList.removeFirst();
 			}
 		} else if(m[0].equals("lobbychat")) {
 			lobbyChatList.add(chatFromBroadcast(m, -1));
-			while(lobbyChatList.size() > MeshAuthority.MAX_LOBBYCHAT_HISTORY) lobbyChatList.removeFirst();
+			while(lobbyChatList.size() > RoomAuthority.MAX_LOBBYCHAT_HISTORY) lobbyChatList.removeFirst();
 		}
 		// start/dead/finish/changestatus/... need no mirror action: the auth
 		// frames that follow every mutation carry the resulting state
 	}
 
 	/** Apply a global auth-extras frame */
-	public void applyAuthGlobal(MeshProtocol.AuthGlobal g) {
+	public void applyAuthGlobal(RoomProtocol.AuthGlobal g) {
 		if(g.seq > this.seq) this.seq = g.seq;
 		this.nextUid = g.nextUid;
 		this.nextRoomId = g.nextRoomId;
 	}
 
 	/** Apply a per-room auth-extras frame (wholesale overwrite) */
-	public void applyAuthRoom(MeshProtocol.AuthRoom a) {
+	public void applyAuthRoom(RoomProtocol.AuthRoom a) {
 		if(a.seq > this.seq) this.seq = a.seq;
 		NetRoomInfo room = getRoom(a.roomId);
 		if(room == null) {
@@ -137,7 +137,7 @@ public class MeshMirror {
 	}
 
 	/**
-	 * Apply one snapshot/cache frame ({@code mesh\tsnap\t...}). Valid both
+	 * Apply one snapshot/cache frame ({@code room\tsnap\t...}). Valid both
 	 * during the join handshake and live (rule/map dissemination).
 	 */
 	public void applySnapshot(String[] parts) {
@@ -183,7 +183,7 @@ public class MeshMirror {
 	// ================================================================ promotion
 
 	/**
-	 * Prepare the replica for adoption by a successor {@link MeshAuthority}:
+	 * Prepare the replica for adoption by a successor {@link RoomAuthority}:
 	 * rebuild each room's playerList (uid order - deterministic on every
 	 * peer), and restore the objects that travel only as compressed caches
 	 * (player rules, room rules, map lists).

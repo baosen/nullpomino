@@ -1,6 +1,6 @@
 // SPDX-FileCopyrightText: 2010 NullNoname
 // SPDX-License-Identifier: BSD-3-Clause
-package nullpomino.game.net.mesh;
+package nullpomino.game.net.room;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -22,22 +22,22 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 
 /**
- * Full-stack three-peer integration: real MeshSessions over real sockets,
- * each fronted by the NetMeshPlayerClient seam and a NetLobbyFrame with its
+ * Full-stack three-peer integration: real RoomSessions over real sockets,
+ * each fronted by the NetRoomPlayerClient seam and a NetLobbyFrame with its
  * own pump loop - the exact wiring the SDL client uses. Covers session
  * formation, multi-room isolation, a full rated round, mid-game arbiter
  * migration with a follow-up rematch, and queue promotion on leave.
  */
-class MeshClientIntegrationTest {
+class RoomClientIntegrationTest {
 
     /** One peer: session + seam + lobby + pump thread + recorded events */
     private final class Peer {
-        final MeshSession session;
+        final RoomSession session;
         final NetLobbyFrame nl;
         final BlockingQueue<String> messages = new LinkedBlockingQueue<String>();
         volatile boolean pumping = true;
 
-        Peer(MeshSession session, String name) {
+        Peer(RoomSession session, String name) {
             this.session = session;
             nl = new NetLobbyFrame();
             nl.init();
@@ -52,7 +52,7 @@ class MeshClientIntegrationTest {
                 }
                 public void netlobbyOnExit(NetLobbyFrame lobby) {}
             });
-            nl.connectToMesh(name, "", session);
+            nl.connectToRoom(name, "", session);
             Thread pump = new Thread(() -> {
                 while (pumping) {
                     nl.pump();
@@ -103,22 +103,22 @@ class MeshClientIntegrationTest {
         }
     }
 
-    private static MeshConfig testConfig() {
-        MeshConfig config = new MeshConfig();
+    private static RoomConfig testConfig() {
+        RoomConfig config = new RoomConfig();
         config.listenPort = 0;
         config.lanAnnounce = false;
         return config;
     }
 
     private Peer createPeer(String name) throws Exception {
-        Peer p = new Peer(MeshSession.create(name, testConfig(), null), name);
+        Peer p = new Peer(RoomSession.create(name, testConfig(), null), name);
         peers.add(p);
         p.awaitLobbyMode(NetLobbyFrame.LOBBYMODE_LOBBY);
         return p;
     }
 
     private Peer joinPeer(Peer target, String name) throws Exception {
-        Peer p = new Peer(MeshSession.join("127.0.0.1", target.session.getListenPort(),
+        Peer p = new Peer(RoomSession.join("127.0.0.1", target.session.getListenPort(),
                 name, testConfig(), null), name);
         peers.add(p);
         p.awaitLobbyMode(NetLobbyFrame.LOBBYMODE_LOBBY);

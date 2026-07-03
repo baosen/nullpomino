@@ -12,20 +12,20 @@ import nullpomino.game.net.NetPlayerClient;
 import nullpomino.game.net.NetPlayerInfo;
 import nullpomino.game.net.NetRoomInfo;
 import nullpomino.game.net.NetUtil;
-import nullpomino.game.net.mesh.MeshEndpoint;
+import nullpomino.game.net.room.RoomEndpoint;
 
 import org.junit.jupiter.api.Test;
 
 /**
- * The mesh ordering acceptance spec: NetLobbyFrame over the
- * NetMeshPlayerClient seam must reach LOBBY on the standard login sequence
+ * The room ordering acceptance spec: NetLobbyFrame over the
+ * NetRoomPlayerClient seam must reach LOBBY on the standard login sequence
  * and INROOM on the standard join sequence - and must NOT reach INROOM when
  * the sequence is delivered out of order (this pins the ordering contract
- * the mesh core has to honor).
+ * the room core has to honor).
  */
-class NetLobbyFrameMeshTest {
+class NetLobbyFrameRoomTest {
 
-    private static final class FakeMeshEndpoint implements MeshEndpoint {
+    private static final class FakeRoomEndpoint implements RoomEndpoint {
         final List<String> sent = new ArrayList<String>();
         LineListener lineListener;
         ClosedListener closedListener;
@@ -65,7 +65,7 @@ class NetLobbyFrameMeshTest {
     }
 
     private NetLobbyFrame nl;
-    private FakeMeshEndpoint mesh;
+    private FakeRoomEndpoint endpoint;
     private RecordingListener events;
 
     private void connect() {
@@ -73,8 +73,8 @@ class NetLobbyFrameMeshTest {
         nl.init();
         events = new RecordingListener();
         nl.addListener(events);
-        mesh = new FakeMeshEndpoint();
-        nl.connectToMesh("Alice", "", mesh);
+        endpoint = new FakeRoomEndpoint();
+        nl.connectToRoom("Alice", "", endpoint);
     }
 
     private static String selfBlob(int roomID, int seatID) {
@@ -98,26 +98,26 @@ class NetLobbyFrameMeshTest {
 
     /** The standard synthesized login sequence up to LOBBY */
     private void driveLogin() {
-        mesh.emit("welcome\t1.0\t1\t0\t0\t1.0.0\t5000\tfalse");
-        mesh.emit("loginsuccess\t" + NetUtil.urlEncode("Alice") + "\t0");
-        mesh.emit("playerlist\t1\t" + selfBlob(-1, -1));
-        mesh.emit("roomlist\t0");
+        endpoint.emit("welcome\t1.0\t1\t0\t0\t1.0.0\t5000\tfalse");
+        endpoint.emit("loginsuccess\t" + NetUtil.urlEncode("Alice") + "\t0");
+        endpoint.emit("playerlist\t1\t" + selfBlob(-1, -1));
+        endpoint.emit("roomlist\t0");
         nl.pump();
-        mesh.emit("ruledatasuccess");
+        endpoint.emit("ruledatasuccess");
         nl.pump();
     }
 
     @Test
     void loginSequenceReachesLobby() {
         connect();
-        assertTrue(nl.isMeshSession());
+        assertTrue(nl.isRoomSession());
 
         driveLogin();
 
         assertEquals(NetLobbyFrame.LOBBYMODE_LOBBY, nl.lobbyMode);
         assertTrue(events.loginOK, "netlobbyOnLoginOK must fire on ruledatasuccess");
-        assertTrue(mesh.sentStartingWith("login\t"), "The seam self-drives the login line");
-        assertTrue(mesh.sentStartingWith("ruledata\t"), "loginsuccess triggers the rule upload");
+        assertTrue(endpoint.sentStartingWith("login\t"), "The seam self-drives the login line");
+        assertTrue(endpoint.sentStartingWith("ruledata\t"), "loginsuccess triggers the rule upload");
     }
 
     @Test
@@ -126,9 +126,9 @@ class NetLobbyFrameMeshTest {
         driveLogin();
 
         // roomupdate -> playerupdate(self) -> roomjoinsuccess LAST
-        mesh.emit("roomcreate\t" + roomBlob());
-        mesh.emit("playerupdate\t" + selfBlob(0, 0));
-        mesh.emit("roomjoinsuccess\t0\t0\t-1");
+        endpoint.emit("roomcreate\t" + roomBlob());
+        endpoint.emit("playerupdate\t" + selfBlob(0, 0));
+        endpoint.emit("roomjoinsuccess\t0\t0\t-1");
         nl.pump();
 
         assertEquals(NetLobbyFrame.LOBBYMODE_INROOM, nl.lobbyMode);
@@ -142,8 +142,8 @@ class NetLobbyFrameMeshTest {
         driveLogin();
 
         // Out of order: roomjoinsuccess arrives before the room exists in the mirror.
-        // This is exactly what the mesh core must never do.
-        mesh.emit("roomjoinsuccess\t0\t0\t-1");
+        // This is exactly what the room core must never do.
+        endpoint.emit("roomjoinsuccess\t0\t0\t-1");
         nl.pump();
 
         assertNotEquals(NetLobbyFrame.LOBBYMODE_INROOM, nl.lobbyMode);
@@ -154,13 +154,13 @@ class NetLobbyFrameMeshTest {
     void returnToLobbyFiresRoomLeave() {
         connect();
         driveLogin();
-        mesh.emit("roomcreate\t" + roomBlob());
-        mesh.emit("playerupdate\t" + selfBlob(0, 0));
-        mesh.emit("roomjoinsuccess\t0\t0\t-1");
+        endpoint.emit("roomcreate\t" + roomBlob());
+        endpoint.emit("playerupdate\t" + selfBlob(0, 0));
+        endpoint.emit("roomjoinsuccess\t0\t0\t-1");
         nl.pump();
 
-        mesh.emit("playerupdate\t" + selfBlob(-1, -1));
-        mesh.emit("roomjoinsuccess\t-1\t-1\t-1");
+        endpoint.emit("playerupdate\t" + selfBlob(-1, -1));
+        endpoint.emit("roomjoinsuccess\t-1\t-1\t-1");
         nl.pump();
 
         assertEquals(NetLobbyFrame.LOBBYMODE_LOBBY, nl.lobbyMode);
@@ -172,7 +172,7 @@ class NetLobbyFrameMeshTest {
         connect();
         driveLogin();
 
-        mesh.closedListener.onClosed("ARBITER_LOST");
+        endpoint.closedListener.onClosed("ARBITER_LOST");
         nl.pump();
 
         assertTrue(events.disconnected);
@@ -186,6 +186,6 @@ class NetLobbyFrameMeshTest {
 
         nl.shutdown();   // must not throw on the never-started seam thread
 
-        assertTrue(mesh.sentStartingWith("disconnect"), "Graceful leave goes through the seam");
+        assertTrue(endpoint.sentStartingWith("disconnect"), "Graceful leave goes through the seam");
     }
 }

@@ -1,6 +1,6 @@
 // SPDX-FileCopyrightText: 2010 NullNoname
 // SPDX-License-Identifier: BSD-3-Clause
-package nullpomino.game.net.mesh;
+package nullpomino.game.net.room;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -17,29 +17,29 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 
 /**
- * Loopback-socket tests for {@link MeshTransport} and {@link MeshPeerLink}:
+ * Loopback-socket tests for {@link RoomTransport} and {@link RoomPeerLink}:
  * accept/dial, line delivery both ways, partial-packet reassembly,
  * close-once semantics, ephemeral fallback, and write-overflow.
  */
-class MeshTransportTest {
+class RoomTransportTest {
 
     /** Records every sink event into inspectable queues */
-    private static final class RecordingSink implements MeshEventSink {
-        final BlockingQueue<MeshPeerLink> accepted = new LinkedBlockingQueue<MeshPeerLink>();
+    private static final class RecordingSink implements RoomEventSink {
+        final BlockingQueue<RoomPeerLink> accepted = new LinkedBlockingQueue<RoomPeerLink>();
         final BlockingQueue<String> lines = new LinkedBlockingQueue<String>();
         final BlockingQueue<String> closes = new LinkedBlockingQueue<String>();
         final AtomicInteger closeCount = new AtomicInteger();
 
-        public void onLinkAccepted(MeshPeerLink link) { accepted.add(link); }
-        public void onLine(MeshPeerLink link, String line) { lines.add(line); }
-        public void onLinkClosed(MeshPeerLink link, String reason) {
+        public void onLinkAccepted(RoomPeerLink link) { accepted.add(link); }
+        public void onLine(RoomPeerLink link, String line) { lines.add(line); }
+        public void onLinkClosed(RoomPeerLink link, String reason) {
             closeCount.incrementAndGet();
             closes.add(reason);
         }
     }
 
-    private MeshTransport transportA;
-    private MeshTransport transportB;
+    private RoomTransport transportA;
+    private RoomTransport transportB;
 
     @AfterEach
     void tearDown() {
@@ -51,40 +51,40 @@ class MeshTransportTest {
     void dialAcceptAndExchangeLines() throws Exception {
         RecordingSink sinkA = new RecordingSink();
         RecordingSink sinkB = new RecordingSink();
-        transportA = new MeshTransport(sinkA);
-        transportB = new MeshTransport(sinkB);
+        transportA = new RoomTransport(sinkA);
+        transportB = new RoomTransport(sinkB);
         int portA = transportA.startListening(0);
 
-        MeshPeerLink bToA = transportB.dial("127.0.0.1", portA, 2000);
-        MeshPeerLink aToB = sinkA.accepted.poll(5, TimeUnit.SECONDS);
+        RoomPeerLink bToA = transportB.dial("127.0.0.1", portA, 2000);
+        RoomPeerLink aToB = sinkA.accepted.poll(5, TimeUnit.SECONDS);
         assertNotNull(aToB);
         assertTrue(bToA.outbound);
         assertFalse(aToB.outbound);
 
-        bToA.sendLine("mesh\thello\tjoin\t7.5\tfalse\t9202\tSomeone");
-        assertEquals("mesh\thello\tjoin\t7.5\tfalse\t9202\tSomeone",
+        bToA.sendLine("room\thello\tjoin\t7.5\tfalse\t9202\tSomeone");
+        assertEquals("room\thello\tjoin\t7.5\tfalse\t9202\tSomeone",
                 sinkA.lines.poll(5, TimeUnit.SECONDS));
 
-        aToB.sendLine("mesh\tpeerok\t0");
-        assertEquals("mesh\tpeerok\t0", sinkB.lines.poll(5, TimeUnit.SECONDS));
+        aToB.sendLine("room\tpeerok\t0");
+        assertEquals("room\tpeerok\t0", sinkB.lines.poll(5, TimeUnit.SECONDS));
     }
 
     @Test
     void partialPacketsAreReassembled() throws Exception {
         RecordingSink sinkA = new RecordingSink();
-        transportA = new MeshTransport(sinkA);
+        transportA = new RoomTransport(sinkA);
         int portA = transportA.startListening(0);
 
         try (Socket raw = new Socket("127.0.0.1", portA)) {
             OutputStream out = raw.getOutputStream();
-            out.write("mesh\tpi".getBytes(StandardCharsets.UTF_8));
+            out.write("room\tpi".getBytes(StandardCharsets.UTF_8));
             out.flush();
             Thread.sleep(50);
-            out.write("ng\nmesh\tpong\n".getBytes(StandardCharsets.UTF_8));
+            out.write("ng\nroom\tpong\n".getBytes(StandardCharsets.UTF_8));
             out.flush();
 
-            assertEquals("mesh\tping", sinkA.lines.poll(5, TimeUnit.SECONDS));
-            assertEquals("mesh\tpong", sinkA.lines.poll(5, TimeUnit.SECONDS));
+            assertEquals("room\tping", sinkA.lines.poll(5, TimeUnit.SECONDS));
+            assertEquals("room\tpong", sinkA.lines.poll(5, TimeUnit.SECONDS));
         }
     }
 
@@ -92,12 +92,12 @@ class MeshTransportTest {
     void closeFiresExactlyOncePerSide() throws Exception {
         RecordingSink sinkA = new RecordingSink();
         RecordingSink sinkB = new RecordingSink();
-        transportA = new MeshTransport(sinkA);
-        transportB = new MeshTransport(sinkB);
+        transportA = new RoomTransport(sinkA);
+        transportB = new RoomTransport(sinkB);
         int portA = transportA.startListening(0);
 
-        MeshPeerLink bToA = transportB.dial("127.0.0.1", portA, 2000);
-        MeshPeerLink aToB = sinkA.accepted.poll(5, TimeUnit.SECONDS);
+        RoomPeerLink bToA = transportB.dial("127.0.0.1", portA, 2000);
+        RoomPeerLink aToB = sinkA.accepted.poll(5, TimeUnit.SECONDS);
         assertNotNull(aToB);
 
         bToA.close("test close");
@@ -115,7 +115,7 @@ class MeshTransportTest {
     void busyPortFallsBackToEphemeral() throws Exception {
         try (ServerSocket blocker = new ServerSocket(0)) {
             RecordingSink sink = new RecordingSink();
-            transportA = new MeshTransport(sink);
+            transportA = new RoomTransport(sink);
             int bound = transportA.startListening(blocker.getLocalPort());
 
             assertTrue(bound > 0);
@@ -127,12 +127,12 @@ class MeshTransportTest {
     @Test
     void writeQueueOverflowClosesLink() throws Exception {
         RecordingSink sinkA = new RecordingSink();
-        transportA = new MeshTransport(sinkA);
+        transportA = new RoomTransport(sinkA);
         int portA = transportA.startListening(0);
 
         // Raw socket that never reads, so the peer's writes eventually queue up
         try (Socket raw = new Socket("127.0.0.1", portA)) {
-            MeshPeerLink aLink = sinkA.accepted.poll(5, TimeUnit.SECONDS);
+            RoomPeerLink aLink = sinkA.accepted.poll(5, TimeUnit.SECONDS);
             assertNotNull(aLink);
 
             // Tiny queue via the package-private capacity: rebuild a link on the same
@@ -141,7 +141,7 @@ class MeshTransportTest {
             try (ServerSocket server = new ServerSocket(0)) {
                 Socket writerSide = new Socket("127.0.0.1", server.getLocalPort());
                 try (Socket readerSide = server.accept()) {
-                    MeshPeerLink tiny = new MeshPeerLink(writerSide, true, sinkC, 2);
+                    RoomPeerLink tiny = new RoomPeerLink(writerSide, true, sinkC, 2);
                     // Do NOT start() - without a writer thread the queue only fills
                     tiny.sendLine("one");
                     tiny.sendLine("two");

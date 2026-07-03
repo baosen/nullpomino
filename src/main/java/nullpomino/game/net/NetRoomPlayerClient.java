@@ -5,46 +5,46 @@ package nullpomino.game.net;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 
-import nullpomino.game.net.mesh.MeshEndpoint;
+import nullpomino.game.net.room.RoomEndpoint;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * {@link NetPlayerClient} over a P2P mesh session instead of a server
- * socket. Synthesized lines from the mesh enter the inherited
+ * {@link NetPlayerClient} over a P2P room session instead of a server
+ * socket. Synthesized lines from the room session enter the inherited
  * {@link #processPacket} (mirrors update, listeners fan out - exactly the
- * socket reader path), and outbound {@link #send} routes into the mesh.
+ * socket reader path), and outbound {@link #send} routes into the room session.
  * Never {@code start()}ed as a Thread; there is no socket.
  */
-public class NetMeshPlayerClient extends NetPlayerClient {
+public class NetRoomPlayerClient extends NetPlayerClient {
 	/** Log */
-	private static final Logger log = LoggerFactory.getLogger(NetMeshPlayerClient.class);
+	private static final Logger log = LoggerFactory.getLogger(NetRoomPlayerClient.class);
 
-	private final MeshEndpoint mesh;
+	private final RoomEndpoint room;
 
-	public NetMeshPlayerClient(MeshEndpoint mesh, String name, String team) {
+	public NetRoomPlayerClient(RoomEndpoint room, String name, String team) {
 		super();
-		this.mesh = mesh;
+		this.room = room;
 		this.playerName = name;
 		this.playerTeam = (team == null) ? "" : team.trim();
-		this.host = mesh.getDisplayHost();
-		this.port = mesh.getListenPort();
+		this.host = room.getDisplayHost();
+		this.port = room.getListenPort();
 		this.ip = this.host;
 	}
 
 	/**
-	 * Attach to the mesh and trigger the synthesized {@code welcome}, after
+	 * Attach to the room session and trigger the synthesized {@code welcome}, after
 	 * which the inherited handlers drive the login sequence themselves.
 	 */
 	public void connect() {
 		connectedFlag = true;
-		mesh.setLineListener(this::onMeshLine);
-		mesh.setClosedListener(this::onMeshClosed);
-		mesh.clientReady();
+		room.setLineListener(this::onRoomLine);
+		room.setClosedListener(this::onRoomClosed);
+		room.clientReady();
 	}
 
-	private void onMeshLine(String line) {
+	private void onRoomLine(String line) {
 		try {
 			processPacket(line);
 		} catch (IOException e) {
@@ -52,11 +52,11 @@ public class NetMeshPlayerClient extends NetPlayerClient {
 		}
 	}
 
-	private void onMeshClosed(String reason) {
+	private void onRoomClosed(String reason) {
 		if(!connectedFlag) return;
 		connectedFlag = false;
 
-		Throwable cause = new IOException("Mesh session closed: " + reason);
+		Throwable cause = new IOException("Room session closed: " + reason);
 		for(int i = 0; i < listeners.size(); i++) {
 			try {
 				listeners.get(i).netOnDisconnect(this, cause);
@@ -69,7 +69,7 @@ public class NetMeshPlayerClient extends NetPlayerClient {
 	@Override
 	public boolean send(String msg) {
 		if(!connectedFlag) return false;
-		mesh.sendLine(msg);
+		room.sendLine(msg);
 		return true;
 	}
 
@@ -80,21 +80,21 @@ public class NetMeshPlayerClient extends NetPlayerClient {
 
 	@Override
 	public boolean isConnected() {
-		return connectedFlag && mesh.isOpen();
+		return connectedFlag && room.isOpen();
 	}
 
 	@Override
 	public void startPingTask() {
-		// The mesh core owns keepalive
+		// The room core owns keepalive
 	}
 
 	@Override
 	public void startPingTask(long interval) {
-		// The mesh core owns keepalive
+		// The room core owns keepalive
 	}
 
 	@Override
 	public void run() {
-		log.warn("NetMeshPlayerClient is not a thread; use connect()");
+		log.warn("NetRoomPlayerClient is not a thread; use connect()");
 	}
 }

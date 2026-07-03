@@ -1,6 +1,6 @@
 // SPDX-FileCopyrightText: 2010 NullNoname
 // SPDX-License-Identifier: BSD-3-Clause
-package nullpomino.game.net.mesh;
+package nullpomino.game.net.room;
 
 import java.io.IOException;
 import java.io.OutputStream;
@@ -14,16 +14,16 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * One TCP connection to another mesh peer. Owns two daemon threads:
+ * One TCP connection to another room peer. Owns two daemon threads:
  * a reader (blocking read, line reassembly via
  * {@link NetUtil#processPacketBuffer}, events into the sink) and a writer
  * draining a bounded queue - so a peer with a full TCP buffer can never
  * block the dispatcher or another peer. Queue overflow closes the link:
  * a consumer that far behind is effectively dead.
  */
-public class MeshPeerLink {
+public class RoomPeerLink {
 	/** Log */
-	private static final Logger log = LoggerFactory.getLogger(MeshPeerLink.class);
+	private static final Logger log = LoggerFactory.getLogger(RoomPeerLink.class);
 
 	/** Read buffer size (same as NetBaseClient) */
 	private static final int BUF_SIZE = 2048;
@@ -35,7 +35,7 @@ public class MeshPeerLink {
 	private static final byte[] FLUSH_CLOSE_MARKER = new byte[0];
 
 	private final Socket socket;
-	private final MeshEventSink sink;
+	private final RoomEventSink sink;
 	private final LinkedBlockingQueue<byte[]> writeQueue;
 	private final AtomicBoolean closed = new AtomicBoolean(false);
 
@@ -48,12 +48,12 @@ public class MeshPeerLink {
 	/** Time of the last inbound byte (liveness) */
 	public volatile long lastInboundMillis = System.currentTimeMillis();
 
-	public MeshPeerLink(Socket socket, boolean outbound, MeshEventSink sink) {
-		this(socket, outbound, sink, MeshProtocol.WRITE_QUEUE_MAX);
+	public RoomPeerLink(Socket socket, boolean outbound, RoomEventSink sink) {
+		this(socket, outbound, sink, RoomProtocol.WRITE_QUEUE_MAX);
 	}
 
 	/** Package-private: tests inject a small write-queue capacity */
-	MeshPeerLink(Socket socket, boolean outbound, MeshEventSink sink, int writeQueueCapacity) {
+	RoomPeerLink(Socket socket, boolean outbound, RoomEventSink sink, int writeQueueCapacity) {
 		this.socket = socket;
 		this.outbound = outbound;
 		this.sink = sink;
@@ -62,11 +62,11 @@ public class MeshPeerLink {
 
 	/** Start the reader and writer threads */
 	public void start() {
-		Thread reader = new Thread(this::readLoop, "MeshLinkReader-" + getRemoteAddress());
+		Thread reader = new Thread(this::readLoop, "RoomLinkReader-" + getRemoteAddress());
 		reader.setDaemon(true);
 		reader.start();
 
-		Thread writer = new Thread(this::writeLoop, "MeshLinkWriter-" + getRemoteAddress());
+		Thread writer = new Thread(this::writeLoop, "RoomLinkWriter-" + getRemoteAddress());
 		writer.setDaemon(true);
 		writer.start();
 	}
@@ -137,7 +137,7 @@ public class MeshPeerLink {
 	}
 
 	/**
-	 * Close the link. Idempotent; fires {@link MeshEventSink#onLinkClosed}
+	 * Close the link. Idempotent; fires {@link RoomEventSink#onLinkClosed}
 	 * exactly once, from whichever caller wins.
 	 */
 	public void close(String reason) {

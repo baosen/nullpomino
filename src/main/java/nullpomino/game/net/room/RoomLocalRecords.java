@@ -1,6 +1,6 @@
 // SPDX-FileCopyrightText: 2010 NullNoname
 // SPDX-License-Identifier: BSD-3-Clause
-package nullpomino.game.net.mesh;
+package nullpomino.game.net.room;
 
 import java.io.IOException;
 import java.util.LinkedList;
@@ -29,9 +29,9 @@ import org.slf4j.LoggerFactory;
  * <p>By construction this is honor-system data: every peer self-reports its
  * rating baseline and keeps its own view of the leaderboard.
  */
-public class MeshLocalRecords {
+public class RoomLocalRecords {
 	/** Log */
-	private static final Logger log = LoggerFactory.getLogger(MeshLocalRecords.class);
+	private static final Logger log = LoggerFactory.getLogger(RoomLocalRecords.class);
 
 	/** Leaderboard size cap (NetServer default) */
 	public static final int MAX_MPRANKING = 100;
@@ -60,12 +60,12 @@ public class MeshLocalRecords {
 	/** Local SP rankings, created on demand per (rule, mode, gameType) */
 	private final LinkedList<NetSPRanking> spRankings = new LinkedList<NetSPRanking>();
 
-	public MeshLocalRecords() {
+	public RoomLocalRecords() {
 		this("config/setting");
 	}
 
 	/** Tests inject a temp directory */
-	public MeshLocalRecords(String dir) {
+	public RoomLocalRecords(String dir) {
 		myDataFile = dir + "/netplay_mydata.cfg";
 		mpRankingFile = dir + "/netplay_mpranking.cfg";
 		spRankingFile = dir + "/netplay_spranking.cfg";
@@ -80,7 +80,7 @@ public class MeshLocalRecords {
 	public void loadInto(NetPlayerInfo pInfo) {
 		CustomProperties prop = CustomProperties.loadFromFileOrEmpty(myDataFile);
 		for(int style = 0; style < GameEngine.MAX_GAMESTYLE; style++) {
-			pInfo.rating[style] = prop.getProperty("mydata." + style + ".rating", MeshRating.RATING_DEFAULT);
+			pInfo.rating[style] = prop.getProperty("mydata." + style + ".rating", RoomRating.RATING_DEFAULT);
 			pInfo.playCount[style] = prop.getProperty("mydata." + style + ".playCount", 0);
 			pInfo.winCount[style] = prop.getProperty("mydata." + style + ".winCount", 0);
 		}
@@ -177,7 +177,7 @@ public class MeshLocalRecords {
 				String name = prop.getProperty(key + "name", "");
 				if(name.length() == 0) continue;
 				mpRanking[style].add(new MPEntry(NetUtil.urlDecode(name),
-					prop.getProperty(key + "rating", MeshRating.RATING_DEFAULT),
+					prop.getProperty(key + "rating", RoomRating.RATING_DEFAULT),
 					prop.getProperty(key + "playCount", 0),
 					prop.getProperty(key + "winCount", 0)));
 			}

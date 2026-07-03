@@ -1,12 +1,12 @@
 // SPDX-FileCopyrightText: 2010 NullNoname
 // SPDX-License-Identifier: BSD-3-Clause
-package nullpomino.game.net.mesh;
+package nullpomino.game.net.room;
 
 /**
- * ELO rating math for rated mesh games - the same formulas NetServer uses,
- * with its default parameters (mesh has no server config to tune them).
+ * ELO rating math for rated room games - the same formulas NetServer uses,
+ * with its default parameters (P2P rooms have no server config to tune them).
  */
-public final class MeshRating {
+public final class RoomRating {
 	/** Rating floor/ceiling */
 	public static final int RATING_MIN = 0;
 	public static final int RATING_MAX = 99999;
@@ -20,7 +20,7 @@ public final class MeshRating {
 	/** Number of games with the boosted provisional K-value */
 	public static final int PROVISIONAL_GAMES = 50;
 
-	private MeshRating() {}
+	private RoomRating() {}
 
 	/**
 	 * Rating change for one pairwise result.

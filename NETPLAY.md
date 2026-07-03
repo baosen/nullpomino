@@ -21,8 +21,8 @@ automatically and the session (even a game in progress) continues.
    always has. ESC in-game returns to the lobby.
 
 Internet play: every peer must be able to reach every other peer, so each
-player forwards their mesh TCP port (default **9202**, `netmesh.port` in
-`config/etc/netmesh.cfg`) and joins via DIRECT. Two players behind the same
+player forwards their mesh TCP port (default **9202**, `netroom.port` in
+`config/etc/netroom.cfg`) and joins via DIRECT. Two players behind the same
 NAT joining a remote session may fail to connect to each other (no hairpin
 support); LAN and one-NAT-per-player setups work.
 
@@ -40,7 +40,7 @@ support); LAN and one-NAT-per-player setups work.
 
 - **Control plane** (rooms, seats, ready, seeds, deaths, winners, chat):
   members send their standard client lines to the arbiter, which runs the room
-  state machine (`MeshAuthority`, a faithful port of the old server logic over
+  state machine (`RoomAuthority`, a faithful port of the old server logic over
   the same `NetRoomInfo`/`NetPlayerInfo` classes) and emits authoritative
   broadcasts to everyone.
 - **Game plane** (`game\t...`/`gstat\t...` piece/field/attack traffic): the
@@ -53,14 +53,14 @@ support); LAN and one-NAT-per-player setups work.
 ### Wire protocol
 
 All lines are tab-delimited, newline-terminated UTF-8 — the original NullpoMino
-protocol, unchanged. The mesh adds an envelope (`mesh\t...` frames, defined in
-`MeshProtocol`) for the handshake (`hello`/`welcome`+snapshot/`peerok`),
+protocol, unchanged. The mesh adds an envelope (`room\t...` frames, defined in
+`RoomProtocol`) for the handshake (`hello`/`welcome`+snapshot/`peerok`),
 session traffic (`c`ontrol / `b`roadcast with seq+scope / `d`irect), authority
 state extras (`authg`/`authr`), cache dissemination (`snap` frames), liveness
 (`ping`/`pong`), and failure handling (`peerdown`/`kick`/`arbiter`). Because
 the standard protocol is reused verbatim, the whole client stack — lobby,
 screens, every game mode — runs over the mesh untouched via the
-`NetMeshPlayerClient` seam.
+`NetRoomPlayerClient` seam.
 
 ### Joining
 
@@ -73,7 +73,7 @@ enter rooms. Stale/non-mesh clients that connect get a graceful deny.
 ### Arbiter migration
 
 Every peer passively mirrors all authoritative broadcasts plus the auth-extras
-frames (`MeshMirror`), so any peer holds the complete session state. When the
+frames (`RoomMirror`), so any peer holds the complete session state. When the
 arbiter's link dies, each peer independently computes the successor (lowest
 surviving uid — deterministic, no election). The successor adopts its mirror,
 claims with an `arbiter` frame, re-baselines everyone, and processes the old
@@ -124,24 +124,24 @@ arbiter validates seats and sequencing, not gameplay.
 
 ## Configuration
 
-`config/etc/netmesh.cfg`:
+`config/etc/netroom.cfg`:
 
 | Setting | Default | Notes |
 |---|---|---|
-| `netmesh.port` | `9202` | Mesh TCP listen port (0 = ephemeral; busy port falls back to ephemeral) |
-| `netmesh.lanAnnounce` | `true` | Broadcast the UDP 9201 beacon while joinable |
+| `netroom.port` | `9202` | Mesh TCP listen port (0 = ephemeral; busy port falls back to ephemeral) |
+| `netroom.lanAnnounce` | `true` | Broadcast the UDP 9201 beacon while joinable |
 
 ## Key Files
 
 | Piece | Path |
 |---|---|
-| Frame formats + constants | `src/main/java/nullpomino/game/net/mesh/MeshProtocol.java` |
-| TCP links + listener | `src/main/java/nullpomino/game/net/mesh/MeshPeerLink.java`, `MeshTransport.java` |
-| Session dispatcher (handshake, routing, scoping, migration) | `src/main/java/nullpomino/game/net/mesh/MeshSession.java` |
-| Arbiter room state machine | `src/main/java/nullpomino/game/net/mesh/MeshAuthority.java` |
-| Passive state replica | `src/main/java/nullpomino/game/net/mesh/MeshMirror.java` |
-| Local ratings/records | `src/main/java/nullpomino/game/net/mesh/MeshLocalRecords.java`, `MeshRating.java` |
-| Client seam | `src/main/java/nullpomino/game/net/NetMeshPlayerClient.java` |
+| Frame formats + constants | `src/main/java/nullpomino/game/net/room/RoomProtocol.java` |
+| TCP links + listener | `src/main/java/nullpomino/game/net/room/RoomPeerLink.java`, `RoomTransport.java` |
+| Session dispatcher (handshake, routing, scoping, migration) | `src/main/java/nullpomino/game/net/room/RoomSession.java` |
+| Arbiter room state machine | `src/main/java/nullpomino/game/net/room/RoomAuthority.java` |
+| Passive state replica | `src/main/java/nullpomino/game/net/room/RoomMirror.java` |
+| Local ratings/records | `src/main/java/nullpomino/game/net/room/RoomLocalRecords.java`, `RoomRating.java` |
+| Client seam | `src/main/java/nullpomino/game/net/NetRoomPlayerClient.java` |
 | LAN beacons | `src/main/java/nullpomino/game/net/NetLanDiscovery.java` |
 | Session screen | `src/main/java/nullpomino/gui/sdl/StateNetServerSelectSDL.java` |
 | Lobby session object | `src/main/java/nullpomino/gui/net/NetLobbyFrame.java` |

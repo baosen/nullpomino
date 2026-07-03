@@ -1,6 +1,6 @@
 // SPDX-FileCopyrightText: 2010 NullNoname
 // SPDX-License-Identifier: BSD-3-Clause
-package nullpomino.game.net.mesh;
+package nullpomino.game.net.room;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -17,12 +17,12 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 /**
- * Golden-line tests for {@link MeshAuthority}: the emitted broadcast/direct
+ * Golden-line tests for {@link RoomAuthority}: the emitted broadcast/direct
  * lines must match NetServer's formats byte-for-byte, with correct room
  * scoping, across the create/join/queue/ready/start/dead/finish/race/leave
  * lifecycle.
  */
-class MeshAuthorityTest {
+class RoomAuthorityTest {
 
     private static final class Emitted {
         final int scope;
@@ -33,7 +33,7 @@ class MeshAuthorityTest {
         }
     }
 
-    private static final class RecordingSink implements MeshAuthority.Sink {
+    private static final class RecordingSink implements RoomAuthority.Sink {
         final List<Emitted> broadcasts = new ArrayList<Emitted>();
         final List<String> directs = new ArrayList<String>();      // "uid|line"
         int authUpdates = 0;
@@ -64,12 +64,12 @@ class MeshAuthorityTest {
     }
 
     private RecordingSink sink;
-    private MeshAuthority auth;
+    private RoomAuthority auth;
 
     @BeforeEach
     void setUp() {
         sink = new RecordingSink();
-        auth = new MeshAuthority(sink, new Random(42));
+        auth = new RoomAuthority(sink, new Random(42));
     }
 
     private void admit(int expectedUid, String name) {
@@ -101,7 +101,7 @@ class MeshAuthorityTest {
         assertEquals("roomcreatesuccess\t0\t0\t-1", sink.lastDirectFor(0, "roomcreatesuccess"));
         Emitted create = sink.lastBroadcastStarting("roomcreate\t");
         assertNotNull(create);
-        assertEquals(MeshProtocol.SCOPE_GLOBAL, create.scope);
+        assertEquals(RoomProtocol.SCOPE_GLOBAL, create.scope);
         assertNotNull(sink.lastBroadcastStarting("playerupdate\t"));
         assertTrue(sink.authUpdates > 0);
         assertNotNull(auth.getRoomInfo(0));
@@ -156,7 +156,7 @@ class MeshAuthorityTest {
 
         Emitted roomUpd = sink.lastBroadcastStarting("roomupdate\t");
         assertNotNull(roomUpd);
-        assertEquals(MeshProtocol.SCOPE_GLOBAL, roomUpd.scope);
+        assertEquals(RoomProtocol.SCOPE_GLOBAL, roomUpd.scope);
     }
 
     @Test
@@ -242,7 +242,7 @@ class MeshAuthorityTest {
 
         Emitted del = sink.lastBroadcastStarting("roomdelete\t");
         assertNotNull(del);
-        assertEquals(MeshProtocol.SCOPE_GLOBAL, del.scope);
+        assertEquals(RoomProtocol.SCOPE_GLOBAL, del.scope);
         assertNull(auth.getRoomInfo(0));
     }
 

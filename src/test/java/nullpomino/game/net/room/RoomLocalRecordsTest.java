@@ -1,6 +1,6 @@
 // SPDX-FileCopyrightText: 2010 NullNoname
 // SPDX-License-Identifier: BSD-3-Clause
-package nullpomino.game.net.mesh;
+package nullpomino.game.net.room;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -16,44 +16,44 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
 /**
- * Tests for {@link MeshRating} (values must match NetServer's math) and
- * {@link MeshLocalRecords} (per-peer persistence + local request replies).
+ * Tests for {@link RoomRating} (values must match NetServer's math) and
+ * {@link RoomLocalRecords} (per-peer persistence + local request replies).
  */
-class MeshLocalRecordsTest {
+class RoomLocalRecordsTest {
 
     @TempDir
     File tempDir;
 
-    private MeshLocalRecords newRecords() {
-        return new MeshLocalRecords(tempDir.getAbsolutePath());
+    private RoomLocalRecords newRecords() {
+        return new RoomLocalRecords(tempDir.getAbsolutePath());
     }
 
     // ---------------------------------------------------------------- rating math
 
     @Test
     void expectedScoreMatchesEloFormula() {
-        assertEquals(0.5, MeshRating.expectedScore(1500, 1500), 1e-9);
-        assertTrue(MeshRating.expectedScore(1600, 1500) > 0.5);
+        assertEquals(0.5, RoomRating.expectedScore(1500, 1500), 1e-9);
+        assertTrue(RoomRating.expectedScore(1600, 1500) > 0.5);
         assertEquals(1.0,
-                MeshRating.expectedScore(1500, 1500) + MeshRating.expectedScore(1500, 1500), 1e-9);
+                RoomRating.expectedScore(1500, 1500) + RoomRating.expectedScore(1500, 1500), 1e-9);
         // Symmetry: my expectation + opponent's expectation = 1
         assertEquals(1.0,
-                MeshRating.expectedScore(1700, 1400) + MeshRating.expectedScore(1400, 1700), 1e-9);
+                RoomRating.expectedScore(1700, 1400) + RoomRating.expectedScore(1400, 1700), 1e-9);
     }
 
     @Test
     void maxDeltaBoostsProvisionalPlayers() {
         // NetServer computes 400/(games+3) with INTEGER division - pinned here
-        assertEquals(16 + 133.0, MeshRating.maxDelta(0), 1e-9);
-        assertEquals(16 + 7.0, MeshRating.maxDelta(50), 1e-9);
-        assertEquals(16.0, MeshRating.maxDelta(51), 1e-9);
+        assertEquals(16 + 133.0, RoomRating.maxDelta(0), 1e-9);
+        assertEquals(16 + 7.0, RoomRating.maxDelta(50), 1e-9);
+        assertEquals(16.0, RoomRating.maxDelta(51), 1e-9);
     }
 
     @Test
     void rankDeltaFirstGameBetweenEqualsIsPlusMinus58() {
         // maxDelta(1) = 16 + 400/4 = 116; equal ratings -> expected 0.5
-        assertEquals(58.0, MeshRating.rankDelta(1, 1500, 1500, 1), 1e-9);
-        assertEquals(-58.0, MeshRating.rankDelta(1, 1500, 1500, 0), 1e-9);
+        assertEquals(58.0, RoomRating.rankDelta(1, 1500, 1500, 1), 1e-9);
+        assertEquals(-58.0, RoomRating.rankDelta(1, 1500, 1500, 0), 1e-9);
     }
 
     // ---------------------------------------------------------------- own data
@@ -63,11 +63,11 @@ class MeshLocalRecordsTest {
         // No file yet: every style starts at the default rating
         NetPlayerInfo blank = new NetPlayerInfo();
         newRecords().loadInto(blank);
-        assertEquals(MeshRating.RATING_DEFAULT, blank.rating[0]);
-        assertEquals(MeshRating.RATING_DEFAULT, blank.rating[1]);
+        assertEquals(RoomRating.RATING_DEFAULT, blank.rating[0]);
+        assertEquals(RoomRating.RATING_DEFAULT, blank.rating[1]);
         assertEquals(0, blank.playCount[0]);
 
-        MeshLocalRecords records = newRecords();
+        RoomLocalRecords records = newRecords();
         NetPlayerInfo me = new NetPlayerInfo();
         me.strName = "Me";
         me.rating[0] = 1622;
@@ -86,7 +86,7 @@ class MeshLocalRecordsTest {
 
     @Test
     void leaderboardAccumulatesAndAnswersMPRanking() {
-        MeshLocalRecords records = newRecords();
+        RoomLocalRecords records = newRecords();
         records.recordRatedResult(0, "Alice", 1558, true);
         records.recordRatedResult(0, "Bob", 1442, false);
         records.recordRatedResult(0, "Alice", 1601, true);
@@ -113,7 +113,7 @@ class MeshLocalRecordsTest {
 
     @Test
     void unrankedSelfIsAppendedWithRankMinusOne() {
-        MeshLocalRecords records = newRecords();
+        RoomLocalRecords records = newRecords();
         records.recordRatedResult(0, "Alice", 1558, true);
 
         NetPlayerInfo self = new NetPlayerInfo();
@@ -130,7 +130,7 @@ class MeshLocalRecordsTest {
     void spRecordRegistersAndAnswersSPRanking() {
         String mode = NetSPModeRegistry.forStyle(0).get(0).name();
 
-        MeshLocalRecords records = newRecords();
+        RoomLocalRecords records = newRecords();
         NetRoomInfo room = new NetRoomInfo();
         room.singleplayer = true;
         room.rated = false;
@@ -166,7 +166,7 @@ class MeshLocalRecordsTest {
 
     @Test
     void spBadChecksumAndDailyDegrade() {
-        MeshLocalRecords records = newRecords();
+        RoomLocalRecords records = newRecords();
         NetRoomInfo room = new NetRoomInfo();
         room.strMode = "whatever";
         NetPlayerInfo me = new NetPlayerInfo();

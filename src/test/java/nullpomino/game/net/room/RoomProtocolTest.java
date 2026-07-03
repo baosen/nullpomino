@@ -1,6 +1,6 @@
 // SPDX-FileCopyrightText: 2010 NullNoname
 // SPDX-License-Identifier: BSD-3-Clause
-package nullpomino.game.net.mesh;
+package nullpomino.game.net.room;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -11,9 +11,9 @@ import java.util.Random;
 import org.junit.jupiter.api.Test;
 
 /**
- * Round-trip tests for every {@link MeshProtocol} frame format.
+ * Round-trip tests for every {@link RoomProtocol} frame format.
  */
-class MeshProtocolTest {
+class RoomProtocolTest {
 
     private static String[] split(String line) {
         return line.split("\t", -1);
@@ -21,9 +21,9 @@ class MeshProtocolTest {
 
     @Test
     void helloJoinRoundTrip() {
-        String line = MeshProtocol.buildHelloJoin(7.5f, true, 9202, "Player Ø ne",
+        String line = RoomProtocol.buildHelloJoin(7.5f, true, 9202, "Player Ø ne",
                 new int[]{1622, 1500}, new int[]{12, 0}, new int[]{7, 0});
-        MeshProtocol.Hello h = MeshProtocol.parseHello(split(line));
+        RoomProtocol.Hello h = RoomProtocol.parseHello(split(line));
 
         assertNotNull(h);
         assertTrue(h.joinVariant);
@@ -38,8 +38,8 @@ class MeshProtocolTest {
 
     @Test
     void helloPeerRoundTrip() {
-        String line = MeshProtocol.buildHelloPeer(7.5f, false, "aabbccdd", 3, 9300);
-        MeshProtocol.Hello h = MeshProtocol.parseHello(split(line));
+        String line = RoomProtocol.buildHelloPeer(7.5f, false, "aabbccdd", 3, 9300);
+        RoomProtocol.Hello h = RoomProtocol.parseHello(split(line));
 
         assertNotNull(h);
         assertFalse(h.joinVariant);
@@ -50,12 +50,12 @@ class MeshProtocolTest {
 
     @Test
     void welcomeRoundTripWithRoster() {
-        List<MeshProtocol.RosterEntry> roster = new ArrayList<MeshProtocol.RosterEntry>();
-        roster.add(new MeshProtocol.RosterEntry(0, "192.168.1.10", 9202, "Alice"));
-        roster.add(new MeshProtocol.RosterEntry(2, "192.168.1.30", 9204, "Bob B"));
+        List<RoomProtocol.RosterEntry> roster = new ArrayList<RoomProtocol.RosterEntry>();
+        roster.add(new RoomProtocol.RosterEntry(0, "192.168.1.10", 9202, "Alice"));
+        roster.add(new RoomProtocol.RosterEntry(2, "192.168.1.30", 9204, "Bob B"));
 
-        String line = MeshProtocol.buildWelcome("tok", 5, "Carol", 0, 42, roster);
-        MeshProtocol.Welcome w = MeshProtocol.parseWelcome(split(line));
+        String line = RoomProtocol.buildWelcome("tok", 5, "Carol", 0, 42, roster);
+        RoomProtocol.Welcome w = RoomProtocol.parseWelcome(split(line));
 
         assertNotNull(w);
         assertEquals("tok", w.token);
@@ -70,9 +70,9 @@ class MeshProtocolTest {
 
     @Test
     void welcomeWithEmptyRoster() {
-        String line = MeshProtocol.buildWelcome("tok", 1, "Solo", 0, 0,
-                new ArrayList<MeshProtocol.RosterEntry>());
-        MeshProtocol.Welcome w = MeshProtocol.parseWelcome(split(line));
+        String line = RoomProtocol.buildWelcome("tok", 1, "Solo", 0, 0,
+                new ArrayList<RoomProtocol.RosterEntry>());
+        RoomProtocol.Welcome w = RoomProtocol.parseWelcome(split(line));
 
         assertNotNull(w);
         assertTrue(w.roster.isEmpty());
@@ -81,10 +81,10 @@ class MeshProtocolTest {
     @Test
     void controlWrapPreservesTabsVerbatim() {
         String inner = "roomcreate\tMy Room\tblob;with;semis\tNET-VS-BATTLE";
-        String wrapped = MeshProtocol.wrapControl(inner);
+        String wrapped = RoomProtocol.wrapControl(inner);
 
-        assertEquals(inner, MeshProtocol.unwrapControl(wrapped));
-        assertNull(MeshProtocol.unwrapControl("mesh\tb\t1\t-1\tfoo"));
+        assertEquals(inner, RoomProtocol.unwrapControl(wrapped));
+        assertNull(RoomProtocol.unwrapControl("room\tb\t1\t-1\tfoo"));
     }
 
     @Test
@@ -92,8 +92,8 @@ class MeshProtocolTest {
         // The attack line's historic empty field (index 10 after uid/seat stamping)
         // must survive wrap/unwrap byte-for-byte.
         String attack = "game\t3\t1\tattack\t1\t0\t0\t0\t0\t0\t\tTSPIN\ttrue\t2\t0\tI\t2";
-        String wrapped = MeshProtocol.wrapBroadcast(99, 4, attack);
-        MeshProtocol.Broadcast b = MeshProtocol.parseBroadcast(wrapped);
+        String wrapped = RoomProtocol.wrapBroadcast(99, 4, attack);
+        RoomProtocol.Broadcast b = RoomProtocol.parseBroadcast(wrapped);
 
         assertNotNull(b);
         assertEquals(99, b.seq);
@@ -103,24 +103,24 @@ class MeshProtocolTest {
 
     @Test
     void broadcastGlobalScope() {
-        String wrapped = MeshProtocol.wrapBroadcast(7, MeshProtocol.SCOPE_GLOBAL, "playerupdate\tblob");
-        MeshProtocol.Broadcast b = MeshProtocol.parseBroadcast(wrapped);
+        String wrapped = RoomProtocol.wrapBroadcast(7, RoomProtocol.SCOPE_GLOBAL, "playerupdate\tblob");
+        RoomProtocol.Broadcast b = RoomProtocol.parseBroadcast(wrapped);
 
         assertNotNull(b);
-        assertEquals(MeshProtocol.SCOPE_GLOBAL, b.scope);
+        assertEquals(RoomProtocol.SCOPE_GLOBAL, b.scope);
         assertEquals("playerupdate\tblob", b.payload);
     }
 
     @Test
     void directWrapRoundTrip() {
         String inner = "roomjoinsuccess\t0\t1\t-1";
-        assertEquals(inner, MeshProtocol.unwrapDirect(MeshProtocol.wrapDirect(inner)));
+        assertEquals(inner, RoomProtocol.unwrapDirect(RoomProtocol.wrapDirect(inner)));
     }
 
     @Test
     void authGlobalRoundTrip() {
-        MeshProtocol.AuthGlobal g = MeshProtocol.parseAuthGlobal(
-                split(MeshProtocol.buildAuthGlobal(17, 6, 3)));
+        RoomProtocol.AuthGlobal g = RoomProtocol.parseAuthGlobal(
+                split(RoomProtocol.buildAuthGlobal(17, 6, 3)));
 
         assertNotNull(g);
         assertEquals(17, g.seq);
@@ -130,11 +130,11 @@ class MeshProtocolTest {
 
     @Test
     void authRoomRoundTrip() {
-        MeshProtocol.AuthRoom in = new MeshProtocol.AuthRoom(
+        RoomProtocol.AuthRoom in = new RoomProtocol.AuthRoom(
                 21, 2, true, 3, 1, false, true, 4,
                 new int[]{0, -1, 2, 5}, new int[]{0, -1, 2}, new int[]{2}, new int[0]);
 
-        MeshProtocol.AuthRoom out = MeshProtocol.parseAuthRoom(split(MeshProtocol.buildAuthRoom(in)));
+        RoomProtocol.AuthRoom out = RoomProtocol.parseAuthRoom(split(RoomProtocol.buildAuthRoom(in)));
 
         assertNotNull(out);
         assertEquals(21, out.seq);
@@ -153,32 +153,32 @@ class MeshProtocolTest {
 
     @Test
     void uidListRoundTripIncludingEmpty() {
-        assertEquals("", MeshProtocol.joinUids(new int[0]));
-        assertArrayEquals(new int[0], MeshProtocol.parseUids(""));
-        assertArrayEquals(new int[]{-1, 0, 42}, MeshProtocol.parseUids(MeshProtocol.joinUids(new int[]{-1, 0, 42})));
+        assertEquals("", RoomProtocol.joinUids(new int[0]));
+        assertArrayEquals(new int[0], RoomProtocol.parseUids(""));
+        assertArrayEquals(new int[]{-1, 0, 42}, RoomProtocol.parseUids(RoomProtocol.joinUids(new int[]{-1, 0, 42})));
     }
 
     @Test
     void tokenIsThirtyTwoHexChars() {
-        String token = MeshProtocol.generateToken(new Random(1234));
+        String token = RoomProtocol.generateToken(new Random(1234));
         assertEquals(32, token.length());
         assertTrue(token.matches("[0-9a-f]{32}"));
     }
 
     @Test
     void malformedFramesParseToNull() {
-        assertNull(MeshProtocol.parseHello(split("mesh\thello\tunknown\t1")));
-        assertNull(MeshProtocol.parseHello(split("mesh\thello\tjoin\tnotafloat\ttrue\t9202\tx")));
-        assertNull(MeshProtocol.parseWelcome(split("mesh\twelcome\ttok\t1\tx\t0\t0\t5\tonly;one;9202;entry")));
-        assertNull(MeshProtocol.parseBroadcast("mesh\tb\tnotanumber\t-1\tx"));
-        assertNull(MeshProtocol.parseAuthRoom(split("mesh\tauthr\t1\t2\ttrue")));
-        assertNull(MeshProtocol.parsePeerAnnounce(split("mesh\tpeer\tnotanint\thost\t9\tx")));
+        assertNull(RoomProtocol.parseHello(split("room\thello\tunknown\t1")));
+        assertNull(RoomProtocol.parseHello(split("room\thello\tjoin\tnotafloat\ttrue\t9202\tx")));
+        assertNull(RoomProtocol.parseWelcome(split("room\twelcome\ttok\t1\tx\t0\t0\t5\tonly;one;9202;entry")));
+        assertNull(RoomProtocol.parseBroadcast("room\tb\tnotanumber\t-1\tx"));
+        assertNull(RoomProtocol.parseAuthRoom(split("room\tauthr\t1\t2\ttrue")));
+        assertNull(RoomProtocol.parsePeerAnnounce(split("room\tpeer\tnotanint\thost\t9\tx")));
     }
 
     @Test
-    void meshFrameDetection() {
-        assertTrue(MeshProtocol.isMeshFrame("mesh\tping"));
-        assertFalse(MeshProtocol.isMeshFrame("game\t1\t0\tpiece\t1"));
-        assertFalse(MeshProtocol.isMeshFrame("meshsomething\telse"));
+    void roomFrameDetection() {
+        assertTrue(RoomProtocol.isRoomFrame("room\tping"));
+        assertFalse(RoomProtocol.isRoomFrame("game\t1\t0\tpiece\t1"));
+        assertFalse(RoomProtocol.isRoomFrame("roomsomething\telse"));
     }
 }

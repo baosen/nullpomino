@@ -1,15 +1,15 @@
 // SPDX-FileCopyrightText: 2010 NullNoname
 // SPDX-License-Identifier: BSD-3-Clause
-package nullpomino.game.net.mesh;
+package nullpomino.game.net.room;
 
 /**
  * The narrow seam the netplay client stack talks to instead of a server
  * socket. Synthesized server-to-client lines arrive through the line
- * listener (delivered serially from the mesh dispatcher thread - the same
+ * listener (delivered serially from the room dispatcher thread - the same
  * threading role the socket reader thread has today); outbound
  * client-to-server lines go through {@link #sendLine}.
  */
-public interface MeshEndpoint {
+public interface RoomEndpoint {
 	/** Sink for synthesized server-to-client lines (no trailing newline). */
 	interface LineListener {
 		void onLine(String line);
@@ -35,7 +35,7 @@ public interface MeshEndpoint {
 
 	boolean isOpen();
 
-	/** The TCP port this peer's mesh transport listens on */
+	/** The TCP port this peer's room transport listens on */
 	int getListenPort();
 
 	/** Host string shown in the client UI (the arbiter address, or own LAN address) */

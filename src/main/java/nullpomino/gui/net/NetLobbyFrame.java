@@ -17,10 +17,10 @@ import java.util.zip.Adler32;
 
 import nullpomino.game.component.RuleOptions;
 import nullpomino.game.net.NetBaseClient;
-import nullpomino.game.net.NetMeshPlayerClient;
+import nullpomino.game.net.NetRoomPlayerClient;
 import nullpomino.game.net.NetMessageListener;
 import nullpomino.game.net.NetPlayerClient;
-import nullpomino.game.net.mesh.MeshEndpoint;
+import nullpomino.game.net.room.RoomEndpoint;
 import nullpomino.game.net.NetPlayerInfo;
 import nullpomino.game.net.NetRoomInfo;
 import nullpomino.game.net.NetUtil;
@@ -127,7 +127,7 @@ public class NetLobbyFrame implements NetMessageListener {
 	public volatile boolean presetsDirty;
 
 	/**
-	 * Wall-clock time of the most recent {@link #connectToMesh} call.
+	 * Wall-clock time of the most recent {@link #connectToRoom} call.
 	 * States that guard on {@code netPlayerClient.isConnected()} honour a short
 	 * grace window after this timestamp so mid-flight reconnects (e.g. /name
 	 * command) don't bounce the user back to server-select while the socket
@@ -140,7 +140,7 @@ public class NetLobbyFrame implements NetMessageListener {
 
 	/**
 	 * Raw (un-hashed) form of our current player name — whatever the user typed,
-	 * including any {@code #tripkey} suffix. Seeded by {@link #connectToMesh}
+	 * including any {@code #tripkey} suffix. Seeded by {@link #connectToRoom}
 	 * and updated on our own {@code changename} broadcast. Used to persist the
 	 * original trip key to config instead of the server's hashed form so that
 	 * next-session login re-derives the same tripcode.
@@ -663,30 +663,30 @@ public class NetLobbyFrame implements NetMessageListener {
 	// ---------------- Actions ----------------
 
 	/**
-	 * Open a player connection over a P2P mesh session: persists the
-	 * name/team, attaches the {@link NetMeshPlayerClient} seam to the given
+	 * Open a player connection over a P2P room session: persists the
+	 * name/team, attaches the {@link NetRoomPlayerClient} seam to the given
 	 * endpoint, and resets the chat/room state for the new session.
 	 */
-	public void connectToMesh(String playerName, String playerTeam, MeshEndpoint mesh) {
+	public void connectToRoom(String playerName, String playerTeam, RoomEndpoint room) {
 		propConfig.setProperty("serverselect.txtfldPlayerName.text", playerName);
 		propConfig.setProperty("serverselect.txtfldPlayerTeam.text", playerTeam);
 		lastRawOwnName = (playerName == null) ? "" : playerName;
 		pendingOwnRaw = null;
 
-		NetMeshPlayerClient meshClient = new NetMeshPlayerClient(mesh, playerName,
+		NetRoomPlayerClient roomClient = new NetRoomPlayerClient(room, playerName,
 			playerTeam == null ? "" : playerTeam.trim());
-		netPlayerClient = meshClient;
-		meshClient.addListener(this);
-		meshClient.connect();
+		netPlayerClient = roomClient;
+		roomClient.addListener(this);
+		roomClient.connect();
 		lastConnectAt = System.currentTimeMillis();
 
 		chatLogLobby.clear();
 		roomList.clear();
 	}
 
-	/** @return true while the current session runs over a P2P mesh */
-	public boolean isMeshSession() {
-		return netPlayerClient instanceof NetMeshPlayerClient;
+	/** @return true while the current session is a P2P room */
+	public boolean isRoomSession() {
+		return netPlayerClient instanceof NetRoomPlayerClient;
 	}
 
 	/** Send a chat message to either the lobby or the current room. */

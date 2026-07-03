@@ -1,6 +1,6 @@
 // SPDX-FileCopyrightText: 2010 NullNoname
 // SPDX-License-Identifier: BSD-3-Clause
-package nullpomino.game.net.mesh;
+package nullpomino.game.net.room;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -19,25 +19,25 @@ import org.junit.jupiter.api.Test;
 /**
  * Arbiter migration and failure handling: lowest-uid survivor promotes and
  * the game continues, a mid-game arbiter death produces its own dead line,
- * and split-mesh members get arbitrated away.
+ * and split-room members get arbitrated away.
  */
-class MeshMigrationTest {
+class RoomMigrationTest {
 
-    private final List<MeshSession> sessions = new ArrayList<MeshSession>();
+    private final List<RoomSession> sessions = new ArrayList<RoomSession>();
 
     @AfterEach
     void tearDown() {
-        for (MeshSession s : sessions) s.shutdown();
+        for (RoomSession s : sessions) s.shutdown();
     }
 
-    private static MeshConfig testConfig() {
-        MeshConfig config = new MeshConfig();
+    private static RoomConfig testConfig() {
+        RoomConfig config = new RoomConfig();
         config.listenPort = 0;
         config.lanAnnounce = false;
         return config;
     }
 
-    private static final class Client implements MeshEndpoint.LineListener {
+    private static final class Client implements RoomEndpoint.LineListener {
         final BlockingQueue<String> lines = new LinkedBlockingQueue<String>();
         public void onLine(String line) { lines.add(line); }
 
@@ -52,32 +52,32 @@ class MeshMigrationTest {
         }
     }
 
-    private MeshSession create(String name) throws Exception {
-        MeshSession s = MeshSession.create(name, testConfig(), null);
+    private RoomSession create(String name) throws Exception {
+        RoomSession s = RoomSession.create(name, testConfig(), null);
         sessions.add(s);
         return s;
     }
 
-    private MeshSession join(MeshSession target, String name) throws Exception {
-        MeshSession s = MeshSession.join("127.0.0.1", target.getListenPort(), name, testConfig(), null);
+    private RoomSession join(RoomSession target, String name) throws Exception {
+        RoomSession s = RoomSession.join("127.0.0.1", target.getListenPort(), name, testConfig(), null);
         sessions.add(s);
-        awaitState(s, MeshSession.State.READY);
+        awaitState(s, RoomSession.State.READY);
         return s;
     }
 
-    private static void awaitState(MeshSession s, MeshSession.State expected) throws InterruptedException {
+    private static void awaitState(RoomSession s, RoomSession.State expected) throws InterruptedException {
         long deadline = System.currentTimeMillis() + 12000;
         while (s.getState() != expected && System.currentTimeMillis() < deadline) Thread.sleep(20);
         assertEquals(expected, s.getState());
     }
 
-    private static void awaitArbiter(MeshSession s) throws InterruptedException {
+    private static void awaitArbiter(RoomSession s) throws InterruptedException {
         long deadline = System.currentTimeMillis() + 12000;
         while (!s.isArbiter() && System.currentTimeMillis() < deadline) Thread.sleep(20);
         assertTrue(s.isArbiter(), "Expected promotion to arbiter");
     }
 
-    private Client login(MeshSession session, String name) throws Exception {
+    private Client login(RoomSession session, String name) throws Exception {
         Client client = new Client();
         session.setLineListener(client);
         session.clientReady();
@@ -97,11 +97,11 @@ class MeshMigrationTest {
 
     @Test
     void survivorPromotesAndTheRoundContinues() throws Exception {
-        MeshSession a = create("Alice");
+        RoomSession a = create("Alice");
         login(a, "Alice");
-        MeshSession b = join(a, "Bob");
+        RoomSession b = join(a, "Bob");
         Client bobClient = login(b, "Bob");
-        MeshSession c = join(a, "Carol");
+        RoomSession c = join(a, "Carol");
         Client carolClient = login(c, "Carol");
 
         // Bob hosts the room; Alice (the arbiter) stays in the lobby
@@ -134,12 +134,12 @@ class MeshMigrationTest {
 
     @Test
     void arbiterDeathMidGameCountsAsItsDeath() throws Exception {
-        MeshSession a = create("Alice");
+        RoomSession a = create("Alice");
         Client aliceClient = login(a, "Alice");
         a.sendLine(roomCreateLine("Duel", 2));
         aliceClient.await("roomcreatesuccess\t");
 
-        MeshSession b = join(a, "Bob");
+        RoomSession b = join(a, "Bob");
         Client bobClient = login(b, "Bob");
         b.sendLine("roomjoin\t0\tfalse");
         bobClient.await("roomjoinsuccess\t");
@@ -158,12 +158,12 @@ class MeshMigrationTest {
     }
 
     @Test
-    void splitMeshMemberGetsKicked() throws Exception {
-        MeshSession a = create("Alice");
+    void splitLinkMemberGetsKicked() throws Exception {
+        RoomSession a = create("Alice");
         Client aliceClient = login(a, "Alice");
-        MeshSession b = join(a, "Bob");
+        RoomSession b = join(a, "Bob");
         login(b, "Bob");
-        MeshSession c = join(a, "Carol");
+        RoomSession c = join(a, "Carol");
         login(c, "Carol");
 
         final BlockingQueue<String> carolClosed = new LinkedBlockingQueue<String>();
@@ -175,7 +175,7 @@ class MeshMigrationTest {
         // Tie between reports: the higher uid (Carol) is kicked
         assertEquals("KICKED", carolClosed.poll(12, TimeUnit.SECONDS));
         aliceClient.await("playerlogout\t");
-        assertEquals(MeshSession.State.READY, b.getState());
+        assertEquals(RoomSession.State.READY, b.getState());
         assertTrue(b.isOpen());
     }
 }

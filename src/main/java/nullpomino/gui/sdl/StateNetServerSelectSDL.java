@@ -8,9 +8,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 import nullpomino.game.net.NetLanDiscovery;
-import nullpomino.game.net.mesh.MeshConfig;
-import nullpomino.game.net.mesh.MeshProtocol;
-import nullpomino.game.net.mesh.MeshSession;
+import nullpomino.game.net.room.RoomConfig;
+import nullpomino.game.net.room.RoomProtocol;
+import nullpomino.game.net.room.RoomSession;
 import nullpomino.gui.net.NetLobbyFrame;
 import nullpomino.gui.sdl.binding.SDL3;
 import nullpomino.gui.sdl.binding.SDLConstants;
@@ -21,10 +21,10 @@ import nullpomino.gui.sdl.widget.WidgetSDL;
 
 /**
  * P2P session-select state: enters player name + team, then either CREATEs a
- * new mesh session (becoming its first arbiter), JOINs one discovered on the
+ * new room session (becoming its first arbiter), JOINs one discovered on the
  * LAN, or joins DIRECTly by host:port.  This is the entry point to netplay —
  * {@link #enter()} creates the shared {@link NullpoMinoSDL#netLobby} session
- * on first use, and both create and join land in the lobby (the mesh session
+ * on first use, and both create and join land in the lobby (the room session
  * IS the lobby: room list, chat, everything downstream is unchanged).
  *
  * Also owns the "direct join" sub-mode: when the user clicks DIRECT, the
@@ -48,8 +48,8 @@ public class StateNetServerSelectSDL extends BaseStateSDL {
 	/** LAN discovery listener, null when the UDP port couldn't be bound */
 	private NetLanDiscovery.Listener lanListener;
 
-	/** Mesh sessions currently shown in the table (deduped by session) */
-	private List<NetLanDiscovery.Announce> meshRows = new ArrayList<NetLanDiscovery.Announce>();
+	/** Room sessions currently shown in the table (deduped by session) */
+	private List<NetLanDiscovery.Announce> roomRows = new ArrayList<NetLanDiscovery.Announce>();
 
 	/** Change-detection key of the last snapshot rendered into the table */
 	private String lanKey = "";
@@ -59,9 +59,9 @@ public class StateNetServerSelectSDL extends BaseStateSDL {
 
 	@Override
 	public void enter() {
-		// A mesh session never outlives the netplay UI flow; a dead one
+		// A room session never outlives the netplay UI flow; a dead one
 		// (disconnect bounce) is cleaned up here too
-		NullpoMinoSDL.stopMeshSession();
+		NullpoMinoSDL.stopRoomSession();
 		SDL3.INSTANCE.SDL_SetWindowTitle(NullpoMinoSDL.window, "NullpoMino P2P Netplay");
 
 		if(NullpoMinoSDL.netLobby == null) {
@@ -89,7 +89,7 @@ public class StateNetServerSelectSDL extends BaseStateSDL {
 
 		// Listen for sessions announced on the local network. Best-effort:
 		// if the UDP port can't be bound the screen still allows DIRECT joins.
-		meshRows = new ArrayList<NetLanDiscovery.Announce>();
+		roomRows = new ArrayList<NetLanDiscovery.Announce>();
 		lanKey = "";
 		try {
 			lanListener = new NetLanDiscovery.Listener();
@@ -137,18 +137,18 @@ public class StateNetServerSelectSDL extends BaseStateSDL {
 		// Remember the selected session so refreshes don't move the cursor
 		String preferred = null;
 		int sel = sessionTable.getSelectedIndex();
-		if(sel >= 0 && sel < meshRows.size()) preferred = meshRows.get(sel).sessionId;
+		if(sel >= 0 && sel < roomRows.size()) preferred = roomRows.get(sel).sessionId;
 
 		sessionTable.clear();
-		for(NetLanDiscovery.Announce a : meshRows) {
+		for(NetLanDiscovery.Announce a : roomRows) {
 			sessionTable.addRow(new String[] {
 				a.lobbyName + " - " + a.players + "P - " + a.playerName + " - " + a.hostPort()
 			}, NormalFontSDL.COLOR_GREEN);
 		}
 
 		if(preferred != null) {
-			for(int i = 0; i < meshRows.size(); i++) {
-				if(preferred.equals(meshRows.get(i).sessionId)) {
+			for(int i = 0; i < roomRows.size(); i++) {
+				if(preferred.equals(roomRows.get(i).sessionId)) {
 					sessionTable.setSelectedIndex(i);
 					break;
 				}
@@ -176,7 +176,7 @@ public class StateNetServerSelectSDL extends BaseStateSDL {
 		if(lanListener != null) {
 			List<NetLanDiscovery.Announce> snapshot = new ArrayList<NetLanDiscovery.Announce>();
 			for(NetLanDiscovery.Announce a : lanListener.snapshot()) {
-				if(a.mesh) snapshot.add(a);
+				if(a.room) snapshot.add(a);
 			}
 			snapshot = NetLanDiscovery.dedupeBySession(snapshot);
 			StringBuilder key = new StringBuilder();
@@ -185,7 +185,7 @@ public class StateNetServerSelectSDL extends BaseStateSDL {
 			}
 			if(!lanKey.equals(key.toString())) {
 				lanKey = key.toString();
-				meshRows = snapshot;
+				roomRows = snapshot;
 				refreshSessionTable();
 			}
 		}
@@ -357,14 +357,14 @@ public class StateNetServerSelectSDL extends BaseStateSDL {
 		}
 	}
 
-	/** CREATE: start a new mesh session as its first arbiter and enter the lobby */
+	/** CREATE: start a new room session as its first arbiter and enter the lobby */
 	private void createSession() {
 		String name = nameInput.getText().trim();
 		if(name.length() == 0) { statusLine = "Enter a name first"; return; }
 
-		MeshSession session;
+		RoomSession session;
 		try {
-			session = MeshSession.create(name, MeshConfig.load(), null);
+			session = RoomSession.create(name, RoomConfig.load(), null);
 		} catch(IOException e) {
 			statusLine = "CREATE FAILED: " + e.getMessage();
 			return;
@@ -375,8 +375,8 @@ public class StateNetServerSelectSDL extends BaseStateSDL {
 	/** JOIN: connect to the session selected in the table */
 	private void joinSelected() {
 		int idx = sessionTable.getSelectedIndex();
-		if(idx < 0 || idx >= meshRows.size()) { statusLine = "Select a session"; return; }
-		NetLanDiscovery.Announce a = meshRows.get(idx);
+		if(idx < 0 || idx >= roomRows.size()) { statusLine = "Select a session"; return; }
+		NetLanDiscovery.Announce a = roomRows.get(idx);
 		startJoin(a.address, a.port);
 	}
 
@@ -387,7 +387,7 @@ public class StateNetServerSelectSDL extends BaseStateSDL {
 
 		int portSplit = s.indexOf(':');
 		String host = portSplit == -1 ? s : s.substring(0, portSplit);
-		int port = MeshProtocol.DEFAULT_PORT;
+		int port = RoomProtocol.DEFAULT_PORT;
 		if(portSplit != -1) {
 			try { port = Integer.parseInt(s.substring(portSplit + 1).trim()); }
 			catch(NumberFormatException ignore) { statusLine = "Bad port in " + s; return; }
@@ -400,9 +400,9 @@ public class StateNetServerSelectSDL extends BaseStateSDL {
 		String name = nameInput.getText().trim();
 		if(name.length() == 0) { statusLine = "Enter a name first"; return; }
 
-		MeshSession session;
+		RoomSession session;
 		try {
-			session = MeshSession.join(host, port, name, MeshConfig.load(), null);
+			session = RoomSession.join(host, port, name, RoomConfig.load(), null);
 		} catch(IOException e) {
 			statusLine = "JOIN FAILED: " + e.getMessage();
 			return;
@@ -410,9 +410,9 @@ public class StateNetServerSelectSDL extends BaseStateSDL {
 		enterSession(session, name);
 	}
 
-	private void enterSession(MeshSession session, String name) {
-		NullpoMinoSDL.meshSession = session;
-		NullpoMinoSDL.netLobby.connectToMesh(name, teamInput.getText(), session);
+	private void enterSession(RoomSession session, String name) {
+		NullpoMinoSDL.roomSession = session;
+		NullpoMinoSDL.netLobby.connectToRoom(name, teamInput.getText(), session);
 		NullpoMinoSDL.enterState(NullpoMinoSDL.STATE_NET_LOBBY);
 	}
 

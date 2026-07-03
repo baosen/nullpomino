@@ -1,6 +1,6 @@
 // SPDX-FileCopyrightText: 2010 NullNoname
 // SPDX-License-Identifier: BSD-3-Clause
-package nullpomino.game.net.mesh;
+package nullpomino.game.net.room;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -20,28 +20,28 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 
 /**
- * Wire-level tests for {@link MeshSession}: real sockets on ephemeral ports,
+ * Wire-level tests for {@link RoomSession}: real sockets on ephemeral ports,
  * session formation, login synthesis, control routing through the arbiter,
- * round lifecycle over the mesh, and room-scoped game fan-out.
+ * round lifecycle over the room session, and room-scoped game fan-out.
  */
-class MeshSessionTest {
+class RoomSessionTest {
 
-    private final List<MeshSession> sessions = new ArrayList<MeshSession>();
+    private final List<RoomSession> sessions = new ArrayList<RoomSession>();
 
     @AfterEach
     void tearDown() {
-        for (MeshSession s : sessions) s.shutdown();
+        for (RoomSession s : sessions) s.shutdown();
     }
 
-    private static MeshConfig testConfig() {
-        MeshConfig config = new MeshConfig();
+    private static RoomConfig testConfig() {
+        RoomConfig config = new RoomConfig();
         config.listenPort = 0;        // ephemeral
         config.lanAnnounce = false;   // no UDP broadcast noise in CI
         return config;
     }
 
     /** Line sink + convenience matcher */
-    private static final class Client implements MeshEndpoint.LineListener {
+    private static final class Client implements RoomEndpoint.LineListener {
         final BlockingQueue<String> lines = new LinkedBlockingQueue<String>();
         public void onLine(String line) { lines.add(line); }
 
@@ -66,25 +66,25 @@ class MeshSessionTest {
         }
     }
 
-    private MeshSession create(String name) throws Exception {
-        MeshSession s = MeshSession.create(name, testConfig(), null);
+    private RoomSession create(String name) throws Exception {
+        RoomSession s = RoomSession.create(name, testConfig(), null);
         sessions.add(s);
         return s;
     }
 
-    private MeshSession join(MeshSession target, String name) throws Exception {
-        MeshSession s = MeshSession.join("127.0.0.1", target.getListenPort(), name, testConfig(), null);
+    private RoomSession join(RoomSession target, String name) throws Exception {
+        RoomSession s = RoomSession.join("127.0.0.1", target.getListenPort(), name, testConfig(), null);
         sessions.add(s);
         long deadline = System.currentTimeMillis() + 8000;
-        while (s.getState() != MeshSession.State.READY && System.currentTimeMillis() < deadline) {
+        while (s.getState() != RoomSession.State.READY && System.currentTimeMillis() < deadline) {
             Thread.sleep(20);
         }
-        assertEquals(MeshSession.State.READY, s.getState(), "Join should reach READY");
+        assertEquals(RoomSession.State.READY, s.getState(), "Join should reach READY");
         return s;
     }
 
     /** Attach a client and drive the standard login sequence */
-    private Client login(MeshSession session, String name) throws Exception {
+    private Client login(RoomSession session, String name) throws Exception {
         Client client = new Client();
         session.setLineListener(client);
         session.clientReady();
@@ -113,7 +113,7 @@ class MeshSessionTest {
 
     @Test
     void loginSynthesisFollowsServerOrder() throws Exception {
-        MeshSession a = create("Alice");
+        RoomSession a = create("Alice");
         Client client = new Client();
         a.setLineListener(client);
         a.clientReady();
@@ -133,12 +133,12 @@ class MeshSessionTest {
 
     @Test
     void joinerSeesRosterAndRooms() throws Exception {
-        MeshSession a = create("Alice");
+        RoomSession a = create("Alice");
         Client aliceClient = login(a, "Alice");
         a.sendLine(roomCreateLine("Early Room", 4));
         aliceClient.await("roomcreatesuccess\t");
 
-        MeshSession b = join(a, "Bob");
+        RoomSession b = join(a, "Bob");
         assertFalse(b.isArbiter());
         Client bobClient = login(b, "Bob");
 
@@ -156,12 +156,12 @@ class MeshSessionTest {
 
     @Test
     void roundLifecycleSharesSeedAndOrdersDeadBeforeFinish() throws Exception {
-        MeshSession a = create("Alice");
+        RoomSession a = create("Alice");
         Client aliceClient = login(a, "Alice");
         a.sendLine(roomCreateLine("Round", 2));
         aliceClient.await("roomcreatesuccess\t");
 
-        MeshSession b = join(a, "Bob");
+        RoomSession b = join(a, "Bob");
         Client bobClient = login(b, "Bob");
         b.sendLine("roomjoin\t0\tfalse");
         bobClient.await("roomjoinsuccess\t");
@@ -183,17 +183,17 @@ class MeshSessionTest {
 
     @Test
     void gameTrafficIsStampedAndRoomScoped() throws Exception {
-        MeshSession a = create("Alice");
+        RoomSession a = create("Alice");
         Client aliceClient = login(a, "Alice");
         a.sendLine(roomCreateLine("Room", 2));
         aliceClient.await("roomcreatesuccess\t");
 
-        MeshSession b = join(a, "Bob");
+        RoomSession b = join(a, "Bob");
         Client bobClient = login(b, "Bob");
         b.sendLine("roomjoin\t0\tfalse");
         bobClient.await("roomjoinsuccess\t");
 
-        MeshSession c = join(a, "Carol");   // stays in the lobby
+        RoomSession c = join(a, "Carol");   // stays in the lobby
         Client carolClient = login(c, "Carol");
 
         a.sendLine("game\tpiece\t1\t2\t3\t0\t18\t1\t0\tfalse");
@@ -205,7 +205,7 @@ class MeshSessionTest {
 
     @Test
     void staleClientGetsDeniedGracefully() throws Exception {
-        MeshSession a = create("Alice");
+        RoomSession a = create("Alice");
         try (java.net.Socket stale = new java.net.Socket("127.0.0.1", a.getListenPort())) {
             stale.getOutputStream().write(NetUtil.stringToBytes("login\t1.0\tOldTimer\t\t\n"));
             stale.getOutputStream().flush();
@@ -214,15 +214,15 @@ class MeshSessionTest {
             int len = stale.getInputStream().read(buf);
             assertTrue(len > 0);
             String reply = new String(buf, 0, len, java.nio.charset.StandardCharsets.UTF_8);
-            assertTrue(reply.startsWith("mesh\tdeny\t"), reply);
+            assertTrue(reply.startsWith("room\tdeny\t"), reply);
         }
     }
 
     @Test
     void leaveNotifiesPeersAndClosesOnce() throws Exception {
-        MeshSession a = create("Alice");
+        RoomSession a = create("Alice");
         Client aliceClient = login(a, "Alice");
-        MeshSession b = join(a, "Bob");
+        RoomSession b = join(a, "Bob");
         login(b, "Bob");
 
         final BlockingQueue<String> closedReasons = new LinkedBlockingQueue<String>();

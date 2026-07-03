@@ -15,7 +15,7 @@ import java.util.Locale;
 import com.sun.jna.Pointer;
 import com.sun.jna.ptr.FloatByReference;
 
-import nullpomino.game.net.mesh.MeshSession;
+import nullpomino.game.net.room.RoomSession;
 import nullpomino.gui.GameKeyDummy;
 import nullpomino.gui.net.NetLobbyFrame;
 import nullpomino.game.play.GameEngine;
@@ -223,8 +223,8 @@ public class NullpoMinoSDL {
 	/** Maximum FPS */
 	public static int maxFPS;
 
-	/** P2P mesh session while one is active, null otherwise */
-	public static MeshSession meshSession;
+	/** P2P room session while one is active, null otherwise */
+	public static RoomSession roomSession;
 
 	/**
 	 * Shared netplay session (protocol client, chat buffers, room list, rule catalogue).
@@ -704,7 +704,7 @@ public class NullpoMinoSDL {
 		log.info("NullpoMinoSDL shutdown()");
 
 		try {
-			stopMeshSession();
+			stopRoomSession();
 			for(int i = 0; i < joystickMax; i++) {
 				if(joystick[i] != null) {
 					SDL3.INSTANCE.SDL_CloseJoystick(joystick[i]);
@@ -737,7 +737,7 @@ public class NullpoMinoSDL {
 	 * netplay lobby states and for hard-disconnect recovery paths.
 	 */
 	public static void endNetplay() {
-		stopMeshSession();
+		stopRoomSession();
 		if(netLobby != null) {
 			try { netLobby.shutdown(); }
 			catch(Throwable t) { log.warn("netLobby shutdown failed", t); }
@@ -1132,18 +1132,18 @@ public class NullpoMinoSDL {
 	}
 
 	/**
-	 * Leave the P2P mesh session, if one is active
+	 * Leave the P2P room session, if one is active
 	 */
-	public static void stopMeshSession() {
-		log.debug("stopMeshSession called");
+	public static void stopRoomSession() {
+		log.debug("stopRoomSession called");
 
-		if(meshSession != null) {
+		if(roomSession != null) {
 			try {
-				meshSession.shutdown();
+				roomSession.shutdown();
 			} catch (Throwable e) {
-				log.warn("mesh session shutdown failed", e);
+				log.warn("room session shutdown failed", e);
 			}
-			meshSession = null;
+			roomSession = null;
 		}
 	}
 

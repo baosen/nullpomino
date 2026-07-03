@@ -1,6 +1,6 @@
 // SPDX-FileCopyrightText: 2010 NullNoname
 // SPDX-License-Identifier: BSD-3-Clause
-package nullpomino.game.net.mesh;
+package nullpomino.game.net.room;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -9,10 +9,10 @@ import java.util.Random;
 import nullpomino.game.net.NetUtil;
 
 /**
- * Frame formats for the P2P mesh netplay protocol.
+ * Frame formats for the P2P room netplay protocol.
  *
- * <p>Every line on a mesh link is newline-terminated, tab-delimited UTF-8.
- * Lines starting with {@code mesh\t} are mesh-internal control frames (this
+ * <p>Every line on a peer link is newline-terminated, tab-delimited UTF-8.
+ * Lines starting with {@code room\t} are room-internal control frames (this
  * class owns all their builders and parsers); {@code game\t...} and
  * {@code gstat\t...} lines pass through pre-stamped with the sender's
  * uid/seat and are NEVER re-tokenized (the {@code game\tattack} line has a
@@ -23,8 +23,8 @@ import nullpomino.game.net.NetUtil;
  * <p>Builders return lines WITHOUT the trailing newline; the link layer
  * appends it on send.
  */
-public final class MeshProtocol {
-	/** Default TCP listen port for mesh peer links (9200=old server, 9201=discovery UDP) */
+public final class RoomProtocol {
+	/** Default TCP listen port for room peer links (9200=old server, 9201=discovery UDP) */
 	public static final int DEFAULT_PORT = 9202;
 
 	/** Interval between liveness pings on an idle link (ms) */
@@ -49,17 +49,17 @@ public final class MeshProtocol {
 	public static final int SCOPE_GLOBAL = -1;
 
 	// Frame prefixes (first two tab fields)
-	public static final String PREFIX = "mesh\t";
-	private static final String CONTROL_PREFIX = "mesh\tc\t";
-	private static final String DIRECT_PREFIX = "mesh\td\t";
-	private static final String BROADCAST_PREFIX = "mesh\tb\t";
+	public static final String PREFIX = "room\t";
+	private static final String CONTROL_PREFIX = "room\tc\t";
+	private static final String DIRECT_PREFIX = "room\td\t";
+	private static final String BROADCAST_PREFIX = "room\tb\t";
 
 	// Complete frames with no arguments
-	public static final String LINE_PING = "mesh\tping";
-	public static final String LINE_PONG = "mesh\tpong";
-	public static final String LINE_MESHOK = "mesh\tmeshok";
-	public static final String LINE_BYE = "mesh\tbye";
-	public static final String LINE_SNAPEND = "mesh\tsnapend";
+	public static final String LINE_PING = "room\tping";
+	public static final String LINE_PONG = "room\tpong";
+	public static final String LINE_ROOMOK = "room\troomok";
+	public static final String LINE_BYE = "room\tbye";
+	public static final String LINE_SNAPEND = "room\tsnapend";
 
 	// Deny reasons
 	public static final String DENY_DIFFERENT_VERSION = "DIFFERENT_VERSION";
@@ -68,10 +68,10 @@ public final class MeshProtocol {
 	public static final String DENY_DUPLICATE = "DUPLICATE";
 	public static final String DENY_SHUTDOWN = "SHUTDOWN";
 
-	private MeshProtocol() {}
+	private RoomProtocol() {}
 
-	/** @return true if the line is a mesh-internal control frame */
-	public static boolean isMeshFrame(String line) {
+	/** @return true if the line is a room-internal control frame */
+	public static boolean isRoomFrame(String line) {
 		return line.startsWith(PREFIX);
 	}
 
@@ -110,7 +110,7 @@ public final class MeshProtocol {
 	public static String buildHelloJoin(float verMajor, boolean devBuild, int listenPort, String name,
 		int[] ratings, int[] playCounts, int[] winCounts)
 	{
-		return "mesh\thello\tjoin\t" + verMajor + "\t" + devBuild + "\t" + listenPort + "\t"
+		return "room\thello\tjoin\t" + verMajor + "\t" + devBuild + "\t" + listenPort + "\t"
 			+ NetUtil.urlEncode(name) + "\t" + joinUids(ratings) + "\t" + joinUids(playCounts)
 			+ "\t" + joinUids(winCounts);
 	}
@@ -148,7 +148,7 @@ public final class MeshProtocol {
 	public static String buildHelloPeer(float verMajor, boolean devBuild, String token, int uid,
 		int listenPort)
 	{
-		return "mesh\thello\tpeer\t" + verMajor + "\t" + devBuild + "\t" + token + "\t" + uid
+		return "room\thello\tpeer\t" + verMajor + "\t" + devBuild + "\t" + token + "\t" + uid
 			+ "\t" + listenPort;
 	}
 
@@ -198,7 +198,7 @@ public final class MeshProtocol {
 	public static String buildWelcome(String token, int uid, String name, int arbiterUid,
 		long lastSeq, List<RosterEntry> roster)
 	{
-		StringBuilder sb = new StringBuilder("mesh\twelcome\t");
+		StringBuilder sb = new StringBuilder("room\twelcome\t");
 		sb.append(token).append('\t').append(uid).append('\t').append(NetUtil.urlEncode(name));
 		sb.append('\t').append(arbiterUid).append('\t').append(lastSeq).append('\t').append(roster.size());
 		for(RosterEntry entry: roster) sb.append('\t').append(entry.export());
@@ -220,15 +220,15 @@ public final class MeshProtocol {
 	}
 
 	public static String buildPeerOk(int uid) {
-		return "mesh\tpeerok\t" + uid;
+		return "room\tpeerok\t" + uid;
 	}
 
 	public static String buildDeny(String reason, String detail) {
-		return "mesh\tdeny\t" + reason + "\t" + NetUtil.urlEncode(detail);
+		return "room\tdeny\t" + reason + "\t" + NetUtil.urlEncode(detail);
 	}
 
 	public static String buildPeerAnnounce(int uid, String host, int listenPort, String name) {
-		return "mesh\tpeer\t" + uid + "\t" + host + "\t" + listenPort + "\t" + NetUtil.urlEncode(name);
+		return "room\tpeer\t" + uid + "\t" + host + "\t" + listenPort + "\t" + NetUtil.urlEncode(name);
 	}
 
 	/** @return parsed peer announce as a RosterEntry, or null if malformed */
@@ -300,7 +300,7 @@ public final class MeshProtocol {
 	// ------------------------------------------------------------------ authority extras
 
 	public static String buildAuthGlobal(long seq, int nextUid, int nextRoomId) {
-		return "mesh\tauthg\t" + seq + "\t" + nextUid + "\t" + nextRoomId;
+		return "room\tauthg\t" + seq + "\t" + nextUid + "\t" + nextRoomId;
 	}
 
 	/** Parsed {@code authg} frame */
@@ -361,7 +361,7 @@ public final class MeshProtocol {
 	}
 
 	public static String buildAuthRoom(AuthRoom a) {
-		return "mesh\tauthr\t" + a.seq + "\t" + a.roomId + "\t" + a.playing + "\t"
+		return "room\tauthr\t" + a.seq + "\t" + a.roomId + "\t" + a.playing + "\t"
 			+ a.startPlayers + "\t" + a.deadCount + "\t" + a.autoStartActive + "\t"
 			+ a.isSomeoneCancelled + "\t" + a.mapPrevious + "\t" + joinUids(a.seatUids) + "\t"
 			+ joinUids(a.nowPlayingUids) + "\t" + joinUids(a.deadUids) + "\t" + joinUids(a.queueUids);
@@ -402,49 +402,49 @@ public final class MeshProtocol {
 	// ------------------------------------------------------------------ rule cache / liveness / failure
 
 	public static String buildRuleCache(int uid, String checksum, String compressedData) {
-		return "mesh\trule\t" + uid + "\t" + checksum + "\t" + compressedData;
+		return "room\trule\t" + uid + "\t" + checksum + "\t" + compressedData;
 	}
 
 	public static String buildPeerDown(int uid) {
-		return "mesh\tpeerdown\t" + uid;
+		return "room\tpeerdown\t" + uid;
 	}
 
 	public static String buildKick(int uid, String reason) {
-		return "mesh\tkick\t" + uid + "\t" + NetUtil.urlEncode(reason);
+		return "room\tkick\t" + uid + "\t" + NetUtil.urlEncode(reason);
 	}
 
 	public static String buildArbiterClaim(int uid, long lastSeq) {
-		return "mesh\tarbiter\t" + uid + "\t" + lastSeq;
+		return "room\tarbiter\t" + uid + "\t" + lastSeq;
 	}
 
 	// ------------------------------------------------------------------ snapshot frames
 
 	public static String buildSnapRoom(int roomId, String roomBlob) {
-		return "mesh\tsnap\troom\t" + roomId + "\t" + roomBlob;
+		return "room\tsnap\troom\t" + roomId + "\t" + roomBlob;
 	}
 
 	public static String buildSnapPlayer(String playerBlob) {
-		return "mesh\tsnap\tplayer\t" + playerBlob;
+		return "room\tsnap\tplayer\t" + playerBlob;
 	}
 
 	public static String buildSnapRule(int uid, String checksum, String compressedData) {
-		return "mesh\tsnap\trule\t" + uid + "\t" + checksum + "\t" + compressedData;
+		return "room\tsnap\trule\t" + uid + "\t" + checksum + "\t" + compressedData;
 	}
 
 	public static String buildSnapRoomRule(int roomId, String compressedData) {
-		return "mesh\tsnap\troomrule\t" + roomId + "\t" + compressedData;
+		return "room\tsnap\troomrule\t" + roomId + "\t" + compressedData;
 	}
 
 	public static String buildSnapMap(int roomId, String compressedData) {
-		return "mesh\tsnap\tmap\t" + roomId + "\t" + compressedData;
+		return "room\tsnap\tmap\t" + roomId + "\t" + compressedData;
 	}
 
 	/** chatLine is a pre-encoded NetChatMessage export (no raw tabs) */
 	public static String buildSnapChat(int roomId, String chatLine) {
-		return "mesh\tsnap\tchat\t" + roomId + "\t" + chatLine;
+		return "room\tsnap\tchat\t" + roomId + "\t" + chatLine;
 	}
 
 	public static String buildSnapLobbyChat(String chatLine) {
-		return "mesh\tsnap\tlobbychat\t" + chatLine;
+		return "room\tsnap\tlobbychat\t" + chatLine;
 	}
 }
