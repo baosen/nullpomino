@@ -2,7 +2,10 @@ name: Deploy web build to GitHub Pages
 
 on:
   push:
-    branches: ["nullpomino+"]
+    # "+" is a special character in workflow filter patterns (one-or-more of
+    # the preceding character), so it must be escaped to match the literal
+    # branch name — unescaped, pushes never trigger this workflow.
+    branches: ['nullpomino\+']
   workflow_dispatch:
 
 permissions:
