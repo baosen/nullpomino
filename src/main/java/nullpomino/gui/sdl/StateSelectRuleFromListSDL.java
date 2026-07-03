@@ -44,7 +44,7 @@ public class StateSelectRuleFromListSDL extends DummyMenuScrollStateSDL {
 		mapRuleEntries = new HashMap<String, RuleEntry>();
 
 		try {
-			BufferedReader in = new BufferedReader(new FileReader("config/list/recommended_rules.lst"));
+			BufferedReader in = new BufferedReader(new FileReader(nullpomino.util.DataDir.path("config/list/recommended_rules.lst")));
 			String strMode = "";
 
 			String str;
@@ -58,10 +58,10 @@ public class StateSelectRuleFromListSDL extends DummyMenuScrollStateSDL {
 					strMode = str.substring(1);
 				} else {
 					// File Path
-					File file = new File(str);
+					File file = nullpomino.util.DataDir.file(str);
 					if(file.exists() && file.isFile()) {
 						try {
-							CustomProperties propRule = CustomProperties.loadFromFile(file.getPath());
+							CustomProperties propRule = CustomProperties.loadFromFile(str);
 
 							String strRuleName = propRule.getProperty("0.ruleopt.strRuleName", "");
 							if(strRuleName.length() > 0) {

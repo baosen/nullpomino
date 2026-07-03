@@ -1154,7 +1154,7 @@ public class EventReceiver {
 
 		String filename = foldername + "/" + GeneralUtil.getReplayFilename();
 		try {
-			File repfolder = new File(foldername);
+			File repfolder = nullpomino.util.DataDir.file(foldername);
 			if (!repfolder.exists()) {
 				if (repfolder.mkdir()) {
 					log.info("Created replay folder: {}", foldername);

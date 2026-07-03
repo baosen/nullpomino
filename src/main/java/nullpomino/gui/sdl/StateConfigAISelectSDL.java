@@ -64,7 +64,7 @@ public class StateConfigAISelectSDL extends BaseStateSDL {
 	 */
 	public StateConfigAISelectSDL() {
 		try {
-			BufferedReader in = new BufferedReader(new FileReader("config/list/ai.lst"));
+			BufferedReader in = new BufferedReader(new FileReader(nullpomino.util.DataDir.path("config/list/ai.lst")));
 			aiPathList = loadAIList(in);
 			aiNameList = loadAINames(aiPathList);
 			in.close();

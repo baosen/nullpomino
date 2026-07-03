@@ -23,7 +23,7 @@ public class CustomProperties extends Properties {
 
 	public static CustomProperties loadFromFile(String filename) throws IOException {
 		CustomProperties properties = new CustomProperties();
-		try (FileInputStream in = new FileInputStream(filename)) {
+		try (FileInputStream in = new FileInputStream(DataDir.path(filename))) {
 			properties.load(in);
 		}
 		return properties;
@@ -38,7 +38,7 @@ public class CustomProperties extends Properties {
 	}
 
 	public void storeToFile(String filename, String comments) throws IOException {
-		try (FileOutputStream out = new FileOutputStream(filename)) {
+		try (FileOutputStream out = new FileOutputStream(DataDir.path(filename))) {
 			store(out, comments);
 		}
 	}

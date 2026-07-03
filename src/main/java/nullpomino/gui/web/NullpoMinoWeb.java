@@ -15,6 +15,7 @@ import nullpomino.gui.sdl.NullpoMinoSDL;
 import nullpomino.gui.sdl.binding.SdlBackend;
 import nullpomino.gui.sdl.binding.web.Java2DBackend;
 import nullpomino.util.CustomProperties;
+import nullpomino.util.DataDir;
 import nullpomino.util.LogConfig;
 
 /**
@@ -49,6 +50,13 @@ public class NullpoMinoWeb {
 		// Must precede any reference to NullpoMinoSDL (webMode is read at
 		// class initialization) and any binding interface (backend selection).
 		System.setProperty("nullpomino.web", "true");
+		// CheerpJ does not resolve relative paths against user.dir at the I/O
+		// layer, so all game data I/O goes through DataDir with an absolute
+		// root. Must be set before DataDir is class-initialized.
+		if(System.getProperty("nullpomino.datadir") == null) {
+			System.setProperty("nullpomino.datadir",
+				new File(System.getProperty("user.dir", ".")).getAbsolutePath());
+		}
 		SdlBackend.set(new Java2DBackend());
 
 		// Console-only logging from a packaged resource; the config tree on
@@ -77,12 +85,14 @@ public class NullpoMinoWeb {
 			String path;
 			while((path = reader.readLine()) != null) {
 				if(path.isEmpty()) continue;
-				File dst = new File(path);
+				File dst = DataDir.file(path);
 				boolean userData = path.startsWith("config/setting/");
 				if(userData && dst.exists()) continue;
 
-				File parent = dst.getParentFile();
-				if(parent != null) parent.mkdirs();
+				if(!ensureParentDirectory(dst)) {
+					System.err.println("NullpoMinoWeb: cannot create directory for " + path + "; skipping");
+					continue;
+				}
 				try(InputStream in = NullpoMinoWeb.class.getResourceAsStream("/" + path)) {
 					if(in == null) continue;
 					try(OutputStream out = new FileOutputStream(dst)) {
@@ -92,8 +102,22 @@ public class NullpoMinoWeb {
 				seeded++;
 			}
 		}
-		new File("replay").mkdirs();
+		DataDir.file("replay").mkdirs();
 		System.out.println("NullpoMinoWeb: seeded " + seeded + " config files");
+	}
+
+	/**
+	 * Make sure the parent directory chain of a file exists, healing any path
+	 * component that a broken earlier run left behind as a plain file (the
+	 * persistent IndexedDB filesystem survives such accidents across reloads).
+	 */
+	private static boolean ensureParentDirectory(File file) {
+		File parent = file.getParentFile();
+		if(parent == null || parent.isDirectory()) return true;
+		for(File p = parent; p != null; p = p.getParentFile()) {
+			if(p.isFile()) p.delete();
+		}
+		return parent.mkdirs() || parent.isDirectory();
 	}
 
 	/**

@@ -950,7 +950,7 @@ public class NullpoMinoSDL {
 		String filename = dir + "/" + dfm.format(c.getTime()) + ".bmp";
 		log.info("Saving screenshot to {}", filename);
 
-		File ssfolder = new File(dir);
+		File ssfolder = nullpomino.util.DataDir.file(dir);
 		if (!ssfolder.exists()) {
 			if (ssfolder.mkdir()) {
 				log.info("Created screenshot folder: {}", dir);
@@ -961,7 +961,7 @@ public class NullpoMinoSDL {
 
 		SdlSurface surface = SDL3.INSTANCE.SDL_RenderReadPixels(renderer, null);
 		if(surface != null) {
-			SDL3.INSTANCE.SDL_SaveBMP(surface, filename);
+			SDL3.INSTANCE.SDL_SaveBMP(surface, nullpomino.util.DataDir.path(filename));
 			SDL3.INSTANCE.SDL_DestroySurface(surface);
 		}
 	}

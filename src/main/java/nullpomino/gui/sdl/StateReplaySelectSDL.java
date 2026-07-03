@@ -55,7 +55,7 @@ public class StateReplaySelectSDL extends DummyMenuScrollStateSDL {
 	 * @return Replay fileFilenameArray of. If there is no directorynull
 	 */
 	protected String[] getReplayFileList() {
-		File dir = new File(NullpoMinoSDL.propGlobal.getProperty("custom.replay.directory", "replay"));
+		File dir = nullpomino.util.DataDir.file(NullpoMinoSDL.propGlobal.getProperty("custom.replay.directory", "replay"));
 
 		FilenameFilter filter = new FilenameFilter() {
 			public boolean accept(File dir1, String name) {

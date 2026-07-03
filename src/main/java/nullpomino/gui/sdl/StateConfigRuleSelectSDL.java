@@ -51,7 +51,7 @@ public class StateConfigRuleSelectSDL extends DummyMenuScrollStateSDL {
 	 * @return Rule file list. null if directory doesn't exist.
 	 */
 	private String[] getRuleFileList() {
-		File dir = new File("config/rule");
+		File dir = nullpomino.util.DataDir.file("config/rule");
 
 		FilenameFilter filter = new FilenameFilter() {
 			public boolean accept(File dir1, String name) {
