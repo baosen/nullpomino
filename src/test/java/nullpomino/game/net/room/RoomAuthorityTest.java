@@ -104,7 +104,7 @@ class RoomAuthorityTest {
         assertEquals(RoomProtocol.SCOPE_GLOBAL, create.scope);
         assertNotNull(sink.lastBroadcastStarting("playerupdate\t"));
         assertTrue(sink.authUpdates > 0);
-        assertNotNull(auth.getRoomInfo(0));
+        assertNotNull(auth.getRoom());
         assertEquals(0, auth.getPlayer(0).seatID);
     }
 
@@ -151,7 +151,7 @@ class RoomAuthorityTest {
         Long.parseLong(f[1], 16);       // seed parses as base-16
         assertEquals("2", f[2]);        // startPlayers
         assertEquals("0", f[3]);        // mapNo
-        assertTrue(auth.getRoomInfo(0).playing);
+        assertTrue(auth.getRoom().playing);
         assertTrue(auth.getPlayer(0).playing);
 
         Emitted roomUpd = sink.lastBroadcastStarting("roomupdate\t");
@@ -181,7 +181,7 @@ class RoomAuthorityTest {
         assertEquals(0, finish.scope);
         assertEquals("finish\t0\t0\t" + NetUtil.urlEncode("Alice") + "\tfalse", finish.line);
 
-        assertFalse(auth.getRoomInfo(0).playing);
+        assertFalse(auth.getRoom().playing);
         assertEquals(1, auth.getPlayer(0).winCountNow);
 
         int deadIdx = -1, finishIdx = -1;
@@ -243,7 +243,7 @@ class RoomAuthorityTest {
         Emitted del = sink.lastBroadcastStarting("roomdelete\t");
         assertNotNull(del);
         assertEquals(RoomProtocol.SCOPE_GLOBAL, del.scope);
-        assertNull(auth.getRoomInfo(0));
+        assertNull(auth.getRoom());
     }
 
     @Test
@@ -262,7 +262,7 @@ class RoomAuthorityTest {
 
         control(0, "ready\tfalse");
         assertNotNull(sink.lastBroadcastStarting("autostartstop"));
-        assertTrue(auth.getRoomInfo(0).isSomeoneCancelled);
+        assertTrue(auth.getRoom().isSomeoneCancelled);
     }
 
     @Test
@@ -319,21 +319,20 @@ class RoomAuthorityTest {
     }
 
     @Test
-    void twoRoomsGetIsolatedScopes() {
+    void secondRoomCreateIsIgnored() {
+        // One session = one room: once the room exists, further roomcreate
+        // requests (even from members still in the lobby phase) are ignored
         admit(0, "Alice");
         admit(1, "Bob");
-        admit(2, "Carol");
-        createRoom(0, "Room A", 2, 0);            // roomID 0
-        createRoom(1, "unused", 2, 0);            // rejected: Bob is in no room? No - Bob is in lobby, so this creates roomID 1
-        control(2, "roomjoin\t1\tfalse");
+        createRoom(0, "The Room", 2, 0);
 
         sink.clear();
-        control(1, "ready\ttrue");
-        control(2, "ready\ttrue");
+        createRoom(1, "Second Room", 2, 0);
 
-        Emitted start = sink.lastBroadcastStarting("start\t");
-        assertNotNull(start);
-        assertEquals(1, start.scope, "Room 1's start must be scoped to room 1");
+        assertNull(sink.lastDirectFor(1, "roomcreatesuccess"));
+        assertNull(sink.lastBroadcastStarting("roomcreate\t"));
+        assertEquals(-1, auth.getPlayer(1).roomID);
+        assertEquals("The Room", auth.getRoom().strName);
     }
 
     @Test

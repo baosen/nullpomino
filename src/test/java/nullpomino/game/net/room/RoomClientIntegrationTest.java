@@ -25,7 +25,7 @@ import org.junit.jupiter.api.Test;
  * Full-stack three-peer integration: real RoomSessions over real sockets,
  * each fronted by the NetRoomPlayerClient seam and a NetLobbyFrame with its
  * own pump loop - the exact wiring the SDL client uses. Covers session
- * formation, multi-room isolation, a full rated round, mid-game arbiter
+ * formation, pre-join room-scope isolation, a full rated round, mid-game arbiter
  * migration with a follow-up rematch, and queue promotion on leave.
  */
 class RoomClientIntegrationTest {
@@ -152,35 +152,35 @@ class RoomClientIntegrationTest {
     }
 
     @Test
-    void twoRoomsStayFullyIsolated() throws Exception {
+    void preJoinMembersSeeNoRoomTraffic() throws Exception {
         Peer alice = createPeer("Alice");
         Peer bob = joinPeer(alice, "Bob");
         Peer carol = joinPeer(alice, "Carol");
 
-        alice.send(roomCreateLine("Room A", 2, false));
+        alice.send(roomCreateLine("The Room", 2, false));
         alice.await("roomcreatesuccess\t");
         bob.send("roomjoin\t0\tfalse");
         bob.await("roomjoinsuccess\t0\t");
 
-        carol.send(roomCreateLine("Room B", 2, false));
-        carol.await("roomcreatesuccess\t");
+        // Carol is a session member but has NOT entered the room (the
+        // transient pre-join window): scope filtering must keep the round
+        // out of her client, where a stray start would reset engines
         carol.messages.clear();
 
-        // Room A plays a full round; Carol (room B) must observe none of it
         alice.send("ready\ttrue");
         bob.send("ready\ttrue");
         String startA = alice.await("start\t");
         String startB = bob.await("start\t");
-        assertEquals(startA, startB, "Shared seed inside room A");
+        assertEquals(startA, startB, "Shared seed inside the room");
 
         alice.send("game\tpiece\t1\t2\t3\t0\t18\t1\t0\tfalse");
         bob.await("game\t0\t0\tpiece\t");
         bob.send("dead\t0");
         bob.await("finish\t");
 
-        assertTrue(carol.silentOn("start\t", 300), "start must not leak across rooms");
-        assertTrue(carol.silentOn("game\t", 200), "game traffic must not leak across rooms");
-        assertTrue(carol.silentOn("dead\t", 200), "dead must not leak across rooms");
+        assertTrue(carol.silentOn("start\t", 300), "start must not reach pre-join members");
+        assertTrue(carol.silentOn("game\t", 200), "game traffic must not reach pre-join members");
+        assertTrue(carol.silentOn("dead\t", 200), "dead must not reach pre-join members");
     }
 
     @Test

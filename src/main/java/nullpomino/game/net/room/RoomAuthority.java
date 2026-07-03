@@ -22,7 +22,7 @@ import org.slf4j.LoggerFactory;
 
 /**
  * The room/seat/game state machine for a room session - a faithful port of
- * NetServer's session logic (multi-room lobby, seats and FIFO queues, ready
+ * NetServer's session logic (seats and FIFO queues, ready
  * and auto-start, shared-seed game start, death places, win detection, race
  * results, chat) over the same {@link NetRoomInfo}/{@link NetPlayerInfo}
  * classes, emitting byte-identical broadcast lines.
@@ -80,17 +80,14 @@ public class RoomAuthority {
 	/** Members by uid, in admission order */
 	private final LinkedHashMap<Integer, NetPlayerInfo> players = new LinkedHashMap<Integer, NetPlayerInfo>();
 
-	/** All rooms */
-	private final LinkedList<NetRoomInfo> roomInfoList = new LinkedList<NetRoomInfo>();
+	/** The session's one room; null until created (one session = one room) */
+	private NetRoomInfo roomInfo;
 
 	/** Compressed rule blob per uid (checksum, data) - served to joiners and successors */
 	private final Map<Integer, String[]> ruleBlobs = new LinkedHashMap<Integer, String[]>();
 
 	/** Lobby chat history */
 	private final LinkedList<NetChatMessage> lobbyChatList = new LinkedList<NetChatMessage>();
-
-	/** Next room ID (roomCount analog) */
-	private int nextRoomId = 0;
 
 	/** Next member uid */
 	private int nextUid = 0;
@@ -164,23 +161,19 @@ public class RoomAuthority {
 		pInfo.connected = false;
 		pInfo.ready = false;
 
-		LinkedList<NetRoomInfo> deleteList = new LinkedList<NetRoomInfo>();
-		for(NetRoomInfo roomInfo: roomInfoList) {
-			if(roomInfo.playerList.contains(pInfo)) {
-				roomInfo.playerList.remove(pInfo);
-				roomInfo.playerQueue.remove(pInfo);
-				roomInfo.exitSeat(pInfo);
-				deleteList.add(roomInfo);
-			}
-		}
-		for(NetRoomInfo roomInfo: deleteList) {
-			if(!deleteRoom(roomInfo)) {
-				joinAllQueuePlayers(roomInfo);
+		NetRoomInfo room = this.roomInfo;
+		if((room != null) && room.playerList.contains(pInfo)) {
+			room.playerList.remove(pInfo);
+			room.playerQueue.remove(pInfo);
+			room.exitSeat(pInfo);
 
-				if(!gameFinished(roomInfo)) {
-					if(!gameStartIfPossible(roomInfo)) {
-						autoStartTimerCheck(roomInfo);
-						broadcastRoomInfoUpdate(roomInfo);
+			if(!deleteRoom(room)) {
+				joinAllQueuePlayers(room);
+
+				if(!gameFinished(room)) {
+					if(!gameStartIfPossible(room)) {
+						autoStartTimerCheck(room);
+						broadcastRoomInfoUpdate(room);
 					}
 				}
 			}
@@ -292,7 +285,7 @@ public class RoomAuthority {
 	private void onChat(NetPlayerInfo pInfo, String[] message) {
 		//chat\t[MESSAGE]
 		if(pInfo.roomID == -1) return;
-		NetRoomInfo roomInfo = getRoomInfo(pInfo.roomID);
+		NetRoomInfo roomInfo = roomForId(pInfo.roomID);
 		if(roomInfo == null) return;
 
 		NetChatMessage chat = new NetChatMessage(NetUtil.urlDecode(message[1]), pInfo, roomInfo);
@@ -309,6 +302,10 @@ public class RoomAuthority {
 	private void onSingleRoomCreate(NetPlayerInfo pInfo, String[] message) {
 		//singleroomcreate\t[roomName]\t[mode]\t[rule]
 		if(pInfo.roomID != -1) return;
+		if(this.roomInfo != null) {
+			log.debug("Room create ignored: this session already has its room");
+			return;
+		}
 
 		NetRoomInfo roomInfo = new NetRoomInfo();
 
@@ -326,11 +323,8 @@ public class RoomAuthority {
 		roomInfo.ruleLock = false;
 		roomInfo.rated = false;
 
-		roomInfo.roomID = nextRoomId;
-		nextRoomId++;
-		if(nextRoomId == -1) nextRoomId = 0;
-
-		roomInfoList.add(roomInfo);
+		roomInfo.roomID = 0;
+		this.roomInfo = roomInfo;
 
 		pInfo.roomID = roomInfo.roomID;
 		pInfo.resetPlayState();
@@ -351,6 +345,10 @@ public class RoomAuthority {
 	private void onRoomCreate(NetPlayerInfo pInfo, String[] message) {
 		//roomcreate\t[roomName]\t[roomInfoBlob]\t[mode]\t[mapData?]
 		if(pInfo.roomID != -1) return;
+		if(this.roomInfo != null) {
+			log.debug("Room create ignored: this session already has its room");
+			return;
+		}
 
 		String strRoomInfo = NetUtil.urlDecode(message[2]);
 		NetRoomInfo roomInfo = new NetRoomInfo(strRoomInfo);
@@ -387,11 +385,8 @@ public class RoomAuthority {
 			}
 		}
 
-		roomInfo.roomID = nextRoomId;
-		nextRoomId++;
-		if(nextRoomId == -1) nextRoomId = 0;
-
-		roomInfoList.add(roomInfo);
+		roomInfo.roomID = 0;
+		this.roomInfo = roomInfo;
 
 		pInfo.roomID = roomInfo.roomID;
 		pInfo.resetPlayState();
@@ -427,8 +422,8 @@ public class RoomAuthority {
 		//roomjoin\t[ROOMID]\t[WATCH]
 		int roomID = Integer.parseInt(message[1]);
 		boolean watch = Boolean.parseBoolean(message[2]);
-		NetRoomInfo prevRoom = getRoomInfo(pInfo.roomID);
-		NetRoomInfo newRoom = getRoomInfo(roomID);
+		NetRoomInfo prevRoom = roomForId(pInfo.roomID);
+		NetRoomInfo newRoom = roomForId(roomID);
 
 		if(roomID < 0) {
 			// Return to lobby
@@ -571,7 +566,7 @@ public class RoomAuthority {
 	private void onChangeStatus(NetPlayerInfo pInfo, String[] message) {
 		//changestatus\t[WATCH]
 		if(pInfo.playing || (pInfo.roomID == -1)) return;
-		NetRoomInfo roomInfo = getRoomInfo(pInfo.roomID);
+		NetRoomInfo roomInfo = roomForId(pInfo.roomID);
 		if((roomInfo == null) || roomInfo.singleplayer) return;
 
 		boolean watch = Boolean.parseBoolean(message[1]);
@@ -618,7 +613,7 @@ public class RoomAuthority {
 	// ---------------------------------------------------------------- game lifecycle
 
 	private void onStart1P(NetPlayerInfo pInfo) {
-		NetRoomInfo roomInfo = getRoomInfo(pInfo.roomID);
+		NetRoomInfo roomInfo = roomForId(pInfo.roomID);
 		if(roomInfo == null) return;
 		int seat = roomInfo.getPlayerSeatNumber(pInfo);
 
@@ -630,7 +625,7 @@ public class RoomAuthority {
 
 	private void onReady(NetPlayerInfo pInfo, String[] message) {
 		//ready\t[STATE]
-		NetRoomInfo roomInfo = getRoomInfo(pInfo.roomID);
+		NetRoomInfo roomInfo = roomForId(pInfo.roomID);
 		if(roomInfo == null) return;
 		int seat = roomInfo.getPlayerSeatNumber(pInfo);
 
@@ -649,7 +644,7 @@ public class RoomAuthority {
 	}
 
 	private void onAutoStart(NetPlayerInfo pInfo) {
-		NetRoomInfo roomInfo = getRoomInfo(pInfo.roomID);
+		NetRoomInfo roomInfo = roomForId(pInfo.roomID);
 		if(roomInfo == null) return;
 		int seat = roomInfo.getPlayerSeatNumber(pInfo);
 
@@ -694,7 +689,7 @@ public class RoomAuthority {
 
 	private void onRaceWin(NetPlayerInfo pInfo, String[] message) {
 		if((pInfo.roomID == -1) || (pInfo.seatID == -1)) return;
-		NetRoomInfo roomInfo = getRoomInfo(pInfo.roomID);
+		NetRoomInfo roomInfo = roomForId(pInfo.roomID);
 		if(roomInfo == null) return;
 
 		if(roomInfo.playing && isRaceMode(roomInfo.style, roomInfo.strMode)) {
@@ -713,7 +708,7 @@ public class RoomAuthority {
 	}
 
 	private void onReset1P(NetPlayerInfo pInfo) {
-		NetRoomInfo roomInfo = getRoomInfo(pInfo.roomID);
+		NetRoomInfo roomInfo = roomForId(pInfo.roomID);
 		if(roomInfo == null) return;
 		int seat = roomInfo.getPlayerSeatNumber(pInfo);
 
@@ -898,7 +893,7 @@ public class RoomAuthority {
 		if((roomInfo != null) && (roomInfo.playerList.isEmpty())) {
 			log.info("RoomDelete ID:{} Title:{}", roomInfo.roomID, roomInfo.strName);
 			broadcastRoomInfoUpdate(roomInfo, "roomdelete");
-			roomInfoList.remove(roomInfo);
+			if(this.roomInfo == roomInfo) this.roomInfo = null;
 			roomInfo.delete();
 			return true;
 		}
@@ -930,7 +925,7 @@ public class RoomAuthority {
 	}
 
 	private void playerDead(NetPlayerInfo pInfo, NetPlayerInfo pKOInfo) {
-		NetRoomInfo roomInfo = getRoomInfo(pInfo.roomID);
+		NetRoomInfo roomInfo = roomForId(pInfo.roomID);
 
 		if((roomInfo != null) && (pInfo.seatID != -1) && (pInfo.playing) && (roomInfo.playing)) {
 			pInfo.resetPlayState();
@@ -971,14 +966,6 @@ public class RoomAuthority {
 
 	// ================================================================ queries (session layer + snapshots)
 
-	public NetRoomInfo getRoomInfo(int roomID) {
-		if(roomID < 0) return null;
-		for(NetRoomInfo roomInfo: roomInfoList) {
-			if(roomID == roomInfo.roomID) return roomInfo;
-		}
-		return null;
-	}
-
 	public NetPlayerInfo getPlayer(int uid) {
 		return players.get(uid);
 	}
@@ -987,8 +974,14 @@ public class RoomAuthority {
 		return players;
 	}
 
-	public LinkedList<NetRoomInfo> getRooms() {
-		return roomInfoList;
+	/** @return The session's room, or null before it is created */
+	public NetRoomInfo getRoom() {
+		return roomInfo;
+	}
+
+	private NetRoomInfo roomForId(int roomID) {
+		if((roomID < 0) || (roomInfo == null) || (roomInfo.roomID != roomID)) return null;
+		return roomInfo;
 	}
 
 	public Map<Integer, String[]> getRuleBlobs() {
@@ -1003,24 +996,18 @@ public class RoomAuthority {
 		return nextUid;
 	}
 
-	public int getNextRoomId() {
-		return nextRoomId;
-	}
-
-	/** Restore counters when a successor arbiter adopts mirrored state */
-	public void restoreCounters(int nextUid, int nextRoomId) {
+	/** Restore the uid counter when a successor arbiter adopts mirrored state */
+	public void restoreCounters(int nextUid) {
 		this.nextUid = nextUid;
-		this.nextRoomId = nextRoomId;
 	}
 
-	/** Adopt mirrored state wholesale (successor arbiter); counters via restoreCounters */
-	public void adoptState(Map<Integer, NetPlayerInfo> players, LinkedList<NetRoomInfo> rooms,
+	/** Adopt mirrored state wholesale (successor arbiter); counter via restoreCounters */
+	public void adoptState(Map<Integer, NetPlayerInfo> players, NetRoomInfo room,
 		Map<Integer, String[]> rules)
 	{
 		this.players.clear();
 		this.players.putAll(players);
-		this.roomInfoList.clear();
-		this.roomInfoList.addAll(rooms);
+		this.roomInfo = room;
 		this.ruleBlobs.clear();
 		this.ruleBlobs.putAll(rules);
 	}
@@ -1031,7 +1018,7 @@ public class RoomAuthority {
 	 * the old arbiter's independent write queues.
 	 */
 	public void resyncAll() {
-		for(NetRoomInfo roomInfo: roomInfoList) {
+		if(roomInfo != null) {
 			broadcastRoomInfoUpdate(roomInfo);
 		}
 		for(NetPlayerInfo pInfo: players.values()) {

@@ -299,28 +299,25 @@ public final class RoomProtocol {
 
 	// ------------------------------------------------------------------ authority extras
 
-	public static String buildAuthGlobal(long seq, int nextUid, int nextRoomId) {
-		return "room\tauthg\t" + seq + "\t" + nextUid + "\t" + nextRoomId;
+	public static String buildAuthGlobal(long seq, int nextUid) {
+		return "room\tauthg\t" + seq + "\t" + nextUid;
 	}
 
 	/** Parsed {@code authg} frame */
 	public static final class AuthGlobal {
 		public final long seq;
 		public final int nextUid;
-		public final int nextRoomId;
 
-		AuthGlobal(long seq, int nextUid, int nextRoomId) {
+		AuthGlobal(long seq, int nextUid) {
 			this.seq = seq;
 			this.nextUid = nextUid;
-			this.nextRoomId = nextRoomId;
 		}
 	}
 
 	/** @return parsed authg, or null if malformed */
 	public static AuthGlobal parseAuthGlobal(String[] parts) {
 		try {
-			return new AuthGlobal(Long.parseLong(parts[2]), Integer.parseInt(parts[3]),
-				Integer.parseInt(parts[4]));
+			return new AuthGlobal(Long.parseLong(parts[2]), Integer.parseInt(parts[3]));
 		} catch (RuntimeException e) {
 			return null;
 		}

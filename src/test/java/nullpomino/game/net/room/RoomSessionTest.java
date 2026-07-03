@@ -132,7 +132,7 @@ class RoomSessionTest {
     }
 
     @Test
-    void joinerSeesRosterAndRooms() throws Exception {
+    void joinerSeesRosterAndRoom() throws Exception {
         RoomSession a = create("Alice");
         Client aliceClient = login(a, "Alice");
         a.sendLine(roomCreateLine("Early Room", 4));

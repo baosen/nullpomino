@@ -215,7 +215,7 @@ public class RoomSession implements RoomEndpoint, RoomEventSink {
 			beaconSnapshot = null;
 			return;
 		}
-		NetRoomInfo room = mirror.getRooms().isEmpty() ? null : mirror.getRooms().getFirst();
+		NetRoomInfo room = mirror.getRoom();
 		if(room == null) {
 			beaconSnapshot = null;
 			return;
@@ -502,7 +502,8 @@ public class RoomSession implements RoomEndpoint, RoomEventSink {
 
 	/** Send the full state snapshot to a joiner's link */
 	private void sendSnapshot(RoomPeerLink link) {
-		for(NetRoomInfo room: authority.getRooms()) {
+		NetRoomInfo room = authority.getRoom();
+		if(room != null) {
 			link.sendLine(RoomProtocol.buildSnapRoom(room.roomID, room.exportString()));
 		}
 		for(NetPlayerInfo p: authority.getPlayers().values()) {
@@ -511,13 +512,13 @@ public class RoomSession implements RoomEndpoint, RoomEventSink {
 		for(Map.Entry<Integer, String[]> e: authority.getRuleBlobs().entrySet()) {
 			link.sendLine(RoomProtocol.buildSnapRule(e.getKey(), e.getValue()[0], e.getValue()[1]));
 		}
-		for(Map.Entry<Integer, String> e: mirror.getRoomRuleBlobs().entrySet()) {
-			link.sendLine(RoomProtocol.buildSnapRoomRule(e.getKey(), e.getValue()));
-		}
-		for(Map.Entry<Integer, String> e: mirror.getMapBlobs().entrySet()) {
-			link.sendLine(RoomProtocol.buildSnapMap(e.getKey(), e.getValue()));
-		}
-		for(NetRoomInfo room: authority.getRooms()) {
+		if(room != null) {
+			if(mirror.getRoomRuleBlob() != null) {
+				link.sendLine(RoomProtocol.buildSnapRoomRule(room.roomID, mirror.getRoomRuleBlob()));
+			}
+			if(mirror.getMapBlob() != null) {
+				link.sendLine(RoomProtocol.buildSnapMap(room.roomID, mirror.getMapBlob()));
+			}
 			for(nullpomino.game.net.NetChatMessage chat: room.chatList) {
 				link.sendLine(RoomProtocol.buildSnapChat(room.roomID, chat.exportString()));
 			}
@@ -525,8 +526,8 @@ public class RoomSession implements RoomEndpoint, RoomEventSink {
 		for(nullpomino.game.net.NetChatMessage chat: authority.getLobbyChatList()) {
 			link.sendLine(RoomProtocol.buildSnapLobbyChat(chat.exportString()));
 		}
-		link.sendLine(RoomProtocol.buildAuthGlobal(seq, authority.getNextUid(), authority.getNextRoomId()));
-		for(NetRoomInfo room: authority.getRooms()) {
+		link.sendLine(RoomProtocol.buildAuthGlobal(seq, authority.getNextUid()));
+		if(room != null) {
 			link.sendLine(RoomProtocol.buildAuthRoom(RoomAuthority.buildAuthRoom(seq, room)));
 		}
 	}
@@ -783,11 +784,12 @@ public class RoomSession implements RoomEndpoint, RoomEventSink {
 		}
 		deliverToClient(playerList.toString());
 
-		StringBuilder roomList = new StringBuilder("roomlist\t").append(mirror.getRooms().size());
-		for(NetRoomInfo room: mirror.getRooms()) {
-			roomList.append('\t').append(room.exportString());
+		NetRoomInfo room = mirror.getRoom();
+		if(room != null) {
+			deliverToClient("roomlist\t1\t" + room.exportString());
+		} else {
+			deliverToClient("roomlist\t0");
 		}
-		deliverToClient(roomList.toString());
 		// The client's ruledata follows as a normal control; ruledatasuccess
 		// comes back as a direct line and gates lobbyMode=LOBBY
 	}
@@ -929,18 +931,18 @@ public class RoomSession implements RoomEndpoint, RoomEventSink {
 		@Override
 		public void authUpdate() {
 			seq++;
-			String authg = RoomProtocol.buildAuthGlobal(seq, authority.getNextUid(), authority.getNextRoomId());
 			List<String> frames = new ArrayList<String>();
-			frames.add(authg);
-			for(NetRoomInfo room: authority.getRooms()) {
+			frames.add(RoomProtocol.buildAuthGlobal(seq, authority.getNextUid()));
+			NetRoomInfo room = authority.getRoom();
+			if(room != null) {
 				frames.add(RoomProtocol.buildAuthRoom(RoomAuthority.buildAuthRoom(seq, room)));
 			}
 			for(RoomRoster.Entry e: roster.linkedMembers()) {
 				for(String frame: frames) e.link.sendLine(frame);
 			}
-			mirror.applyAuthGlobal(RoomProtocol.parseAuthGlobal(authg.split("\t", -1)));
-			for(int i = 1; i < frames.size(); i++) {
-				mirror.applyAuthRoom(RoomProtocol.parseAuthRoom(frames.get(i).split("\t", -1)));
+			mirror.applyAuthGlobal(RoomProtocol.parseAuthGlobal(frames.get(0).split("\t", -1)));
+			if(frames.size() > 1) {
+				mirror.applyAuthRoom(RoomProtocol.parseAuthRoom(frames.get(1).split("\t", -1)));
 			}
 		}
 	}
@@ -1004,8 +1006,8 @@ public class RoomSession implements RoomEndpoint, RoomEventSink {
 
 		mirror.promote();
 		authority = new RoomAuthority(new AuthoritySink(), rand);
-		authority.adoptState(mirror.getPlayers(), mirror.getRooms(), mirror.getRuleBlobs());
-		authority.restoreCounters(mirror.getNextUid(), mirror.getNextRoomId());
+		authority.adoptState(mirror.getPlayers(), mirror.getRoom(), mirror.getRuleBlobs());
+		authority.restoreCounters(mirror.getNextUid());
 		seq = mirror.getSeq();
 		arbiterUid = localUid;
 		arbiterLink = null;

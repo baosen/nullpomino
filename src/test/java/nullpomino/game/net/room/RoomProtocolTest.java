@@ -120,12 +120,11 @@ class RoomProtocolTest {
     @Test
     void authGlobalRoundTrip() {
         RoomProtocol.AuthGlobal g = RoomProtocol.parseAuthGlobal(
-                split(RoomProtocol.buildAuthGlobal(17, 6, 3)));
+                split(RoomProtocol.buildAuthGlobal(17, 6)));
 
         assertNotNull(g);
         assertEquals(17, g.seq);
         assertEquals(6, g.nextUid);
-        assertEquals(3, g.nextRoomId);
     }
 
     @Test

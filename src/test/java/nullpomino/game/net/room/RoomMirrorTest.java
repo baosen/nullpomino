@@ -48,9 +48,10 @@ class RoomMirrorTest {
         public void authUpdate() {
             seq++;
             RoomProtocol.AuthGlobal g = RoomProtocol.parseAuthGlobal(
-                    RoomProtocol.buildAuthGlobal(seq, auth.getNextUid(), auth.getNextRoomId()).split("\t", -1));
+                    RoomProtocol.buildAuthGlobal(seq, auth.getNextUid()).split("\t", -1));
             mirror.applyAuthGlobal(g);
-            for (NetRoomInfo room : auth.getRooms()) {
+            NetRoomInfo room = auth.getRoom();
+            if (room != null) {
                 RoomProtocol.AuthRoom a = RoomProtocol.parseAuthRoom(
                         RoomProtocol.buildAuthRoom(RoomAuthority.buildAuthRoom(seq, room)).split("\t", -1));
                 mirror.applyAuthRoom(a);
@@ -90,7 +91,7 @@ class RoomMirrorTest {
     }
 
     @Test
-    void mirrorTracksRosterRoomsAndCounters() {
+    void mirrorTracksRosterRoomAndCounters() {
         admit("Alice");
         admit("Bob");
         admit("Carol");
@@ -99,9 +100,8 @@ class RoomMirrorTest {
         assertEquals(3, mirror.getPlayers().size());
         assertEquals("Bob", mirror.getPlayer(1).strName);
         assertEquals(1, mirror.getPlayer(1).seatID);
-        assertNotNull(mirror.getRoom(0));
+        assertNotNull(mirror.getRoom());
         assertEquals(3, mirror.getNextUid());
-        assertEquals(1, mirror.getNextRoomId());
         assertEquals(loopSink.seq, mirror.getSeq());
     }
 
@@ -116,8 +116,8 @@ class RoomMirrorTest {
         control(2, "ready\ttrue");
         control(2, "dead\t0");    // Carol dies (place 3), game continues
 
-        NetRoomInfo authRoom = auth.getRoomInfo(0);
-        NetRoomInfo mirrorRoom = mirror.getRoom(0);
+        NetRoomInfo authRoom = auth.getRoom();
+        NetRoomInfo mirrorRoom = mirror.getRoom();
 
         // Compare the full non-derivable state via the frame builder
         assertEquals(RoomProtocol.buildAuthRoom(RoomAuthority.buildAuthRoom(0, authRoom)),
@@ -150,8 +150,8 @@ class RoomMirrorTest {
             public void mapCache(int roomId, String data) {}
             public void authUpdate() {}
         }, new Random(8));
-        successor.adoptState(mirror.getPlayers(), mirror.getRooms(), mirror.getRuleBlobs());
-        successor.restoreCounters(mirror.getNextUid(), mirror.getNextRoomId());
+        successor.adoptState(mirror.getPlayers(), mirror.getRoom(), mirror.getRuleBlobs());
+        successor.restoreCounters(mirror.getNextUid());
 
         // The old arbiter's departure mid-game: dead line with the RIGHT place, then finish
         successor.onMemberGone(0, false);
@@ -168,9 +168,8 @@ class RoomMirrorTest {
         assertTrue(finishLine.startsWith("0|finish\t1\t1\t" + NetUtil.urlEncode("Bob")),
                 "Bob is the last one standing: " + finishLine);
 
-        // Counters survive so future rooms/uids never collide
+        // The uid counter survives so future members never collide
         assertEquals(3, successor.getNextUid());
-        assertEquals(1, successor.getNextRoomId());
     }
 
     @Test
@@ -181,8 +180,8 @@ class RoomMirrorTest {
         control(0, "chat\t" + NetUtil.urlEncode("gl hf"));
         control(0, "lobbychat\t" + NetUtil.urlEncode("hello lobby"));
 
-        assertEquals(1, mirror.getRoom(0).chatList.size());
-        assertEquals("gl hf", mirror.getRoom(0).chatList.getFirst().strMessage);
+        assertEquals(1, mirror.getRoom().chatList.size());
+        assertEquals("gl hf", mirror.getRoom().chatList.getFirst().strMessage);
         assertEquals(1, mirror.getLobbyChatList().size());
 
         auth.onMemberGone(1, true);
@@ -197,8 +196,7 @@ class RoomMirrorTest {
         control(0, "roomjoin\t-1\tfalse");
         control(1, "roomjoin\t-1\tfalse");
 
-        assertNull(mirror.getRoom(0));
-        assertTrue(mirror.getRooms().isEmpty());
+        assertNull(mirror.getRoom());
     }
 
     @Test
@@ -209,7 +207,7 @@ class RoomMirrorTest {
         createThreeSeatRoom();
 
         mirror.promote();
-        NetRoomInfo room = mirror.getRoom(0);
+        NetRoomInfo room = mirror.getRoom();
         assertEquals(3, room.playerList.size());
         assertEquals(0, room.playerList.get(0).uid);
         assertEquals(1, room.playerList.get(1).uid);

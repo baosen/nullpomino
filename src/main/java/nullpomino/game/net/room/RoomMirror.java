@@ -35,17 +35,17 @@ public class RoomMirror {
 	/** Players by uid (identity preserved across updates) */
 	private final LinkedHashMap<Integer, NetPlayerInfo> players = new LinkedHashMap<Integer, NetPlayerInfo>();
 
-	/** Rooms (identity preserved across updates) */
-	private final LinkedList<NetRoomInfo> rooms = new LinkedList<NetRoomInfo>();
+	/** The session's one room (identity preserved across updates); null until created */
+	private NetRoomInfo room;
 
 	/** Compressed rule blob per uid (checksum, data) */
 	private final Map<Integer, String[]> ruleBlobs = new LinkedHashMap<Integer, String[]>();
 
-	/** Compressed room rule per roomID (rule-locked rooms) */
-	private final Map<Integer, String> roomRuleBlobs = new LinkedHashMap<Integer, String>();
+	/** Compressed room rule (rule-locked rooms), null when absent */
+	private String roomRuleBlob;
 
-	/** Compressed map list per roomID (map rooms) */
-	private final Map<Integer, String> mapBlobs = new LinkedHashMap<Integer, String>();
+	/** Compressed map list (map rooms), null when absent */
+	private String mapBlob;
 
 	/** Lobby chat history */
 	private final LinkedList<NetChatMessage> lobbyChatList = new LinkedList<NetChatMessage>();
@@ -53,9 +53,8 @@ public class RoomMirror {
 	/** Highest broadcast seq seen */
 	private long seq = 0;
 
-	/** Global authority counters (from authg frames) */
+	/** Global authority counter (from authg frames) */
 	private int nextUid = 0;
-	private int nextRoomId = 0;
 
 	// ================================================================ application
 
@@ -78,11 +77,9 @@ public class RoomMirror {
 		} else if(m[0].equals("roomcreate") || m[0].equals("roomupdate")) {
 			upsertRoom(m[1]);
 		} else if(m[0].equals("roomdelete")) {
-			NetRoomInfo gone = new NetRoomInfo(m[1]);
-			NetRoomInfo existing = getRoom(gone.roomID);
-			if(existing != null) rooms.remove(existing);
-			roomRuleBlobs.remove(gone.roomID);
-			mapBlobs.remove(gone.roomID);
+			room = null;
+			roomRuleBlob = null;
+			mapBlob = null;
 		} else if(m[0].equals("chat")) {
 			NetRoomInfo room = getRoom(scope);
 			if(room != null) {
@@ -101,14 +98,12 @@ public class RoomMirror {
 	public void applyAuthGlobal(RoomProtocol.AuthGlobal g) {
 		if(g.seq > this.seq) this.seq = g.seq;
 		this.nextUid = g.nextUid;
-		this.nextRoomId = g.nextRoomId;
 	}
 
 	/** Apply a per-room auth-extras frame (wholesale overwrite) */
 	public void applyAuthRoom(RoomProtocol.AuthRoom a) {
 		if(a.seq > this.seq) this.seq = a.seq;
-		NetRoomInfo room = getRoom(a.roomId);
-		if(room == null) {
+		if((room == null) || (room.roomID != a.roomId)) {
 			log.debug("authr for unknown room {}", a.roomId);
 			return;
 		}
@@ -151,11 +146,10 @@ public class RoomMirror {
 		} else if(kind.equals("rule") && parts.length > 5) {
 			cacheRule(Integer.parseInt(parts[3]), parts[4], parts[5]);
 		} else if(kind.equals("roomrule") && parts.length > 4) {
-			roomRuleBlobs.put(Integer.parseInt(parts[3]), parts[4]);
+			roomRuleBlob = parts[4];
 		} else if(kind.equals("map") && parts.length > 4) {
-			mapBlobs.put(Integer.parseInt(parts[3]), parts[4]);
+			mapBlob = parts[4];
 		} else if(kind.equals("chat") && parts.length > 4) {
-			NetRoomInfo room = getRoom(Integer.parseInt(parts[3]));
 			if(room != null) {
 				NetChatMessage chat = new NetChatMessage();
 				chat.importString(parts[4]);
@@ -172,12 +166,12 @@ public class RoomMirror {
 		ruleBlobs.put(uid, new String[] { checksum, compressedData });
 	}
 
-	public void cacheRoomRule(int roomId, String compressedData) {
-		roomRuleBlobs.put(roomId, compressedData);
+	public void cacheRoomRule(String compressedData) {
+		roomRuleBlob = compressedData;
 	}
 
-	public void cacheMap(int roomId, String compressedData) {
-		mapBlobs.put(roomId, compressedData);
+	public void cacheMap(String compressedData) {
+		mapBlob = compressedData;
 	}
 
 	// ================================================================ promotion
@@ -189,7 +183,7 @@ public class RoomMirror {
 	 * (player rules, room rules, map lists).
 	 */
 	public void promote() {
-		for(NetRoomInfo room: rooms) {
+		if(room != null) {
 			room.playerList.clear();
 			ArrayList<NetPlayerInfo> inRoom = new ArrayList<NetPlayerInfo>();
 			for(NetPlayerInfo p: players.values()) {
@@ -203,13 +197,11 @@ public class RoomMirror {
 			room.playerList.addAll(inRoom);
 			room.updatePlayerCount();
 
-			String roomRule = roomRuleBlobs.get(room.roomID);
-			if(roomRule != null) room.ruleOpt = decompressRule(roomRule);
+			if(roomRuleBlob != null) room.ruleOpt = decompressRule(roomRuleBlob);
 
-			String maps = mapBlobs.get(room.roomID);
-			if(maps != null) {
+			if(mapBlob != null) {
 				room.mapList.clear();
-				String[] strMaps = NetUtil.decompressString(maps).split("\t");
+				String[] strMaps = NetUtil.decompressString(mapBlob).split("\t");
 				for(String strMap: strMaps) room.mapList.add(strMap);
 			}
 		}
@@ -231,11 +223,13 @@ public class RoomMirror {
 	// ================================================================ queries
 
 	public NetRoomInfo getRoom(int roomID) {
-		if(roomID < 0) return null;
-		for(NetRoomInfo room: rooms) {
-			if(room.roomID == roomID) return room;
-		}
-		return null;
+		if((roomID < 0) || (room == null) || (room.roomID != roomID)) return null;
+		return room;
+	}
+
+	/** @return The session's room, or null before it is created */
+	public NetRoomInfo getRoom() {
+		return room;
 	}
 
 	public NetPlayerInfo getPlayer(int uid) {
@@ -246,20 +240,16 @@ public class RoomMirror {
 		return players;
 	}
 
-	public LinkedList<NetRoomInfo> getRooms() {
-		return rooms;
-	}
-
 	public Map<Integer, String[]> getRuleBlobs() {
 		return ruleBlobs;
 	}
 
-	public Map<Integer, String> getRoomRuleBlobs() {
-		return roomRuleBlobs;
+	public String getRoomRuleBlob() {
+		return roomRuleBlob;
 	}
 
-	public Map<Integer, String> getMapBlobs() {
-		return mapBlobs;
+	public String getMapBlob() {
+		return mapBlob;
 	}
 
 	public LinkedList<NetChatMessage> getLobbyChatList() {
@@ -272,10 +262,6 @@ public class RoomMirror {
 
 	public int getNextUid() {
 		return nextUid;
-	}
-
-	public int getNextRoomId() {
-		return nextRoomId;
 	}
 
 	// ================================================================ internals
@@ -292,11 +278,10 @@ public class RoomMirror {
 
 	private void upsertRoom(String blob) {
 		NetRoomInfo incoming = new NetRoomInfo(blob);
-		NetRoomInfo existing = getRoom(incoming.roomID);
-		if(existing != null) {
-			existing.importString(blob);
+		if((room != null) && (room.roomID == incoming.roomID)) {
+			room.importString(blob);
 		} else {
-			rooms.add(incoming);
+			room = incoming;
 		}
 	}
 
