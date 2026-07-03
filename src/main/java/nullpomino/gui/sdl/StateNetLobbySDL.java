@@ -624,10 +624,20 @@ public class StateNetLobbySDL extends BaseStateSDL {
 			}
 			return;
 		}
+		if(lower.startsWith("/team")) {
+			// Same effect as editing the TEAM box (read when creating/joining);
+			// bare /team clears it
+			String arg = msg.length() > 5 ? msg.substring(5).trim() : "";
+			teamInput.setText(arg);
+			nl.chatLogLobby.appendSystem(arg.length() == 0 ? "TEAM CLEARED" : "TEAM SET TO " + arg,
+				NormalFontSDL.COLOR_GREEN);
+			return;
+		}
 		if(lower.equals("/help") || lower.equals("/?")) {
 			nl.chatLogLobby.appendSystem("COMMANDS:", NormalFontSDL.COLOR_YELLOW);
 			nl.chatLogLobby.appendSystem("/JOIN <HOST[:PORT]> - JOIN A ROOM BY ADDRESS", NormalFontSDL.COLOR_YELLOW);
 			nl.chatLogLobby.appendSystem("/NAME <NICK> - SET YOUR NICKNAME", NormalFontSDL.COLOR_YELLOW);
+			nl.chatLogLobby.appendSystem("/TEAM [<NAME>] - SET OR CLEAR YOUR TEAM", NormalFontSDL.COLOR_YELLOW);
 			nl.chatLogLobby.appendSystem("/HELP - SHOW THIS LIST", NormalFontSDL.COLOR_YELLOW);
 			return;
 		}
