@@ -690,6 +690,16 @@ public class NetLobbyFrame implements NetMessageListener {
 		return netPlayerClient instanceof NetRoomPlayerClient;
 	}
 
+	/**
+	 * Inject a locally-built server-to-client line into the normal dispatch
+	 * queue (drained by {@link #pump()}). Lets sessionless screens reuse the
+	 * standard parsers - e.g. rankings answered from the local records files.
+	 */
+	public void injectLocalMessage(String line) {
+		if(line == null || line.length() == 0) return;
+		pendingMessages.offer(line.split("\t", -1));
+	}
+
 	/** Send a chat message to either the lobby or the current room. */
 	public void sendChat(boolean roomchat, String strMsg) {
 		if(strMsg == null || strMsg.length() == 0 || netPlayerClient == null) return;

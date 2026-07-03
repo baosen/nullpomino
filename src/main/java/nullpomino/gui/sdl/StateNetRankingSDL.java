@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: BSD-3-Clause
 package nullpomino.gui.sdl;
 
+import nullpomino.game.net.room.RoomLocalRecords;
 import nullpomino.game.play.GameEngine;
 import nullpomino.gui.net.NetLobbyFrame;
 import nullpomino.gui.sdl.binding.SDL3;
@@ -64,8 +65,14 @@ public class StateNetRankingSDL extends BaseStateSDL {
 	private void requestStyle(int style) {
 		if(style == lastRequestedStyle) return;
 		NetLobbyFrame nl = NullpoMinoSDL.netLobby;
-		if(nl == null || nl.netPlayerClient == null || !nl.netPlayerClient.isConnected()) return;
-		nl.netPlayerClient.send("mpranking\t" + style + "\n");
+		if(nl == null) return;
+		if(nl.netPlayerClient != null && nl.netPlayerClient.isConnected()) {
+			nl.netPlayerClient.send("mpranking\t" + style + "\n");
+		} else {
+			// Sessionless (the LAN lounge): rankings are local files anyway -
+			// build the same wire reply from them and feed the normal parser
+			nl.injectLocalMessage(new RoomLocalRecords().buildMPRankingReply(style, null));
+		}
 		lastRequestedStyle = style;
 	}
 

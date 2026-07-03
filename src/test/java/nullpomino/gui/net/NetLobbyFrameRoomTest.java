@@ -13,8 +13,10 @@ import nullpomino.game.net.NetPlayerInfo;
 import nullpomino.game.net.NetRoomInfo;
 import nullpomino.game.net.NetUtil;
 import nullpomino.game.net.room.RoomEndpoint;
+import nullpomino.game.net.room.RoomLocalRecords;
 
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
 /**
  * The room ordering acceptance spec: NetLobbyFrame over the
@@ -187,5 +189,26 @@ class NetLobbyFrameRoomTest {
         nl.shutdown();   // must not throw on the never-started seam thread
 
         assertTrue(endpoint.sentStartingWith("disconnect"), "Graceful leave goes through the seam");
+    }
+
+    @TempDir
+    java.io.File tempDir;
+
+    @Test
+    void localRankingReplyPopulatesWithoutAClient() {
+        // The LAN lounge answers mpranking from the local records; the parser
+        // must work with no client attached at all
+        NetLobbyFrame lounge = new NetLobbyFrame();
+        lounge.init();
+        RoomLocalRecords records = new RoomLocalRecords(tempDir.getAbsolutePath());
+        records.recordRatedResult(0, "Alice", 1558, true);
+
+        lounge.injectLocalMessage(records.buildMPRankingReply(0, null));
+        lounge.pump();
+
+        assertNotNull(lounge.mpRankingRows[0]);
+        assertEquals(1, lounge.mpRankingRows[0].length);
+        assertEquals("Alice", lounge.mpRankingRows[0][0][1]);
+        assertTrue(lounge.mpRankingDirty);
     }
 }
