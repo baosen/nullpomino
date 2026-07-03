@@ -159,6 +159,11 @@ public class StateNetCreateRoomSDL extends BaseStateSDL {
 		} else {
 			nl.createRoomMode = readLastModeFromConfig(nl);
 		}
+		// Preset-based rated rooms are a server concept; mesh sessions rate
+		// plain multiplayer rooms locally instead
+		if(nl.isMeshSession() && (nl.createRoomMode == RoomCreateMode.RATED)) {
+			nl.createRoomMode = RoomCreateMode.MULTIPLAYER;
+		}
 		ratedMode = !detailMode && nl.createRoomMode == RoomCreateMode.RATED;
 
 		tabStrip = new TabStripSDL(8, 32, 624, 28, TAB_LABELS);
@@ -475,6 +480,10 @@ public class StateNetCreateRoomSDL extends BaseStateSDL {
 	private void onModeChanged() {
 		NetLobbyFrame nl = NullpoMinoSDL.netLobby;
 		if(nl == null) return;
+		// Mesh sessions have no rated presets: bounce the selector back
+		if(nl.isMeshSession() && (currentMode() == RoomCreateMode.RATED)) {
+			modeSelector.setSelectedIndex(RoomCreateMode.MULTIPLAYER.ordinal());
+		}
 		RoomCreateMode mode = currentMode();
 		RoomCreateMode prevMode = (lastModeIndex >= 0 && lastModeIndex < RoomCreateMode.values().length)
 				? RoomCreateMode.values()[lastModeIndex] : RoomCreateMode.MULTIPLAYER;

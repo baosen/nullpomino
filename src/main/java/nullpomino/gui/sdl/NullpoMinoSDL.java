@@ -17,6 +17,7 @@ import com.sun.jna.ptr.FloatByReference;
 
 import nullpomino.game.net.NetObserverClient;
 import nullpomino.game.net.NetServerRunner;
+import nullpomino.game.net.mesh.MeshSession;
 import nullpomino.gui.GameKeyDummy;
 import nullpomino.gui.net.NetLobbyFrame;
 import nullpomino.game.play.GameEngine;
@@ -232,6 +233,9 @@ public class NullpoMinoSDL {
 
 	/** Embedded netplay server when this client is hosting a game, null otherwise */
 	public static NetServerRunner embeddedServer;
+
+	/** P2P mesh session while one is active, null otherwise */
+	public static MeshSession meshSession;
 
 	/**
 	 * Shared netplay session (protocol client, chat buffers, room list, rule catalogue).
@@ -721,6 +725,7 @@ public class NullpoMinoSDL {
 		log.info("NullpoMinoSDL shutdown()");
 
 		try {
+			stopMeshSession();
 			stopEmbeddedServer();
 			stopObserverClient();
 			for(int i = 0; i < joystickMax; i++) {
@@ -755,6 +760,7 @@ public class NullpoMinoSDL {
 	 * netplay lobby states and for hard-disconnect recovery paths.
 	 */
 	public static void endNetplay() {
+		stopMeshSession();
 		stopEmbeddedServer();
 		if(netLobby != null) {
 			try { netLobby.shutdown(); }
@@ -1166,6 +1172,22 @@ public class NullpoMinoSDL {
 		if((host.length() > 0) && (port > 0)) {
 			netObserverClient = new NetObserverClient(host, port);
 			netObserverClient.start();
+		}
+	}
+
+	/**
+	 * Leave the P2P mesh session, if one is active
+	 */
+	public static void stopMeshSession() {
+		log.debug("stopMeshSession called");
+
+		if(meshSession != null) {
+			try {
+				meshSession.shutdown();
+			} catch (Throwable e) {
+				log.warn("mesh session shutdown failed", e);
+			}
+			meshSession = null;
 		}
 	}
 
