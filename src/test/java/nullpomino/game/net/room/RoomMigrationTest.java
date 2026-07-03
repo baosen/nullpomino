@@ -158,6 +158,35 @@ class RoomMigrationTest {
     }
 
     @Test
+    void onlyTheArbiterAnnouncesAndTheSuccessorTakesOver() throws Exception {
+        RoomSession a = create("Alice");
+        Client aliceClient = login(a, "Alice");
+        a.sendLine(roomCreateLine("Announce Check", 2));
+        aliceClient.await("roomcreatesuccess\t");
+
+        RoomSession b = join(a, "Bob");
+        Client bobClient = login(b, "Bob");
+        b.sendLine("roomjoin\t0\tfalse");
+        bobClient.await("roomjoinsuccess\t0\t");
+
+        // The arbiter announces the room; the joiner must NOT (joiners dial
+        // the beacon address, and only the arbiter accepts the handshake -
+        // a non-arbiter beacon caused BAD_TOKEN joins on in-game rooms)
+        long deadline = System.currentTimeMillis() + 8000;
+        while (a.getBeaconSnapshotForTest() == null && System.currentTimeMillis() < deadline) Thread.sleep(20);
+        assertNotNull(a.getBeaconSnapshotForTest());
+        assertNull(b.getBeaconSnapshotForTest(), "A non-arbiter member must not announce");
+
+        // Arbiter dies: the promoted survivor starts announcing the room
+        a.killAbruptly();
+        awaitArbiter(b);
+        deadline = System.currentTimeMillis() + 8000;
+        while (b.getBeaconSnapshotForTest() == null && System.currentTimeMillis() < deadline) Thread.sleep(20);
+        assertNotNull(b.getBeaconSnapshotForTest());
+        assertEquals("Announce Check", b.getBeaconSnapshotForTest().roomName);
+    }
+
+    @Test
     void splitLinkMemberGetsKicked() throws Exception {
         RoomSession a = create("Alice");
         Client aliceClient = login(a, "Alice");

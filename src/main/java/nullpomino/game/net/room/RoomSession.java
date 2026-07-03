@@ -210,6 +210,15 @@ public class RoomSession implements RoomEndpoint, RoomEventSink {
 			beaconSnapshot = null;
 			return;
 		}
+		// Only the arbiter announces: joiners dial the beacon's source address,
+		// and only the arbiter admits joins (anyone else denies the handshake
+		// with BAD_TOKEN). On arbiter loss the promoted survivor starts
+		// announcing within one beacon cycle, inside the row TTL, so the room
+		// stays discoverable.
+		if(!isArbiter()) {
+			beaconSnapshot = null;
+			return;
+		}
 		NetRoomInfo room = mirror.getRooms().isEmpty() ? null : mirror.getRooms().getFirst();
 		if(room == null) {
 			beaconSnapshot = null;

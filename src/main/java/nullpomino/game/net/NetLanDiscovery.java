@@ -28,9 +28,9 @@ import org.slf4j.LoggerFactory;
 
 /**
  * LAN discovery for P2P room sessions.
- * Every peer of a joinable session broadcasts a small UDP announce packet at
- * a fixed interval; the session-select screen listens and shows discovered
- * sessions (deduplicated per session, since every peer announces).
+ * A room's arbiter broadcasts a small UDP announce packet at a fixed
+ * interval; the lounge listens and shows discovered rooms (deduplicated per
+ * session - old and new arbiter beacons overlap briefly during migration).
  *
  * <p>Packet format (tab-delimited, UTF-8):
  * {@code NullpoLAN\t2\t[tcpPort]\t[nameEnc]\t[versionMajor]\tM\t[sessionId]\t[lobbyNameEnc]\t[players]}
@@ -199,7 +199,9 @@ public class NetLanDiscovery {
 	}
 
 	/**
-	 * Collapse room announces of the same session (every peer announces) to one entry each.
+	 * Collapse room announces of the same session to one entry each (normally
+	 * only the arbiter announces, but old and new arbiter beacons overlap
+	 * briefly during a migration handover).
 	 * The entry with the lexicographically lowest host:port wins, so the pick is stable
 	 * across refreshes. Non-room announces pass through untouched.
 	 * @param announces Announces (typically a listener snapshot, already hostPort-sorted)

@@ -91,7 +91,7 @@ the arbiter kicks the member with the most broken links.
 
 ### LAN discovery + lounge chat
 
-Every player of a room broadcasts a UDP beacon (port **9201**, every 1.5 s,
+The room's arbiter broadcasts a UDP beacon (port **9201**, every 1.5 s,
 5 s TTL) carrying the full room-table row:
 
 ```
@@ -99,10 +99,11 @@ NullpoLAN\t2\t[tcpPort]\t[nameEnc]\t[verMajor]\tR\t[sessionId]\t[ownerEnc]\t[pla
   \t[roomNameEnc]\t[rated]\t[ruleNameEnc]\t[modeEnc]\t[playing]\t[seated]\t[maxPlayers]\t[spectators]
 ```
 
-The lounge dedupes beacons by sessionId (any surviving player keeps the room
-discoverable), and a room is only announced once it actually exists — a
-half-created room (create form still open) cannot be joined. Disable with
-`netroom.lanAnnounce=false`.
+Joiners dial the beacon's source address, so only the arbiter announces —
+if it leaves, the promoted successor takes over announcing within one beacon
+cycle (the lounge dedupes by sessionId across the handover). A room is only
+announced once it actually exists — a half-created room (create form still
+open) cannot be joined. Disable with `netroom.lanAnnounce=false`.
 
 Lounge chat lines are one-shot broadcasts on the same port (type `C` with a
 random msgId): every lounge on the LAN shows them, duplicates from
