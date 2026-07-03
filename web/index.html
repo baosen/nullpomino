@@ -32,7 +32,7 @@
 
     // Browsers keep the context suspended until a user gesture.
     const resumeAudio = () => { if (ctx.state === "suspended") ctx.resume(); };
-    for (const ev of ["keydown", "mousedown", "touchstart"]) {
+    for (const ev of ["keydown", "keyup", "mousedown", "pointerdown", "touchstart"]) {
       window.addEventListener(ev, resumeAudio, true);
     }
     ctx.onstatechange = () => {
@@ -116,9 +116,13 @@
         const t = tracks.get(tid);
         if (!t || !t.buffer) return;
         if (ctx.state !== "running") {
-          // Inaudible anyway; remember loops (BGM) so they begin on the
-          // first user gesture, drop one-shots.
-          t.pendingStart = t.loop;
+          // Queue it (one-shots included) so it plays the instant the
+          // context resumes instead of being silently dropped — the
+          // resume() from the same gesture that triggered this play is
+          // already in flight but resolves asynchronously, so without
+          // queuing every sound issued before it resolves is lost.
+          t.pendingStart = true;
+          resumeAudio();
           return;
         }
         startTrack(t);
