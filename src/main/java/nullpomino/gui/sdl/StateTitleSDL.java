@@ -17,8 +17,6 @@ public class StateTitleSDL extends DummyMenuChooseStateSDL {
         "Title_Start", "Title_Replay", "Title_NetPlay", "Title_Config", "Title_Exit"
 	};
 
-	private static final int EXIT_CURSOR = 4;
-
 	private static final int[] DESTINATIONS = {
 			NullpoMinoSDL.STATE_SELECTMODE,
 			NullpoMinoSDL.STATE_REPLAYSELECT,
@@ -27,8 +25,29 @@ public class StateTitleSDL extends DummyMenuChooseStateSDL {
 			-1
 	};
 
+	/** Active menu rows: NETPLAY is dropped on the web build, where raw
+	 * TCP/UDP netplay cannot work inside a browser. */
+	private final String[] choices;
+	private final String[] uiText;
+	private final int[] destinations;
+	private final int exitCursor;
+
 	public StateTitleSDL () {
-		maxCursor = CHOICES.length - 1;
+		boolean hideNetplay = NullpoMinoSDL.webMode;
+		int count = CHOICES.length - (hideNetplay ? 1 : 0);
+		choices = new String[count];
+		uiText = new String[count];
+		destinations = new int[count];
+		int row = 0;
+		for(int i = 0; i < CHOICES.length; i++) {
+			if(hideNetplay && DESTINATIONS[i] == NullpoMinoSDL.STATE_NET_LOBBY) continue;
+			choices[row] = CHOICES[i];
+			uiText[row] = UI_TEXT[i];
+			destinations[row] = DESTINATIONS[i];
+			row++;
+		}
+		exitCursor = count - 1;
+		maxCursor = count - 1;
 		minChoiceY = 3;
 	}
 
@@ -55,9 +74,9 @@ public class StateTitleSDL extends DummyMenuChooseStateSDL {
 
 		NormalFontSDL.printFontGrid(1, 3 + cursor, "b", NormalFontSDL.COLOR_RED);
 
-		renderChoices(2, 3, CHOICES);
+		renderChoices(2, 3, choices);
 
-		NormalFontSDL.printTTFFont(16, 432, NullpoMinoSDL.getUIText(UI_TEXT[cursor]));
+		NormalFontSDL.printTTFFont(16, 432, NullpoMinoSDL.getUIText(uiText[cursor]));
 
 		// Bitmap font has no lowercase or hex digits a–f, so render via TTF.
 		// Right-aligned to one grid cell from the screen edge to mirror the
@@ -71,8 +90,8 @@ public class StateTitleSDL extends DummyMenuChooseStateSDL {
 	protected boolean onDecide() {
 		// Skip the decide sound when quitting so it doesn't get cut off mid-
 		// playback as the program tears down audio on its way out.
-		if(cursor != EXIT_CURSOR) ResourceHolderSDL.soundManager.play("decide");
-		NullpoMinoSDL.enterState(DESTINATIONS[cursor]);
+		if(cursor != exitCursor) ResourceHolderSDL.soundManager.play("decide");
+		NullpoMinoSDL.enterState(destinations[cursor]);
 		return false;
 	}
 

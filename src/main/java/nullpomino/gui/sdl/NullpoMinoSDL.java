@@ -227,6 +227,13 @@ public class NullpoMinoSDL {
 	/** Maximum FPS */
 	public static int maxFPS;
 
+	/**
+	 * True when running on the pure-Java web backend (browser/CheerpJ). Spin
+	 * waits would starve the browser tab's event loop, so the FPS cap must
+	 * always sleep; the "perfect FPS" option is ignored in this mode.
+	 */
+	public static final boolean webMode = Boolean.getBoolean("nullpomino.web");
+
 	/** P2P room session while one is active, null otherwise */
 	public static RoomSession roomSession;
 
@@ -664,6 +671,17 @@ public class NullpoMinoSDL {
 					} catch(InterruptedException e) {}
 				}
 				overSleepTime = (System.nanoTime() - afterTime) - sleepTime;
+				perfectFPSDelay = System.nanoTime();
+				sleepFlag = true;
+			} else if(webMode) {
+				// Never spin-wait in a browser tab; a plain sleep is the only
+				// cooperative way to yield under CheerpJ.
+				if(sleepTime > 0) {
+					try {
+						Thread.sleep(Math.max(1, sleepTimeInMillis));
+					} catch(InterruptedException e) {}
+				}
+				overSleepTime = 0L;
 				perfectFPSDelay = System.nanoTime();
 				sleepFlag = true;
 			} else if((perfectFPSMode && isInGame) || (sleepTime > 0)) {

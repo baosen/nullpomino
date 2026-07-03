@@ -33,6 +33,30 @@ java_library(
     ],
 )
 
+# Web backend: pure-Java AWT/Swing/Java2D/javax.sound implementation of the
+# SDL binding. No native code — runs under CheerpJ in a browser.
+java_library(
+    name = "sdl_binding_web",
+    srcs = glob(["nullpomino/gui/sdl/binding/web/*.java"]),
+    javacopts = JAVACOPTS,
+    visibility = ["//visibility:public"],
+    deps = [":sdl_binding"],
+)
+
+# Browser entry point: injects the web backend and seeds the writable
+# virtual filesystem before delegating to the SDL main.
+java_library(
+    name = "web_main",
+    srcs = ["nullpomino/gui/web/NullpoMinoWeb.java"],
+    javacopts = JAVACOPTS,
+    visibility = ["//visibility:public"],
+    deps = [
+        ":core",
+        ":sdl_binding",
+        ":sdl_binding_web",
+    ],
+)
+
 java_library(
     name = "swing_tool_util",
     srcs = ["nullpomino/tool/SwingToolUtil.java"],
