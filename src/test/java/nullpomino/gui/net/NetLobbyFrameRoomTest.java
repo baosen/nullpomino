@@ -170,6 +170,22 @@ class NetLobbyFrameRoomTest {
     }
 
     @Test
+    void connectingWindowIsConnectedButNotYetInLobby() {
+        // The lounge's died-session detector must use isConnected(), not
+        // lobbyMode: between connectToRoom and the completed login handshake
+        // the client reports connected while lobbyMode is still DISCONNECTED.
+        // (A lobbyMode check here killed every lounge JOIN within one frame.)
+        connect();
+
+        assertTrue(nl.netPlayerClient.isConnected(), "Connecting window counts as connected");
+        assertEquals(NetLobbyFrame.LOBBYMODE_DISCONNECTED, nl.lobbyMode);
+
+        // Only a real session death flips it
+        endpoint.open = false;
+        assertFalse(nl.netPlayerClient.isConnected());
+    }
+
+    @Test
     void meshCloseDispatchesDisconnect() {
         connect();
         driveLogin();

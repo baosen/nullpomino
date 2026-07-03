@@ -254,8 +254,11 @@ public class StateNetLobbySDL extends BaseStateSDL {
 		}
 
 		// (b) the session died: recover in place (dispatchDisconnect already
-		// appended its own red line; add context if we were mid-action)
-		if(haveClient && nl.lobbyMode == NetLobbyFrame.LOBBYMODE_DISCONNECTED) {
+		// appended its own red line; add context if we were mid-action).
+		// NOTE: lobbyMode stays DISCONNECTED until the login handshake finishes,
+		// so it cannot distinguish "connecting" from "dead" - the seam's
+		// isConnected() can (true from connectToRoom until the session closes).
+		if(haveClient && !nl.netPlayerClient.isConnected()) {
 			if(pendingAction == PENDING_JOIN) {
 				nl.chatLogLobby.appendSystem("JOIN FAILED - CONNECTION LOST", NormalFontSDL.COLOR_RED);
 			} else if(pendingAction == PENDING_CREATE) {
