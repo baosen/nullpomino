@@ -1,7 +1,8 @@
 #!/bin/sh
 # Assemble the self-contained static site for the browser build in web/dist/.
-# Serve it with any static file server (never file://), e.g.:
-#   python3 -m http.server 8000 --directory web/dist
+# Serve it with a static server that supports HTTP Range requests (CheerpJ
+# needs them; python3 -m http.server does NOT support Range), never file://:
+#   npx http-server web/dist -p 8000 -c-1
 set -eu
 cd "$(dirname "$0")/.."
 
@@ -16,4 +17,4 @@ cp web/index.html web/dist/index.html
 cp -r res web/dist/res
 
 echo "Site assembled in web/dist"
-echo "Serve with: python3 -m http.server 8000 --directory web/dist"
+echo "Serve with: npx http-server web/dist -p 8000 -c-1"
