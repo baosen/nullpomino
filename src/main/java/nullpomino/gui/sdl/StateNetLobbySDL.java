@@ -625,8 +625,10 @@ public class StateNetLobbySDL extends BaseStateSDL {
 			return;
 		}
 		if(lower.equals("/help") || lower.equals("/?")) {
-			nl.chatLogLobby.appendSystem("COMMANDS: /JOIN <HOST[:PORT]>   /NAME <NICK>   /HELP",
-				NormalFontSDL.COLOR_YELLOW);
+			nl.chatLogLobby.appendSystem("COMMANDS:", NormalFontSDL.COLOR_YELLOW);
+			nl.chatLogLobby.appendSystem("/JOIN <HOST[:PORT]> - JOIN A ROOM BY ADDRESS", NormalFontSDL.COLOR_YELLOW);
+			nl.chatLogLobby.appendSystem("/NAME <NICK> - SET YOUR NICKNAME", NormalFontSDL.COLOR_YELLOW);
+			nl.chatLogLobby.appendSystem("/HELP - SHOW THIS LIST", NormalFontSDL.COLOR_YELLOW);
 			return;
 		}
 		if(msg.startsWith("/")) {

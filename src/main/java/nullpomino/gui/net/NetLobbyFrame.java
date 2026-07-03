@@ -700,7 +700,10 @@ public class NetLobbyFrame implements NetMessageListener {
 	 */
 	private void printHelp(boolean roomchat) {
 		ChatLogSDL log = roomchat ? chatLogRoom : chatLogLobby;
-		log.appendSystem("COMMANDS: /NAME <NICK>   /TEAM [<NAME>]   /HELP", NormalFontSDL.COLOR_YELLOW);
+		log.appendSystem("COMMANDS:", NormalFontSDL.COLOR_YELLOW);
+		log.appendSystem("/NAME <NICK> - CHANGE YOUR NICKNAME", NormalFontSDL.COLOR_YELLOW);
+		log.appendSystem("/TEAM [<NAME>] - SET OR CLEAR YOUR TEAM", NormalFontSDL.COLOR_YELLOW);
+		log.appendSystem("/HELP - SHOW THIS LIST", NormalFontSDL.COLOR_YELLOW);
 	}
 
 	/**
