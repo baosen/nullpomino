@@ -93,7 +93,8 @@ class NetLanDiscoveryTest {
     }
 
     private static void sendAnnounce(int listenerPort, int tcpPort, String name) throws Exception {
-        byte[] data = NetLanDiscovery.encodeRoomAnnounce(tcpPort, name, "testsession", "Lobby", 1);
+        byte[] data = NetLanDiscovery.encodeRoomAnnounce(new NetLanDiscovery.Announce("", tcpPort,
+                name, "7.5", "testsession", "Lobby", 1, "Room", false, "", "MODE", false, 1, 2, 0));
         try (DatagramSocket sender = new DatagramSocket()) {
             sender.send(new DatagramPacket(data, data.length,
                     InetAddress.getByName("127.0.0.1"), listenerPort));

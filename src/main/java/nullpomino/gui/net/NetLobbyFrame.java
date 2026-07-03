@@ -665,7 +665,7 @@ public class NetLobbyFrame implements NetMessageListener {
 	/**
 	 * Open a player connection over a P2P room session: persists the
 	 * name/team, attaches the {@link NetRoomPlayerClient} seam to the given
-	 * endpoint, and resets the chat/room state for the new session.
+	 * endpoint, and resets the room state for the new session.
 	 */
 	public void connectToRoom(String playerName, String playerTeam, RoomEndpoint room) {
 		propConfig.setProperty("serverselect.txtfldPlayerName.text", playerName);
@@ -680,7 +680,8 @@ public class NetLobbyFrame implements NetMessageListener {
 		roomClient.connect();
 		lastConnectAt = System.currentTimeMillis();
 
-		chatLogLobby.clear();
+		// The lobby chat log deliberately survives: it is the LAN lounge's
+		// history, and creating/joining a room must not wipe it
 		roomList.clear();
 	}
 

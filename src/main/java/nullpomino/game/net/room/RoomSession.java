@@ -103,7 +103,12 @@ public class RoomSession implements RoomEndpoint, RoomEventSink {
 
 	/** LAN beacon */
 	private NetLanDiscovery.Announcer announcer;
-	private volatile int memberCountForBeacon = 1;
+
+	/** What the beacon currently announces; null = nothing to announce yet
+	 *  (no room created). Refreshed by the dispatcher, read by the announcer. */
+	private volatile NetLanDiscovery.Announce beaconSnapshot;
+
+	/** Arbiter's display name, shown as the room owner in beacons */
 	private volatile String beaconLobbyName;
 
 	/** Volatile local state re-sent after a migration (at-most-once healing) */
@@ -195,10 +200,39 @@ public class RoomSession implements RoomEndpoint, RoomEventSink {
 		}, 1000, 1000);
 	}
 
+	/**
+	 * Rebuild what the beacon announces from the mirrored room state. A
+	 * session only announces once it holds a room (prevents joining a
+	 * half-created session while the create-room form is still open).
+	 */
+	private void refreshBeaconSnapshot() {
+		if(state == State.CLOSED) {
+			beaconSnapshot = null;
+			return;
+		}
+		NetRoomInfo room = mirror.getRooms().isEmpty() ? null : mirror.getRooms().getFirst();
+		if(room == null) {
+			beaconSnapshot = null;
+			return;
+		}
+		String owner = (beaconLobbyName != null) ? beaconLobbyName : selfName;
+		beaconSnapshot = new NetLanDiscovery.Announce("", transport.getListenPort(), selfName,
+			String.valueOf(GameManager.getVersionMajor()), token, owner, roster.size(),
+			room.strName, room.rated, room.ruleLock ? room.ruleName : "", room.strMode,
+			room.playing, room.playerSeatedCount, room.maxPlayers, room.spectatorCount);
+	}
+
+	/** Package-private: tests inspect the announce gating */
+	NetLanDiscovery.Announce getBeaconSnapshotForTest() {
+		return beaconSnapshot;
+	}
+
 	private void startAnnouncer() {
 		if(!config.lanAnnounce || (announcer != null)) return;
-		announcer = new NetLanDiscovery.Announcer(() -> NetLanDiscovery.encodeRoomAnnounce(
-			transport.getListenPort(), selfName, token, beaconLobbyName, memberCountForBeacon));
+		announcer = new NetLanDiscovery.Announcer(() -> {
+			NetLanDiscovery.Announce a = beaconSnapshot;
+			return (a == null) ? null : NetLanDiscovery.encodeRoomAnnounce(a);
+		});
 		announcer.start();
 	}
 
@@ -281,6 +315,14 @@ public class RoomSession implements RoomEndpoint, RoomEventSink {
 
 	/** Package-private so tests can drive events deterministically */
 	void processOneEvent(RoomEvent event) {
+		try {
+			dispatchEvent(event);
+		} finally {
+			refreshBeaconSnapshot();
+		}
+	}
+
+	private void dispatchEvent(RoomEvent event) {
 		switch(event.type) {
 		case LINK_ACCEPTED:
 			synchronized(pendingLinks) {
@@ -410,7 +452,6 @@ public class RoomSession implements RoomEndpoint, RoomEventSink {
 				pendingLinks.remove(link);
 			}
 			roster.add(new RoomRoster.Entry(uid, hello.name, link.getRemoteAddress(), hello.listenPort, link));
-			memberCountForBeacon = roster.size();
 
 			// Welcome + full snapshot + snapend, all on this link in one step
 			List<RoomProtocol.RosterEntry> entries = new ArrayList<RoomProtocol.RosterEntry>();
@@ -448,7 +489,6 @@ public class RoomSession implements RoomEndpoint, RoomEventSink {
 				entry.link = link;
 				entry.listenPort = hello.listenPort;
 			}
-			memberCountForBeacon = roster.size();
 			link.sendLine(RoomProtocol.buildPeerOk(localUid));
 		}
 	}
@@ -511,7 +551,6 @@ public class RoomSession implements RoomEndpoint, RoomEventSink {
 				arb.listenPort = e.listenPort;
 			}
 		}
-		memberCountForBeacon = roster.size();
 		beaconLobbyName = (roster.get(arbiterUid) != null) ? roster.get(arbiterUid).name : selfName;
 	}
 
@@ -578,7 +617,6 @@ public class RoomSession implements RoomEndpoint, RoomEventSink {
 			existing.host = e.host;
 			existing.listenPort = e.listenPort;
 		}
-		memberCountForBeacon = roster.size();
 	}
 
 	private void onRoomOk(RoomPeerLink link) {
@@ -915,7 +953,6 @@ public class RoomSession implements RoomEndpoint, RoomEventSink {
 		if(isArbiter()) {
 			// A member is gone: run the full logout sequence
 			roster.remove(entry.uid);
-			memberCountForBeacon = roster.size();
 			authority.onMemberGone(entry.uid, "bye".equals(reason));
 		} else if(link == arbiterLink) {
 			if(state != State.READY && state != State.MIGRATING) {
@@ -925,7 +962,6 @@ public class RoomSession implements RoomEndpoint, RoomEventSink {
 			}
 			arbiterLink = null;
 			roster.remove(entry.uid);
-			memberCountForBeacon = roster.size();
 			beginMigration();
 		} else {
 			// A direct link to another member died while the arbiter link is
@@ -1070,7 +1106,6 @@ public class RoomSession implements RoomEndpoint, RoomEventSink {
 			e.link.sendLine(RoomProtocol.buildKick(victim, "split links"));
 		}
 		RoomRoster.Entry entry = roster.remove(victim);
-		memberCountForBeacon = roster.size();
 		if((entry != null) && (entry.link != null)) entry.link.closeAfterFlush("kicked");
 		authority.onMemberGone(victim, false);
 	}
@@ -1087,7 +1122,6 @@ public class RoomSession implements RoomEndpoint, RoomEventSink {
 			return;
 		}
 		RoomRoster.Entry entry = roster.remove(uid);
-		memberCountForBeacon = roster.size();
 		if((entry != null) && (entry.link != null)) entry.link.close("kicked by arbiter");
 	}
 
@@ -1106,7 +1140,6 @@ public class RoomSession implements RoomEndpoint, RoomEventSink {
 		if((state == State.MIGRATING) && (claimDeadline > 0) && (now >= claimDeadline)) {
 			RoomRoster.Entry candidate = roster.remove(expectedClaimUid);
 			if((candidate != null) && (candidate.link != null)) candidate.link.close("claim timeout");
-			memberCountForBeacon = roster.size();
 			beginMigration();
 		}
 

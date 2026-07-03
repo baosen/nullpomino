@@ -54,7 +54,10 @@ public class NetLanDiscovery {
 	public static final int ROOM_PROTOCOL_VERSION = 2;
 
 	/** Type marker inside a v2 announce identifying a room session */
-	public static final String ROOM_TYPE = "M";
+	public static final String ROOM_TYPE = "R";
+
+	/** Type marker inside a v2 packet carrying a lounge chat line */
+	public static final String CHAT_TYPE = "C";
 
 	/** Delay between announce broadcasts (ms) */
 	public static final int ANNOUNCE_INTERVAL_MS = 1500;
@@ -65,21 +68,54 @@ public class NetLanDiscovery {
 	private NetLanDiscovery() {}
 
 	/**
-	 * Encode a v2 announce packet for a P2P room session
-	 * @param tcpPort Port this peer's room transport listens on
-	 * @param playerName Name of the announcing peer
-	 * @param sessionId Session identifier shared by every peer of the session
-	 * @param lobbyName Display name of the session
-	 * @param players Current number of players in the session
+	 * Encode a v2 announce packet for a P2P room. The room-detail fields feed
+	 * the lounge's room table (name/rated/rule/mode/status/counts).
+	 * @param a Announce holding this peer's port, names, session id and room details
 	 * @return Packet payload
 	 */
-	public static byte[] encodeRoomAnnounce(int tcpPort, String playerName, String sessionId,
-		String lobbyName, int players)
-	{
+	public static byte[] encodeRoomAnnounce(Announce a) {
 		return NetUtil.stringToBytes(
-			MAGIC + "\t" + ROOM_PROTOCOL_VERSION + "\t" + tcpPort + "\t" +
+			MAGIC + "\t" + ROOM_PROTOCOL_VERSION + "\t" + a.port + "\t" +
+			NetUtil.urlEncode(a.playerName) + "\t" + GameManager.getVersionMajor() + "\t" +
+			ROOM_TYPE + "\t" + a.sessionId + "\t" + NetUtil.urlEncode(a.lobbyName) + "\t" + a.players + "\t" +
+			NetUtil.urlEncode(a.roomName) + "\t" + a.rated + "\t" + NetUtil.urlEncode(a.ruleName) + "\t" +
+			NetUtil.urlEncode(a.mode) + "\t" + a.playing + "\t" + a.seated + "\t" + a.maxPlayers + "\t" +
+			a.spectators);
+	}
+
+	/**
+	 * Encode a v2 lobby-chat packet (type C). Chat is a LAN broadcast between
+	 * everyone sitting on the netplay lounge screen - no connection involved.
+	 * @param playerName Sender's nickname
+	 * @param msgId Random hex id for duplicate suppression
+	 * @param message Chat text
+	 * @return Packet payload
+	 */
+	public static byte[] encodeChat(String playerName, String msgId, String message) {
+		return NetUtil.stringToBytes(
+			MAGIC + "\t" + ROOM_PROTOCOL_VERSION + "\t0\t" +
 			NetUtil.urlEncode(playerName) + "\t" + GameManager.getVersionMajor() + "\t" +
-			ROOM_TYPE + "\t" + sessionId + "\t" + NetUtil.urlEncode(lobbyName) + "\t" + players);
+			CHAT_TYPE + "\t" + msgId + "\t" + NetUtil.urlEncode(message));
+	}
+
+	/**
+	 * Decode a lobby-chat packet
+	 * @return Decoded chat line, or null if the packet is not a valid chat
+	 */
+	public static ChatLine decodeChat(byte[] data, int len) {
+		if((data == null) || (len <= 0) || (len > data.length)) return null;
+
+		String[] parts = new String(data, 0, len, StandardCharsets.UTF_8).split("\t");
+		if(parts.length < 8) return null;
+		if(!MAGIC.equals(parts[0])) return null;
+
+		try {
+			if(Integer.parseInt(parts[1]) != ROOM_PROTOCOL_VERSION) return null;
+			if(!CHAT_TYPE.equals(parts[5]) || (parts[6].length() == 0)) return null;
+			return new ChatLine(NetUtil.urlDecode(parts[3]), parts[6], NetUtil.urlDecode(parts[7]));
+		} catch (IllegalArgumentException e) {
+			return null;
+		}
 	}
 
 	/**
@@ -107,6 +143,14 @@ public class NetLanDiscovery {
 			}
 			if(version == ROOM_PROTOCOL_VERSION) {
 				if((parts.length < 9) || !ROOM_TYPE.equals(parts[5]) || (parts[6].length() == 0)) return null;
+				if(parts.length >= 17) {
+					return new Announce(sourceAddr, port, name, parts[4],
+						parts[6], NetUtil.urlDecode(parts[7]), Integer.parseInt(parts[8]),
+						NetUtil.urlDecode(parts[9]), Boolean.parseBoolean(parts[10]),
+						NetUtil.urlDecode(parts[11]), NetUtil.urlDecode(parts[12]),
+						Boolean.parseBoolean(parts[13]), Integer.parseInt(parts[14]),
+						Integer.parseInt(parts[15]), Integer.parseInt(parts[16]));
+				}
 				return new Announce(sourceAddr, port, name, parts[4],
 					parts[6], NetUtil.urlDecode(parts[7]), Integer.parseInt(parts[8]));
 			}
@@ -175,6 +219,30 @@ public class NetLanDiscovery {
 		/** Number of players in the room session, 0 for servers */
 		public final int players;
 
+		/** Room name shown in the lounge table */
+		public final String roomName;
+
+		/** Rated flag of the room */
+		public final boolean rated;
+
+		/** Rule name when rule-locked, "" = any rule */
+		public final String ruleName;
+
+		/** Game mode of the room */
+		public final String mode;
+
+		/** true while a round is in progress */
+		public final boolean playing;
+
+		/** Seated players in the room */
+		public final int seated;
+
+		/** Seat capacity of the room */
+		public final int maxPlayers;
+
+		/** Spectators in the room */
+		public final int spectators;
+
 		public Announce(String address, int port, String playerName, String version) {
 			this(address, port, playerName, version, "", "", 0);
 			// v1 server announce - the room fields stay empty
@@ -182,6 +250,14 @@ public class NetLanDiscovery {
 
 		public Announce(String address, int port, String playerName, String version,
 			String sessionId, String lobbyName, int players)
+		{
+			this(address, port, playerName, version, sessionId, lobbyName, players,
+				"", false, "", "", false, 0, 0, 0);
+		}
+
+		public Announce(String address, int port, String playerName, String version,
+			String sessionId, String lobbyName, int players, String roomName, boolean rated,
+			String ruleName, String mode, boolean playing, int seated, int maxPlayers, int spectators)
 		{
 			this.address = address;
 			this.port = port;
@@ -192,12 +268,43 @@ public class NetLanDiscovery {
 			this.sessionId = (sessionId == null) ? "" : sessionId;
 			this.lobbyName = (lobbyName == null) ? "" : lobbyName;
 			this.players = players;
+			this.roomName = (roomName == null) ? "" : roomName;
+			this.rated = rated;
+			this.ruleName = (ruleName == null) ? "" : ruleName;
+			this.mode = (mode == null) ? "" : mode;
+			this.playing = playing;
+			this.seated = seated;
+			this.maxPlayers = maxPlayers;
+			this.spectators = spectators;
 		}
 
-		/** @return "address:port" as accepted by the server-select connect logic */
+		/** @return "address:port" as accepted by the lounge's join logic */
 		public String hostPort() {
 			return address + ":" + port;
 		}
+	}
+
+	/** One received lounge-chat line */
+	public static final class ChatLine {
+		/** Sender's nickname */
+		public final String playerName;
+
+		/** Duplicate-suppression id */
+		public final String msgId;
+
+		/** Chat text */
+		public final String message;
+
+		public ChatLine(String playerName, String msgId, String message) {
+			this.playerName = playerName;
+			this.msgId = msgId;
+			this.message = message;
+		}
+	}
+
+	/** Receives deduplicated lounge-chat lines (called on the listener thread) */
+	public interface ChatConsumer {
+		void onChat(String playerName, String message);
 	}
 
 	/** Supplies the announce payload each broadcast cycle (payloads may change over time) */
@@ -227,12 +334,16 @@ public class NetLanDiscovery {
 				socket.setBroadcast(true);
 
 				while(!shutdownRequested) {
+					// A null payload means "nothing to announce yet" (e.g. a room
+					// session whose room hasn't been created) - skip the cycle
 					byte[] data = payloadSupplier.get();
-					for(InetAddress target: broadcastTargets()) {
-						try {
-							socket.send(new DatagramPacket(data, data.length, target, DISCOVERY_PORT));
-						} catch (IOException e) {
-							log.debug("Failed to send announce to {}", target, e);
+					if(data != null) {
+						for(InetAddress target: broadcastTargets()) {
+							try {
+								socket.send(new DatagramPacket(data, data.length, target, DISCOVERY_PORT));
+							} catch (IOException e) {
+								log.debug("Failed to send announce to {}", target, e);
+							}
 						}
 					}
 					Thread.sleep(ANNOUNCE_INTERVAL_MS);
@@ -254,28 +365,47 @@ public class NetLanDiscovery {
 			if(s != null) s.close();
 			interrupt();
 		}
+	}
 
-		/** @return Broadcast addresses of all usable interfaces, plus the limited broadcast address */
-		private static Set<InetAddress> broadcastTargets() {
-			Set<InetAddress> targets = new LinkedHashSet<InetAddress>();
-			try {
-				Enumeration<NetworkInterface> interfaces = NetworkInterface.getNetworkInterfaces();
-				while(interfaces.hasMoreElements()) {
-					NetworkInterface ni = interfaces.nextElement();
-					if(!ni.isUp() || ni.isLoopback()) continue;
-					for(InterfaceAddress ia: ni.getInterfaceAddresses()) {
-						if(ia.getBroadcast() != null) targets.add(ia.getBroadcast());
-					}
+	/** @return Broadcast addresses of all usable interfaces, plus the limited broadcast address */
+	public static Set<InetAddress> broadcastTargets() {
+		Set<InetAddress> targets = new LinkedHashSet<InetAddress>();
+		try {
+			Enumeration<NetworkInterface> interfaces = NetworkInterface.getNetworkInterfaces();
+			while(interfaces.hasMoreElements()) {
+				NetworkInterface ni = interfaces.nextElement();
+				if(!ni.isUp() || ni.isLoopback()) continue;
+				for(InterfaceAddress ia: ni.getInterfaceAddresses()) {
+					if(ia.getBroadcast() != null) targets.add(ia.getBroadcast());
 				}
-			} catch (SocketException e) {
-				log.debug("Failed to enumerate network interfaces", e);
 			}
-			try {
-				targets.add(InetAddress.getByName("255.255.255.255"));
-			} catch (IOException e) {
-				log.debug("Failed to resolve limited broadcast address", e);
+		} catch (SocketException e) {
+			log.debug("Failed to enumerate network interfaces", e);
+		}
+		try {
+			targets.add(InetAddress.getByName("255.255.255.255"));
+		} catch (IOException e) {
+			log.debug("Failed to resolve limited broadcast address", e);
+		}
+		return targets;
+	}
+
+	/**
+	 * One-shot broadcast of a packet to every target (used for lounge chat
+	 * lines). Best-effort: send failures are logged and swallowed.
+	 */
+	public static void broadcastPacket(byte[] data) {
+		try (DatagramSocket socket = new DatagramSocket()) {
+			socket.setBroadcast(true);
+			for(InetAddress target: broadcastTargets()) {
+				try {
+					socket.send(new DatagramPacket(data, data.length, target, DISCOVERY_PORT));
+				} catch (IOException e) {
+					log.debug("Failed to broadcast to {}", target, e);
+				}
 			}
-			return targets;
+		} catch (SocketException e) {
+			log.debug("Failed to open broadcast socket", e);
 		}
 	}
 
@@ -284,10 +414,19 @@ public class NetLanDiscovery {
 	 * discovered hosts via {@link #snapshot()}; entries expire after the TTL.
 	 */
 	public static final class Listener extends Thread {
+		/** Remember this many chat msgIds for duplicate suppression */
+		private static final int CHAT_SEEN_CAP = 256;
+
 		private final int ttlMs;
 		private volatile boolean shutdownRequested = false;
 		private final DatagramSocket socket;
 		private final ConcurrentHashMap<String, Announce> entries = new ConcurrentHashMap<String, Announce>();
+
+		/** Deduplicated lounge-chat sink; null = chat packets are dropped */
+		private volatile ChatConsumer chatConsumer;
+
+		/** msgIds already delivered (multi-interface broadcasts duplicate) */
+		private final LinkedHashSet<String> chatSeen = new LinkedHashSet<String>();
 
 		public Listener() throws SocketException {
 			this(DISCOVERY_PORT, ENTRY_TTL_MS);
@@ -314,6 +453,27 @@ public class NetLanDiscovery {
 			return socket.getLocalPort();
 		}
 
+		/** Install the lounge-chat sink (called on the listener thread, deduplicated) */
+		public void setChatConsumer(ChatConsumer consumer) {
+			this.chatConsumer = consumer;
+		}
+
+		/**
+		 * Pre-register a msgId as delivered - senders call this before
+		 * appending their own line locally, so the looped-back broadcast
+		 * copy dedupes away on every platform.
+		 * @return true if the id was new
+		 */
+		public boolean markSeen(String msgId) {
+			synchronized(chatSeen) {
+				if(!chatSeen.add(msgId)) return false;
+				while(chatSeen.size() > CHAT_SEEN_CAP) {
+					chatSeen.remove(chatSeen.iterator().next());
+				}
+				return true;
+			}
+		}
+
 		@Override
 		public void run() {
 			byte[] buf = new byte[512];
@@ -331,7 +491,22 @@ public class NetLanDiscovery {
 
 				Announce announce = decodeAnnounce(packet.getData(), packet.getLength(),
 					packet.getAddress().getHostAddress());
-				if(announce != null) entries.put(announce.hostPort(), announce);
+				if(announce != null) {
+					entries.put(announce.hostPort(), announce);
+					continue;
+				}
+
+				ChatLine chat = decodeChat(packet.getData(), packet.getLength());
+				if(chat != null) {
+					ChatConsumer consumer = chatConsumer;
+					if((consumer != null) && markSeen(chat.msgId)) {
+						try {
+							consumer.onChat(chat.playerName, chat.message);
+						} catch (Exception e) {
+							log.error("Chat consumer failed", e);
+						}
+					}
+				}
 			}
 
 			socket.close();

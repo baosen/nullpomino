@@ -204,6 +204,31 @@ class RoomSessionTest {
     }
 
     @Test
+    void beaconAnnouncesOnlyOnceARoomExists() throws Exception {
+        RoomSession a = create("Alice");
+        Client client = login(a, "Alice");
+
+        // No room yet: nothing to announce (the create-room form may be open)
+        assertNull(a.getBeaconSnapshotForTest());
+
+        a.sendLine(roomCreateLine("Beacon Room", 4));
+        client.await("roomcreatesuccess\t");
+
+        long deadline = System.currentTimeMillis() + 5000;
+        while (a.getBeaconSnapshotForTest() == null && System.currentTimeMillis() < deadline) {
+            Thread.sleep(20);
+        }
+        nullpomino.game.net.NetLanDiscovery.Announce beacon = a.getBeaconSnapshotForTest();
+        assertNotNull(beacon);
+        assertEquals("Beacon Room", beacon.roomName);
+        assertEquals("NET-VS-BATTLE", beacon.mode);
+        assertEquals(1, beacon.seated);
+        assertEquals(4, beacon.maxPlayers);
+        assertEquals(a.getSessionId(), beacon.sessionId);
+        assertFalse(beacon.playing);
+    }
+
+    @Test
     void staleClientGetsDeniedGracefully() throws Exception {
         RoomSession a = create("Alice");
         try (java.net.Socket stale = new java.net.Socket("127.0.0.1", a.getListenPort())) {
