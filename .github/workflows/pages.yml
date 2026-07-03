@@ -1,0 +1,51 @@
+name: Deploy web build to GitHub Pages
+
+on:
+  push:
+    branches: ["nullpomino+"]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      # Enables Pages (source: GitHub Actions) on first run if needed.
+      - uses: actions/configure-pages@v5
+        with:
+          enablement: true
+
+      - name: Cache Bazel
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/bazel
+          key: bazel-web-${{ hashFiles('MODULE.bazel', 'maven_install.json', '.bazelversion') }}
+          restore-keys: bazel-web-
+
+      # Ubuntu runners ship bazelisk as `bazel`; .bazelversion pins the version.
+      - name: Build site
+        run: sh web/build-site.sh
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: web/dist
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4

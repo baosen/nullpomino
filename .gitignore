@@ -1,3 +1,6 @@
+# Assembled static site for the browser build (web/build-site.sh)
+web/dist/
+
 # Compiled class file
 *.class
 

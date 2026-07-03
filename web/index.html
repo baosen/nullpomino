@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>NullpoMino+</title>
+  <style>
+    html, body { margin: 0; height: 100%; background: #000; overflow: hidden; }
+    #display { width: 100%; height: 100%; }
+  </style>
+  <script src="https://cjrtnc.leaningtech.com/4.3/loader.js"></script>
+</head>
+<body>
+  <div id="display"></div>
+  <!-- Powered by CheerpJ (https://cheerpj.com) — Community License attribution -->
+  <script type="module">
+    // /app/ maps to the WEB SERVER ROOT, not the page directory. Compute the
+    // page's base path so the same file works at a domain root and on
+    // subdirectory hosting (e.g. GitHub Pages project sites).
+    const base = location.pathname.replace(/\/[^/]*$/, "");
+    await cheerpjInit({
+      version: 17,
+      status: "splash",
+      javaProperties: [
+        // Persistent (IndexedDB) working directory: config, replays,
+        // rankings all live here and survive reloads.
+        "user.dir=/files/nullpomino",
+        // Read-only assets stay on the HTTP mount, fetched lazily per file.
+        `nullpomino.resdir=/app${base}/res`,
+      ],
+      // Keep the browser from stealing keys the game uses.
+      overrideShortcuts: (e) => ["F1","F2","F3","F4","F5","F11","F12"].includes(e.key),
+    });
+    cheerpjCreateDisplay(-1, -1, document.getElementById("display"));
+    await cheerpjRunMain("nullpomino.gui.web.NullpoMinoWeb", `/app${base}/nullpomino.jar`);
+  </script>
+</body>
+</html>
