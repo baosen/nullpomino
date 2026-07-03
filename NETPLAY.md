@@ -1,30 +1,33 @@
-# NullpoMino Netplay (P2P Mesh)
+# NullpoMino Netplay (P2P Rooms)
 
-Netplay is fully peer-to-peer: there is **no server process**. Every peer of a
-session holds a direct TCP connection to every other peer (a full mesh), game
-traffic flows directly between players, and one peer — the *arbiter* — runs the
-lobby bookkeeping. If the arbiter leaves, the lowest-uid survivor takes over
-automatically and the session (even a game in progress) continues.
+Netplay is fully peer-to-peer: there is **no server process**. Every room is
+its own P2P session — the players of a room hold direct TCP connections to
+each other (a full mesh), game traffic flows directly between them, and one
+peer — the *arbiter* — runs the room bookkeeping. If the arbiter leaves, the
+lowest-uid survivor takes over automatically and the room (even a game in
+progress) continues.
 
 ## Playing
 
-1. **NETPLAY** → the session screen. Enter a nickname (and optionally a team).
-2. **CREATE** starts a new session — you become its first arbiter and land in
-   the lobby. Friends on your LAN see the session appear within ~2 seconds.
-3. **JOIN** connects to a session discovered on the LAN (green rows).
-   **DIRECT** joins by hand-typed `host:port` when discovery can't reach the
-   session (different network, firewalled UDP). The address to give friends is
-   shown in the lobby header.
-4. The lobby is the familiar multi-room browser: create rooms (multiplayer,
-   single-player, rule-locked, map rooms), join, spectate, chat. Everything
-   in-room — ready/auto-start, garbage, KOs, winner, rematch — works as it
-   always has. ESC in-game returns to the lobby.
+1. **NETPLAY** drops you straight into the **LAN lounge**: your nickname and
+   team live in the top bar, the table lists every room found on the LAN, and
+   the chat box is a lounge-wide LAN chat — everyone sitting on this screen
+   sees it, no connection needed.
+2. **CREATE** opens the room form (multiplayer, single-player, rule-locked,
+   map rooms); OK creates the room and puts you in it. Your room appears on
+   friends' lounges within ~2 seconds.
+3. **JOIN** enters the selected room; **VIEW** spectates it. Type
+   `/join host:port` in chat to reach a room UDP discovery can't (internet
+   play — the port is `netroom.port`, default **9202**).
+4. Everything in-room — ready/auto-start, garbage, KOs, winner, rematch —
+   works as it always has. ESC in-game leaves the room and returns to the
+   lounge. Errors and join progress appear as colored lines in the chat.
 
-Internet play: every peer must be able to reach every other peer, so each
-player forwards their mesh TCP port (default **9202**, `netroom.port` in
-`config/etc/netroom.cfg`) and joins via DIRECT. Two players behind the same
-NAT joining a remote session may fail to connect to each other (no hairpin
-support); LAN and one-NAT-per-player setups work.
+Internet play: every player of a room must be able to reach every other, so
+each forwards their TCP port (`netroom.port` in `config/etc/netroom.cfg`) and
+joins via `/join`. Two players behind the same NAT joining a remote room may
+fail to connect to each other (no hairpin support); LAN and
+one-NAT-per-player setups work. Lounge chat is LAN-only.
 
 ## How It Works
 
@@ -33,7 +36,7 @@ support); LAN and one-NAT-per-player setups work.
 ```
         Alice (uid 0, arbiter)
         /                \
-   TCP mesh links     TCP mesh links
+   direct TCP links   direct TCP links
       /                    \
    Bob (uid 1) ---------- Carol (uid 2)
 ```
@@ -53,13 +56,13 @@ support); LAN and one-NAT-per-player setups work.
 ### Wire protocol
 
 All lines are tab-delimited, newline-terminated UTF-8 — the original NullpoMino
-protocol, unchanged. The mesh adds an envelope (`room\t...` frames, defined in
+protocol, unchanged. The room protocol adds an envelope (`room\t...` frames, defined in
 `RoomProtocol`) for the handshake (`hello`/`welcome`+snapshot/`peerok`),
 session traffic (`c`ontrol / `b`roadcast with seq+scope / `d`irect), authority
 state extras (`authg`/`authr`), cache dissemination (`snap` frames), liveness
 (`ping`/`pong`), and failure handling (`peerdown`/`kick`/`arbiter`). Because
 the standard protocol is reused verbatim, the whole client stack — lobby,
-screens, every game mode — runs over the mesh untouched via the
+screens, every game mode — runs over the room session untouched via the
 `NetRoomPlayerClient` seam.
 
 ### Joining
@@ -67,8 +70,8 @@ screens, every game mode — runs over the mesh untouched via the
 A joiner dials the arbiter, which admits it (assigning a uid), replies with
 the member roster + a full state snapshot, and announces the newcomer to the
 existing members. The joiner then dials every member directly (authenticated
-by the session token from the welcome) and reports `meshok`; only then can it
-enter rooms. Stale/non-mesh clients that connect get a graceful deny.
+by the session token from the welcome) and reports `roomok`; only then can it
+enter rooms. Stale/non-room clients that connect get a graceful deny.
 
 ### Arbiter migration
 
@@ -82,21 +85,30 @@ arbiter's departure through the normal path — mid-game that emits its death
 Controls lost in flight to the dead arbiter (a `dead`, `racewin`, or `ready`)
 are re-sent by their owners after the claim; all are idempotent.
 
-Split meshes (peer A and B lose their direct link but both still reach the
+Split links (peer A and B lose their direct link but both still reach the
 arbiter) are arbitrated: both report `peerdown`, and after a 2-second window
 the arbiter kicks the member with the most broken links.
 
-### LAN discovery
+### LAN discovery + lounge chat
 
-Every peer of a joinable session broadcasts a UDP beacon (port **9201**, every
-1.5 s, 5 s TTL):
+Every player of a room broadcasts a UDP beacon (port **9201**, every 1.5 s,
+5 s TTL) carrying the full room-table row:
 
 ```
-NullpoLAN\t2\t[tcpPort]\t[nameEnc]\t[verMajor]\tM\t[sessionId]\t[lobbyNameEnc]\t[players]
+NullpoLAN\t2\t[tcpPort]\t[nameEnc]\t[verMajor]\tR\t[sessionId]\t[ownerEnc]\t[players]
+  \t[roomNameEnc]\t[rated]\t[ruleNameEnc]\t[modeEnc]\t[playing]\t[seated]\t[maxPlayers]\t[spectators]
 ```
 
-The session screen dedupes beacons by sessionId (any surviving peer keeps the
-session discoverable). Disable with `netmesh.lanAnnounce=false`.
+The lounge dedupes beacons by sessionId (any surviving player keeps the room
+discoverable), and a room is only announced once it actually exists — a
+half-created room (create form still open) cannot be joined. Disable with
+`netroom.lanAnnounce=false`.
+
+Lounge chat lines are one-shot broadcasts on the same port (type `C` with a
+random msgId): every lounge on the LAN shows them, duplicates from
+multi-interface broadcasts are suppressed, and senders echo locally so their
+own line shows exactly once. Best-effort by design: no history, no delivery
+guarantee, LAN only.
 
 ### Local records (no server accounts)
 
@@ -128,7 +140,7 @@ arbiter validates seats and sequencing, not gameplay.
 
 | Setting | Default | Notes |
 |---|---|---|
-| `netroom.port` | `9202` | Mesh TCP listen port (0 = ephemeral; busy port falls back to ephemeral) |
+| `netroom.port` | `9202` | Room TCP listen port (0 = ephemeral; busy port falls back to ephemeral) |
 | `netroom.lanAnnounce` | `true` | Broadcast the UDP 9201 beacon while joinable |
 
 ## Key Files
@@ -142,8 +154,8 @@ arbiter validates seats and sequencing, not gameplay.
 | Passive state replica | `src/main/java/nullpomino/game/net/room/RoomMirror.java` |
 | Local ratings/records | `src/main/java/nullpomino/game/net/room/RoomLocalRecords.java`, `RoomRating.java` |
 | Client seam | `src/main/java/nullpomino/game/net/NetRoomPlayerClient.java` |
-| LAN beacons | `src/main/java/nullpomino/game/net/NetLanDiscovery.java` |
-| Session screen | `src/main/java/nullpomino/gui/sdl/StateNetServerSelectSDL.java` |
+| LAN beacons + lounge chat | `src/main/java/nullpomino/game/net/NetLanDiscovery.java` |
+| The LAN lounge screen | `src/main/java/nullpomino/gui/sdl/StateNetLobbySDL.java` |
 | Lobby session object | `src/main/java/nullpomino/gui/net/NetLobbyFrame.java` |
 
 The threading model is deliberately simple: one reader + one writer thread per
