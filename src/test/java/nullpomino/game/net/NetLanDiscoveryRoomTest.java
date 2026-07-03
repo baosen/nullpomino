@@ -75,6 +75,63 @@ class NetLanDiscoveryRoomTest {
     }
 
     @Test
+    void presenceRoundTripsAndCrossRejects() {
+        byte[] data = NetLanDiscovery.encodePresence("Alice Å", "beef01");
+
+        NetLanDiscovery.Presence p = NetLanDiscovery.decodePresence(data, data.length);
+        assertNotNull(p);
+        assertEquals("Alice Å", p.playerName);
+        assertEquals("beef01", p.instanceId);
+
+        // Presence is neither an announce nor a chat, and vice versa
+        assertNull(NetLanDiscovery.decodeAnnounce(data, data.length, "1.2.3.4"));
+        assertNull(NetLanDiscovery.decodeChat(data, data.length));
+        byte[] chat = NetLanDiscovery.encodeChat("Alice", "id", "hi");
+        assertNull(NetLanDiscovery.decodePresence(chat, chat.length));
+
+        byte[] emptyId = "NullpoLAN\t2\t0\tname\t7.5\tP\t".getBytes(StandardCharsets.UTF_8);
+        assertNull(NetLanDiscovery.decodePresence(emptyId, emptyId.length));
+    }
+
+    @Test
+    void listenerTracksPresenceWithRenameAndTtl() throws Exception {
+        NetLanDiscovery.Listener listener = new NetLanDiscovery.Listener(0, 400);
+        listener.start();
+        try (java.net.DatagramSocket sender = new java.net.DatagramSocket()) {
+            java.net.InetAddress local = java.net.InetAddress.getByName("127.0.0.1");
+            byte[] hello = NetLanDiscovery.encodePresence("Alice", "inst-1");
+            sender.send(new java.net.DatagramPacket(hello, hello.length, local, listener.getLocalPort()));
+
+            long deadline = System.currentTimeMillis() + 5000;
+            java.util.List<NetLanDiscovery.Presence> snap = listener.snapshotPresence();
+            while (snap.isEmpty() && System.currentTimeMillis() < deadline) {
+                Thread.sleep(20);
+                snap = listener.snapshotPresence();
+            }
+            assertEquals(1, snap.size());
+            assertEquals("Alice", snap.get(0).playerName);
+
+            // A rename keeps the same entry (keyed by instanceId), no duplicate
+            byte[] renamed = NetLanDiscovery.encodePresence("Alicia", "inst-1");
+            sender.send(new java.net.DatagramPacket(renamed, renamed.length, local, listener.getLocalPort()));
+            deadline = System.currentTimeMillis() + 5000;
+            while (System.currentTimeMillis() < deadline) {
+                snap = listener.snapshotPresence();
+                if (snap.size() == 1 && "Alicia".equals(snap.get(0).playerName)) break;
+                Thread.sleep(20);
+            }
+            assertEquals(1, snap.size());
+            assertEquals("Alicia", snap.get(0).playerName);
+
+            // The beacon stops: the visitor ages out within the TTL
+            Thread.sleep(900);
+            assertTrue(listener.snapshotPresence().isEmpty(), "Presence should expire after the TTL");
+        } finally {
+            listener.shutdown();
+        }
+    }
+
+    @Test
     void listenerDeliversChatOnceAndHonorsMarkSeen() throws Exception {
         NetLanDiscovery.Listener listener = new NetLanDiscovery.Listener(0, NetLanDiscovery.ENTRY_TTL_MS);
         final java.util.concurrent.BlockingQueue<String> received =

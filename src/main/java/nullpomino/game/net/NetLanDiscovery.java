@@ -59,6 +59,9 @@ public class NetLanDiscovery {
 	/** Type marker inside a v2 packet carrying a lounge chat line */
 	public static final String CHAT_TYPE = "C";
 
+	/** Type marker inside a v2 packet announcing lounge presence */
+	public static final String PRESENCE_TYPE = "P";
+
 	/** Delay between announce broadcasts (ms) */
 	public static final int ANNOUNCE_INTERVAL_MS = 1500;
 
@@ -96,6 +99,41 @@ public class NetLanDiscovery {
 			MAGIC + "\t" + ROOM_PROTOCOL_VERSION + "\t0\t" +
 			NetUtil.urlEncode(playerName) + "\t" + GameManager.getVersionMajor() + "\t" +
 			CHAT_TYPE + "\t" + msgId + "\t" + NetUtil.urlEncode(message));
+	}
+
+	/**
+	 * Encode a v2 lounge-presence packet (type P). Lounge visitors broadcast
+	 * one so everyone sees who's around; the beacon stops when they leave the
+	 * screen and the entry ages out via the TTL.
+	 * @param playerName Visitor's nickname
+	 * @param instanceId Random id stable for one lounge visit (rename-safe key)
+	 * @return Packet payload
+	 */
+	public static byte[] encodePresence(String playerName, String instanceId) {
+		return NetUtil.stringToBytes(
+			MAGIC + "\t" + ROOM_PROTOCOL_VERSION + "\t0\t" +
+			NetUtil.urlEncode(playerName) + "\t" + GameManager.getVersionMajor() + "\t" +
+			PRESENCE_TYPE + "\t" + instanceId);
+	}
+
+	/**
+	 * Decode a lounge-presence packet
+	 * @return Decoded presence, or null if the packet is not a valid presence
+	 */
+	public static Presence decodePresence(byte[] data, int len) {
+		if((data == null) || (len <= 0) || (len > data.length)) return null;
+
+		String[] parts = new String(data, 0, len, StandardCharsets.UTF_8).split("\t");
+		if(parts.length < 7) return null;
+		if(!MAGIC.equals(parts[0])) return null;
+
+		try {
+			if(Integer.parseInt(parts[1]) != ROOM_PROTOCOL_VERSION) return null;
+			if(!PRESENCE_TYPE.equals(parts[5]) || (parts[6].length() == 0)) return null;
+			return new Presence(NetUtil.urlDecode(parts[3]), parts[6]);
+		} catch (IllegalArgumentException e) {
+			return null;
+		}
 	}
 
 	/**
@@ -307,6 +345,24 @@ public class NetLanDiscovery {
 		void onChat(String playerName, String message);
 	}
 
+	/** One lounge visitor as seen via presence beacons */
+	public static final class Presence {
+		/** Visitor's nickname */
+		public final String playerName;
+
+		/** Stable id for one lounge visit (the map key - renames update in place) */
+		public final String instanceId;
+
+		/** Time the presence was received (System.currentTimeMillis()) */
+		public final long lastSeen;
+
+		public Presence(String playerName, String instanceId) {
+			this.playerName = playerName;
+			this.instanceId = instanceId;
+			this.lastSeen = System.currentTimeMillis();
+		}
+	}
+
 	/** Supplies the announce payload each broadcast cycle (payloads may change over time) */
 	public interface PayloadSupplier {
 		byte[] get();
@@ -428,6 +484,9 @@ public class NetLanDiscovery {
 		/** msgIds already delivered (multi-interface broadcasts duplicate) */
 		private final LinkedHashSet<String> chatSeen = new LinkedHashSet<String>();
 
+		/** Lounge visitors by instanceId (renames update the same entry) */
+		private final ConcurrentHashMap<String, Presence> presence = new ConcurrentHashMap<String, Presence>();
+
 		public Listener() throws SocketException {
 			this(DISCOVERY_PORT, ENTRY_TTL_MS);
 		}
@@ -506,7 +565,11 @@ public class NetLanDiscovery {
 							log.error("Chat consumer failed", e);
 						}
 					}
+					continue;
 				}
+
+				Presence visitor = decodePresence(packet.getData(), packet.getLength());
+				if(visitor != null) presence.put(visitor.instanceId, visitor);
 			}
 
 			socket.close();
@@ -516,6 +579,27 @@ public class NetLanDiscovery {
 		public void shutdown() {
 			shutdownRequested = true;
 			socket.close();
+		}
+
+		/** @return All live (non-expired) lounge visitors, sorted by name */
+		public List<Presence> snapshotPresence() {
+			long now = System.currentTimeMillis();
+			List<Presence> result = new ArrayList<Presence>();
+
+			for(Presence visitor: presence.values()) {
+				if(now - visitor.lastSeen <= ttlMs) {
+					result.add(visitor);
+				} else {
+					presence.remove(visitor.instanceId, visitor);
+				}
+			}
+
+			Collections.sort(result, new Comparator<Presence>() {
+				public int compare(Presence a, Presence b) {
+					return a.playerName.compareTo(b.playerName);
+				}
+			});
+			return result;
 		}
 
 		/** @return All live (non-expired) discovered hosts, sorted by host:port */
