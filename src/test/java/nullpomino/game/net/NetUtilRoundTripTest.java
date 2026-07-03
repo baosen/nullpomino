@@ -69,15 +69,6 @@ class NetUtilRoundTripTest {
 	}
 
 	@Test
-	void tripCodesRemainStableAcrossSaltNormalizationCases() {
-		assertEquals("ozOtJW9BFA", NetUtil.createTripCode("password", 10));
-		assertEquals("5G6R5bcZ.A", NetUtil.createTripCode("a:b", 10));
-		assertEquals("t2.tko2NFA", NetUtil.createTripCode("a[b", 10));
-		assertEquals("H6UXeNPUgM", NetUtil.createTripCode("a\nb", 10));
-		assertEquals("o2NFA", NetUtil.createTripCode("a[b", 5));
-	}
-
-	@Test
 	void compressRoundTripsAsciiPayload() {
 		String payload = "player=HAL\tscore=9001\tfield=..##...####....####....####....####....####.\n";
 		String compressed = NetUtil.compressString(payload);

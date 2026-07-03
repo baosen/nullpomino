@@ -21,8 +21,7 @@ import org.junit.jupiter.api.io.TempDir;
 /**
  * Pins the headless surface on {@link NetLobbyFrame}: the language
  * fallback ladder used by getUIText, the mode-name property-key
- * escaping in getModeDesc, the trip-code separator munging in
- * convTripCode, the .rul filename parsing in createRuleEntries +
+ * escaping in getModeDesc, the .rul filename parsing in createRuleEntries +
  * getSubsetEntries, and the room-table row formatter.
  */
 class NetLobbyFrameTest {
@@ -84,47 +83,6 @@ class NetLobbyFrameTest {
 	void getModeDescReturnsEmptyForNullModeName() {
 		NetLobbyFrame nl = new NetLobbyFrame();
 		assertEquals("", nl.getModeDesc(null));
-	}
-
-	@Test
-	void convTripCodeStripsSpaceBeforeBangSeparator() {
-		// Server stores names as 'Bob !ABCHASH' with a space; display strips
-		// it so the rendered name reads 'Bob!ABCHASH'.
-		NetLobbyFrame nl = new NetLobbyFrame();
-
-		assertEquals("Bob!ABCHASH", nl.convTripCode("Bob !ABCHASH"));
-		// No '!' separator -> name unchanged.
-		assertEquals("Solo", nl.convTripCode("Solo"));
-		// Null surfaces as empty.
-		assertEquals("", nl.convTripCode(null));
-	}
-
-	@Test
-	void convTripCodeIsNoOpWhenPropLangIsNullEvenWithSeparatorEnabled() {
-		// The trip-separator dance only kicks in when propLang says so;
-		// without propLang the string passes through untouched (modulo the
-		// space-strip already applied).
-		NetLobbyFrame nl = new NetLobbyFrame();
-		nl.propLang = null;
-
-		assertEquals("Bob!HASH", nl.convTripCode("Bob !HASH"));
-	}
-
-	@Test
-	void convTripCodeAppliesLocalisedTripCodeSeparatorsWhenEnabled() {
-		// When TripSeparator_EnableConvert is on, '!' is replaced with the
-		// localised "true" glyph and '?' with the localised "false" glyph.
-		NetLobbyFrame nl = new NetLobbyFrame();
-		nl.propLang = new CustomProperties();
-		nl.propLangDefault = new CustomProperties();
-		nl.propLang.setProperty("TripSeparator_EnableConvert", true);
-		nl.propLang.setProperty("TripSeparator_True", "#");
-		nl.propLang.setProperty("TripSeparator_False", "@");
-
-		// 'Bob!HASH' -> '!' becomes '#'.
-		assertEquals("Bob#HASH", nl.convTripCode("Bob !HASH"));
-		// '?' becomes '@'.
-		assertEquals("Cha@LLENGE", nl.convTripCode("Cha?LLENGE"));
 	}
 
 	@Test
@@ -236,15 +194,6 @@ class NetLobbyFrameTest {
 		assertEquals("*ANY*", row[3], "ruleLock=false -> column 3 shows the ANY label");
 		assertEquals("FREE", row[2], "rated=false -> column 2 shows the FREE label");
 		assertEquals("PLAY", row[5], "playing=true -> column 5 shows PLAY");
-	}
-
-	@Test
-	void getPlayerNameWithTripCodeRoutesThroughConvTripCode() {
-		NetLobbyFrame nl = new NetLobbyFrame();
-		NetPlayerInfo p = new NetPlayerInfo();
-		p.strName = "Alice !TRIP";
-
-		assertEquals("Alice!TRIP", nl.getPlayerNameWithTripCode(p));
 	}
 
 	private static RuleEntry makeEntry(String filename, String rulename, int style) {

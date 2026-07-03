@@ -207,8 +207,8 @@ public class RoomLocalRecords {
 	// ================================================================ SP rankings (alltime only)
 
 	/**
-	 * Register a single-player record ({@code spsend} port, minus tripcode
-	 * gating and daily rankings - local files need neither).
+	 * Register a single-player record ({@code spsend} port, minus daily
+	 * rankings - local files don't need them).
 	 * @return The reply line to broadcast to the room ({@code spsendok\t...})
 	 *         or send back ({@code spsendng})
 	 */

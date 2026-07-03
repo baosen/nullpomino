@@ -170,9 +170,9 @@ void netlobbyOnMessagePlayerlogout() throws Exception {
 		// NetPlayerInfo importString expects many semicolon-delimited fields.
 		// We provide enough fields for the basic parsing but leave personalBest
 		// and trailing fields absent so read(null) returns null.
-		// Fields: name;country;host;team;roomID;uid;seatID;queueID;ready;playing;connected;isTripUse;
+		// Fields: name;country;host;team;roomID;uid;seatID;queueID;ready;playing;connected;
 		//         rating[0-3];playCount[0-3];winCount[0-3]
-		String playerInfo = "Player1;US;localhost;team1;1;100;0;0;false;false;true;false;0;0;0;0;0;0;0;0;0;0;0;0";
+		String playerInfo = "Player1;US;localhost;team1;1;100;0;0;false;false;true;0;0;0;0;0;0;0;0;0;0;0;0";
 		String[] message = new String[] {"playerlogout", playerInfo};
 		assertDoesNotThrow(() -> mode.netlobbyOnMessage(null, null, message));
 	}

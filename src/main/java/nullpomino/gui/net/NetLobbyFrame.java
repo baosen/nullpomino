@@ -129,32 +129,14 @@ public class NetLobbyFrame implements NetMessageListener {
 	/**
 	 * Wall-clock time of the most recent {@link #connectToRoom} call.
 	 * States that guard on {@code netPlayerClient.isConnected()} honour a short
-	 * grace window after this timestamp so mid-flight reconnects (e.g. /name
-	 * command) don't bounce the user back to server-select while the socket
-	 * finishes its handshake.
+	 * grace window after this timestamp so a mid-flight handshake doesn't
+	 * bounce the user out before it finishes.
 	 */
 	public volatile long lastConnectAt;
 
 	/** ID of room being viewed in detail-view mode; -1 when creating a brand-new room. */
 	public int currentViewDetailRoomID = -1;
 
-	/**
-	 * Raw (un-hashed) form of our current player name — whatever the user typed,
-	 * including any {@code #tripkey} suffix. Seeded by {@link #connectToRoom}
-	 * and updated on our own {@code changename} broadcast. Used to persist the
-	 * original trip key to config instead of the server's hashed form so that
-	 * next-session login re-derives the same tripcode.
-	 */
-	private String lastRawOwnName = "";
-
-	/**
-	 * Raw form of a pending {@code /name} request. Set in {@link #sendChangeName}
-	 * and consumed by the {@code changename} broadcast handler (or cleared by
-	 * {@code changenamefail}). Includes any preserved {@code #tripkey} suffix
-	 * that the server would merge in so the saved identity matches exactly what
-	 * the next login would reconstruct.
-	 */
-	private String pendingOwnRaw;
 
 	// ---------------- Callbacks ----------------
 
@@ -297,7 +279,7 @@ public class NetLobbyFrame implements NetMessageListener {
 		} else if("loginsuccess".equals(cmd)) {
 			chatLogLobby.appendSystem(getUIText("SysMsg_LoginOK"), NormalFontSDL.COLOR_BLUE);
 			if(message.length > 1) {
-				chatLogLobby.appendSystem(getUIText("SysMsg_YourNickname") + convTripCode(NetUtil.urlDecode(message[1])),
+				chatLogLobby.appendSystem(getUIText("SysMsg_YourNickname") + NetUtil.urlDecode(message[1]),
 						NormalFontSDL.COLOR_BLUE);
 			}
 			chatLogLobby.appendSystem(getUIText("SysMsg_YourUID") + netPlayerClient.getPlayerUID(), NormalFontSDL.COLOR_BLUE);
@@ -384,9 +366,9 @@ public class NetLobbyFrame implements NetMessageListener {
 				String text;
 				if(message.length > 3) {
 					String strTeam = NetUtil.urlDecode(message[3]);
-					text = String.format(getUIText("SysMsg_ChangeTeam"), getPlayerNameWithTripCode(pInfo), strTeam);
+					text = String.format(getUIText("SysMsg_ChangeTeam"), pInfo.strName, strTeam);
 				} else {
-					text = String.format(getUIText("SysMsg_ChangeTeam_None"), getPlayerNameWithTripCode(pInfo));
+					text = String.format(getUIText("SysMsg_ChangeTeam_None"), pInfo.strName);
 				}
 				ChatLogSDL target = (lobbyMode == LOBBYMODE_INROOM) ? chatLogRoom : chatLogLobby;
 				// Green to match /name success — both are user-initiated command
@@ -451,7 +433,7 @@ public class NetLobbyFrame implements NetMessageListener {
 					if(seatID == -1 && queueID == -1)       fmt = getUIText("SysMsg_StatusChange_Spectator");
 					else if(seatID == -1)                    fmt = getUIText("SysMsg_StatusChange_Queue");
 					else                                     fmt = getUIText("SysMsg_StatusChange_Joined");
-					chatLogRoom.appendSystem(String.format(fmt, getPlayerNameWithTripCode(myInfo)), NormalFontSDL.COLOR_BLUE);
+					chatLogRoom.appendSystem(String.format(fmt, myInfo.strName), NormalFontSDL.COLOR_BLUE);
 					chatLogRoom.appendSystem(getUIText("SysMsg_RoomJoin_Title") + roomInfo.strName, NormalFontSDL.COLOR_BLUE);
 					chatLogRoom.appendSystem(getUIText("SysMsg_RoomJoin_ID") + roomInfo.roomID, NormalFontSDL.COLOR_BLUE);
 					if(roomInfo.ruleLock) {
@@ -488,7 +470,7 @@ public class NetLobbyFrame implements NetMessageListener {
 			NetPlayerInfo pInfo = netPlayerClient.getPlayerInfoByUID(uid);
 			if(pInfo != null) {
 				Calendar calendar = GeneralUtil.importCalendarString(message[3]);
-				chatLogLobby.appendUser(getPlayerNameWithTripCode(pInfo), calendar, NetUtil.urlDecode(message[4]));
+				chatLogLobby.appendUser(pInfo.strName, calendar, NetUtil.urlDecode(message[4]));
 			}
 
 		} else if("chat".equals(cmd) && message.length > 4) {
@@ -496,11 +478,11 @@ public class NetLobbyFrame implements NetMessageListener {
 			NetPlayerInfo pInfo = netPlayerClient.getPlayerInfoByUID(uid);
 			if(pInfo != null) {
 				Calendar calendar = GeneralUtil.importCalendarString(message[3]);
-				chatLogRoom.appendUser(getPlayerNameWithTripCode(pInfo), calendar, NetUtil.urlDecode(message[4]));
+				chatLogRoom.appendUser(pInfo.strName, calendar, NetUtil.urlDecode(message[4]));
 			}
 
 		} else if(("lobbychath".equals(cmd) || "chath".equals(cmd)) && message.length > 3) {
-			String strUsername = convTripCode(NetUtil.urlDecode(message[1]));
+			String strUsername = NetUtil.urlDecode(message[1]);
 			Calendar calendar = GeneralUtil.importCalendarString(message[2]);
 			String body = NetUtil.urlDecode(message[3]);
 			ChatLogSDL target = "lobbychath".equals(cmd) ? chatLogLobby : chatLogRoom;
@@ -515,7 +497,7 @@ public class NetLobbyFrame implements NetMessageListener {
 				if("watchonly".equals(mode)) fmt = getUIText("SysMsg_StatusChange_Spectator");
 				else if("joinqueue".equals(mode)) fmt = getUIText("SysMsg_StatusChange_Queue");
 				else if("joinseat".equals(mode)) fmt = getUIText("SysMsg_StatusChange_Joined");
-				if(fmt != null) chatLogRoom.appendSystem(String.format(fmt, getPlayerNameWithTripCode(pInfo)), NormalFontSDL.COLOR_BLUE);
+				if(fmt != null) chatLogRoom.appendSystem(String.format(fmt, pInfo.strName), NormalFontSDL.COLOR_BLUE);
 			}
 
 		} else if("autostartbegin".equals(cmd) && message.length > 1) {
@@ -525,10 +507,10 @@ public class NetLobbyFrame implements NetMessageListener {
 			chatLogRoom.appendSystem(getUIText("SysMsg_GameStart"), NormalFontSDL.COLOR_GREEN);
 
 		} else if("dead".equals(cmd) && message.length > 2) {
-			String name = convTripCode(NetUtil.urlDecode(message[2]));
+			String name = NetUtil.urlDecode(message[2]);
 			if(message.length > 6) {
 				chatLogRoom.appendSystem(String.format(getUIText("SysMsg_KO"),
-						convTripCode(NetUtil.urlDecode(message[6])), name), NormalFontSDL.COLOR_GREEN);
+						NetUtil.urlDecode(message[6]), name), NormalFontSDL.COLOR_GREEN);
 			}
 
 		} else if("finish".equals(cmd)) {
@@ -537,12 +519,12 @@ public class NetLobbyFrame implements NetMessageListener {
 				boolean flagTeamWin = message.length > 4 && Boolean.parseBoolean(message[4]);
 				String strWinner = flagTeamWin
 						? String.format(getUIText("SysMsg_WinnerTeam"), NetUtil.urlDecode(message[3]))
-						: String.format(getUIText("SysMsg_Winner"), convTripCode(NetUtil.urlDecode(message[3])));
+						: String.format(getUIText("SysMsg_Winner"), NetUtil.urlDecode(message[3]));
 				chatLogRoom.appendSystem(strWinner, NormalFontSDL.COLOR_GREEN);
 			}
 
 		} else if("rating".equals(cmd) && message.length > 5) {
-			String strPlayerName = convTripCode(NetUtil.urlDecode(message[3]));
+			String strPlayerName = NetUtil.urlDecode(message[3]);
 			int ratingNow = Integer.parseInt(message[4]);
 			int ratingChange = Integer.parseInt(message[5]);
 			chatLogRoom.appendSystem(String.format(getUIText("SysMsg_Rating"),
@@ -563,7 +545,7 @@ public class NetLobbyFrame implements NetMessageListener {
 					String rankStr = (Integer.parseInt(fields[0]) == -1) ? "N/A" : String.valueOf(Integer.parseInt(fields[0]) + 1);
 					decoded[validCount++] = new String[] {
 						rankStr,
-						convTripCode(NetUtil.urlDecode(fields[1])),
+						NetUtil.urlDecode(fields[1]),
 						fields[2],
 						fields[3],
 						fields[4],
@@ -575,42 +557,6 @@ public class NetLobbyFrame implements NetMessageListener {
 				mpRankingMyRank[style] = myRank;
 				mpRankingDirty = true;
 			}
-
-		} else if("changename".equals(cmd) && message.length > 3) {
-			// Server broadcast: "changename\t<uid>\t<oldname>\t<newname>"
-			int uid = Integer.parseInt(message[1]);
-			String oldName = NetUtil.urlDecode(message[2]);
-			String newName = NetUtil.urlDecode(message[3]);
-			// If the rename was our own, persist the raw name (with the real
-			// #tripkey, not the server's hashed ' !<code>' form) so next-session
-			// login reproduces the same tripcode. Fall back to the broadcast
-			// form for renames we didn't originate (e.g. admin-driven).
-			if(netPlayerClient != null && uid == netPlayerClient.getPlayerUID()) {
-				String toSave = (pendingOwnRaw != null) ? pendingOwnRaw : newName;
-				propConfig.setProperty("serverselect.txtfldPlayerName.text", toSave);
-				lastRawOwnName = toSave;
-				pendingOwnRaw = null;
-			}
-			// Broadcast happens to everyone; post in both logs so it's visible
-			// whether the user is on the lobby screen or already in a room.
-			String renameMsg = String.format(getUIText("SysMsg_ChangeName"), oldName, newName);
-			chatLogLobby.appendSystem(renameMsg, NormalFontSDL.COLOR_GREEN);
-			chatLogRoom.appendSystem(renameMsg, NormalFontSDL.COLOR_GREEN);
-
-		} else if("changenamefail".equals(cmd)) {
-			// The attempt was rejected; drop the pending raw so it can't bleed
-			// into a later successful rename by the same player.
-			pendingOwnRaw = null;
-			String reason = message.length > 1 ? message[1] : "UNKNOWN";
-			String hint;
-			if("DUPLICATE".equals(reason)) hint = "NAME ALREADY IN USE";
-			else if("EMPTY".equals(reason)) hint = "NAME CANNOT BE EMPTY";
-			else if("PLAYING".equals(reason)) hint = "CANNOT RENAME WHILE PLAYING";
-			else hint = "RENAME FAILED: " + reason;
-			// The user could have typed /name from either the lobby or a room
-			// chat; post to both logs so whichever is active shows the error.
-			chatLogLobby.appendSystem(hint, NormalFontSDL.COLOR_RED);
-			chatLogRoom.appendSystem(hint, NormalFontSDL.COLOR_RED);
 
 		} else if("announce".equals(cmd) && message.length > 1) {
 			String strMessage = "<ADMIN>: " + NetUtil.urlDecode(message[1]);
@@ -670,9 +616,6 @@ public class NetLobbyFrame implements NetMessageListener {
 	public void connectToRoom(String playerName, String playerTeam, RoomEndpoint room) {
 		propConfig.setProperty("serverselect.txtfldPlayerName.text", playerName);
 		propConfig.setProperty("serverselect.txtfldPlayerTeam.text", playerTeam);
-		lastRawOwnName = (playerName == null) ? "" : playerName;
-		pendingOwnRaw = null;
-
 		NetRoomPlayerClient roomClient = new NetRoomPlayerClient(room, playerName,
 			playerTeam == null ? "" : playerTeam.trim());
 		netPlayerClient = roomClient;
@@ -704,15 +647,12 @@ public class NetLobbyFrame implements NetMessageListener {
 	public void sendChat(boolean roomchat, String strMsg) {
 		if(strMsg == null || strMsg.length() == 0 || netPlayerClient == null) return;
 		String msg = strMsg;
-		// Command dispatch is case-insensitive so '/NAME', '/Name', '/name'
+		// Command dispatch is case-insensitive so '/TEAM', '/Team', '/team'
 		// all work identically. Argument text keeps its original case.
 		String lower = msg.toLowerCase();
 		if(lower.startsWith("/team")) {
 			String arg = msg.length() > 5 ? msg.substring(5).trim() : "";
 			netPlayerClient.send("changeteam\t" + NetUtil.urlEncode(arg) + "\n");
-		} else if(lower.startsWith("/name ") || lower.equals("/name")) {
-			String arg = lower.equals("/name") ? "" : msg.substring("/name ".length()).trim();
-			sendChangeName(arg, roomchat);
 		} else if(lower.equals("/help") || lower.equals("/?")) {
 			printHelp(roomchat);
 		} else if(roomchat) {
@@ -729,34 +669,7 @@ public class NetLobbyFrame implements NetMessageListener {
 	 */
 	private void printHelp(boolean roomchat) {
 		ChatLogSDL log = roomchat ? chatLogRoom : chatLogLobby;
-		log.appendSystem("COMMANDS: /NAME <NICK>[#TRIP]   /TEAM [<NAME>]   /HELP", NormalFontSDL.COLOR_YELLOW);
-	}
-
-	/**
-	 * Send a {@code changename} request to the server. The server handles
-	 * duplicate-name checking and "cannot rename while playing" validation,
-	 * and broadcasts a playerupdate on success. The /name command entry point
-	 * lives in {@link #sendChat}.
-	 */
-	private void sendChangeName(String newName, boolean roomchat) {
-		if(newName == null || newName.trim().length() == 0) {
-			ChatLogSDL log = roomchat ? chatLogRoom : chatLogLobby;
-			log.appendSystem("USAGE: /NAME <NICKNAME>[#TRIPCODE]", NormalFontSDL.COLOR_YELLOW);
-			return;
-		}
-		if(netPlayerClient == null || !netPlayerClient.isConnected()) return;
-		String trimmed = newName.trim();
-		// Remember the raw form the server will effectively adopt: if the user
-		// didn't supply a new '#tripkey', the server keeps the existing one —
-		// carry the corresponding portion of our previous raw name forward so
-		// the saved identity stays reproducible across sessions.
-		if(trimmed.indexOf('#') != -1) {
-			pendingOwnRaw = trimmed;
-		} else {
-			int hashIdx = (lastRawOwnName == null) ? -1 : lastRawOwnName.indexOf('#');
-			pendingOwnRaw = (hashIdx == -1) ? trimmed : trimmed + lastRawOwnName.substring(hashIdx);
-		}
-		netPlayerClient.send("changename\t" + NetUtil.urlEncode(trimmed) + "\n");
+		log.appendSystem("COMMANDS: /TEAM [<NAME>]   /HELP", NormalFontSDL.COLOR_YELLOW);
 	}
 
 	/**
@@ -835,22 +748,6 @@ public class NetLobbyFrame implements NetMessageListener {
 		return result == null ? norm : result;
 	}
 
-	public String getPlayerNameWithTripCode(NetPlayerInfo pInfo) { return convTripCode(pInfo.strName); }
-
-	public String convTripCode(String s) {
-		// The server stores names with a space before the '!' hash marker
-		// ("Bob !ABCHASH") — login sanitises '!' in the nickname portion to
-		// '?' so this sequence can only ever be the tripcode separator. Strip
-		// the space for display so the nickname reads as "Bob!ABCHASH" with no
-		// visual gap.
-		String strName = (s == null) ? "" : s.replace(" !", "!");
-		if(propLang == null || !propLang.getProperty("TripSeparator_EnableConvert", false)) return strName;
-		strName = strName.replace(getUIText("TripSeparator_True"), getUIText("TripSeparator_False"));
-		strName = strName.replace("!", getUIText("TripSeparator_True"));
-		strName = strName.replace("?", getUIText("TripSeparator_False"));
-		return strName;
-	}
-
 	/** @return list of .rul files under config/rule/, sorted on non-Windows. */
 	public String[] getRuleFileList() {
 		File dir = new File("config/rule");
@@ -926,13 +823,13 @@ public class NetLobbyFrame implements NetMessageListener {
 	// ---------------- Internals ----------------
 
 	private String formatEnterRoom(NetPlayerInfo pInfo) {
-		String name = getPlayerNameWithTripCode(pInfo);
+		String name = pInfo.strName;
 		if(pInfo.strHost.length() > 0) return String.format(getUIText("SysMsg_EnterRoomWithHost"), name, pInfo.strHost);
 		return String.format(getUIText("SysMsg_EnterRoom"), name);
 	}
 
 	private String formatLeaveRoom(NetPlayerInfo pInfo) {
-		String name = getPlayerNameWithTripCode(pInfo);
+		String name = pInfo.strName;
 		if(pInfo.strHost.length() > 0) return String.format(getUIText("SysMsg_LeaveRoomWithHost"), name, pInfo.strHost);
 		return String.format(getUIText("SysMsg_LeaveRoom"), name);
 	}

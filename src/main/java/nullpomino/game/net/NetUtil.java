@@ -13,7 +13,6 @@ import java.util.zip.DataFormatException;
 import java.util.zip.Deflater;
 import java.util.zip.Inflater;
 
-import nullpomino.crypto.Crypt;
 
 /**
  * Network utils
@@ -95,38 +94,6 @@ public class NetUtil {
 		return packetBuffer.length() > 0 ? packetBuffer : null;
 	}
 
-	/**
-	 * Create Tripcode
-	 * @param tripkey Password
-	 * @param maxlen Tripcode Length (Usually 10)
-	 * @return String of Tripcode
-	 */
-	public static String createTripCode(String tripkey, int maxlen) {
-		byte[] bTripKey = stringToShiftJIS(tripkey);
-		byte[] bSaltTemp = new byte[bTripKey.length + 3];
-		System.arraycopy(bTripKey, 0, bSaltTemp, 0, bTripKey.length);
-		bSaltTemp[bTripKey.length + 0] = (byte)'H';
-		bSaltTemp[bTripKey.length + 1] = (byte)'.';
-		bSaltTemp[bTripKey.length + 2] = (byte)'.';
-		byte[] bSalt = {
-			normalizeTripcodeSalt(bSaltTemp[1]),
-			normalizeTripcodeSalt(bSaltTemp[2])
-		};
-
-		String strTripCode = Crypt.crypt(bSalt, bTripKey);
-		if(strTripCode.length() > maxlen) {
-			strTripCode = strTripCode.substring(strTripCode.length() - maxlen);
-		}
-
-		return strTripCode;
-	}
-
-	private static byte normalizeTripcodeSalt(byte salt) {
-		if((salt < (byte)'.') || (salt > (byte)'z')) return (byte)'.';
-		if((salt >= (byte)':') && (salt <= (byte)'@')) return (byte)((byte)'A' + salt - (byte)':');
-		if((salt >= (byte)'[') && (salt <= (byte)'`')) return (byte)((byte)'a' + salt - (byte)'[');
-		return salt;
-	}
 
 	/**
 	 * Compress a byte array (byte[]). The compression level is 9.<br>

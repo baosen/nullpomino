@@ -78,7 +78,6 @@ class NetPlayerInfoResetTest {
 		source.ready = true;
 		source.playing = true;
 		source.connected = true;
-		source.isTripUse = false;
 		source.strRealHost = "realHost";
 		source.strRealIP = "1.2.3.4";
 
@@ -101,7 +100,6 @@ class NetPlayerInfoResetTest {
 		assertTrue(dest.ready);
 		assertTrue(dest.playing);
 		assertTrue(dest.connected);
-		assertFalse(dest.isTripUse);
 		assertEquals("realHost", dest.strRealHost);
 		assertEquals("1.2.3.4", dest.strRealIP);
 

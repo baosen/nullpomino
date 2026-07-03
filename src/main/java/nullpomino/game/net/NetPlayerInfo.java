@@ -16,7 +16,7 @@ public class NetPlayerInfo implements Serializable {
 	/** Serial version */
 	private static final long serialVersionUID = 1L;
 
-	private static final int EXPORT_FIELD_COUNT = 27;
+	private static final int EXPORT_FIELD_COUNT = 26;
 
 	/** Default rating for multiplayer games */
 	public static final int DEFAULT_MULTIPLAYER_RATING = 1500;
@@ -77,9 +77,6 @@ public class NetPlayerInfo implements Serializable {
 
 	/** true if connected */
 	public boolean connected = false;
-
-	/** true if this player is using tripcode */
-	public boolean isTripUse = false;
 
 	/** Real host name (for internal use) */
 	public String strRealHost = "";
@@ -152,7 +149,6 @@ public class NetPlayerInfo implements Serializable {
 		ready = n.ready;
 		playing = n.playing;
 		connected = n.connected;
-		isTripUse = n.isTripUse;
 		strRealHost = n.strRealHost;
 		strRealIP = n.strRealIP;
 		channel = n.channel;
@@ -160,7 +156,7 @@ public class NetPlayerInfo implements Serializable {
 
 	/**
 	 * Import from String array
-	 * @param pdata String array (String[27])
+	 * @param pdata String array (String[26])
 	 */
 	public void importStringArray(String[] pdata) {
 		NetStringArray.Reader reader = new NetStringArray.Reader(pdata);
@@ -175,7 +171,6 @@ public class NetPlayerInfo implements Serializable {
 		ready = reader.readBoolean();
 		playing = reader.readBoolean();
 		connected = reader.readBoolean();
-		isTripUse = reader.readBoolean();
 		readIntArray(reader, rating);
 		readIntArray(reader, playCount);
 		readIntArray(reader, winCount);
@@ -197,7 +192,7 @@ public class NetPlayerInfo implements Serializable {
 
 	/**
 	 * Export to String array
-	 * @return String array (String[27])
+	 * @return String array (String[26])
 	 */
 	public String[] exportStringArray() {
 		NetStringArray.Writer writer = new NetStringArray.Writer(EXPORT_FIELD_COUNT);
@@ -212,7 +207,6 @@ public class NetPlayerInfo implements Serializable {
 		writer.write(ready);
 		writer.write(playing);
 		writer.write(connected);
-		writer.write(isTripUse);
 		writeIntArray(writer, rating);
 		writeIntArray(writer, playCount);
 		writeIntArray(writer, winCount);

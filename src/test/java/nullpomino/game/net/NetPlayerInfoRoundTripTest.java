@@ -28,7 +28,6 @@ class NetPlayerInfoRoundTripTest {
 		original.ready = true;
 		original.playing = true;
 		original.connected = true;
-		original.isTripUse = true;
 		original.rating = new int[] {1000, 1100, 1200, 1300};
 		original.playCount = new int[] {10, 20, 30, 40};
 		original.winCount = new int[] {1, 2, 3, 4};
@@ -48,7 +47,6 @@ class NetPlayerInfoRoundTripTest {
 		assertEquals(original.ready, imported.ready);
 		assertEquals(original.playing, imported.playing);
 		assertEquals(original.connected, imported.connected);
-		assertEquals(original.isTripUse, imported.isTripUse);
 		assertArrayEquals(original.rating, imported.rating);
 		assertArrayEquals(original.playCount, imported.playCount);
 		assertArrayEquals(original.winCount, imported.winCount);
@@ -58,8 +56,9 @@ class NetPlayerInfoRoundTripTest {
 	}
 
 	@Test
-	void exportStringArrayKeepsLegacyFieldCount() {
-		assertEquals(27, new NetPlayerInfo().exportStringArray().length);
+	void exportStringArrayKeepsWireFieldCount() {
+		// 26 fields since the tripcode flag was removed from the blob
+		assertEquals(26, new NetPlayerInfo().exportStringArray().length);
 	}
 
 	@Test
@@ -67,7 +66,8 @@ class NetPlayerInfoRoundTripTest {
 		NetPlayerInfo original = new NetPlayerInfo();
 		original.playCountNow = 5;
 		original.winCountNow = 6;
-		String[] legacyFields = Arrays.copyOf(original.exportStringArray(), 25);
+		// The full blob is 26 fields; drop the trailing playCountNow/winCountNow
+		String[] legacyFields = Arrays.copyOf(original.exportStringArray(), 24);
 
 		NetPlayerInfo imported = new NetPlayerInfo();
 		imported.playCountNow = 7;
