@@ -115,9 +115,9 @@ class StateTitleChoicesTest {
 	}
 
 	@Test
-	void onDecideNetplayEntersServerSelect() throws Exception {
+	void onDecideNetplayEntersTheLanLounge() throws Exception {
 		invokeOnDecide(2);
-		assertEquals(NullpoMinoSDL.STATE_NET_SERVERSELECT, NullpoMinoSDL.currentState);
+		assertEquals(NullpoMinoSDL.STATE_NET_LOBBY, NullpoMinoSDL.currentState);
 	}
 
 	@Test

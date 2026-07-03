@@ -22,7 +22,7 @@ public class StateTitleSDL extends DummyMenuChooseStateSDL {
 	private static final int[] DESTINATIONS = {
 			NullpoMinoSDL.STATE_SELECTMODE,
 			NullpoMinoSDL.STATE_REPLAYSELECT,
-			NullpoMinoSDL.STATE_NET_SERVERSELECT,
+			NullpoMinoSDL.STATE_NET_LOBBY,
 			NullpoMinoSDL.STATE_CONFIG_MAINMENU,
 			-1
 	};

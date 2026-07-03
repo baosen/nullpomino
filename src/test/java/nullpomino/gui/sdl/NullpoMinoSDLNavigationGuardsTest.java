@@ -56,8 +56,8 @@ class NullpoMinoSDLNavigationGuardsTest {
 		assertTrue(invokeIsForwardSafe(NullpoMinoSDL.STATE_SELECTMODE));
 		assertTrue(invokeIsForwardSafe(NullpoMinoSDL.STATE_REPLAYSELECT));
 		assertTrue(invokeIsForwardSafe(NullpoMinoSDL.STATE_CONFIG_MAINMENU));
-		assertTrue(invokeIsForwardSafe(NullpoMinoSDL.STATE_NET_SERVERSELECT));
 		assertTrue(invokeIsForwardSafe(NullpoMinoSDL.STATE_NET_LOBBY));
+		assertTrue(invokeIsForwardSafe(NullpoMinoSDL.STATE_NET_RANKING));
 	}
 
 	@Test

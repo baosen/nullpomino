@@ -58,14 +58,13 @@ public class NullpoMinoSDL {
 							STATE_CONFIG_KEYBOARD_NAVI = 15,
 							STATE_CONFIG_KEYBOARD_RESET = 16,
 							STATE_SELECTRULEFROMLIST = 17,
-							STATE_NET_SERVERSELECT = 18,
-							STATE_NET_LOBBY = 19,
-							STATE_NET_CREATEROOM = 20,
-							STATE_NET_RANKING = 21,
-							STATE_NET_RULECHANGE = 22;
+							STATE_NET_LOBBY = 18,
+							STATE_NET_CREATEROOM = 19,
+							STATE_NET_RANKING = 20,
+							STATE_NET_RULECHANGE = 21;
 
 	/** State of the game count */
-	public static final int STATE_MAX = 23;
+	public static final int STATE_MAX = 22;
 
 	public static final int LOGICAL_WIDTH = 640;
 	public static final int LOGICAL_HEIGHT = 480;
@@ -228,7 +227,7 @@ public class NullpoMinoSDL {
 
 	/**
 	 * Shared netplay session (protocol client, chat buffers, room list, rule catalogue).
-	 * Created by {@code StateNetServerSelectSDL.enter()} and destroyed by
+	 * Created by {@code StateNetLobbySDL.enter()} and destroyed by
 	 * {@link #endNetplay()}.  All {@code StateNet*SDL} classes read/mutate this.
 	 */
 	public static NetLobbyFrame netLobby;
@@ -356,7 +355,6 @@ public class NullpoMinoSDL {
 		gameStates[STATE_CONFIG_KEYBOARD_NAVI] = new StateConfigKeyboardNaviSDL();
 		gameStates[STATE_CONFIG_KEYBOARD_RESET] = new StateConfigKeyboardResetSDL();
 		gameStates[STATE_SELECTRULEFROMLIST] = new StateSelectRuleFromListSDL();
-		gameStates[STATE_NET_SERVERSELECT] = new StateNetServerSelectSDL();
 		gameStates[STATE_NET_LOBBY] = new StateNetLobbySDL();
 		gameStates[STATE_NET_CREATEROOM] = new StateNetCreateRoomSDL();
 		gameStates[STATE_NET_RANKING] = new StateNetRankingSDL();

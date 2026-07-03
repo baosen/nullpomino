@@ -985,6 +985,12 @@ public class StateNetCreateRoomSDL extends BaseStateSDL {
 				nl.saveConfig();
 			}
 			nl.createRoomMode = RoomCreateMode.MULTIPLAYER;
+
+			// The lounge created a room session just for this form; abandoning
+			// the form abandons the session (the lounge's enter() reconciles)
+			if(!detailMode && nl.isRoomSession()) {
+				NullpoMinoSDL.stopRoomSession();
+			}
 		}
 		NullpoMinoSDL.goBack();
 	}

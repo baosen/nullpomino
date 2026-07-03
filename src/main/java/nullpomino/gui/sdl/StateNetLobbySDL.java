@@ -2,10 +2,17 @@
 // SPDX-License-Identifier: BSD-3-Clause
 package nullpomino.gui.sdl;
 
-import java.util.LinkedList;
+import java.io.IOException;
+import java.net.SocketException;
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.List;
+import java.util.Random;
 
-import nullpomino.game.net.NetPlayerInfo;
-import nullpomino.game.net.NetRoomInfo;
+import nullpomino.game.net.NetLanDiscovery;
+import nullpomino.game.net.room.RoomConfig;
+import nullpomino.game.net.room.RoomProtocol;
+import nullpomino.game.net.room.RoomSession;
 import nullpomino.gui.net.NetLobbyFrame;
 import nullpomino.gui.sdl.binding.SDL3;
 import nullpomino.gui.sdl.binding.SDLConstants;
@@ -15,10 +22,23 @@ import nullpomino.gui.sdl.widget.TextInputSDL;
 import nullpomino.gui.sdl.widget.WidgetSDL;
 
 /**
- * Lobby state: room browser + lobby chat + online player list.  Replaces the
- * "Lobby tab" of the Swing NetLobbyFrame.
+ * The netplay LAN lounge — the direct entry point from the title menu.
+ * Sessionless by default: the room table is fed from LAN discovery beacons
+ * (each room is its own P2P session), and lobby chat is a UDP broadcast every
+ * LAN peer on this screen sees. CREATE spins up a new room session and opens
+ * the create-room form; JOIN/VIEW connect to the selected beacon's session
+ * (VIEW as spectator); {@code /join host:port} in chat reaches rooms UDP
+ * discovery can't (internet play). Errors and progress appear as colored
+ * lines in the chat log.
  */
 public class StateNetLobbySDL extends BaseStateSDL {
+	private static final int PENDING_NONE = 0, PENDING_CREATE = 1, PENDING_JOIN = 2;
+
+	/** Failsafe backstop over the room core's own 10s join timeout */
+	private static final long PENDING_FAILSAFE_MS = 20000;
+
+	private TextInputSDL nameInput;
+	private TextInputSDL teamInput;
 	private TableSDL roomTable;
 	private TextInputSDL chatInput;
 	private ButtonSDL joinBtn;
@@ -29,16 +49,56 @@ public class StateNetLobbySDL extends BaseStateSDL {
 	private ButtonSDL disconnectBtn;
 
 	private WidgetSDL focused;
-	private String statusLine = "";
+
+	/** LAN discovery listener, null when the UDP port couldn't be bound */
+	private NetLanDiscovery.Listener lanListener;
+
+	/** Rooms currently shown in the table, index-parallel to its rows */
+	private List<NetLanDiscovery.Announce> roomRows = new ArrayList<NetLanDiscovery.Announce>();
+
+	/** Change-detection key of the last beacon snapshot rendered into the table */
+	private String lanKey = "";
+
+	/** What we're waiting on (guards double-clicks; survives the create-form detour) */
+	private int pendingAction = PENDING_NONE;
+	private boolean pendingWatch;
+	private boolean autoRoomJoinSent;
+	private long pendingSince;
+	private String pendingHostPort = "";
+
+	/** msgId source for outgoing lounge chat */
+	private final Random chatRand = new Random();
 
 	@Override
 	public void enter() {
-		NetLobbyFrame nl = NullpoMinoSDL.netLobby;
-		if(nl == null) { NullpoMinoSDL.enterStateClear(NullpoMinoSDL.STATE_NET_SERVERSELECT); return; }
+		SDL3.INSTANCE.SDL_SetWindowTitle(NullpoMinoSDL.window, "NullpoMino P2P Netplay");
 
-		// ID dropped — the roomID isn't useful to a human browsing the list
-		// (the name + mode say more) and freeing its column gives NAME and
-		// MODE the room they need for realistic values.
+		// The lounge is the netplay entry point: it owns the shared session object
+		if(NullpoMinoSDL.netLobby == null) {
+			NullpoMinoSDL.netLobby = new NetLobbyFrame();
+			NullpoMinoSDL.netLobby.init();
+		}
+		NetLobbyFrame nl = NullpoMinoSDL.netLobby;
+
+		// Session reconciliation: a dead or absent client is the NORMAL lounge
+		// state (fresh entry, post-game teardown, post-form-cancel). A LIVE
+		// client means we're mid-flow (back from the create-room form awaiting
+		// roomcreatesuccess) and everything - including pendingAction - is kept.
+		boolean live = (nl.netPlayerClient != null) && nl.netPlayerClient.isConnected();
+		if(!live) {
+			resetToLounge(nl);
+		}
+
+		// Header strip y=4..28: NAME + TEAM inputs replace the old LOBBY header
+		nameInput = new TextInputSDL(76, 4, 232, 24);
+		nameInput.maxChars = 32;
+		nameInput.placeholder = "Player name";
+		nameInput.setText(nl.propConfig.getProperty("serverselect.txtfldPlayerName.text", ""));
+
+		teamInput = new TextInputSDL(388, 4, 180, 24);
+		teamInput.maxChars = 24;
+		teamInput.setText(nl.propConfig.getProperty("serverselect.txtfldPlayerTeam.text", ""));
+
 		TableSDL.Column[] cols = {
 			new TableSDL.Column("NAME",  144),
 			new TableSDL.Column("RATED",  84),
@@ -48,56 +108,87 @@ public class StateNetLobbySDL extends BaseStateSDL {
 			new TableSDL.Column("PLY",    52),
 			new TableSDL.Column("SPC",    52),
 		};
-		roomTable = new TableSDL(8, 28, 624, 190, cols);
+		roomTable = new TableSDL(8, 32, 624, 188, cols);
 
-		// Chat input along the bottom, aligned with the chat log's width.
-		// Enter sends the message (handled in handleGlobalKey), so no explicit
-		// SEND button — that frees the right column at y=448 for the USERS
-		// list to extend further down.
-		chatInput = new TextInputSDL(8, 448, 540, 28);
+		// Chat input along the bottom; Enter sends (handled in handleGlobalKey).
+		// Both chat widgets span the full width - the USERS column is gone
+		// (sessionless there is no authoritative presence roster).
+		chatInput = new TextInputSDL(8, 448, 624, 28);
 		chatInput.maxChars = 255;
-		chatInput.placeholder = "Type and press Enter to send...";
+		chatInput.placeholder = "Type and press Enter to send...  (/help for commands)";
 
-		// Action row aligned with the room table (x=8, w=624). Buttons are
-		// visually grouped by purpose with extra spacing between groups:
-		//   [JOIN VIEW] | [CREATE] | [RULES RANKING]
-		// Intra-group gap = 4 px, inter-group gap = 16 px. The create-room
-		// flavour (multiplayer / 1P / rated) lives inside the form itself
-		// as a MODE TYPE selector, so one button opens the form for all
-		// three flavours.
+		// Action row aligned with the room table (x=8, w=624), grouped
+		// [JOIN VIEW] | [CREATE] | [RULES RANKING] with themed colours.
 		int actY = 224;
-		// Each group gets its own colour theme so buttons inside a group
-		// match and adjacent groups don't. Themes: join = blue, create =
-		// green, other = violet.
-		joinBtn       = new ButtonSDL(  8, actY,  80, 28, "JOIN",    new Runnable() { public void run() { attemptJoinSelected(); } });
+		joinBtn       = new ButtonSDL(  8, actY,  80, 28, "JOIN",    new Runnable() { public void run() { attemptJoinSelected(false); } });
 		joinBtn.theme = ButtonSDL.THEME_BLUE;
-		viewBtn       = new ButtonSDL( 92, actY,  80, 28, "VIEW",    new Runnable() { public void run() { viewSelectedRoom(); } });
+		viewBtn       = new ButtonSDL( 92, actY,  80, 28, "VIEW",    new Runnable() { public void run() { attemptJoinSelected(true); } });
 		viewBtn.theme = ButtonSDL.THEME_BLUE;
 
-		createBtn     = new ButtonSDL(188, actY, 196, 28, "CREATE",  new Runnable() { public void run() { enterCreateRoom(); } });
+		createBtn     = new ButtonSDL(188, actY, 196, 28, "CREATE",  new Runnable() { public void run() { createRoom(); } });
 		createBtn.theme = ButtonSDL.THEME_GREEN;
 
 		rulechangeBtn = new ButtonSDL(400, actY,  96, 28, "RULES",   new Runnable() { public void run() { NullpoMinoSDL.enterState(NullpoMinoSDL.STATE_NET_RULECHANGE); } });
 		rulechangeBtn.theme = ButtonSDL.THEME_VIOLET;
 		rankingBtn    = new ButtonSDL(500, actY, 128, 28, "RANKING", new Runnable() { public void run() { NullpoMinoSDL.enterState(NullpoMinoSDL.STATE_NET_RANKING); } });
 		rankingBtn.theme = ButtonSDL.THEME_VIOLET;
-		// Top-right corner: disconnect X. Team changes are available via the
-		// '/team <name>' chat command (see NetLobbyFrame.sendChat). Right edge
-		// matches the room table (x=632); bottom edge (y=24) matches the
-		// LOBBY header's baseline so the X has the same 4 px gap to the room
-		// list that the header does.
-		disconnectBtn = new ButtonSDL(604,    4,  28, 20, "X",       new Runnable() { public void run() { NullpoMinoSDL.endNetplay(); } });
 
-		// Default focus goes on the chat input so a user can type right away;
-		// UP arrow / click on a room switches to room navigation.
-		setFocus(chatInput);
-		statusLine = "";
+		// Top-right corner: the hard quit (tears down everything netplay)
+		disconnectBtn = new ButtonSDL(604, 4, 28, 24, "X", new Runnable() { public void run() { NullpoMinoSDL.endNetplay(); } });
+
+		// Listen for room beacons + lounge chat. Best-effort: if the UDP port
+		// can't be bound, CREATE and /join still work.
+		roomRows = new ArrayList<NetLanDiscovery.Announce>();
+		lanKey = "";
+		try {
+			lanListener = new NetLanDiscovery.Listener();
+			lanListener.setChatConsumer(new NetLanDiscovery.ChatConsumer() {
+				public void onChat(String playerName, String message) {
+					// ChatLogSDL appends are synchronized - safe from the listener thread
+					NetLobbyFrame lobby = NullpoMinoSDL.netLobby;
+					if(lobby != null) lobby.chatLogLobby.appendUser(playerName, Calendar.getInstance(), message);
+				}
+			});
+			lanListener.start();
+		} catch (SocketException e) {
+			lanListener = null;
+			nl.chatLogLobby.appendSystem("LAN DISCOVERY UNAVAILABLE - CREATE OR /JOIN <HOST:PORT> STILL WORK",
+				NormalFontSDL.COLOR_RED);
+		}
+		refreshRoomTable();
+
+		// New players type their name first; everyone else lands on the chat
+		setFocus(nameInput.getText().length() == 0 ? (WidgetSDL)nameInput : (WidgetSDL)chatInput);
 	}
 
 	@Override
 	public void leave() {
+		if(lanListener != null) {
+			lanListener.shutdown();
+			lanListener = null;
+		}
+		// Persist name/team for chat-only visitors too (connectToRoom also
+		// writes them on use). NEVER touch the room session here - this also
+		// runs on the CREATE-form and INROOM handoff transitions.
+		NetLobbyFrame nl = NullpoMinoSDL.netLobby;
+		if(nl != null) {
+			nl.propConfig.setProperty("serverselect.txtfldPlayerName.text", nameInput.getText());
+			nl.propConfig.setProperty("serverselect.txtfldPlayerTeam.text", teamInput.getText());
+			nl.saveConfig();
+		}
 		setFocus(null);
 		NullpoMinoSDL.stopTextInput();
+	}
+
+	/** Back to the sessionless lounge: reap any session and clear pending state */
+	private void resetToLounge(NetLobbyFrame nl) {
+		NullpoMinoSDL.stopRoomSession();
+		nl.netPlayerClient = null;
+		nl.lobbyMode = NetLobbyFrame.LOBBYMODE_DISCONNECTED;
+		nl.roomList.clear();
+		pendingAction = PENDING_NONE;
+		autoRoomJoinSent = false;
+		pendingHostPort = "";
 	}
 
 	private void setFocus(WidgetSDL w) {
@@ -114,44 +205,69 @@ public class StateNetLobbySDL extends BaseStateSDL {
 		nl.pump();
 		MouseInputSDL.mouseInput.update();
 
-		// If the session has disconnected (pump may have set lobbyMode), bail back
-		// to server-select — but give a short grace window after a /name-style
-		// reconnect so the handshake has time to complete without bouncing us out.
-		if(nl.netPlayerClient == null
-				|| (!nl.netPlayerClient.isConnected()
-					&& System.currentTimeMillis() - nl.lastConnectAt > 5000)) {
-			NullpoMinoSDL.enterStateClear(NullpoMinoSDL.STATE_NET_SERVERSELECT);
-			return;
-		}
+		boolean haveClient = nl.netPlayerClient != null;
 
-		// roomjoinsuccess arrived on the reader thread and was drained by pump() above:
-		// the session flips to IN-ROOM, which is our cue to hand off to the game state.
-		if(nl.lobbyMode == NetLobbyFrame.LOBBYMODE_INROOM) {
+		// (a) roomjoinsuccess/roomcreatesuccess drained by pump(): hand off to the game
+		if(haveClient && nl.lobbyMode == NetLobbyFrame.LOBBYMODE_INROOM) {
 			NullpoMinoSDL.enterState(NullpoMinoSDL.STATE_NETGAME);
 			return;
 		}
 
-		// Refresh room-table rows from the session.
-		refreshRoomTable(nl);
+		// (b) the session died: recover in place (dispatchDisconnect already
+		// appended its own red line; add context if we were mid-action)
+		if(haveClient && nl.lobbyMode == NetLobbyFrame.LOBBYMODE_DISCONNECTED) {
+			if(pendingAction == PENDING_JOIN) {
+				nl.chatLogLobby.appendSystem("JOIN FAILED - CONNECTION LOST", NormalFontSDL.COLOR_RED);
+			} else if(pendingAction == PENDING_CREATE) {
+				nl.chatLogLobby.appendSystem("ROOM CREATE FAILED - CONNECTION LOST", NormalFontSDL.COLOR_RED);
+			}
+			resetToLounge(nl);
+		}
+
+		// (c) join flow: once login synthesis lands us in the session's lobby,
+		// enter its (single) room exactly once
+		if(pendingAction == PENDING_JOIN && haveClient && !autoRoomJoinSent
+			&& nl.lobbyMode == NetLobbyFrame.LOBBYMODE_LOBBY && !nl.roomList.isEmpty()) {
+			nl.joinRoom(nl.roomList.getFirst().roomID, pendingWatch);
+			autoRoomJoinSent = true;
+		}
+
+		// (d) failsafe against pathological hangs (a session with no room)
+		if(pendingAction != PENDING_NONE
+			&& System.currentTimeMillis() - pendingSince > PENDING_FAILSAFE_MS) {
+			nl.chatLogLobby.appendSystem(
+				pendingAction == PENDING_JOIN ? "JOIN TIMED OUT" : "ROOM CREATE TIMED OUT",
+				NormalFontSDL.COLOR_RED);
+			resetToLounge(nl);
+		}
+
+		refreshRoomTable();
+
+		// Guard double-clicks while a create/join is in flight
+		boolean idle = (pendingAction == PENDING_NONE);
+		joinBtn.enabled = idle;
+		viewBtn.enabled = idle;
+		createBtn.enabled = idle;
 
 		int mx = MouseInputSDL.mouseInput.getMouseX();
 		int my = MouseInputSDL.mouseInput.getMouseY();
 		boolean clicked = MouseInputSDL.mouseInput.isMouseClicked();
 
-		// Mouse back button aliases Escape → goBack walks to server-select
-		// (where we came from), same as every other screen's cancel gesture.
-		// The top-right X button remains the explicit "disconnect" action.
+		// Mouse back button aliases ESC: cancel a pending join in place,
+		// otherwise walk back to the title. X remains the hard teardown.
 		if(MouseInputSDL.mouseInput.isMouseBackClicked()) {
-			NullpoMinoSDL.goBack();
-			return;
+			if(pendingAction == PENDING_JOIN) cancelPendingJoin(nl);
+			else { NullpoMinoSDL.goBack(); return; }
 		}
 		if(MouseInputSDL.mouseInput.isMouseForwardClicked()) {
 			NullpoMinoSDL.goForward();
 			return;
 		}
 
+		if(nameInput.update(mx, my, clicked)) setFocus(nameInput);
+		if(teamInput.update(mx, my, clicked)) setFocus(teamInput);
 		if(roomTable.update(mx, my, clicked)) setFocus(roomTable);
-		if(roomTable.activated) attemptJoinSelected();
+		if(roomTable.activated) attemptJoinSelected(false);
 		if(chatInput.update(mx, my, clicked)) setFocus(chatInput);
 		nl.chatLogLobby.update(mx, my, clicked);
 
@@ -163,16 +279,17 @@ public class StateNetLobbySDL extends BaseStateSDL {
 		rankingBtn.update(mx, my, clicked);
 		disconnectBtn.update(mx, my, clicked);
 
-		// Deliver typed text and key events.  UP/DOWN navigate rows inside the room
-		// table and jump to the chat input at the list boundary; from chat they move
-		// focus back to the table.  HOME/END always drive the list.  PAGEUP/PAGEDOWN
-		// stay with the chat-log scroll handler in handleGlobalKey.
+		// Deliver typed text and key events. UP/DOWN walk the widget cycle with
+		// boundary jumps inside the room table; HOME/END go to the focused text
+		// input's caret when one is focused, else jump the table; PAGEUP/PAGEDOWN
+		// stay with the chat-log scroll in handleGlobalKey.
 		String typed = NullpoMinoSDL.consumeTextInput();
 		if(focused != null && typed.length() > 0) focused.handleTextInput(typed);
 		for(NullpoMinoSDL.KeyEvent ev : NullpoMinoSDL.frameKeyEvents) {
 			handleGlobalKey(nl, ev);
 			if(ev.scancode == SDLConstants.SDL_SCANCODE_HOME || ev.scancode == SDLConstants.SDL_SCANCODE_END) {
-				roomTable.handleKey(ev);
+				if(focused instanceof TextInputSDL) focused.handleKey(ev);
+				else roomTable.handleKey(ev);
 				continue;
 			}
 			boolean up    = ev.scancode == SDLConstants.SDL_SCANCODE_UP;
@@ -195,23 +312,32 @@ public class StateNetLobbySDL extends BaseStateSDL {
 
 	/**
 	 * Ordered action-button row used for LEFT/RIGHT keyboard navigation.
-	 * The disconnect button (top-right corner) is intentionally excluded — it's
-	 * reached via mouse or by pressing ESC, which is the lobby's built-in quit.
+	 * The X button (top-right corner) is intentionally excluded - it's
+	 * reached via mouse only.
 	 */
 	private ButtonSDL[] buttonRow() {
 		return new ButtonSDL[] { joinBtn, viewBtn, createBtn, rulechangeBtn, rankingBtn };
 	}
 
 	/**
-	 * Vertical nav cycle: roomTable → button row → chatInput → wrap.  On the
-	 * room table, UP/DOWN scroll rows until the boundary, then jump out.
+	 * Vertical nav cycle: nameInput → teamInput → roomTable → button row →
+	 * chatInput → wrap. On the room table, UP/DOWN scroll rows until the
+	 * boundary, then jump out.
 	 */
 	private boolean tryWidgetNav(boolean up) {
 		ButtonSDL[] row = buttonRow();
+		if(focused == nameInput) {
+			setFocus(up ? chatInput : teamInput);
+			return true;
+		}
+		if(focused == teamInput) {
+			setFocus(up ? nameInput : roomTable);
+			return true;
+		}
 		if(focused == roomTable) {
 			int sel = roomTable.getSelectedIndex();
 			int rows = roomTable.getRowCount();
-			if(up && sel <= 0) { setFocus(chatInput); return true; }
+			if(up && sel <= 0) { setFocus(teamInput); return true; }
 			if(!up && (rows == 0 || sel >= rows - 1)) { setFocus(row[0]); return true; }
 			return false;
 		}
@@ -222,7 +348,7 @@ public class StateNetLobbySDL extends BaseStateSDL {
 			}
 		}
 		if(focused == chatInput) {
-			setFocus(up ? row[0] : roomTable);
+			setFocus(up ? row[0] : nameInput);
 			return true;
 		}
 		return false;
@@ -247,14 +373,16 @@ public class StateNetLobbySDL extends BaseStateSDL {
 		if(ev.repeat) return;
 		switch(ev.scancode) {
 			case SDLConstants.SDL_SCANCODE_ESCAPE:
-				NullpoMinoSDL.goBack();
+				if(pendingAction == PENDING_JOIN) cancelPendingJoin(nl);
+				else NullpoMinoSDL.goBack();
 				break;
 			case SDLConstants.SDL_SCANCODE_RETURN:
 			case SDLConstants.SDL_SCANCODE_KP_ENTER:
 				// Enter on text/table fires the default action; buttons handle their
 				// own activation via handleKey + action Runnable.
 				if(focused == chatInput) sendChat(nl);
-				else if(focused == roomTable) attemptJoinSelected();
+				else if(focused == roomTable) attemptJoinSelected(false);
+				else if(focused == nameInput || focused == teamInput) tryWidgetNav(false);
 				break;
 			case SDLConstants.SDL_SCANCODE_TAB: {
 				boolean shift = (ev.keymod & SDLConstants.SDL_KMOD_SHIFT) != 0;
@@ -271,64 +399,196 @@ public class StateNetLobbySDL extends BaseStateSDL {
 		}
 	}
 
-	/**
-	 * Translate the 8-column {@code createRoomListRowData} output (which still
-	 * includes the ID at index 0) into the 7-column schema the lobby table
-	 * displays.  ID is dropped and name becomes the first visible column.
-	 */
-	private static String[] rowFromRoom(NetLobbyFrame nl, NetRoomInfo r) {
-		String[] full = nl.createRoomListRowData(r);
-		return new String[] { full[1], full[2], full[3], full[4], full[5], full[6], full[7] };
-	}
+	// ---------------- room table from beacons ----------------
 
-	private void refreshRoomTable(NetLobbyFrame nl) {
-		// If the visible rooms are identical in count + ID order, just refresh
-		// the data cells in place so scrollbar + selection don't flicker.
-		if(roomTable.getRowCount() == nl.roomList.size()) {
-			boolean same = true;
-			for(int i = 0; i < nl.roomList.size(); i++) {
-				if(rowRoomID(i) != nl.roomList.get(i).roomID) { same = false; break; }
-			}
-			if(same) {
-				for(int i = 0; i < nl.roomList.size(); i++) {
-					roomTable.setRow(i, rowFromRoom(nl, nl.roomList.get(i)));
-				}
-				return;
-			}
+	private void refreshRoomTable() {
+		if(lanListener == null) return;   // UDP bind failed: the table stays empty
+
+		List<NetLanDiscovery.Announce> snap = new ArrayList<NetLanDiscovery.Announce>();
+		for(NetLanDiscovery.Announce a : lanListener.snapshot()) {
+			if(a.room) snap.add(a);
 		}
+		snap = NetLanDiscovery.dedupeBySession(snap);
 
-		// Rebuild from scratch but preserve selection by roomID so the
-		// highlight doesn't jump when rooms are added/removed.
+		// The key covers every displayed field + join identity, so any beacon
+		// change triggers exactly one rebuild (beacons tick at 1.5s)
+		StringBuilder key = new StringBuilder();
+		for(NetLanDiscovery.Announce a : snap) {
+			key.append(a.sessionId).append('/').append(a.hostPort()).append('/')
+				.append(a.roomName).append('/').append(a.rated).append('/').append(a.ruleName).append('/')
+				.append(a.mode).append('/').append(a.playing).append('/').append(a.seated).append('/')
+				.append(a.maxPlayers).append('/').append(a.spectators).append('\n');
+		}
+		if(lanKey.equals(key.toString())) return;
+		lanKey = key.toString();
+
+		// Rebuild, preserving the selection by sessionId
 		int prevSel = roomTable.getSelectedIndex();
-		int selRoomID = (prevSel >= 0 && prevSel < rowRoomIDs.size()) ? rowRoomIDs.get(prevSel) : -1;
+		String selSession = (prevSel >= 0 && prevSel < roomRows.size()) ? roomRows.get(prevSel).sessionId : null;
 
+		roomRows = snap;
 		roomTable.clear();
-		rowRoomIDs.clear();
-		for(NetRoomInfo r : nl.roomList) {
-			roomTable.addRow(rowFromRoom(nl, r));
-			rowRoomIDs.add(r.roomID);
+		NetLobbyFrame nl = NullpoMinoSDL.netLobby;
+		for(NetLanDiscovery.Announce a : snap) {
+			roomTable.addRow(rowFromAnnounce(nl, a));
 		}
-		if(selRoomID != -1) {
-			for(int i = 0; i < rowRoomIDs.size(); i++) {
-				if(rowRoomIDs.get(i) == selRoomID) { roomTable.setSelectedIndex(i); break; }
+		if(selSession != null) {
+			for(int i = 0; i < roomRows.size(); i++) {
+				if(selSession.equals(roomRows.get(i).sessionId)) { roomTable.setSelectedIndex(i); break; }
 			}
+		} else if(roomTable.getRowCount() > 0) {
+			roomTable.setSelectedIndex(0);   // Enter-to-join works immediately
 		}
 	}
 
-	/** Parallel array of roomIDs matching each row in {@link #roomTable}. */
-	private final java.util.ArrayList<Integer> rowRoomIDs = new java.util.ArrayList<Integer>();
-
-	private int rowRoomID(int i) {
-		return (i >= 0 && i < rowRoomIDs.size()) ? rowRoomIDs.get(i) : -1;
+	/** Table row from a room beacon, mirroring the old createRoomListRowData columns */
+	private static String[] rowFromAnnounce(NetLobbyFrame nl, NetLanDiscovery.Announce a) {
+		return new String[] {
+			a.roomName,
+			nl.getUIText(a.rated ? "RoomTable_Rated_True" : "RoomTable_Rated_False"),
+			a.ruleName.length() == 0 ? nl.getUIText("RoomTable_RuleName_Any") : a.ruleName.toUpperCase(),
+			a.mode,
+			nl.getUIText(a.playing ? "RoomTable_Status_Playing" : "RoomTable_Status_Waiting"),
+			a.seated + "/" + a.maxPlayers,
+			Integer.toString(a.spectators),
+		};
 	}
 
-	private void attemptJoinSelected() {
+	// ---------------- create / join actions ----------------
+
+	/** JOIN (participant) or VIEW (spectator) on the selected beacon row */
+	private void attemptJoinSelected(boolean watch) {
+		if(pendingAction != PENDING_NONE) return;
 		NetLobbyFrame nl = NullpoMinoSDL.netLobby;
 		int idx = roomTable.getSelectedIndex();
-		if(idx < 0 || idx >= nl.roomList.size()) { statusLine = "Select a room"; return; }
-		NetRoomInfo r = nl.roomList.get(idx);
-		// Always join as a participant; spectators come in via the VIEW screen's WATCH button.
-		nl.joinRoom(r.roomID, false);
+		if(idx < 0 || idx >= roomRows.size()) {
+			nl.chatLogLobby.appendSystem("SELECT A ROOM FIRST", NormalFontSDL.COLOR_RED);
+			return;
+		}
+		NetLanDiscovery.Announce a = roomRows.get(idx);
+		startJoin(a.address, a.port, watch);
+	}
+
+	/** Join a room session by address (beacon row or /join command) */
+	private void startJoin(String host, int port, boolean watch) {
+		if(pendingAction != PENDING_NONE) return;
+		NetLobbyFrame nl = NullpoMinoSDL.netLobby;
+		String name = nameInput.getText().trim();
+		if(name.length() == 0) {
+			nl.chatLogLobby.appendSystem("ENTER A NAME FIRST", NormalFontSDL.COLOR_RED);
+			setFocus(nameInput);
+			return;
+		}
+
+		RoomSession session;
+		try {
+			session = RoomSession.join(host, port, name, RoomConfig.load(), null);
+		} catch(IOException e) {
+			nl.chatLogLobby.appendSystem("JOIN FAILED: " + e.getMessage(), NormalFontSDL.COLOR_RED);
+			return;
+		}
+		NullpoMinoSDL.roomSession = session;
+		nl.connectToRoom(name, teamInput.getText(), session);
+		pendingAction = PENDING_JOIN;
+		pendingWatch = watch;
+		autoRoomJoinSent = false;
+		pendingSince = System.currentTimeMillis();
+		pendingHostPort = host + ":" + port;
+		nl.chatLogLobby.appendSystem("JOINING " + pendingHostPort + " ...", NormalFontSDL.COLOR_BLUE);
+	}
+
+	/** CREATE: spin up a new room session, then open the create-room form over it */
+	private void createRoom() {
+		if(pendingAction != PENDING_NONE) return;
+		NetLobbyFrame nl = NullpoMinoSDL.netLobby;
+		String name = nameInput.getText().trim();
+		if(name.length() == 0) {
+			nl.chatLogLobby.appendSystem("ENTER A NAME FIRST", NormalFontSDL.COLOR_RED);
+			setFocus(nameInput);
+			return;
+		}
+
+		RoomSession session;
+		try {
+			session = RoomSession.create(name, RoomConfig.load(), null);
+		} catch(IOException e) {
+			nl.chatLogLobby.appendSystem("CREATE FAILED: " + e.getMessage(), NormalFontSDL.COLOR_RED);
+			return;
+		}
+		NullpoMinoSDL.roomSession = session;
+		nl.connectToRoom(name, teamInput.getText(), session);   // login completes synchronously
+		pendingAction = PENDING_CREATE;
+		pendingSince = System.currentTimeMillis();
+
+		// The form's OK sends the standard roomcreate and goBack()s here; the
+		// INROOM handoff in update() then enters the game. CANCEL tears the
+		// session down and enter() resets to the lounge.
+		nl.currentViewDetailRoomID = -1;
+		nl.createRoomStyle = 0;
+		NullpoMinoSDL.enterState(NullpoMinoSDL.STATE_NET_CREATEROOM);
+	}
+
+	private void cancelPendingJoin(NetLobbyFrame nl) {
+		nl.chatLogLobby.appendSystem("JOIN CANCELLED", NormalFontSDL.COLOR_RED);
+		resetToLounge(nl);
+	}
+
+	// ---------------- chat ----------------
+
+	private void sendChat(NetLobbyFrame nl) {
+		String msg = chatInput.getText().trim();
+		chatInput.setText("");
+		if(msg.length() == 0) return;
+
+		// /join host[:port] - reach rooms LAN discovery can't (internet play)
+		String lower = msg.toLowerCase();
+		if(lower.startsWith("/join ") || lower.equals("/join")) {
+			String arg = lower.equals("/join") ? "" : msg.substring("/join ".length()).trim();
+			if(arg.length() == 0) {
+				nl.chatLogLobby.appendSystem("USAGE: /JOIN <HOST[:PORT]>", NormalFontSDL.COLOR_YELLOW);
+				return;
+			}
+			int portSplit = arg.indexOf(':');
+			String host = portSplit == -1 ? arg : arg.substring(0, portSplit);
+			int port = RoomProtocol.DEFAULT_PORT;
+			if(portSplit != -1) {
+				try { port = Integer.parseInt(arg.substring(portSplit + 1).trim()); }
+				catch(NumberFormatException e) {
+					nl.chatLogLobby.appendSystem("BAD PORT IN " + arg, NormalFontSDL.COLOR_RED);
+					return;
+				}
+			}
+			startJoin(host, port, false);
+			return;
+		}
+
+		boolean live = (nl.netPlayerClient != null) && nl.netPlayerClient.isConnected();
+		if(live) {
+			// Transiently in a session (about to enter a room): normal path
+			nl.sendChat(false, msg);
+			return;
+		}
+
+		// Sessionless lounge chat
+		if(lower.equals("/help") || lower.equals("/?")) {
+			nl.chatLogLobby.appendSystem("COMMANDS: /JOIN <HOST[:PORT]>   /HELP - SET NAME/TEAM IN THE TOP BAR",
+				NormalFontSDL.COLOR_YELLOW);
+			return;
+		}
+		if(msg.startsWith("/")) {
+			// Don't broadcast command typos to the whole LAN
+			nl.chatLogLobby.appendSystem("UNKNOWN COMMAND - TRY /HELP", NormalFontSDL.COLOR_YELLOW);
+			return;
+		}
+
+		String name = nameInput.getText().trim();
+		if(name.length() == 0) name = "???";
+		String msgId = Long.toHexString(chatRand.nextLong());
+		// Local echo first (deterministic on every platform); the looped-back
+		// broadcast copy dedupes away via the pre-registered msgId
+		if(lanListener != null) lanListener.markSeen(msgId);
+		nl.chatLogLobby.appendUser(name, Calendar.getInstance(), msg);
+		NetLanDiscovery.broadcastPacket(NetLanDiscovery.encodeChat(name, msgId, msg));
 	}
 
 	/** Draw a short dim vertical divider (2x2 dots stacked) between button groups. */
@@ -338,33 +598,6 @@ public class StateNetLobbySDL extends BaseStateSDL {
 		SDL3.setDrawColor(rnd, 140, 140, 160, 160);
 		SDL3.INSTANCE.SDL_RenderFillRect(rnd,
 				new nullpomino.gui.sdl.binding.SDLStructs.SDL_FRect(x, y + 6, 2, h - 12));
-	}
-
-	/**
-	 * Open the currently selected room in the CreateRoom form in read-only
-	 * detail mode so the user can inspect its settings without joining.
-	 */
-	private void viewSelectedRoom() {
-		NetLobbyFrame nl = NullpoMinoSDL.netLobby;
-		int idx = roomTable.getSelectedIndex();
-		if(idx < 0 || idx >= nl.roomList.size()) { statusLine = "Select a room"; return; }
-		NetRoomInfo r = nl.roomList.get(idx);
-		nl.currentViewDetailRoomID = r.roomID;
-		NullpoMinoSDL.enterState(NullpoMinoSDL.STATE_NET_CREATEROOM);
-	}
-
-	private void enterCreateRoom() {
-		NetLobbyFrame nl = NullpoMinoSDL.netLobby;
-		nl.currentViewDetailRoomID = -1;
-		nl.createRoomStyle = 0;
-		NullpoMinoSDL.enterState(NullpoMinoSDL.STATE_NET_CREATEROOM);
-	}
-
-	private void sendChat(NetLobbyFrame nl) {
-		String msg = chatInput.getText().trim();
-		if(msg.length() == 0) return;
-		nl.sendChat(false, msg);
-		chatInput.setText("");
 	}
 
 	@Override
@@ -377,63 +610,35 @@ public class StateNetLobbySDL extends BaseStateSDL {
 		// own field chrome).
 		SDL3.INSTANCE.SDL_RenderTexture(NullpoMinoSDL.renderer, ResourceHolderSDL.imgMenu, null, null);
 
-		NormalFontSDL.printFont(8, 8, "LOBBY", NormalFontSDL.COLOR_CYAN);
-		if(nl.netPlayerClient != null) {
-			// For room sessions this is the address to give friends who need
-			// a DIRECT join (the seam reports the arbiter/LAN address)
-			NormalFontSDL.printFont(96, 8,
-					NormalFontSDL.safeString(nl.netPlayerClient.getHost() + ":" + nl.netPlayerClient.getPort()),
-					NormalFontSDL.COLOR_WHITE);
-		}
+		// Header strip: NAME / TEAM inputs + the X button
+		NormalFontSDL.printFont(8, 8, "NAME", NormalFontSDL.COLOR_WHITE);
+		nameInput.render();
+		NormalFontSDL.printFont(320, 8, "TEAM", NormalFontSDL.COLOR_WHITE);
+		teamInput.render();
+		disconnectBtn.render();
 
 		roomTable.render();
+		if(roomTable.getRowCount() == 0) {
+			NormalFontSDL.printFont(24, 96, "NO ROOMS FOUND ON LAN", NormalFontSDL.COLOR_DARKBLUE);
+			NormalFontSDL.printFont(24, 116, "CREATE ONE OR TYPE /JOIN <HOST:PORT>", NormalFontSDL.COLOR_DARKBLUE);
+		}
+
 		joinBtn.render();
 		viewBtn.render();
 		createBtn.render();
 		rulechangeBtn.render();
 		rankingBtn.render();
-		disconnectBtn.render();
 
 		// Thin dim separator line between each button group so the visual
-		// grouping reads at a glance. Placed in the middle of the inter-group
-		// gaps (x=180 between VIEW|CREATE, x=392 between CREATE|RULES).
+		// grouping reads at a glance.
 		drawGroupSeparator(180, 224, 28);
 		drawGroupSeparator(392, 224, 28);
 
-		// Chat log fills the main bottom-left panel, matched in width to the
-		// chat input directly below it.
+		// Chat log fills the bottom panel, full width, matched to the input below.
 		nl.chatLogLobby.x = 8;  nl.chatLogLobby.y = 258;
-		nl.chatLogLobby.w = 540; nl.chatLogLobby.h = 186;
+		nl.chatLogLobby.w = 624; nl.chatLogLobby.h = 186;
 		nl.chatLogLobby.render();
 
 		chatInput.render();
-
-		// Online player list (right column). The SEND button used to cap the
-		// bottom at y=448; with it gone the column extends down through the
-		// chat-input row (which only occupies x=8..548) to y=476, fitting 13
-		// rows of 5-char names in the 80 px column.
-		NormalFontSDL.printFont(552, 258, "USERS", NormalFontSDL.COLOR_YELLOW);
-		int py = 274;
-		if(nl.netPlayerClient != null) {
-			LinkedList<NetPlayerInfo> list = new LinkedList<NetPlayerInfo>(nl.netPlayerClient.getPlayerInfoList());
-			int shown = 0;
-			for(NetPlayerInfo p : list) {
-				if(shown >= 13) break;
-				String name = NormalFontSDL.safeString(nl.getPlayerNameWithTripCode(p));
-				if(name.length() > 5) name = name.substring(0, 5);
-				NormalFontSDL.printFont(552, py, name, NormalFontSDL.COLOR_WHITE);
-				py += 16;
-				shown++;
-			}
-		}
-
-		if(statusLine.length() > 0) {
-			// Right-aligned on the title row so it doesn't steal vertical space
-			// from the room list. Clamp so it can't slide under the LOBBY header.
-			String safe = NormalFontSDL.safeString(statusLine);
-			int tx = 600 - safe.length() * 16;   // leave room for the top-right X button (x=604)
-			if(tx < 192) tx = 192;                // clear 'LOBBY' + host:port on the left
-			NormalFontSDL.printFont(tx, 8, safe, NormalFontSDL.COLOR_RED);
-		}
 	}
 }

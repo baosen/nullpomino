@@ -141,8 +141,11 @@ public class StateNetGameSDL extends BaseStateSDL implements NetLobbyListener {
 		MouseInputSDL.mouseInput.update();
 		if(MouseInputSDL.mouseInput.isMouseBackClicked()) leaveRoom = true;
 		if(leaveRoom) {
-			if(nl != null && nl.netPlayerClient != null && nl.netPlayerClient.isConnected()) {
-				nl.netPlayerClient.send("roomjoin\t-1\tfalse\n");
+			if(nl != null && nl.isRoomSession() && nl.netPlayerClient != null && nl.netPlayerClient.isConnected()) {
+				// One room = one session: leaving the room leaves the session.
+				// The teardown fires netlobbyOnDisconnect, whose strModeToEnter=null
+				// path drives the goBack() to the lounge - no new navigation here.
+				NullpoMinoSDL.stopRoomSession();
 			} else {
 				NullpoMinoSDL.goBack();
 				return;
