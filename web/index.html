@@ -27,6 +27,8 @@
         "user.dir=/files/nullpomino",
         // Read-only assets stay on the HTTP mount, fetched lazily per file.
         `nullpomino.resdir=/app${base}/res`,
+        // Borderless game window filling the page viewport.
+        "nullpomino.fillscreen=true",
       ],
       // Keep the browser from stealing keys the game uses.
       overrideShortcuts: (e) => ["F1","F2","F3","F4","F5","F11","F12"].includes(e.key),

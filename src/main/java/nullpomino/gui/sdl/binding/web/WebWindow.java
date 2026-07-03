@@ -66,8 +66,20 @@ final class WebWindow implements SdlWindow {
 			bridge.install(panel);
 
 			frame.setContentPane(panel);
-			frame.pack();
-			frame.setLocationByPlatform(true);
+			if(Boolean.getBoolean("nullpomino.fillscreen")) {
+				// Browser: fill the whole CheerpJ display (the page viewport)
+				// with a borderless window; the panel letterboxes the logical
+				// 640x480 buffer to whatever size that gives us.
+				frame.setUndecorated(true);
+				frame.pack();
+				Dimension screen = frame.getToolkit().getScreenSize();
+				frame.setLocation(0, 0);
+				frame.setSize(screen);
+				frame.setExtendedState(JFrame.MAXIMIZED_BOTH);
+			} else {
+				frame.pack();
+				frame.setLocationByPlatform(true);
+			}
 			frame.setVisible(true);
 			panel.requestFocusInWindow();
 		});
