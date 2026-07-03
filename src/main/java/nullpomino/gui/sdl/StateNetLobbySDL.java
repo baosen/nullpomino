@@ -659,7 +659,7 @@ public class StateNetLobbySDL extends BaseStateSDL {
 
 	/** Draw a short dim vertical divider (2x2 dots stacked) between button groups. */
 	private static void drawGroupSeparator(int x, int y, int h) {
-		com.sun.jna.Pointer rnd = NullpoMinoSDL.renderer;
+		nullpomino.gui.sdl.binding.SdlHandles.SdlRenderer rnd = NullpoMinoSDL.renderer;
 		SDL3.INSTANCE.SDL_SetRenderDrawBlendMode(rnd, SDLConstants.SDL_BLENDMODE_BLEND);
 		SDL3.setDrawColor(rnd, 140, 140, 160, 160);
 		SDL3.INSTANCE.SDL_RenderFillRect(rnd,

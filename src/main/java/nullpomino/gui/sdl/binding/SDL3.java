@@ -1,20 +1,23 @@
 package nullpomino.gui.sdl.binding;
 
-import com.sun.jna.Library;
-import com.sun.jna.Native;
-import com.sun.jna.Pointer;
-import com.sun.jna.ptr.FloatByReference;
+import nullpomino.gui.sdl.binding.Ref.FloatRef;
+import nullpomino.gui.sdl.binding.SdlHandles.SdlJoystick;
+import nullpomino.gui.sdl.binding.SdlHandles.SdlRenderer;
+import nullpomino.gui.sdl.binding.SdlHandles.SdlSurface;
+import nullpomino.gui.sdl.binding.SdlHandles.SdlTexture;
+import nullpomino.gui.sdl.binding.SdlHandles.SdlWindow;
 
 /**
- * JNA interface to the core SDL3 library (libSDL3.so / SDL3.dll).
+ * Backend-neutral interface to the core SDL3 library.
  *
- * SDL3 functions return C {@code bool} ({@code _Bool}, 1 byte).
- * JNA's {@code boolean} maps to C {@code int} (4 bytes), which
- * can cause a size mismatch through libffi.  We use {@code byte}
- * for all SDL3 bool returns and check {@code != 0} at call sites.
+ * Method names and shapes mirror the SDL3 C API. Bool-returning SDL functions
+ * keep the {@code byte} return type (check {@code != 0} at call sites) so the
+ * desktop JNA backend can pass them through without conversion; see the
+ * original size-mismatch note: SDL3 returns C {@code _Bool} (1 byte), which
+ * JNA must not map to Java {@code boolean} (4 bytes through libffi).
  */
-public interface SDL3 extends Library {
-	SDL3 INSTANCE = Native.load("SDL3", SDL3.class);
+public interface SDL3 {
+	SDL3 INSTANCE = SdlBackend.get().sdl3();
 
 	// --- Initialization ---
 	byte SDL_Init(int flags);
@@ -22,98 +25,79 @@ public interface SDL3 extends Library {
 	String SDL_GetError();
 
 	// --- Window ---
-	Pointer SDL_CreateWindow(String title, int w, int h, long flags);
-	void SDL_DestroyWindow(Pointer window);
-	byte SDL_SetWindowTitle(Pointer window, String title);
-	byte SDL_SetWindowFullscreen(Pointer window, int fullscreen);
-	byte SDL_SetWindowResizable(Pointer window, int resizable);
+	SdlWindow SDL_CreateWindow(String title, int w, int h, long flags);
+	void SDL_DestroyWindow(SdlWindow window);
+	byte SDL_SetWindowTitle(SdlWindow window, String title);
+	byte SDL_SetWindowFullscreen(SdlWindow window, int fullscreen);
 
 	// --- Renderer ---
-	Pointer SDL_CreateRenderer(Pointer window, String name);
-	void SDL_DestroyRenderer(Pointer renderer);
-	byte SDL_RenderClear(Pointer renderer);
-	byte SDL_RenderPresent(Pointer renderer);
-	byte SDL_SetRenderDrawColor(Pointer renderer, byte r, byte g, byte b, byte a);
-	byte SDL_SetRenderDrawBlendMode(Pointer renderer, int blendMode);
-	byte SDL_RenderFillRect(Pointer renderer, SDLStructs.SDL_FRect rect);
-	byte SDL_RenderRect(Pointer renderer, SDLStructs.SDL_FRect rect);
-	byte SDL_SetRenderLogicalPresentation(Pointer renderer, int w, int h, int mode);
-	byte SDL_RenderCoordinatesFromWindow(Pointer renderer, float window_x, float window_y,
-		FloatByReference x, FloatByReference y);
-	byte SDL_SetRenderVSync(Pointer renderer, int vsync);
+	SdlRenderer SDL_CreateRenderer(SdlWindow window, String name);
+	void SDL_DestroyRenderer(SdlRenderer renderer);
+	byte SDL_RenderClear(SdlRenderer renderer);
+	byte SDL_RenderPresent(SdlRenderer renderer);
+	byte SDL_SetRenderDrawColor(SdlRenderer renderer, byte r, byte g, byte b, byte a);
+	byte SDL_SetRenderDrawBlendMode(SdlRenderer renderer, int blendMode);
+	byte SDL_RenderFillRect(SdlRenderer renderer, SDLStructs.SDL_FRect rect);
+	byte SDL_RenderRect(SdlRenderer renderer, SDLStructs.SDL_FRect rect);
+	byte SDL_SetRenderLogicalPresentation(SdlRenderer renderer, int w, int h, int mode);
+	byte SDL_RenderCoordinatesFromWindow(SdlRenderer renderer, float window_x, float window_y,
+		FloatRef x, FloatRef y);
 
 	// --- Texture ---
-	Pointer SDL_CreateTextureFromSurface(Pointer renderer, Pointer surface);
-	void SDL_DestroyTexture(Pointer texture);
-	byte SDL_SetTextureAlphaMod(Pointer texture, byte alpha);
-	byte SDL_SetTextureColorMod(Pointer texture, byte r, byte g, byte b);
-	byte SDL_SetTextureBlendMode(Pointer texture, int blendMode);
-	byte SDL_SetTextureScaleMode(Pointer texture, int scaleMode);
-	byte SDL_GetTextureSize(Pointer texture, FloatByReference w, FloatByReference h);
-	byte SDL_RenderTexture(Pointer renderer, Pointer texture,
+	SdlTexture SDL_CreateTextureFromSurface(SdlRenderer renderer, SdlSurface surface);
+	void SDL_DestroyTexture(SdlTexture texture);
+	byte SDL_SetTextureAlphaMod(SdlTexture texture, byte alpha);
+	byte SDL_SetTextureBlendMode(SdlTexture texture, int blendMode);
+	byte SDL_SetTextureScaleMode(SdlTexture texture, int scaleMode);
+	byte SDL_GetTextureSize(SdlTexture texture, FloatRef w, FloatRef h);
+	byte SDL_RenderTexture(SdlRenderer renderer, SdlTexture texture,
 		SDLStructs.SDL_FRect srcrect, SDLStructs.SDL_FRect dstrect);
 
 	// --- Surface ---
-	void SDL_DestroySurface(Pointer surface);
-	byte SDL_SaveBMP(Pointer surface, String file);
-	Pointer SDL_RenderReadPixels(Pointer renderer, SDLStructs.SDL_Rect rect);
+	void SDL_DestroySurface(SdlSurface surface);
+	byte SDL_SaveBMP(SdlSurface surface, String file);
+	SdlSurface SDL_RenderReadPixels(SdlRenderer renderer, SDLStructs.SDL_Rect rect);
 
 	// --- Events ---
-	byte SDL_PollEvent(Pointer event);
-
-	// --- Keyboard ---
-	Pointer SDL_GetKeyboardState(int[] numkeys);
+	/** Poll the next pending event into {@code event}. Returns nonzero if one was filled. */
+	byte SDL_PollEvent(SDLStructs.SDL_Event event);
 
 	// --- Text input (IME-aware typing) ---
-	byte SDL_StartTextInput(Pointer window);
-	byte SDL_StopTextInput(Pointer window);
-	byte SDL_SetTextInputArea(Pointer window, SDLStructs.SDL_Rect rect, int cursor);
+	byte SDL_StartTextInput(SdlWindow window);
+	byte SDL_StopTextInput(SdlWindow window);
+	byte SDL_SetTextInputArea(SdlWindow window, SDLStructs.SDL_Rect rect, int cursor);
 
-	// --- Clipboard (text returned is malloc'd by SDL; must be SDL_free'd) ---
-	Pointer SDL_GetClipboardText();
+	// --- Clipboard ---
+	/** @return clipboard text as a Java string, or null if empty/unavailable */
+	String SDL_GetClipboardText();
 	byte SDL_SetClipboardText(String text);
-	byte SDL_HasClipboardText();
 
 	// --- Mouse ---
-	int SDL_GetMouseState(FloatByReference x, FloatByReference y);
+	int SDL_GetMouseState(FloatRef x, FloatRef y);
 
-	// --- Gamepad ---
-	byte SDL_IsGamepad(int instance_id);
-	Pointer SDL_OpenGamepad(int instance_id);
-	void SDL_CloseGamepad(Pointer gamepad);
-	byte SDL_GetGamepadButton(Pointer gamepad, int button);
-	short SDL_GetGamepadAxis(Pointer gamepad, int axis);
-	Pointer SDL_GetGamepads(int[] count);
-
-	// --- Joystick (fallback) ---
-	Pointer SDL_GetJoysticks(int[] count);
-	Pointer SDL_OpenJoystick(int instance_id);
-	void SDL_CloseJoystick(Pointer joystick);
-	short SDL_GetJoystickAxis(Pointer joystick, int axis);
-	byte SDL_GetJoystickButton(Pointer joystick, int button);
-	byte SDL_GetJoystickHat(Pointer joystick, int hat);
-	int SDL_GetNumJoystickButtons(Pointer joystick);
-	int SDL_GetNumJoystickHats(Pointer joystick);
+	// --- Joystick ---
+	/** @return instance IDs of all connected joysticks (empty array if none) */
+	int[] SDL_GetJoysticks();
+	SdlJoystick SDL_OpenJoystick(int instance_id);
+	void SDL_CloseJoystick(SdlJoystick joystick);
+	short SDL_GetJoystickAxis(SdlJoystick joystick, int axis);
+	byte SDL_GetJoystickButton(SdlJoystick joystick, int button);
+	byte SDL_GetJoystickHat(SdlJoystick joystick, int hat);
+	int SDL_GetNumJoystickButtons(SdlJoystick joystick);
+	int SDL_GetNumJoystickHats(SdlJoystick joystick);
 
 	// --- Message Box ---
-	byte SDL_ShowSimpleMessageBox(int flags, String title, String message, Pointer window);
+	byte SDL_ShowSimpleMessageBox(int flags, String title, String message, SdlWindow window);
 
 	// --- Timer ---
 	long SDL_GetTicks();
 
-	// --- Memory ---
-	void SDL_free(Pointer mem);
-
 	// Convenience methods using int for color components
-	public static void setDrawColor(Pointer renderer, int r, int g, int b, int a) {
+	public static void setDrawColor(SdlRenderer renderer, int r, int g, int b, int a) {
 		INSTANCE.SDL_SetRenderDrawColor(renderer, (byte)r, (byte)g, (byte)b, (byte)a);
 	}
 
-	public static void setTextureAlpha(Pointer texture, int alpha) {
+	public static void setTextureAlpha(SdlTexture texture, int alpha) {
 		INSTANCE.SDL_SetTextureAlphaMod(texture, (byte)alpha);
-	}
-
-	public static void setTextureColor(Pointer texture, int r, int g, int b) {
-		INSTANCE.SDL_SetTextureColorMod(texture, (byte)r, (byte)g, (byte)b);
 	}
 }

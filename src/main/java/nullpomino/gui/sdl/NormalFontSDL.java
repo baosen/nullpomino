@@ -2,14 +2,15 @@
 // SPDX-License-Identifier: BSD-3-Clause
 package nullpomino.gui.sdl;
 
-import com.sun.jna.Pointer;
-import com.sun.jna.ptr.FloatByReference;
-import com.sun.jna.ptr.IntByReference;
-
+import nullpomino.gui.sdl.binding.Ref.FloatRef;
+import nullpomino.gui.sdl.binding.Ref.IntRef;
 import nullpomino.gui.sdl.binding.SDL3;
 import nullpomino.gui.sdl.binding.SDL3TTF;
 import nullpomino.gui.sdl.binding.SDLConstants;
 import nullpomino.gui.sdl.binding.SDLStructs;
+import nullpomino.gui.sdl.binding.SdlHandles.SdlRenderer;
+import nullpomino.gui.sdl.binding.SdlHandles.SdlSurface;
+import nullpomino.gui.sdl.binding.SdlHandles.SdlTexture;
 
 /**
  * Normal display class string (SDL3 version)
@@ -73,8 +74,8 @@ public class NormalFontSDL {
 	 */
 	public static int getTTFStringWidth(String fontStr) {
 		if(ResourceHolderSDL.ttfFont == null || fontStr == null) return 0;
-		IntByReference w = new IntByReference();
-		IntByReference h = new IntByReference();
+		IntRef w = new IntRef();
+		IntRef h = new IntRef();
 		if(!SDL3TTF.INSTANCE.TTF_GetStringSize(ResourceHolderSDL.ttfFont, fontStr, 0, w, h)) return 0;
 		return w.getValue();
 	}
@@ -85,15 +86,15 @@ public class NormalFontSDL {
 	}
 
 	private static void drawTTFText(int x, int y, String text, SDLStructs.SDL_Color.ByValue color) {
-		Pointer surface = SDL3TTF.INSTANCE.TTF_RenderText_Blended(ResourceHolderSDL.ttfFont, text, 0, color);
+		SdlSurface surface = SDL3TTF.INSTANCE.TTF_RenderText_Blended(ResourceHolderSDL.ttfFont, text, 0, color);
 		if(surface == null) return;
 
-		Pointer texture = SDL3.INSTANCE.SDL_CreateTextureFromSurface(NullpoMinoSDL.renderer, surface);
+		SdlTexture texture = SDL3.INSTANCE.SDL_CreateTextureFromSurface(NullpoMinoSDL.renderer, surface);
 		SDL3.INSTANCE.SDL_DestroySurface(surface);
 		if(texture == null) return;
 
-		FloatByReference width = new FloatByReference();
-		FloatByReference height = new FloatByReference();
+		FloatRef width = new FloatRef();
+		FloatRef height = new FloatRef();
 		SDL3.INSTANCE.SDL_GetTextureSize(texture, width, height);
 		SDL3.INSTANCE.SDL_SetTextureBlendMode(texture, SDLConstants.SDL_BLENDMODE_BLEND);
 		SDLStructs.SDL_FRect dst = new SDLStructs.SDL_FRect(x, y, width.getValue(), height.getValue());
@@ -110,7 +111,7 @@ public class NormalFontSDL {
 	 * @param scale Enlargement factor (2.0f, 1.0f, or 0.5f)
 	 */
 	public static void printFont(int fontX, int fontY, String fontStr, int fontColor, float scale) {
-		Pointer renderer = NullpoMinoSDL.renderer;
+		SdlRenderer renderer = NullpoMinoSDL.renderer;
 		int dx = fontX;
 		int dy = fontY;
 

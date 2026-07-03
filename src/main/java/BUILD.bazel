@@ -10,12 +10,27 @@ LOGBACK_CORE = "@maven//:ch_qos_logback_logback_core"
 
 JNA = "@maven//:net_java_dev_jna_jna"
 
+# Backend-neutral SDL binding interfaces. Deliberately JNA-free so the
+# core can also run on the pure-Java web backend (CheerpJ).
 java_library(
     name = "sdl_binding",
     srcs = glob(["nullpomino/gui/sdl/binding/*.java"]),
     javacopts = JAVACOPTS,
     visibility = ["//visibility:public"],
-    deps = [JNA],
+)
+
+# Desktop backend: JNA bindings to the native SDL3 libraries. Selected at
+# runtime by reflection (SdlBackend), so binaries must carry it in
+# runtime_deps explicitly.
+java_library(
+    name = "sdl_binding_jna",
+    srcs = glob(["nullpomino/gui/sdl/binding/jna/*.java"]),
+    javacopts = JAVACOPTS,
+    visibility = ["//visibility:public"],
+    deps = [
+        ":sdl_binding",
+        JNA,
+    ],
 )
 
 java_library(
@@ -44,7 +59,6 @@ java_library(
     visibility = ["//visibility:public"],
     deps = [
         ":sdl_binding",
-        JNA,
         LOGBACK,
         LOGBACK_CORE,
         SLF4J,
@@ -94,6 +108,7 @@ java_library(
     exports = [
         ":core",
         ":sdl_binding",
+        ":sdl_binding_jna",
         ":swing_tool_util",
         ":tool_musiclisteditor",
         ":tool_ruleeditor",

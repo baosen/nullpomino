@@ -12,6 +12,9 @@ java_binary(
     jvm_flags = ["--enable-native-access=ALL-UNNAMED"],
     runtime_deps = [
         "//src/main/java:core",
+        # The JNA desktop backend is resolved by reflection (SdlBackend),
+        # so nothing depends on it at compile time.
+        "//src/main/java:sdl_binding_jna",
     ],
 )
 

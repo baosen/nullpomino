@@ -1,8 +1,7 @@
 package nullpomino.gui.sdl;
 
-import com.sun.jna.ptr.FloatByReference;
-
 import nullpomino.gui.MouseInputDummy;
+import nullpomino.gui.sdl.binding.Ref.FloatRef;
 import nullpomino.gui.sdl.binding.SDL3;
 import nullpomino.gui.sdl.binding.SDLConstants;
 
@@ -21,13 +20,13 @@ public class MouseInputSDL extends MouseInputDummy {
 		prevMouseX = mouseX;
 		prevMouseY = mouseY;
 
-		FloatByReference mx = new FloatByReference();
-		FloatByReference my = new FloatByReference();
+		FloatRef mx = new FloatRef();
+		FloatRef my = new FloatRef();
 		int buttons = SDL3.INSTANCE.SDL_GetMouseState(mx, my);
 
 		// Map window coordinates to logical coordinates via the renderer
-		FloatByReference lx = new FloatByReference();
-		FloatByReference ly = new FloatByReference();
+		FloatRef lx = new FloatRef();
+		FloatRef ly = new FloatRef();
 		if(SDL3.INSTANCE.SDL_RenderCoordinatesFromWindow(NullpoMinoSDL.renderer, mx.getValue(), my.getValue(), lx, ly) != 0) {
 			float logX = lx.getValue();
 			float logY = ly.getValue();

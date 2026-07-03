@@ -5,11 +5,12 @@ package nullpomino.gui.sdl;
 import java.util.HashMap;
 import java.util.Map;
 
-import com.sun.jna.Pointer;
-
 import nullpomino.gui.sdl.binding.SDL3Mixer;
 import nullpomino.gui.sdl.binding.SDL3;
 import nullpomino.gui.sdl.binding.SDLStructs.SDL_AudioSpec;
+import nullpomino.gui.sdl.binding.SdlHandles.MixAudio;
+import nullpomino.gui.sdl.binding.SdlHandles.MixMixer;
+import nullpomino.gui.sdl.binding.SdlHandles.MixTrack;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -37,17 +38,17 @@ public class SoundManagerSDL {
 	/** Upper bound so startup never stalls too long if metadata is wrong. */
 	private static final long WARMUP_MAX_WAIT_MS = 2000L;
 
-	/** WAVE file data (Name -> MIX_Audio*) */
-	protected HashMap<String, Pointer> clipMap;
+	/** WAVE file data (Name -> audio handle) */
+	protected HashMap<String, MixAudio> clipMap;
 	/** Approximate clip length in milliseconds (Name -> duration). */
 	private HashMap<String, Long> clipDurationMap;
 	/** Dedicated per-sound tracks for rapid retriggered sounds. */
 	private HashMap<String, Integer> dedicatedTrackBySound;
 
-	/** Pre-allocated track pool (MIX_Track*) */
-	private Pointer[] tracks;
+	/** Pre-allocated track pool */
+	private MixTrack[] tracks;
 	/** Currently assigned audio on each track. */
-	private Pointer[] trackAudio;
+	private MixAudio[] trackAudio;
 	/** Name of the currently assigned audio on each track. */
 	private String[] trackAudioName;
 	/** Dedicated sound currently owning each track, or null if shared. */
@@ -62,17 +63,17 @@ public class SoundManagerSDL {
 	 * Constructor — pre-allocates the track pool.
 	 */
 	public SoundManagerSDL() {
-		clipMap = new HashMap<String, Pointer>();
+		clipMap = new HashMap<String, MixAudio>();
 		clipDurationMap = new HashMap<String, Long>();
 		dedicatedTrackBySound = new HashMap<String, Integer>();
-		tracks = new Pointer[NUM_TRACKS];
-		trackAudio = new Pointer[NUM_TRACKS];
+		tracks = new MixTrack[NUM_TRACKS];
+		trackAudio = new MixAudio[NUM_TRACKS];
 		trackAudioName = new String[NUM_TRACKS];
 		trackDedicatedSound = new String[NUM_TRACKS];
 		trackReadyAtTicks = new long[NUM_TRACKS];
 
 		SDL3Mixer lib = NullpoMinoSDL.mixerLib;
-		Pointer mixer = NullpoMinoSDL.mixer;
+		MixMixer mixer = NullpoMinoSDL.mixer;
 		if(lib != null && mixer != null) {
 			for(int i = 0; i < NUM_TRACKS; i++) {
 				tracks[i] = lib.MIX_CreateTrack(mixer);
@@ -93,11 +94,11 @@ public class SoundManagerSDL {
 	 */
 	public boolean load(String name, String filename) {
 		SDL3Mixer lib = NullpoMinoSDL.mixerLib;
-		Pointer mixer = NullpoMinoSDL.mixer;
+		MixMixer mixer = NullpoMinoSDL.mixer;
 		if(lib == null || mixer == null) return false;
 
 		try {
-			Pointer audio = lib.MIX_LoadAudio(mixer, filename, 1);
+			MixAudio audio = lib.MIX_LoadAudio(mixer, filename, 1);
 			if(audio == null) {
 				log.warn("Failed to load wav file from {}", filename);
 				return false;
@@ -122,7 +123,7 @@ public class SoundManagerSDL {
 		if(lib == null || clipMap.isEmpty()) return;
 
 		String warmUpClipName = getWarmUpClipName();
-		Pointer warmUpAudio = clipMap.get(warmUpClipName);
+		MixAudio warmUpAudio = clipMap.get(warmUpClipName);
 		if(warmUpAudio == null) return;
 
 		for(int i = 0; i < NUM_TRACKS; i++) {
@@ -173,7 +174,7 @@ public class SoundManagerSDL {
 		SDL3Mixer lib = NullpoMinoSDL.mixerLib;
 		if(lib == null) return;
 
-		Pointer audio = clipMap.get(name);
+		MixAudio audio = clipMap.get(name);
 
 		if(audio != null) {
 			long now = SDL3.INSTANCE.SDL_GetTicks();
@@ -213,7 +214,7 @@ public class SoundManagerSDL {
 				trackAudioName[i] = null;
 				trackDedicatedSound[i] = null;
 			}
-			for(Pointer audio : clipMap.values()) {
+			for(MixAudio audio : clipMap.values()) {
 				if(audio != null) lib.MIX_DestroyAudio(audio);
 			}
 		}
@@ -232,7 +233,7 @@ public class SoundManagerSDL {
 
 		String bestName = null;
 		long bestDuration = Long.MAX_VALUE;
-		for(Map.Entry<String, Pointer> entry : clipMap.entrySet()) {
+		for(Map.Entry<String, MixAudio> entry : clipMap.entrySet()) {
 			long duration = clipDurationMap.get(entry.getKey()).longValue();
 			if(bestName == null || duration < bestDuration) {
 				bestName = entry.getKey();
@@ -245,7 +246,7 @@ public class SoundManagerSDL {
 	/**
 	 * Convert SDL_mixer's frame duration into milliseconds.
 	 */
-	private long getAudioDurationMillis(SDL3Mixer lib, Pointer audio) {
+	private long getAudioDurationMillis(SDL3Mixer lib, MixAudio audio) {
 		long durationFrames = lib.MIX_GetAudioDuration(audio);
 		if(durationFrames <= 0L) return UNKNOWN_CLIP_DURATION_MS;
 
@@ -264,7 +265,7 @@ public class SoundManagerSDL {
 	 * borrowing from the shared pool. This lets rapid retriggers restart
 	 * cleanly without overlapping or rebinding on random tracks.
 	 */
-	private int findTrackForSound(SDL3Mixer lib, long now, Pointer audio, String name) {
+	private int findTrackForSound(SDL3Mixer lib, long now, MixAudio audio, String name) {
 		if(usesDedicatedTrack(name)) {
 			Integer dedicatedIndex = dedicatedTrackBySound.get(name);
 			if(dedicatedIndex != null && dedicatedIndex.intValue() >= 0 && dedicatedIndex.intValue() < NUM_TRACKS
@@ -288,7 +289,7 @@ public class SoundManagerSDL {
 	 * short sounds can replay without rebuilding the track input. This path is
 	 * only used when a sound is claiming its own dedicated track.
 	 */
-	private int findBestIdleTrack(SDL3Mixer lib, long now, Pointer audio, String name) {
+	private int findBestIdleTrack(SDL3Mixer lib, long now, MixAudio audio, String name) {
 		for(int i = 0; i < NUM_TRACKS; i++) {
 			if(isDedicatedTrackCandidate(lib, now, i) && trackAudio[i] == audio && name.equals(trackAudioName[i])) {
 				return i;
@@ -305,7 +306,7 @@ public class SoundManagerSDL {
 	/**
 	 * Shared sounds use only non-dedicated tracks.
 	 */
-	private int findBestSharedTrack(SDL3Mixer lib, long now, Pointer audio, String name) {
+	private int findBestSharedTrack(SDL3Mixer lib, long now, MixAudio audio, String name) {
 		for(int i = 0; i < NUM_TRACKS; i++) {
 			if(isSharedTrackCandidate(lib, now, i) && trackAudio[i] == audio && name.equals(trackAudioName[i])) {
 				return i;
@@ -322,8 +323,8 @@ public class SoundManagerSDL {
 	/**
 	 * Start or restart playback on a specific track.
 	 */
-	private void playOnTrack(SDL3Mixer lib, int index, Pointer audio, String name, long now) {
-		Pointer track = tracks[index];
+	private void playOnTrack(SDL3Mixer lib, int index, MixAudio audio, String name, long now) {
+		MixTrack track = tracks[index];
 		if(track == null) return;
 
 		boolean ready = true;

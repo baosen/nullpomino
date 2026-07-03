@@ -1,33 +1,27 @@
 package nullpomino.gui.sdl.binding;
 
-import com.sun.jna.Library;
-import com.sun.jna.Native;
-import com.sun.jna.Pointer;
-
+import nullpomino.gui.sdl.binding.SdlHandles.MixAudio;
+import nullpomino.gui.sdl.binding.SdlHandles.MixMixer;
+import nullpomino.gui.sdl.binding.SdlHandles.MixTrack;
 import nullpomino.gui.sdl.binding.SDLStructs.SDL_AudioSpec;
 
 /**
- * JNA interface to SDL3_mixer 3.x (libSDL3_mixer.so).
+ * Backend-neutral interface to SDL3_mixer 3.x.
  *
  * SDL_mixer 3.x replaced the old channel-based Mix_* API with a
  * track-based MIX_* API:
  * <ul>
- *   <li>{@code MIX_CreateMixer} replaces {@code Mix_OpenAudio}</li>
+ *   <li>{@code MIX_CreateMixerDevice} replaces {@code Mix_OpenAudio}</li>
  *   <li>{@code MIX_LoadAudio} replaces {@code Mix_LoadWAV} / {@code Mix_LoadMUS}</li>
- *   <li>{@code MIX_PlayAudio} is fire-and-forget (replaces {@code Mix_PlayChannel})</li>
- *   <li>{@code MIX_CreateTrack} + {@code MIX_PlayTrack} for managed playback (BGM)</li>
+ *   <li>{@code MIX_CreateTrack} + {@code MIX_PlayTrack} for managed playback</li>
  *   <li>Volume uses float gain (0.0–1.0) instead of int (0–128)</li>
  * </ul>
  */
-public interface SDL3Mixer extends Library {
+public interface SDL3Mixer {
 
-	/** Load the library, or null if not available. */
+	/** Get the mixer binding of the active backend, or null if audio is unavailable. */
 	static SDL3Mixer loadOrNull() {
-		try {
-			return Native.load("SDL3_mixer", SDL3Mixer.class);
-		} catch (UnsatisfiedLinkError e) {
-			return null;
-		}
+		return SdlBackend.get().mixerOrNull();
 	}
 
 	// --- Init / Quit ---
@@ -36,34 +30,24 @@ public interface SDL3Mixer extends Library {
 
 	// --- Mixer ---
 	/** Create a mixer that outputs to an audio device. Pass 0xFFFFFFFF for default playback device. */
-	Pointer MIX_CreateMixerDevice(int devid, Pointer spec);
-	/** Create a mixer for memory-buffer rendering (not device playback). */
-	Pointer MIX_CreateMixer(Pointer spec);
-	void MIX_DestroyMixer(Pointer mixer);
-	byte MIX_SetMixerGain(Pointer mixer, float gain);
-	float MIX_GetMixerGain(Pointer mixer);
+	MixMixer MIX_CreateMixerDevice(int devid, SDL_AudioSpec spec);
+	void MIX_DestroyMixer(MixMixer mixer);
 
 	// --- Audio (loaded samples/music) ---
-	Pointer MIX_LoadAudio(Pointer mixer, String path, int predecode);
-	void MIX_DestroyAudio(Pointer audio);
-	long MIX_GetAudioDuration(Pointer audio);
-	byte MIX_GetAudioFormat(Pointer audio, SDL_AudioSpec spec);
-
-	// --- Fire-and-forget playback (sound effects) ---
-	byte MIX_PlayAudio(Pointer mixer, Pointer audio);
+	MixAudio MIX_LoadAudio(MixMixer mixer, String path, int predecode);
+	void MIX_DestroyAudio(MixAudio audio);
+	long MIX_GetAudioDuration(MixAudio audio);
+	byte MIX_GetAudioFormat(MixAudio audio, SDL_AudioSpec spec);
 
 	// --- Track-based playback (BGM, stoppable sounds) ---
-	Pointer MIX_CreateTrack(Pointer mixer);
-	void MIX_DestroyTrack(Pointer track);
-	byte MIX_SetTrackAudio(Pointer track, Pointer audio);
-	byte MIX_SetTrackLoops(Pointer track, int num_loops);
-	byte MIX_PlayTrack(Pointer track, int options);
-	byte MIX_StopTrack(Pointer track, long fade_out_frames);
-	byte MIX_PauseTrack(Pointer track);
-	byte MIX_ResumeTrack(Pointer track);
-	byte MIX_TrackPlaying(Pointer track);
-	byte MIX_SetTrackGain(Pointer track, float gain);
-	float MIX_GetTrackGain(Pointer track);
-	byte MIX_PauseAllTracks(Pointer mixer);
-	byte MIX_ResumeAllTracks(Pointer mixer);
+	MixTrack MIX_CreateTrack(MixMixer mixer);
+	void MIX_DestroyTrack(MixTrack track);
+	byte MIX_SetTrackAudio(MixTrack track, MixAudio audio);
+	byte MIX_SetTrackLoops(MixTrack track, int num_loops);
+	byte MIX_PlayTrack(MixTrack track, int options);
+	byte MIX_StopTrack(MixTrack track, long fade_out_frames);
+	byte MIX_PauseTrack(MixTrack track);
+	byte MIX_ResumeTrack(MixTrack track);
+	byte MIX_TrackPlaying(MixTrack track);
+	byte MIX_SetTrackGain(MixTrack track, float gain);
 }

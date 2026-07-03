@@ -12,18 +12,21 @@ import java.util.Calendar;
 import java.util.Deque;
 import java.util.Locale;
 
-import com.sun.jna.Pointer;
-import com.sun.jna.ptr.FloatByReference;
-
 import nullpomino.game.net.room.RoomSession;
 import nullpomino.gui.GameKeyDummy;
 import nullpomino.gui.net.NetLobbyFrame;
 import nullpomino.game.play.GameEngine;
+import nullpomino.gui.sdl.binding.Ref.FloatRef;
 import nullpomino.gui.sdl.binding.SDL3;
 import nullpomino.gui.sdl.binding.SDL3Mixer;
 import nullpomino.gui.sdl.binding.SDL3TTF;
 import nullpomino.gui.sdl.binding.SDLConstants;
 import nullpomino.gui.sdl.binding.SDLStructs;
+import nullpomino.gui.sdl.binding.SdlHandles.MixMixer;
+import nullpomino.gui.sdl.binding.SdlHandles.SdlJoystick;
+import nullpomino.gui.sdl.binding.SdlHandles.SdlRenderer;
+import nullpomino.gui.sdl.binding.SdlHandles.SdlSurface;
+import nullpomino.gui.sdl.binding.SdlHandles.SdlWindow;
 import nullpomino.util.CustomProperties;
 import nullpomino.util.LogConfig;
 import nullpomino.util.ModeManager;
@@ -179,8 +182,8 @@ public class NullpoMinoSDL {
 	/** Number of joysticks */
 	public static int joystickMax;
 
-	/** Joystick pointers (SDL_Joystick*) */
-	public static Pointer[] joystick;
+	/** Open joystick handles */
+	public static SdlJoystick[] joystick;
 
 	/** Joystick direction key state */
 	public static int[] joyAxisX, joyAxisY;
@@ -234,17 +237,17 @@ public class NullpoMinoSDL {
 	 */
 	public static NetLobbyFrame netLobby;
 
-	/** SDL3 window pointer */
-	public static Pointer window;
+	/** SDL3 window handle */
+	public static SdlWindow window;
 
-	/** SDL3 renderer pointer */
-	public static Pointer renderer;
+	/** SDL3 renderer handle */
+	public static SdlRenderer renderer;
 
 	/** SDL3_mixer library (null if unavailable) */
 	public static SDL3Mixer mixerLib;
 
-	/** SDL3_mixer mixer device (MIX_Mixer*, null if unavailable) */
-	public static Pointer mixer;
+	/** SDL3_mixer mixer device (null if unavailable) */
+	public static MixMixer mixer;
 
 	/** Shared event struct for polling */
 	private static SDLStructs.SDL_Event event;
@@ -459,13 +462,12 @@ public class NullpoMinoSDL {
 		joyIgnorePOV[0] = propConfig.getProperty("joyIgnorePOV.p0", false);
 		joyIgnorePOV[1] = propConfig.getProperty("joyIgnorePOV.p1", false);
 
-		int[] countBuf = new int[1];
-		Pointer joystickList = SDL3.INSTANCE.SDL_GetJoysticks(countBuf);
-		joystickMax = countBuf[0];
+		int[] joystickIds = SDL3.INSTANCE.SDL_GetJoysticks();
+		joystickMax = joystickIds.length;
 		log.info("Number of Joysticks:{}", joystickMax);
 
-		if(joystickMax > 0 && joystickList != null) {
-			joystick = new Pointer[joystickMax];
+		if(joystickMax > 0) {
+			joystick = new SdlJoystick[joystickMax];
 			joyAxisX = new int[joystickMax];
 			joyAxisY = new int[joystickMax];
 			joyMaxHat = new int[joystickMax];
@@ -475,8 +477,7 @@ public class NullpoMinoSDL {
 			int max = 0;
 			for(int i = 0; i < joystickMax; i++) {
 				try {
-					int instanceId = joystickList.getInt(i * 4);
-					joystick[i] = SDL3.INSTANCE.SDL_OpenJoystick(instanceId);
+					joystick[i] = SDL3.INSTANCE.SDL_OpenJoystick(joystickIds[i]);
 					if(joystick[i] != null) {
 						joyMaxButton[i] = SDL3.INSTANCE.SDL_GetNumJoystickButtons(joystick[i]);
 						if(joyMaxButton[i] > max) max = joyMaxButton[i];
@@ -487,16 +488,14 @@ public class NullpoMinoSDL {
 				}
 			}
 			joyPressedState = new boolean[joystickMax][Math.max(max, 1)];
-			SDL3.INSTANCE.SDL_free(joystickList);
 		} else {
-			joystick = new Pointer[0];
+			joystick = new SdlJoystick[0];
 			joyAxisX = new int[0];
 			joyAxisY = new int[0];
 			joyMaxHat = new int[0];
 			joyMaxButton = new int[0];
 			joyHatState = new int[0];
 			joyPressedState = new boolean[0][0];
-			if(joystickList != null) SDL3.INSTANCE.SDL_free(joystickList);
 		}
 	}
 
@@ -516,8 +515,8 @@ public class NullpoMinoSDL {
 	 * Returns logical X, or -1 if mapping fails.
 	 */
 	static int windowToLogicalX(float windowX) {
-		FloatByReference lx = new FloatByReference();
-		FloatByReference ly = new FloatByReference();
+		FloatRef lx = new FloatRef();
+		FloatRef ly = new FloatRef();
 		if(SDL3.INSTANCE.SDL_RenderCoordinatesFromWindow(renderer, windowX, 0, lx, ly) != 0) {
 			float val = lx.getValue();
 			if(val < 0 || val >= LOGICAL_WIDTH) return -1;
@@ -531,8 +530,8 @@ public class NullpoMinoSDL {
 	 * Returns logical Y, or -1 if mapping fails.
 	 */
 	static int windowToLogicalY(float windowY) {
-		FloatByReference lx = new FloatByReference();
-		FloatByReference ly = new FloatByReference();
+		FloatRef lx = new FloatRef();
+		FloatRef ly = new FloatRef();
 		if(SDL3.INSTANCE.SDL_RenderCoordinatesFromWindow(renderer, 0, windowY, lx, ly) != 0) {
 			float val = ly.getValue();
 			if(val < 0 || val >= LOGICAL_HEIGHT) return -1;
@@ -942,7 +941,7 @@ public class NullpoMinoSDL {
 			}
 		}
 
-		Pointer surface = SDL3.INSTANCE.SDL_RenderReadPixels(renderer, null);
+		SdlSurface surface = SDL3.INSTANCE.SDL_RenderReadPixels(renderer, null);
 		if(surface != null) {
 			SDL3.INSTANCE.SDL_SaveBMP(surface, filename);
 			SDL3.INSTANCE.SDL_DestroySurface(surface);
@@ -970,7 +969,7 @@ public class NullpoMinoSDL {
 		frameKeyEvents.clear();
 		mouseWheelDelta = 0;
 
-		while(SDL3.INSTANCE.SDL_PollEvent(event.getPointer()) != 0) {
+		while(SDL3.INSTANCE.SDL_PollEvent(event) != 0) {
 			int type = event.getType();
 
 			if(type == SDLConstants.SDL_EVENT_QUIT) {
@@ -1023,17 +1022,12 @@ public class NullpoMinoSDL {
 	}
 
 	/**
-	 * Read the system clipboard as UTF-8. Handles SDL's malloc'd return value.
+	 * Read the system clipboard as UTF-8.
 	 * @return clipboard text, or empty string if empty/unavailable
 	 */
 	public static String getClipboardText() {
-		Pointer p = SDL3.INSTANCE.SDL_GetClipboardText();
-		if(p == null) return "";
-		try {
-			return p.getString(0, "UTF-8");
-		} finally {
-			SDL3.INSTANCE.SDL_free(p);
-		}
+		String text = SDL3.INSTANCE.SDL_GetClipboardText();
+		return text == null ? "" : text;
 	}
 
 	/**

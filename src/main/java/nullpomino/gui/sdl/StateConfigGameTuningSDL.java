@@ -2,8 +2,6 @@
 // SPDX-License-Identifier: BSD-3-Clause
 package nullpomino.gui.sdl;
 
-import com.sun.jna.Pointer;
-
 import nullpomino.game.component.Controller;
 import nullpomino.game.component.RuleOptions;
 import nullpomino.game.play.GameManager;
@@ -314,7 +312,7 @@ public class StateConfigGameTuningSDL extends DummyMenuScrollStateSDL {
 		// Preview sprite for the currently-selected block skin, positioned to
 		// the right of the BLOCK SKIN row (grid y=4, pixel y=64).
 		if((owSkin >= 0) && (owSkin < ResourceHolderSDL.imgNormalBlockList.size())) {
-			Pointer imgBlock = ResourceHolderSDL.imgNormalBlockList.get(owSkin);
+			nullpomino.gui.sdl.binding.SdlHandles.SdlTexture imgBlock = ResourceHolderSDL.imgNormalBlockList.get(owSkin);
 
 			if(ResourceHolderSDL.blockStickyFlagList.get(owSkin) == true) {
 				for(int j = 0; j < 9; j++) {

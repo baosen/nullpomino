@@ -1,41 +1,40 @@
 package nullpomino.gui.sdl.binding;
 
-import com.sun.jna.Library;
-import com.sun.jna.Native;
-import com.sun.jna.Pointer;
+import nullpomino.gui.sdl.binding.Ref.IntRef;
+import nullpomino.gui.sdl.binding.SdlHandles.SdlFont;
+import nullpomino.gui.sdl.binding.SdlHandles.SdlSurface;
 
 /**
- * JNA interface to SDL3_ttf (libSDL3_ttf.so / SDL3_ttf.dll).
+ * Backend-neutral interface to SDL3_ttf.
  *
- * SDL3_ttf API changed from SDL2_ttf:
+ * SDL3_ttf API notes (vs SDL2_ttf):
  * - TTF_RenderText_Blended takes (font, text, length, fg) where length=0 means NUL-terminated
  * - TTF_OpenFont still takes (file, ptsize)
- * - SDL_Color is passed by value (4 bytes: r,g,b,a)
+ * - SDL_Color is passed by value
  */
-public interface SDL3TTF extends Library {
-	SDL3TTF INSTANCE = Native.load("SDL3_ttf", SDL3TTF.class);
+public interface SDL3TTF {
+	SDL3TTF INSTANCE = SdlBackend.get().ttf();
 
 	boolean TTF_Init();
 	void TTF_Quit();
 
 	/**
 	 * Open a font file at the given point size.
-	 * @return TTF_Font* pointer, or null on failure
+	 * @return font handle, or null on failure
 	 */
-	Pointer TTF_OpenFont(String file, float ptsize);
+	SdlFont TTF_OpenFont(String file, float ptsize);
 
-	void TTF_CloseFont(Pointer font);
+	void TTF_CloseFont(SdlFont font);
 
 	/**
-	 * Render text to a new SDL_Surface* with blended (anti-aliased) quality.
-	 * @param font TTF_Font*
+	 * Render text to a new surface with blended (anti-aliased) quality.
+	 * @param font font handle
 	 * @param text the text string
 	 * @param length string length, or 0 for NUL-terminated
-	 * @param fg foreground color as SDL_Color passed by value (packed as int: RGBA)
-	 * @return SDL_Surface*, or null on failure
+	 * @param fg foreground color
+	 * @return surface handle, or null on failure
 	 */
-	Pointer TTF_RenderText_Blended(Pointer font, String text, int length, SDLStructs.SDL_Color.ByValue fg);
+	SdlSurface TTF_RenderText_Blended(SdlFont font, String text, int length, SDLStructs.SDL_Color.ByValue fg);
 
-	boolean TTF_GetStringSize(Pointer font, String text, int length,
-		com.sun.jna.ptr.IntByReference w, com.sun.jna.ptr.IntByReference h);
+	boolean TTF_GetStringSize(SdlFont font, String text, int length, IntRef w, IntRef h);
 }

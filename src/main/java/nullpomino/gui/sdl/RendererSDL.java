@@ -4,9 +4,6 @@ package nullpomino.gui.sdl;
 
 import java.util.ArrayList;
 
-import com.sun.jna.Pointer;
-import com.sun.jna.ptr.FloatByReference;
-
 import nullpomino.game.component.Block;
 import nullpomino.game.component.Field;
 import nullpomino.game.component.Piece;
@@ -14,9 +11,12 @@ import nullpomino.game.event.EventReceiver;
 import nullpomino.game.play.GameEngine;
 import nullpomino.game.play.GameManager;
 import nullpomino.gui.EffectObject;
+import nullpomino.gui.sdl.binding.Ref.FloatRef;
 import nullpomino.gui.sdl.binding.SDL3;
 import nullpomino.gui.sdl.binding.SDLConstants;
 import nullpomino.gui.sdl.binding.SDLStructs;
+import nullpomino.gui.sdl.binding.SdlHandles.SdlRenderer;
+import nullpomino.gui.sdl.binding.SdlHandles.SdlTexture;
 import nullpomino.util.CustomProperties;
 
 import org.slf4j.Logger;
@@ -73,8 +73,8 @@ public class RendererSDL extends EventReceiver {
 		bigsidenext = NullpoMinoSDL.propConfig.getProperty("option.bigsidenext", false);
 	}
 
-	/** Helper: get the global renderer pointer. */
-	private Pointer renderer() {
+	/** Helper: get the global renderer handle. */
+	private SdlRenderer renderer() {
 		return NullpoMinoSDL.renderer;
 	}
 
@@ -288,31 +288,31 @@ public class RendererSDL extends EventReceiver {
 	/**
 	 * Helper to render a texture to the global renderer.
 	 */
-	private void renderTexture(Pointer texture, SDLStructs.SDL_FRect src, SDLStructs.SDL_FRect dst) {
+	private void renderTexture(SdlTexture texture, SDLStructs.SDL_FRect src, SDLStructs.SDL_FRect dst) {
 		SDL3.INSTANCE.SDL_RenderTexture(renderer(), texture, src, dst);
 	}
 
 	/**
 	 * Helper to render a full texture (no source rect) to the global renderer.
 	 */
-	private void renderTextureFull(Pointer texture, SDLStructs.SDL_FRect dst) {
+	private void renderTextureFull(SdlTexture texture, SDLStructs.SDL_FRect dst) {
 		SDL3.INSTANCE.SDL_RenderTexture(renderer(), texture, null, dst);
 	}
 
 	/**
 	 * Helper to render a full texture to fill the entire renderer output.
 	 */
-	private void renderTextureFullscreen(Pointer texture) {
+	private void renderTextureFullscreen(SdlTexture texture) {
 		SDL3.INSTANCE.SDL_RenderTexture(renderer(), texture, null, null);
 	}
 
 	/**
 	 * Get the width of a texture.
 	 */
-	private int getTextureWidth(Pointer texture) {
+	private int getTextureWidth(SdlTexture texture) {
 		if(texture == null) return -1;
-		FloatByReference w = new FloatByReference();
-		FloatByReference h = new FloatByReference();
+		FloatRef w = new FloatRef();
+		FloatRef h = new FloatRef();
 		SDL3.INSTANCE.SDL_GetTextureSize(texture, w, h);
 		return (int)w.getValue();
 	}
@@ -320,10 +320,10 @@ public class RendererSDL extends EventReceiver {
 	/**
 	 * Get the height of a texture.
 	 */
-	private int getTextureHeight(Pointer texture) {
+	private int getTextureHeight(SdlTexture texture) {
 		if(texture == null) return -1;
-		FloatByReference w = new FloatByReference();
-		FloatByReference h = new FloatByReference();
+		FloatRef w = new FloatRef();
+		FloatRef h = new FloatRef();
 		SDL3.INSTANCE.SDL_GetTextureSize(texture, w, h);
 		return (int)h.getValue();
 	}
@@ -378,7 +378,7 @@ public class RendererSDL extends EventReceiver {
 		boolean isSticky = ResourceHolderSDL.blockStickyFlagList.get(skin);
 
 		int size = (int)(16 * scale);
-		Pointer img = null;
+		SdlTexture img = null;
 		if(scale == 0.5f)
 			img = ResourceHolderSDL.imgSmallBlockList.get(skin);
 		else if(scale == 2.0f)
@@ -844,7 +844,7 @@ public class RendererSDL extends EventReceiver {
 		int outlineType = engine.blockOutlineType;
 		if(engine.owBlockOutlineType != -1) outlineType = engine.owBlockOutlineType;
 
-		Pointer imgFieldbg = ResourceHolderSDL.imgFieldbg;
+		SdlTexture imgFieldbg = ResourceHolderSDL.imgFieldbg;
 		if(engine.owner.getPlayers() < 2)
 			SDL3.setTextureAlpha(imgFieldbg, fieldbgbright);
 		else
@@ -958,7 +958,7 @@ public class RendererSDL extends EventReceiver {
 		// Field Background
 		if(fieldbgbright > 0) {
 			if((width <= 10) && (height <= 20) && (showfieldbggrid)) {
-				Pointer img = ResourceHolderSDL.imgFieldbg2;
+				SdlTexture img = ResourceHolderSDL.imgFieldbg2;
 				if(displaysize == -1) img = ResourceHolderSDL.imgFieldbg2Small;
 				if(displaysize == 1) img = ResourceHolderSDL.imgFieldbg2Big;
 

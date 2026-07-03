@@ -2,8 +2,6 @@ package nullpomino.gui.sdl.binding;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import org.junit.jupiter.api.Test;
 
@@ -30,27 +28,6 @@ class SDLStructsTest {
 	}
 
 	@Test
-	void fRectFieldOrderListsXYWH() {
-		assertEquals(java.util.Arrays.asList("x", "y", "w", "h"),
-				new SDLStructs.SDL_FRect().getFieldOrder());
-	}
-
-	@Test
-	void fRectByValueAndByReferenceCanBeConstructedWithoutCrash() {
-		SDLStructs.SDL_FRect.ByReference ref = new SDLStructs.SDL_FRect.ByReference();
-		assertNotNull(ref);
-
-		SDLStructs.SDL_FRect.ByValue val = new SDLStructs.SDL_FRect.ByValue(5f, 6f, 7f, 8f);
-		assertEquals(5f, val.x);
-		assertEquals(6f, val.y);
-		assertEquals(7f, val.w);
-		assertEquals(8f, val.h);
-
-		SDLStructs.SDL_FRect.ByValue empty = new SDLStructs.SDL_FRect.ByValue();
-		assertEquals(0f, empty.x);
-	}
-
-	@Test
 	void rectFieldInitConstructorAssignsAllFour() {
 		SDLStructs.SDL_Rect r = new SDLStructs.SDL_Rect(10, 20, 30, 40);
 
@@ -71,18 +48,6 @@ class SDLStructsTest {
 	}
 
 	@Test
-	void rectFieldOrderListsXYWH() {
-		assertEquals(java.util.Arrays.asList("x", "y", "w", "h"),
-				new SDLStructs.SDL_Rect().getFieldOrder());
-	}
-
-	@Test
-	void rectByReferenceCanBeConstructed() {
-		SDLStructs.SDL_Rect.ByReference ref = new SDLStructs.SDL_Rect.ByReference();
-		assertNotNull(ref);
-	}
-
-	@Test
 	void audioSpecFieldInitConstructorAssignsFormatChannelsAndFreq() {
 		SDLStructs.SDL_AudioSpec spec = new SDLStructs.SDL_AudioSpec(0x8010, 2, 44100);
 
@@ -98,12 +63,6 @@ class SDLStructsTest {
 		assertEquals(0, spec.format);
 		assertEquals(0, spec.channels);
 		assertEquals(0, spec.freq);
-	}
-
-	@Test
-	void audioSpecFieldOrderListsFormatChannelsFreq() {
-		assertEquals(java.util.Arrays.asList("format", "channels", "freq"),
-				new SDLStructs.SDL_AudioSpec().getFieldOrder());
 	}
 
 	@Test
@@ -137,12 +96,6 @@ class SDLStructsTest {
 	}
 
 	@Test
-	void colorFieldOrderListsRGBA() {
-		assertEquals(java.util.Arrays.asList("r", "g", "b", "a"),
-				new SDLStructs.SDL_Color().getFieldOrder());
-	}
-
-	@Test
 	void colorByValueConstructorsMatchTheParentConstructors() {
 		SDLStructs.SDL_Color.ByValue empty = new SDLStructs.SDL_Color.ByValue();
 		assertEquals((byte) 0, empty.r);
@@ -159,7 +112,6 @@ class SDLStructsTest {
 	void eventDefaultStateReturnsZeroForEveryAccessor() {
 		SDLStructs.SDL_Event ev = new SDLStructs.SDL_Event();
 
-		assertNotNull(ev.getPointer());
 		assertEquals(0, ev.getType());
 		assertEquals(0, ev.getScancode());
 		assertEquals(0, ev.getKeycode());
@@ -176,67 +128,41 @@ class SDLStructsTest {
 	}
 
 	@Test
-	void eventKeyboardAccessorsReadFromTheirDocumentedOffsets() {
+	void eventNullTextReadsBackAsEmptyString() {
 		SDLStructs.SDL_Event ev = new SDLStructs.SDL_Event();
-		ev.getPointer().setInt(0, SDLConstants.SDL_EVENT_KEY_DOWN);
-		ev.getPointer().setInt(24, SDLConstants.SDL_SCANCODE_A);
-		ev.getPointer().setInt(28, 0x61); // SDL_Keycode 'a'
-		ev.getPointer().setShort(32, (short) SDLConstants.SDL_KMOD_LSHIFT);
-		ev.getPointer().setByte(36, (byte) 1);
-		ev.getPointer().setByte(37, (byte) 1);
-
-		assertEquals(SDLConstants.SDL_EVENT_KEY_DOWN, ev.getType());
-		assertEquals(SDLConstants.SDL_SCANCODE_A, ev.getScancode());
-		assertEquals(0x61, ev.getKeycode());
-		assertEquals(SDLConstants.SDL_KMOD_LSHIFT, ev.getKeymod());
-		assertTrue(ev.isKeyDown());
-		assertTrue(ev.isKeyRepeat());
-	}
-
-	@Test
-	void eventKeymodIsReadAsUnsignedSixteenBit() {
-		SDLStructs.SDL_Event ev = new SDLStructs.SDL_Event();
-		ev.getPointer().setShort(32, (short) 0xFFFF);
-
-		// A naive `int` widening of a signed short would yield -1, so the
-		// `& 0xFFFF` mask in getKeymod() is load-bearing.
-		assertEquals(0xFFFF, ev.getKeymod());
-	}
-
-	@Test
-	void eventTextInputReadsBackZeroPointerAsEmptyString() {
-		SDLStructs.SDL_Event ev = new SDLStructs.SDL_Event();
-		// A null pointer at offset 24 is the cleared/default state.
+		ev.text = null;
 
 		assertEquals("", ev.getTextInputText());
 	}
 
 	@Test
-	void eventTextEditingFieldsReadFromOffsetsThirtyTwoAndThirtySix() {
+	void eventAccessorsMirrorTheirFields() {
 		SDLStructs.SDL_Event ev = new SDLStructs.SDL_Event();
-		ev.getPointer().setInt(32, 7);
-		ev.getPointer().setInt(36, 12);
+		ev.type = SDLConstants.SDL_EVENT_KEY_DOWN;
+		ev.scancode = SDLConstants.SDL_SCANCODE_A;
+		ev.keycode = 0x61; // SDL_Keycode 'a'
+		ev.keymod = SDLConstants.SDL_KMOD_LSHIFT;
+		ev.keyDown = true;
+		ev.keyRepeat = true;
+		ev.text = "a";
+		ev.editingStart = 7;
+		ev.editingLength = 12;
+		ev.wheelX = 1.25f;
+		ev.wheelY = -2.5f;
+		ev.windowData1 = 800;
+		ev.windowData2 = 600;
 
+		assertEquals(SDLConstants.SDL_EVENT_KEY_DOWN, ev.getType());
+		assertEquals(SDLConstants.SDL_SCANCODE_A, ev.getScancode());
+		assertEquals(0x61, ev.getKeycode());
+		assertEquals(SDLConstants.SDL_KMOD_LSHIFT, ev.getKeymod());
+		assertEquals(true, ev.isKeyDown());
+		assertEquals(true, ev.isKeyRepeat());
+		assertEquals("a", ev.getTextInputText());
 		assertEquals(7, ev.getTextEditingStart());
 		assertEquals(12, ev.getTextEditingLength());
-	}
-
-	@Test
-	void eventMouseWheelAccessorsReadFloatsFromOffsetsTwentyFourAndTwentyEight() {
-		SDLStructs.SDL_Event ev = new SDLStructs.SDL_Event();
-		ev.getPointer().setFloat(24, 1.25f);
-		ev.getPointer().setFloat(28, -2.5f);
-
 		assertEquals(1.25f, ev.getMouseWheelX());
 		assertEquals(-2.5f, ev.getMouseWheelY());
-	}
-
-	@Test
-	void eventWindowDataAccessorsReadFromOffsetsTwentyAndTwentyFour() {
-		SDLStructs.SDL_Event ev = new SDLStructs.SDL_Event();
-		ev.getPointer().setInt(20, 800);
-		ev.getPointer().setInt(24, 600);
-
 		assertEquals(800, ev.getWindowData1());
 		assertEquals(600, ev.getWindowData2());
 	}

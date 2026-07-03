@@ -5,15 +5,19 @@ package nullpomino.gui.sdl;
 import java.io.File;
 import java.util.LinkedList;
 
-import com.sun.jna.Pointer;
-import com.sun.jna.ptr.FloatByReference;
-
 import nullpomino.game.component.BGMStatus;
+import nullpomino.gui.sdl.binding.Ref.FloatRef;
 import nullpomino.gui.sdl.binding.SDL3;
 import nullpomino.gui.sdl.binding.SDL3Image;
 import nullpomino.gui.sdl.binding.SDL3Mixer;
 import nullpomino.gui.sdl.binding.SDL3TTF;
 import nullpomino.gui.sdl.binding.SDLConstants;
+import nullpomino.gui.sdl.binding.SdlHandles.MixAudio;
+import nullpomino.gui.sdl.binding.SdlHandles.MixMixer;
+import nullpomino.gui.sdl.binding.SdlHandles.MixTrack;
+import nullpomino.gui.sdl.binding.SdlHandles.SdlFont;
+import nullpomino.gui.sdl.binding.SdlHandles.SdlSurface;
+import nullpomino.gui.sdl.binding.SdlHandles.SdlTexture;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -37,53 +41,53 @@ public class ResourceHolderSDL {
 	/** Number of gem block clear effects */
 	public static final int PERASE_MAX = 7;
 
-	/** Block images (SDL_Texture*) */
-	public static LinkedList<Pointer> imgNormalBlockList, imgSmallBlockList, imgBigBlockList;
+	/** Block images */
+	public static LinkedList<SdlTexture> imgNormalBlockList, imgSmallBlockList, imgBigBlockList;
 
 	/** Block sticky flag */
 	public static LinkedList<Boolean> blockStickyFlagList;
 
 	/** Regular font textures */
-	public static Pointer imgFont, imgFontSmall, imgFontBig;
+	public static SdlTexture imgFont, imgFontSmall, imgFontBig;
 
 	/** Small image */
-	public static Pointer imgSprite;
+	public static SdlTexture imgSprite;
 
 	/** Title */
-	public static Pointer imgTitle;
+	public static SdlTexture imgTitle;
 
 	/** Menu background */
-	public static Pointer imgMenu;
+	public static SdlTexture imgMenu;
 
 	/** Field frame */
-	public static Pointer imgFrame;
+	public static SdlTexture imgFrame;
 
 	/** Field background */
-	public static Pointer imgFieldbg, imgFieldbg2, imgFieldbg2Small, imgFieldbg2Big;
+	public static SdlTexture imgFieldbg, imgFieldbg2, imgFieldbg2Small, imgFieldbg2Big;
 
 	/** Black and white textures (used for darkness/brightness overlays) */
-	public static Pointer imgBlankBlack, imgBlankWhite;
+	public static SdlTexture imgBlankBlack, imgBlankWhite;
 
 	/** Block spatter animation during line clears */
-	public static Pointer[][] imgBreak;
+	public static SdlTexture[][] imgBreak;
 
 	/** Effects for clearing gem blocks */
-	public static Pointer[] imgPErase;
+	public static SdlTexture[] imgPErase;
 
 	/** In play background */
-	public static Pointer[] imgPlayBG;
+	public static SdlTexture[] imgPlayBG;
 
-	/** TTF font (TTF_Font*) */
-	public static Pointer ttfFont;
+	/** TTF font */
+	public static SdlFont ttfFont;
 
 	/** Sound effects */
 	public static SoundManagerSDL soundManager;
 
-	/** BGM audio data (MIX_Audio*) */
-	public static Pointer[] bgm;
+	/** BGM audio data */
+	public static MixAudio[] bgm;
 
-	/** BGM playback track (MIX_Track*) — single track for all BGM */
-	public static Pointer bgmTrack;
+	/** BGM playback track — single track for all BGM */
+	public static MixTrack bgmTrack;
 
 	/** Current BGM number */
 	public static int bgmPlaying;
@@ -109,20 +113,20 @@ public class ResourceHolderSDL {
 		}
 		log.debug("{} block skins found", numBlocks);
 
-		imgNormalBlockList = new LinkedList<Pointer>();
-		imgSmallBlockList = new LinkedList<Pointer>();
-		imgBigBlockList = new LinkedList<Pointer>();
+		imgNormalBlockList = new LinkedList<SdlTexture>();
+		imgSmallBlockList = new LinkedList<SdlTexture>();
+		imgBigBlockList = new LinkedList<SdlTexture>();
 		blockStickyFlagList = new LinkedList<Boolean>();
 
 		for(int i = 0; i < numBlocks; i++) {
-			Pointer imgNormal = loadImage(skindir + "/graphics/blockskin/normal/n" + i + ".png");
+			SdlTexture imgNormal = loadImage(skindir + "/graphics/blockskin/normal/n" + i + ".png");
 			imgNormalBlockList.add(imgNormal);
 			imgSmallBlockList.add(loadImage(skindir + "/graphics/blockskin/small/s" + i + ".png"));
 			imgBigBlockList.add(loadImage(skindir + "/graphics/blockskin/big/b" + i + ".png"));
 
 			if(imgNormal != null) {
-				FloatByReference tw = new FloatByReference();
-				FloatByReference th = new FloatByReference();
+				FloatRef tw = new FloatRef();
+				FloatRef th = new FloatRef();
 				SDL3.INSTANCE.SDL_GetTextureSize(imgNormal, tw, th);
 				if(tw.getValue() >= 400 && th.getValue() >= 304) {
 					blockStickyFlagList.add(Boolean.TRUE);
@@ -238,7 +242,7 @@ public class ResourceHolderSDL {
 		soundManager.warmUp();
 
 		// Music
-		bgm = new Pointer[BGMStatus.BGM_COUNT];
+		bgm = new MixAudio[BGMStatus.BGM_COUNT];
 		bgmPlaying = -1;
 
 		if(NullpoMinoSDL.propConfig.getProperty("option.bgmpreload", false) == true) {
@@ -253,7 +257,7 @@ public class ResourceHolderSDL {
 	 */
 	public static void loadBackgroundImages() {
 		if(imgPlayBG == null) {
-			imgPlayBG = new Pointer[BACKGROUND_MAX];
+			imgPlayBG = new SdlTexture[BACKGROUND_MAX];
 
 			String skindir = NullpoMinoSDL.propConfig.getProperty("custom.skin.directory", "res");
 			for(int i = 0; i < imgPlayBG.length; i++) {
@@ -269,7 +273,7 @@ public class ResourceHolderSDL {
 		String skindir = NullpoMinoSDL.propConfig.getProperty("custom.skin.directory", "res");
 
 		if(imgBreak == null) {
-			imgBreak = new Pointer[BLOCK_BREAK_MAX][BLOCK_BREAK_SEGMENTS];
+			imgBreak = new SdlTexture[BLOCK_BREAK_MAX][BLOCK_BREAK_SEGMENTS];
 
 			for(int i = 0; i < BLOCK_BREAK_MAX; i++) {
 				for(int j = 0; j < BLOCK_BREAK_SEGMENTS; j++) {
@@ -278,7 +282,7 @@ public class ResourceHolderSDL {
 			}
 		}
 		if(imgPErase == null) {
-			imgPErase = new Pointer[PERASE_MAX];
+			imgPErase = new SdlTexture[PERASE_MAX];
 
 			for(int i = 0; i < imgPErase.length; i++) {
 				imgPErase[i] = loadImage(skindir + "/graphics/perase" + i + ".png");
@@ -289,16 +293,16 @@ public class ResourceHolderSDL {
 	/**
 	 * Load an image as an SDL3 texture.
 	 * @param filename file path
-	 * @return SDL_Texture* pointer, or null on failure
+	 * @return texture handle, or null on failure
 	 */
-	public static Pointer loadImage(String filename) {
-		Pointer surface = SDL3Image.INSTANCE.IMG_Load(filename);
+	public static SdlTexture loadImage(String filename) {
+		SdlSurface surface = SDL3Image.INSTANCE.IMG_Load(filename);
 		if(surface == null) {
 			log.error("Failed to load image from {}: {}", filename, SDL3.INSTANCE.SDL_GetError());
 			return null;
 		}
 
-		Pointer texture = SDL3.INSTANCE.SDL_CreateTextureFromSurface(NullpoMinoSDL.renderer, surface);
+		SdlTexture texture = SDL3.INSTANCE.SDL_CreateTextureFromSurface(NullpoMinoSDL.renderer, surface);
 		SDL3.INSTANCE.SDL_DestroySurface(surface);
 
 		if(texture == null) {
@@ -359,7 +363,7 @@ public class ResourceHolderSDL {
 	public static void bgmStart(int no) {
 		if(NullpoMinoSDL.propConfig.getProperty("option.bgm", false) == false) return;
 		SDL3Mixer lib = NullpoMinoSDL.mixerLib;
-		Pointer mixer = NullpoMinoSDL.mixer;
+		MixMixer mixer = NullpoMinoSDL.mixer;
 		if(lib == null || mixer == null) return;
 
 		bgmStop();
@@ -465,15 +469,15 @@ public class ResourceHolderSDL {
 		}
 		// Textures
 		if(imgNormalBlockList != null) {
-			for(Pointer p : imgNormalBlockList) if(p != null) SDL3.INSTANCE.SDL_DestroyTexture(p);
+			for(SdlTexture p : imgNormalBlockList) if(p != null) SDL3.INSTANCE.SDL_DestroyTexture(p);
 			imgNormalBlockList = null;
 		}
 		if(imgSmallBlockList != null) {
-			for(Pointer p : imgSmallBlockList) if(p != null) SDL3.INSTANCE.SDL_DestroyTexture(p);
+			for(SdlTexture p : imgSmallBlockList) if(p != null) SDL3.INSTANCE.SDL_DestroyTexture(p);
 			imgSmallBlockList = null;
 		}
 		if(imgBigBlockList != null) {
-			for(Pointer p : imgBigBlockList) if(p != null) SDL3.INSTANCE.SDL_DestroyTexture(p);
+			for(SdlTexture p : imgBigBlockList) if(p != null) SDL3.INSTANCE.SDL_DestroyTexture(p);
 			imgBigBlockList = null;
 		}
 		if(ttfFont != null) {
