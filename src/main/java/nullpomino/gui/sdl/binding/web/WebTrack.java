@@ -9,10 +9,21 @@ import nullpomino.gui.sdl.binding.SdlHandles.MixTrack;
 /** A playback track backed by one javax.sound Clip. */
 final class WebTrack implements MixTrack {
 
+	/** Log the first playback failure once, so silent fallback is diagnosable. */
+	private static final java.util.concurrent.atomic.AtomicBoolean failureLogged =
+		new java.util.concurrent.atomic.AtomicBoolean();
+
 	private Clip clip;
 	private WebAudio audio;
 	private float gain = 1.0f;
 	private int loops = 0;
+
+	private static void logFirstFailure(String op, Throwable e) {
+		if(failureLogged.compareAndSet(false, true)) {
+			System.err.println("WebTrack: audio unavailable (" + op + "): " + e);
+			e.printStackTrace();
+		}
+	}
 
 	synchronized boolean setAudio(WebAudio newAudio) {
 		if(newAudio == null) return false;
@@ -29,6 +40,7 @@ final class WebTrack implements MixTrack {
 			applyGain();
 			return true;
 		} catch(Exception | Error e) {
+			logFirstFailure("setAudio", e);
 			clip = null;
 			audio = null;
 			return false;
@@ -53,6 +65,7 @@ final class WebTrack implements MixTrack {
 			}
 			return true;
 		} catch(Exception | Error e) {
+			logFirstFailure("play", e);
 			return false;
 		}
 	}
