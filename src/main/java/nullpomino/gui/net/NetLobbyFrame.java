@@ -558,6 +558,34 @@ public class NetLobbyFrame implements NetMessageListener {
 				mpRankingDirty = true;
 			}
 
+		} else if("changename".equals(cmd) && message.length > 3) {
+			// Broadcast: "changename\t<uid>\t<oldname>\t<newname>"
+			int uid = Integer.parseInt(message[1]);
+			String oldName = NetUtil.urlDecode(message[2]);
+			String newName = NetUtil.urlDecode(message[3]);
+			// Our own rename: persist it so the lounge NAME box (and the next
+			// session) picks up the new name
+			if(netPlayerClient != null && uid == netPlayerClient.getPlayerUID()) {
+				propConfig.setProperty("serverselect.txtfldPlayerName.text", newName);
+				saveConfig();
+			}
+			// Visible wherever the user is - lobby screen or in a room
+			String renameMsg = String.format(getUIText("SysMsg_ChangeName"), oldName, newName);
+			chatLogLobby.appendSystem(renameMsg, NormalFontSDL.COLOR_GREEN);
+			chatLogRoom.appendSystem(renameMsg, NormalFontSDL.COLOR_GREEN);
+
+		} else if("changenamefail".equals(cmd)) {
+			String reason = message.length > 1 ? message[1] : "UNKNOWN";
+			String hint;
+			if("DUPLICATE".equals(reason)) hint = "NAME ALREADY IN USE";
+			else if("EMPTY".equals(reason)) hint = "NAME CANNOT BE EMPTY";
+			else if("PLAYING".equals(reason)) hint = "CANNOT RENAME WHILE PLAYING";
+			else hint = "RENAME FAILED: " + reason;
+			// The user could have typed /name from either the lobby or a room
+			// chat; post to both logs so whichever is active shows the error.
+			chatLogLobby.appendSystem(hint, NormalFontSDL.COLOR_RED);
+			chatLogRoom.appendSystem(hint, NormalFontSDL.COLOR_RED);
+
 		} else if("announce".equals(cmd) && message.length > 1) {
 			String strMessage = "<ADMIN>: " + NetUtil.urlDecode(message[1]);
 			chatLogLobby.appendSystem(strMessage, NormalFontSDL.COLOR_RED);
@@ -653,6 +681,9 @@ public class NetLobbyFrame implements NetMessageListener {
 		if(lower.startsWith("/team")) {
 			String arg = msg.length() > 5 ? msg.substring(5).trim() : "";
 			netPlayerClient.send("changeteam\t" + NetUtil.urlEncode(arg) + "\n");
+		} else if(lower.startsWith("/name ") || lower.equals("/name")) {
+			String arg = lower.equals("/name") ? "" : msg.substring("/name ".length()).trim();
+			sendChangeName(arg, roomchat);
 		} else if(lower.equals("/help") || lower.equals("/?")) {
 			printHelp(roomchat);
 		} else if(roomchat) {
@@ -669,7 +700,22 @@ public class NetLobbyFrame implements NetMessageListener {
 	 */
 	private void printHelp(boolean roomchat) {
 		ChatLogSDL log = roomchat ? chatLogRoom : chatLogLobby;
-		log.appendSystem("COMMANDS: /TEAM [<NAME>]   /HELP", NormalFontSDL.COLOR_YELLOW);
+		log.appendSystem("COMMANDS: /NAME <NICK>   /TEAM [<NAME>]   /HELP", NormalFontSDL.COLOR_YELLOW);
+	}
+
+	/**
+	 * Send a {@code changename} request. The arbiter validates (non-empty,
+	 * unique, not while playing) and broadcasts the rename + a playerupdate
+	 * on success; failures come back as {@code changenamefail}.
+	 */
+	private void sendChangeName(String newName, boolean roomchat) {
+		if(newName == null || newName.trim().length() == 0) {
+			ChatLogSDL log = roomchat ? chatLogRoom : chatLogLobby;
+			log.appendSystem("USAGE: /NAME <NICKNAME>", NormalFontSDL.COLOR_YELLOW);
+			return;
+		}
+		if(netPlayerClient == null || !netPlayerClient.isConnected()) return;
+		netPlayerClient.send("changename\t" + NetUtil.urlEncode(newName.trim()) + "\n");
 	}
 
 	/**

@@ -387,6 +387,53 @@ class RoomAuthorityTest {
     }
 
     @Test
+    void changeNameBroadcastsRenameAndPlayerUpdate() {
+        admit(0, "Alice");
+        admit(1, "Bob");
+
+        sink.clear();
+        control(1, "changename\t" + NetUtil.urlEncode("Bobby"));
+
+        Emitted rename = sink.lastBroadcastStarting("changename\t");
+        assertNotNull(rename);
+        assertEquals("changename\t1\t" + NetUtil.urlEncode("Bob") + "\t" + NetUtil.urlEncode("Bobby"), rename.line);
+        assertEquals(RoomProtocol.SCOPE_GLOBAL, rename.scope);
+        assertEquals("Bobby", auth.getPlayer(1).strName);
+        assertNotNull(sink.lastBroadcastStarting("playerupdate\t"));
+    }
+
+    @Test
+    void changeNameRejectsDuplicateEmptyAndPlaying() {
+        admit(0, "Alice");
+        admit(1, "Bob");
+
+        control(1, "changename\t" + NetUtil.urlEncode("Alice"));
+        assertEquals("changenamefail\tDUPLICATE", sink.lastDirectFor(1, "changenamefail"));
+
+        control(1, "changename\t" + NetUtil.urlEncode("  "));
+        assertEquals("changenamefail\tEMPTY", sink.lastDirectFor(1, "changenamefail"));
+
+        // Mid-game renames are refused (names are frozen into the round)
+        createRoom(0, "Round", 2, 0);
+        control(1, "roomjoin\t0\tfalse");
+        control(0, "ready\ttrue");
+        control(1, "ready\ttrue");
+        sink.clear();
+        control(1, "changename\t" + NetUtil.urlEncode("Bobby"));
+        assertEquals("changenamefail\tPLAYING", sink.lastDirectFor(1, "changenamefail"));
+        assertEquals("Bob", auth.getPlayer(1).strName);
+    }
+
+    @Test
+    void changeNameToSameNameIsANoOp() {
+        admit(0, "Alice");
+        sink.clear();
+        control(0, "changename\t" + NetUtil.urlEncode("Alice"));
+        assertNull(sink.lastBroadcastStarting("changename\t"));
+        assertNull(sink.lastDirectFor(0, "changenamefail"));
+    }
+
+    @Test
     void watchJoinTakesNoSeat() {
         admit(0, "Alice");
         admit(1, "Bob");

@@ -108,9 +108,6 @@ public class RoomSession implements RoomEndpoint, RoomEventSink {
 	 *  (no room created). Refreshed by the dispatcher, read by the announcer. */
 	private volatile NetLanDiscovery.Announce beaconSnapshot;
 
-	/** Arbiter's display name, shown as the room owner in beacons */
-	private volatile String beaconLobbyName;
-
 	/** Volatile local state re-sent after a migration (at-most-once healing) */
 	private String pendingDeadControl;
 	private String pendingRacewinControl;
@@ -130,7 +127,6 @@ public class RoomSession implements RoomEndpoint, RoomEventSink {
 		this.listener = listener;
 		this.records = new RoomLocalRecords();
 		this.transport = new RoomTransport(this);
-		this.beaconLobbyName = playerName;
 		selfLocal.strName = playerName;
 		records.loadInto(selfLocal);
 		dispatcherThread = new Thread(this::dispatchLoop, "RoomDispatcher");
@@ -224,9 +220,11 @@ public class RoomSession implements RoomEndpoint, RoomEventSink {
 			beaconSnapshot = null;
 			return;
 		}
-		String owner = (beaconLobbyName != null) ? beaconLobbyName : selfName;
-		beaconSnapshot = new NetLanDiscovery.Announce("", transport.getListenPort(), selfName,
-			String.valueOf(GameManager.getVersionMajor()), token, owner, roster.size(),
+		// Names come from the mirror so /name renames reach the beacon too
+		NetPlayerInfo self = mirror.getPlayer(localUid);
+		String ownName = (self != null) ? self.strName : selfName;
+		beaconSnapshot = new NetLanDiscovery.Announce("", transport.getListenPort(), ownName,
+			String.valueOf(GameManager.getVersionMajor()), token, ownName, roster.size(),
 			room.strName, room.rated, room.ruleLock ? room.ruleName : "", room.strMode,
 			room.playing, room.playerSeatedCount, room.maxPlayers, room.spectatorCount);
 	}
@@ -560,7 +558,6 @@ public class RoomSession implements RoomEndpoint, RoomEventSink {
 				arb.listenPort = e.listenPort;
 			}
 		}
-		beaconLobbyName = (roster.get(arbiterUid) != null) ? roster.get(arbiterUid).name : selfName;
 	}
 
 	private void onSnapEnd() {
@@ -1014,7 +1011,6 @@ public class RoomSession implements RoomEndpoint, RoomEventSink {
 		arbiterLink = null;
 		expectedClaimUid = -1;
 		claimDeadline = 0;
-		beaconLobbyName = selfName;
 
 		for(RoomRoster.Entry e: roster.linkedMembers()) {
 			e.link.sendLine(RoomProtocol.buildArbiterClaim(localUid, seq));
@@ -1045,7 +1041,6 @@ public class RoomSession implements RoomEndpoint, RoomEventSink {
 		expectedClaimUid = -1;
 		claimDeadline = 0;
 		RoomRoster.Entry entry = roster.get(claimUid);
-		if(entry != null) beaconLobbyName = entry.name;
 
 		setState(State.READY, "arbiter is now uid " + claimUid);
 		if(listener != null) listener.onArbiterChanged(claimUid, false);

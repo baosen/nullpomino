@@ -613,8 +613,19 @@ public class StateNetLobbySDL extends BaseStateSDL {
 		}
 
 		// Sessionless lounge chat
+		if(lower.startsWith("/name ") || lower.equals("/name")) {
+			// Same effect as editing the NAME box (mirrored + announced by update())
+			String arg = lower.equals("/name") ? "" : msg.substring("/name ".length()).trim();
+			if(arg.length() == 0) {
+				nl.chatLogLobby.appendSystem("USAGE: /NAME <NICKNAME>", NormalFontSDL.COLOR_YELLOW);
+			} else {
+				nameInput.setText(arg);
+				nl.chatLogLobby.appendSystem("NAME SET TO " + arg, NormalFontSDL.COLOR_GREEN);
+			}
+			return;
+		}
 		if(lower.equals("/help") || lower.equals("/?")) {
-			nl.chatLogLobby.appendSystem("COMMANDS: /JOIN <HOST[:PORT]>   /HELP - SET NAME/TEAM IN THE TOP BAR",
+			nl.chatLogLobby.appendSystem("COMMANDS: /JOIN <HOST[:PORT]>   /NAME <NICK>   /HELP",
 				NormalFontSDL.COLOR_YELLOW);
 			return;
 		}

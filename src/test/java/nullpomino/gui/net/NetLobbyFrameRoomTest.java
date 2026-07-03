@@ -186,6 +186,26 @@ class NetLobbyFrameRoomTest {
     }
 
     @Test
+    void nameCommandSendsChangeNameAndSuccessPersists() {
+        connect();
+        driveLogin();
+
+        nl.sendChat(false, "/name Alicia");
+        assertTrue(endpoint.sentStartingWith("changename\t" + NetUtil.urlEncode("Alicia")),
+                "/name routes to a changename request");
+
+        endpoint.emit("changename\t0\t" + NetUtil.urlEncode("Alice") + "\t" + NetUtil.urlEncode("Alicia"));
+        nl.pump();
+        assertEquals("Alicia", nl.propConfig.getProperty("serverselect.txtfldPlayerName.text", ""),
+                "Own rename persists for the lounge NAME box and the next session");
+
+        // A failure surfaces without touching the persisted name
+        endpoint.emit("changenamefail\tDUPLICATE");
+        nl.pump();
+        assertEquals("Alicia", nl.propConfig.getProperty("serverselect.txtfldPlayerName.text", ""));
+    }
+
+    @Test
     void meshCloseDispatchesDisconnect() {
         connect();
         driveLogin();

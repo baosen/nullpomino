@@ -33,8 +33,8 @@ import org.slf4j.LoggerFactory;
  * client needs (playerupdate/roomupdate/...) are {@link RoomProtocol#SCOPE_GLOBAL}.
  *
  * <p>Differences from NetServer, by design: no rated presets, no bans, no
- * observers, no admin, no changename, no lobby-chat private messages, and the
- * same-IP rating restriction is dropped (P2P play is LAN-oriented).
+ * observers, no admin, no lobby-chat private messages, and the same-IP
+ * rating restriction is dropped (P2P play is LAN-oriented).
  */
 public class RoomAuthority {
 	/** Log */
@@ -213,6 +213,7 @@ public class RoomAuthority {
 		if(message[0].equals("roomcreate")) { onRoomCreate(pInfo, message); return; }
 		if(message[0].equals("roomjoin")) { onRoomJoin(pInfo, message); return; }
 		if(message[0].equals("changeteam")) { onChangeTeam(pInfo, message); return; }
+		if(message[0].equals("changename")) { onChangeName(pInfo, message); return; }
 		if(message[0].equals("changestatus")) { onChangeStatus(pInfo, message); return; }
 		if(message[0].equals("start1p")) { onStart1P(pInfo); return; }
 		if(message[0].equals("ready")) { onReady(pInfo, message); return; }
@@ -221,7 +222,7 @@ public class RoomAuthority {
 		if(message[0].equals("racewin")) { onRaceWin(pInfo, message); return; }
 		if(message[0].equals("reset1p")) { onReset1P(pInfo); return; }
 
-		// Server-only commands (rated presets, rankings, sp*, changename, admin...)
+		// Server-only commands (rated presets, rankings, sp*, admin...)
 		log.debug("Ignored control command from uid {}: {}", fromUid, message[0]);
 	}
 
@@ -535,6 +536,36 @@ public class RoomAuthority {
 				-1);
 			sink.authUpdate();
 		}
+	}
+
+	private void onChangeName(NetPlayerInfo pInfo, String[] message) {
+		//changename\t[NEWNAME]
+		if(pInfo.playing) {
+			sink.direct(pInfo.uid, "changenamefail\tPLAYING");
+			return;
+		}
+		String newName = (message.length > 1) ? NetUtil.urlDecode(message[1]).trim() : "";
+		if(newName.length() == 0) {
+			sink.direct(pInfo.uid, "changenamefail\tEMPTY");
+			return;
+		}
+		if(newName.equals(pInfo.strName)) return;   // no-op
+
+		for(NetPlayerInfo p: players.values()) {
+			if((p != pInfo) && newName.equals(p.strName)) {
+				sink.direct(pInfo.uid, "changenamefail\tDUPLICATE");
+				return;
+			}
+		}
+
+		String oldName = pInfo.strName;
+		pInfo.strName = newName;
+		// A rename is visible session-wide; the renamer sees its own success
+		// through this broadcast too (no dedicated success opcode)
+		sink.broadcast(RoomProtocol.SCOPE_GLOBAL,
+			"changename\t" + pInfo.uid + "\t" + NetUtil.urlEncode(oldName) + "\t" + NetUtil.urlEncode(newName), -1);
+		broadcastPlayerInfoUpdate(pInfo);
+		log.info("Player renamed: {} -> {}", oldName, newName);
 	}
 
 	private void onChangeStatus(NetPlayerInfo pInfo, String[] message) {

@@ -240,6 +240,28 @@ class RoomClientIntegrationTest {
     }
 
     @Test
+    void renamePropagatesToEveryPeer() throws Exception {
+        Peer alice = createPeer("Alice");
+        Peer bob = joinPeer(alice, "Bob");
+
+        bob.send("changename\t" + NetUtil.urlEncode("Bobby"));
+
+        String renameAtAlice = alice.await("changename\t");
+        assertTrue(renameAtAlice.endsWith("\t" + NetUtil.urlEncode("Bobby")), renameAtAlice);
+        bob.await("changename\t");
+
+        long deadline = System.currentTimeMillis() + 12000;
+        NetPlayerInfo bobAtAlice = null;
+        while (System.currentTimeMillis() < deadline) {
+            bobAtAlice = alice.nl.netPlayerClient.getPlayerInfoByUID(1);
+            if (bobAtAlice != null && "Bobby".equals(bobAtAlice.strName)) break;
+            Thread.sleep(20);
+        }
+        assertNotNull(bobAtAlice);
+        assertEquals("Bobby", bobAtAlice.strName, "The playerupdate carries the new name");
+    }
+
+    @Test
     void leavingASeatPromotesTheQueue() throws Exception {
         Peer alice = createPeer("Alice");
         Peer bob = joinPeer(alice, "Bob");
