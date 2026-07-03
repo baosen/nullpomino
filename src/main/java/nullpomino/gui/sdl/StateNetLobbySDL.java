@@ -66,8 +66,17 @@ public class StateNetLobbySDL extends BaseStateSDL {
 	private long pendingSince;
 	private String pendingHostPort = "";
 
-	/** msgId source for outgoing lounge chat */
+	/** msgId source for outgoing lounge chat + presence instance ids */
 	private final Random chatRand = new Random();
+
+	/** Last input values mirrored into propConfig (eager persistence) */
+	private String lastMirroredName;
+	private String lastMirroredTeam;
+
+	/** Presence beacon while on this screen */
+	private NetLanDiscovery.Announcer presenceAnnouncer;
+	private String presenceInstanceId = "";
+	private volatile String presenceName = "";
 
 	@Override
 	public void enter() {
@@ -111,9 +120,8 @@ public class StateNetLobbySDL extends BaseStateSDL {
 		roomTable = new TableSDL(8, 32, 624, 188, cols);
 
 		// Chat input along the bottom; Enter sends (handled in handleGlobalKey).
-		// Both chat widgets span the full width - the USERS column is gone
-		// (sessionless there is no authoritative presence roster).
-		chatInput = new TextInputSDL(8, 448, 624, 28);
+		// The USERS column (fed by presence beacons) takes the right edge.
+		chatInput = new TextInputSDL(8, 448, 540, 28);
 		chatInput.maxChars = 255;
 		chatInput.placeholder = "Type and press Enter to send...  (/help for commands)";
 
@@ -157,6 +165,18 @@ public class StateNetLobbySDL extends BaseStateSDL {
 		}
 		refreshRoomTable();
 
+		// Announce our presence while on this screen so other lounges list us.
+		// Blank names announce nothing (the supplier's null skips the cycle).
+		lastMirroredName = nameInput.getText();
+		lastMirroredTeam = teamInput.getText();
+		presenceName = nameInput.getText().trim();
+		presenceInstanceId = Long.toHexString(chatRand.nextLong());
+		presenceAnnouncer = new NetLanDiscovery.Announcer(() -> {
+			String name = presenceName;
+			return (name.length() == 0) ? null : NetLanDiscovery.encodePresence(name, presenceInstanceId);
+		});
+		presenceAnnouncer.start();
+
 		// New players type their name first; everyone else lands on the chat
 		setFocus(nameInput.getText().length() == 0 ? (WidgetSDL)nameInput : (WidgetSDL)chatInput);
 	}
@@ -166,6 +186,10 @@ public class StateNetLobbySDL extends BaseStateSDL {
 		if(lanListener != null) {
 			lanListener.shutdown();
 			lanListener = null;
+		}
+		if(presenceAnnouncer != null) {
+			presenceAnnouncer.shutdown();
+			presenceAnnouncer = null;
 		}
 		// Persist name/team for chat-only visitors too (connectToRoom also
 		// writes them on use). NEVER touch the room session here - this also
@@ -204,6 +228,22 @@ public class StateNetLobbySDL extends BaseStateSDL {
 		if(nl == null) { NullpoMinoSDL.enterStateClear(NullpoMinoSDL.STATE_TITLE); return; }
 		nl.pump();
 		MouseInputSDL.mouseInput.update();
+
+		// Mirror the inputs into config the moment they change (in-memory; the
+		// file is written by leave()/shutdown()), so the nickname survives every
+		// exit path - X, app quit, window close - not just ESC. Also feeds the
+		// presence beacon.
+		String nameNow = nameInput.getText();
+		if(!nameNow.equals(lastMirroredName)) {
+			lastMirroredName = nameNow;
+			nl.propConfig.setProperty("serverselect.txtfldPlayerName.text", nameNow);
+			presenceName = nameNow.trim();
+		}
+		String teamNow = teamInput.getText();
+		if(!teamNow.equals(lastMirroredTeam)) {
+			lastMirroredTeam = teamNow;
+			nl.propConfig.setProperty("serverselect.txtfldPlayerTeam.text", teamNow);
+		}
 
 		boolean haveClient = nl.netPlayerClient != null;
 
@@ -634,11 +674,36 @@ public class StateNetLobbySDL extends BaseStateSDL {
 		drawGroupSeparator(180, 224, 28);
 		drawGroupSeparator(392, 224, 28);
 
-		// Chat log fills the bottom panel, full width, matched to the input below.
+		// Chat log fills the bottom-left panel, matched to the input below.
 		nl.chatLogLobby.x = 8;  nl.chatLogLobby.y = 258;
-		nl.chatLogLobby.w = 624; nl.chatLogLobby.h = 186;
+		nl.chatLogLobby.w = 540; nl.chatLogLobby.h = 186;
 		nl.chatLogLobby.render();
 
 		chatInput.render();
+
+		// Lounge visitors (from presence beacons): our own name first, then
+		// everyone else - our looped-back beacon is skipped by instanceId.
+		NormalFontSDL.printFont(552, 258, "USERS", NormalFontSDL.COLOR_YELLOW);
+		int py = 274;
+		int shown = 0;
+		String ownName = presenceName;
+		if(ownName.length() > 0) {
+			String name = NormalFontSDL.safeString(ownName);
+			if(name.length() > 5) name = name.substring(0, 5);
+			NormalFontSDL.printFont(552, py, name, NormalFontSDL.COLOR_WHITE);
+			py += 16;
+			shown++;
+		}
+		if(lanListener != null) {
+			for(NetLanDiscovery.Presence visitor : lanListener.snapshotPresence()) {
+				if(shown >= 13) break;
+				if(presenceInstanceId.equals(visitor.instanceId)) continue;
+				String name = NormalFontSDL.safeString(visitor.playerName);
+				if(name.length() > 5) name = name.substring(0, 5);
+				NormalFontSDL.printFont(552, py, name, NormalFontSDL.COLOR_WHITE);
+				py += 16;
+				shown++;
+			}
+		}
 	}
 }

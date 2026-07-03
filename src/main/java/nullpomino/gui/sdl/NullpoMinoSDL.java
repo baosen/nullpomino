@@ -702,6 +702,16 @@ public class NullpoMinoSDL {
 		log.info("NullpoMinoSDL shutdown()");
 
 		try {
+			// Flush netplay state (saves netlobby.cfg incl. the lounge nickname
+			// and sends the graceful disconnect) before tearing the session down
+			if(netLobby != null) {
+				try {
+					netLobby.shutdown();
+				} catch (Throwable e) {
+					log.warn("netLobby shutdown failed", e);
+				}
+				netLobby = null;
+			}
 			stopRoomSession();
 			for(int i = 0; i < joystickMax; i++) {
 				if(joystick[i] != null) {
