@@ -225,19 +225,20 @@ public class StateInGameSDL extends BaseStateSDL {
 	 * Update title bar text
 	 */
 	public void updateTitleBarCaption() {
-		String strTitle = "NullpoMino - " + modeName;
+		String modeTitle = NullpoMinoSDL.GAME_NAME + " - " + modeName;
+		String strTitle = modeTitle;
 
 		if((gameManager != null) && (gameManager.engine != null) && (gameManager.engine.length > 0) && (gameManager.engine[0] != null)) {
 			if(pause && !enableframestep)
-				strTitle = "[PAUSE] NullpoMino - " + modeName;
+				strTitle = "[PAUSE] " + modeTitle;
 			else if(gameManager.engine[0].isInGame && !gameManager.replayMode && !gameManager.replayRerecord)
-				strTitle = "[PLAY] NullpoMino - " + modeName;
+				strTitle = "[PLAY] " + modeTitle;
 			else if(gameManager.replayMode && gameManager.replayRerecord)
-				strTitle = "[RERECORD] NullpoMino - " + modeName;
+				strTitle = "[RERECORD] " + modeTitle;
 			else if(gameManager.replayMode && !gameManager.replayRerecord)
-				strTitle = "[REPLAY] NullpoMino - " + modeName;
+				strTitle = "[REPLAY] " + modeTitle;
 			else
-				strTitle = "[MENU] NullpoMino - " + modeName;
+				strTitle = "[MENU] " + modeTitle;
 		}
 
 		SDL3.INSTANCE.SDL_SetWindowTitle(NullpoMinoSDL.window, strTitle);

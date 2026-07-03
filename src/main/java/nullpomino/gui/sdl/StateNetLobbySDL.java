@@ -80,7 +80,7 @@ public class StateNetLobbySDL extends BaseStateSDL {
 
 	@Override
 	public void enter() {
-		SDL3.INSTANCE.SDL_SetWindowTitle(NullpoMinoSDL.window, "NullpoMino P2P Netplay");
+		SDL3.INSTANCE.SDL_SetWindowTitle(NullpoMinoSDL.window, NullpoMinoSDL.GAME_NAME + " P2P Netplay");
 
 		// The lounge is the netplay entry point: it owns the shared session object
 		if(NullpoMinoSDL.netLobby == null) {

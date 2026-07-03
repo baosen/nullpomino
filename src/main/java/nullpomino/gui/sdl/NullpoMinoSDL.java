@@ -68,6 +68,8 @@ public class NullpoMinoSDL {
 
 	public static final int LOGICAL_WIDTH = 640;
 	public static final int LOGICAL_HEIGHT = 480;
+	public static final String GAME_NAME = "NullpoMino+";
+	public static final String GAME_NAME_UPPER = "NULLPOMINO+";
 
 	/** Command line arguments */
 	public static String[] programArgs;
@@ -406,7 +408,7 @@ public class NullpoMinoSDL {
 		long windowFlags = SDLConstants.SDL_WINDOW_RESIZABLE;
 		if(fullscreen) windowFlags |= SDLConstants.SDL_WINDOW_FULLSCREEN;
 
-		window = SDL3.INSTANCE.SDL_CreateWindow("NullpoMino (Now Loading...)", windowWidth, windowHeight, windowFlags);
+		window = SDL3.INSTANCE.SDL_CreateWindow(GAME_NAME + " (Now Loading...)", windowWidth, windowHeight, windowFlags);
 		if(window == null) {
 			throw new RuntimeException("SDL_CreateWindow failed: " + SDL3.INSTANCE.SDL_GetError());
 		}

@@ -282,7 +282,7 @@ public class StateConfigKeyboardSDL extends BaseStateSDL {
 	public void enter() {
 		reset();
 		NullpoMinoSDL.enableSpecialKeys = false;
-		SDL3.INSTANCE.SDL_SetWindowTitle(NullpoMinoSDL.window, "NullpoMino version" + GameManager.getVersionString());
+		SDL3.INSTANCE.SDL_SetWindowTitle(NullpoMinoSDL.window, NullpoMinoSDL.GAME_NAME + " version" + GameManager.getVersionString());
 	}
 
 	/*
