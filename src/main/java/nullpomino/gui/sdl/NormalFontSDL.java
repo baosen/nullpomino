@@ -106,7 +106,7 @@ public class NormalFontSDL {
 	 * Reusable rect scratch space for {@link #printFont}. HUD labels and
 	 * values are redrawn character-by-character every frame; allocating a
 	 * fresh source/destination rect per glyph is cheap on a desktop JVM but
-	 * adds up to enough garbage under CheerpJ's GC to crash a running game.
+	 * adds up to real pressure on the browser's JS GC.
 	 * Consumed synchronously by SDL_RenderTexture before the next glyph
 	 * reuses them, so sharing across calls on the single game thread is safe.
 	 */

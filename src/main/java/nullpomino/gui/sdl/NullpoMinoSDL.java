@@ -228,9 +228,9 @@ public class NullpoMinoSDL {
 	public static int maxFPS;
 
 	/**
-	 * True when running on the pure-Java web backend (browser/CheerpJ). Spin
-	 * waits would starve the browser tab's event loop, so the FPS cap must
-	 * always sleep; the "perfect FPS" option is ignored in this mode.
+	 * True when running on the browser (TeaVM) backend. Spin waits would
+	 * starve the browser tab's event loop, so the FPS cap must always sleep;
+	 * the "perfect FPS" option is ignored in this mode.
 	 * Non-final so the web entry point can set it directly (the TeaVM target
 	 * has no {@code -D} system properties at launch).
 	 */
@@ -727,7 +727,7 @@ public class NullpoMinoSDL {
 				sleepFlag = true;
 			} else if(webMode) {
 				// Never spin-wait in a browser tab; a plain sleep is the only
-				// cooperative way to yield under CheerpJ.
+				// cooperative way to yield the event loop.
 				if(sleepTime > 0) {
 					try {
 						Thread.sleep(Math.max(1, sleepTimeInMillis));

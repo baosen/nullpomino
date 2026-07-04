@@ -11,7 +11,7 @@ LOGBACK_CORE = "@maven//:ch_qos_logback_logback_core"
 JNA = "@maven//:net_java_dev_jna_jna"
 
 # Backend-neutral SDL binding interfaces. Deliberately JNA-free so the
-# core can also run on the pure-Java web backend (CheerpJ).
+# core can also run on the browser (TeaVM) backend.
 java_library(
     name = "sdl_binding",
     srcs = glob(["nullpomino/gui/sdl/binding/*.java"]),

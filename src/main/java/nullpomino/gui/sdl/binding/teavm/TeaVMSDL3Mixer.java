@@ -15,8 +15,7 @@ import nullpomino.gui.sdl.binding.SdlHandles.MixMixer;
 import nullpomino.gui.sdl.binding.SdlHandles.MixTrack;
 
 /**
- * Web Audio implementation of {@link SDL3Mixer}, ported from the CheerpJ page's
- * JS bridge. Preserves its hard-won behavior: the AudioContext starts
+ * Web Audio implementation of {@link SDL3Mixer}. The AudioContext starts
  * suspended and is resumed on the first user gesture; plays requested while
  * suspended (one-shots included) are queued and fire the instant it resumes,
  * rather than being silently dropped.

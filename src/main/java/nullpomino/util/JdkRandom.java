@@ -20,7 +20,7 @@ import java.util.Random;
  * works. This reimplements that legacy algorithm using the (correctly
  * seed-driven) inherited {@link #next(int)}.
  *
- * On a real JVM (desktop, CheerpJ) this is byte-for-byte what {@code
+ * On a real JVM (desktop) this is byte-for-byte what {@code
  * Random.nextInt(int)} already does internally, so it's safe for
  * unconditional use on every platform, not just the TeaVM web build.
  */

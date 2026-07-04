@@ -58,8 +58,8 @@ public class RendererSDL extends EventReceiver {
 	 * field draws hundreds of blocks per frame, each needing a source and
 	 * destination rect (plus up to four more pairs for sticky-skin corners);
 	 * allocating fresh rects for all of them every frame is cheap on a
-	 * desktop JVM but produces enough garbage under CheerpJ's GC to crash a
-	 * running game. The rects are fully overwritten and consumed
+	 * desktop JVM but produces enough garbage to pressure the browser's JS GC.
+	 * The rects are fully overwritten and consumed
 	 * synchronously by {@link #renderTexture} before the next reuse, so
 	 * sharing them across calls on the single game thread is safe.
 	 */
