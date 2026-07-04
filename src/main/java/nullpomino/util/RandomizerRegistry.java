@@ -1,6 +1,7 @@
 package nullpomino.util;
 
 import java.util.List;
+import java.util.function.Supplier;
 
 import nullpomino.game.randomizer.BagBonusBagRandomizer;
 import nullpomino.game.randomizer.BagBonusRandomizer;
@@ -46,10 +47,38 @@ public final class RandomizerRegistry {
 			ExpDistWeightRandomizer.class,
 			FixedSequenceRandomizer.class);
 
+	// Reflection-free constructors in the same order as RANDOMIZERS, for the
+	// browser (TeaVM) target's ClassFactory registry. Kept in lockstep with
+	// RANDOMIZERS by RandomizerRegistryTest.
+	private static final List<Supplier<? extends Randomizer>> SUPPLIERS = List.of(
+			MemorylessRandomizer::new,
+			BagRandomizer::new,
+			BagNoSZORandomizer::new,
+			BagBonusRandomizer::new,
+			BagBonusBagRandomizer::new,
+			DoubleBagRandomizer::new,
+			NineBagRandomizer::new,
+			BagMinusRandomizer::new,
+			BagMinusTwoRandomizer::new,
+			History4RollsRandomizer::new,
+			History6RollsRandomizer::new,
+			StrictHistoryRandomizer::new,
+			NintendoRandomizer::new,
+			GameBoyRandomizer::new,
+			LinearDistWeightRandomizer::new,
+			QuadraticDistWeightRandomizer::new,
+			ExpDistWeightRandomizer::new,
+			FixedSequenceRandomizer::new);
+
 	private RandomizerRegistry() {}
 
 	public static List<Class<? extends Randomizer>> all() {
 		return RANDOMIZERS;
+	}
+
+	/** Constructor suppliers, aligned by index with {@link #all()}. */
+	public static List<Supplier<? extends Randomizer>> suppliers() {
+		return SUPPLIERS;
 	}
 
 	public static List<String> classNames() {

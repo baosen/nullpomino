@@ -49,4 +49,14 @@ class RandomizerRegistryTest {
 							+ Randomizer.class.getName());
 		}));
 	}
+
+	@Test
+	void suppliersAlignWithClasses() {
+		assertEquals(RandomizerRegistry.all().size(), RandomizerRegistry.suppliers().size(),
+				"suppliers() and all() must stay in lockstep");
+		for (int i = 0; i < RandomizerRegistry.all().size(); i++) {
+			assertEquals(RandomizerRegistry.all().get(i), RandomizerRegistry.suppliers().get(i).get().getClass(),
+					"supplier at index " + i + " builds the wrong class");
+		}
+	}
 }

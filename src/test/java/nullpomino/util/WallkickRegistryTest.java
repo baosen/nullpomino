@@ -43,4 +43,14 @@ class WallkickRegistryTest {
 							+ Wallkick.class.getName());
 		}));
 	}
+
+	@Test
+	void suppliersAlignWithClasses() {
+		assertEquals(WallkickRegistry.all().size(), WallkickRegistry.suppliers().size(),
+				"suppliers() and all() must stay in lockstep");
+		for (int i = 0; i < WallkickRegistry.all().size(); i++) {
+			assertEquals(WallkickRegistry.all().get(i), WallkickRegistry.suppliers().get(i).get().getClass(),
+					"supplier at index " + i + " builds the wrong class");
+		}
+	}
 }
