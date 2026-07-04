@@ -35,6 +35,10 @@ final class CanvasRenderer implements SdlRenderer {
 	private String rgbStyle = "rgb(0,0,0)";
 	private int blendMode = SDLConstants.SDL_BLENDMODE_NONE;
 
+	// The loading overlay is dismissed on the first present, i.e. once the title
+	// screen's pixels are already on the canvas underneath it — no black flash.
+	private static boolean loadingHidden;
+
 	CanvasRenderer(CanvasWindow window, int w, int h) {
 		this.window = window;
 		allocate(Math.max(w, 1), Math.max(h, 1));
@@ -128,6 +132,11 @@ final class CanvasRenderer implements SdlRenderer {
 		display.setFillStyle("rgb(0,0,0)");
 		display.fillRect(0, 0, pw, ph);
 		display.drawImage(back, box.offsetX, box.offsetY, box.scaledW, box.scaledH);
+
+		if (!loadingHidden) {
+			loadingHidden = true;
+			WebProgress.complete();
+		}
 	}
 
 	void dispose() {

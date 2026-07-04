@@ -35,6 +35,60 @@ public final class WebFiles {
 
 	private static final String LS_PREFIX = "nullpomino.fs:";
 
+	// Memoised manifests: fetched once so the loading-bar denominator can be
+	// computed up front (before per-file seeding) without a second HTTP round trip.
+	private static String configManifestText;
+	private static boolean configManifestFetched;
+	private static String resManifestText;
+	private static boolean resManifestFetched;
+
+	private static String configManifest() {
+		if (!configManifestFetched) {
+			configManifestText = JsAsync.fetchText("config-manifest.txt");
+			configManifestFetched = true;
+		}
+		return configManifestText;
+	}
+
+	private static String resManifest() {
+		if (!resManifestFetched) {
+			resManifestText = JsAsync.fetchText("res-manifest.txt");
+			resManifestFetched = true;
+		}
+		return resManifestText;
+	}
+
+	/** Number of config files to seed — the loading bar's config-phase denominator. */
+	public static int configEntryCount() {
+		return countEntries(configManifest());
+	}
+
+	/**
+	 * Number of res assets the backend will fetch over HTTP — the loading bar's
+	 * asset-phase denominator. Excludes icons ({@code .ico}/{@code .icns}), which
+	 * the game loop never loads. (BGM is not bundled in res/, so nothing to skip.)
+	 */
+	public static int resAssetCount() {
+		return countEntries(resManifest(), ".ico", ".icns");
+	}
+
+	private static int countEntries(String manifest, String... skipSuffixes) {
+		if (manifest == null) return 0;
+		int n = 0;
+		for (String line : manifest.split("\n")) {
+			line = line.trim();
+			if (line.isEmpty()) continue;
+			boolean skip = false;
+			if (skipSuffixes != null) {
+				for (String suffix : skipSuffixes) {
+					if (suffix != null && line.endsWith(suffix)) { skip = true; break; }
+				}
+			}
+			if (!skip) n++;
+		}
+		return n;
+	}
+
 	/** Restore files previously mirrored into localStorage into the VFS. */
 	public static void restoreFromLocalStorage() {
 		int n = lsLength();
@@ -57,7 +111,7 @@ public final class WebFiles {
 
 	/** Fetch and write the default config tree (copy-if-missing for user data). */
 	public static void seedDefaults() {
-		String manifest = JsAsync.fetchText("config-manifest.txt");
+		String manifest = configManifest();
 		if (manifest == null) {
 			System.err.println("WebFiles: config-manifest.txt missing; skipping config seeding");
 			return;
@@ -87,7 +141,7 @@ public final class WebFiles {
 	 * skin probes succeed; the real bytes are fetched over HTTP on demand.
 	 */
 	public static void seedResMarkers() {
-		String manifest = JsAsync.fetchText("res-manifest.txt");
+		String manifest = resManifest();
 		if (manifest == null) {
 			System.err.println("WebFiles: res-manifest.txt missing; skin probes may fail");
 			return;

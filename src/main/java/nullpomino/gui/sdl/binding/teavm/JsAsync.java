@@ -50,6 +50,7 @@ public final class JsAsync {
 			for (int i = 0; i < bytes.length; i++) {
 				bytes[i] = array.get(i);
 			}
+			WebProgress.bump(url);
 			callback.complete(bytes);
 		});
 		xhr.send();
@@ -61,7 +62,10 @@ public final class JsAsync {
 
 	private static void fetchImage(String url, AsyncCallback<HTMLImageElement> callback) {
 		HTMLImageElement img = (HTMLImageElement) Window.current().getDocument().createElement("img");
-		img.listenLoad(e -> callback.complete(img));
+		img.listenLoad(e -> {
+			WebProgress.bump(url);
+			callback.complete(img);
+		});
 		img.addEventListener("error", e -> callback.complete(null));
 		img.setSrc(url);
 	}

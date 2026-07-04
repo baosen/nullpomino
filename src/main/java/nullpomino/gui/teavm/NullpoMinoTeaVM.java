@@ -6,6 +6,7 @@ import nullpomino.game.mode.GameMode;
 import nullpomino.gui.sdl.NullpoMinoSDL;
 import nullpomino.gui.sdl.binding.SdlBackend;
 import nullpomino.gui.sdl.binding.teavm.TeaVMBackend;
+import nullpomino.gui.sdl.binding.teavm.WebProgress;
 import nullpomino.util.DataDir;
 import nullpomino.util.FactoryDefaults;
 import nullpomino.util.StandaloneModeRegistry;
@@ -36,6 +37,10 @@ public final class NullpoMinoTeaVM {
 		// Persistence + assets: restore prior state, seed defaults, expose the
 		// res tree to File.canRead() probes, then mirror future writes.
 		WebFiles.restoreFromLocalStorage();
+		// Fetch both manifests (memoised) and set the loading-bar denominator
+		// before any per-file fetch is counted; the download phase already
+		// filled 0–30%, and these fetches happen while total is still 0.
+		WebProgress.setTotal(WebFiles.configEntryCount() + WebFiles.resAssetCount());
 		WebFiles.seedDefaults();
 		WebFiles.seedResMarkers();
 		WebFiles.installStoreMirror();
@@ -54,6 +59,8 @@ public final class NullpoMinoTeaVM {
 			NullpoMinoSDL.init();
 			NullpoMinoSDL.run();
 		} catch (Throwable e) {
+			// A crash mid-load would leave the overlay spinning forever; surface it.
+			WebProgress.showError("Failed to load — see console");
 			System.err.println("Uncaught exception in web main: " + e);
 			e.printStackTrace();
 		}
