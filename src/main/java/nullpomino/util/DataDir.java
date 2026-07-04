@@ -10,19 +10,28 @@ import java.io.File;
  * {@code nullpomino.datadir}.
  *
  * On desktop the property is unset and paths pass through untouched
- * (working-directory-relative, as always). The browser build sets it because
- * CheerpJ does not resolve relative paths against user.dir at the I/O layer:
- * the persistent /files mount must be addressed with absolute paths.
+ * (working-directory-relative, as always). The browser build sets a root
+ * because relative paths there address a synthetic root rather than the
+ * process working directory; anchoring data I/O at an explicit absolute
+ * root keeps config/replays in one predictable place.
  */
 public final class DataDir {
-	private static final String ROOT = System.getProperty("nullpomino.datadir", "");
+	private static String root = System.getProperty("nullpomino.datadir", "");
 
 	private DataDir() {}
 
+	/**
+	 * Override the data root. The browser entry point calls this directly
+	 * (the TeaVM target has no {@code -D} system properties at launch).
+	 */
+	public static void setRoot(String newRoot) {
+		root = newRoot == null ? "" : newRoot;
+	}
+
 	/** Resolve a data path. Absolute inputs pass through unchanged. */
 	public static String path(String name) {
-		if(ROOT.isEmpty() || new File(name).isAbsolute()) return name;
-		return ROOT + "/" + name;
+		if(root.isEmpty() || new File(name).isAbsolute()) return name;
+		return root + "/" + name;
 	}
 
 	/** Resolve a data path as a File. */

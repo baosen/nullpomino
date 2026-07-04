@@ -130,6 +130,56 @@ class CustomPropertiesRoundTripTest {
 	}
 
 	@Test
+	void storeToFileRoundTripsSpecialCharactersAndStaysJdkLoadable() throws IOException {
+		Path file = tempDir.resolve("special.properties");
+		CustomProperties source = new CustomProperties();
+		source.setProperty("plain", "value");
+		source.setProperty("with space", "a value with spaces");
+		source.setProperty("sep=key", "colon:and=equals");
+		source.setProperty("path", "C:\\Users\\re\\config");
+		source.setProperty("unicode", "テスト日本語");
+		source.setProperty("hash", "#not-a-comment");
+		source.setProperty("tab", "a\tb");
+
+		source.storeToFile(file.toString(), "special chars");
+
+		// A stock java.util.Properties must read it back identically (proves
+		// the hand-rolled store keeps the standard escaping format).
+		java.util.Properties jdk = new java.util.Properties();
+		try (var in = Files.newInputStream(file)) {
+			jdk.load(in);
+		}
+		assertEquals("value", jdk.getProperty("plain"));
+		assertEquals("a value with spaces", jdk.getProperty("with space"));
+		assertEquals("colon:and=equals", jdk.getProperty("sep=key"));
+		assertEquals("C:\\Users\\re\\config", jdk.getProperty("path"));
+		assertEquals("テスト日本語", jdk.getProperty("unicode"));
+		assertEquals("#not-a-comment", jdk.getProperty("hash"));
+		assertEquals("a\tb", jdk.getProperty("tab"));
+
+		// And our own loader.
+		CustomProperties loaded = CustomProperties.loadFromFile(file.toString());
+		assertEquals("colon:and=equals", loaded.getProperty("sep=key"));
+		assertEquals("テスト日本語", loaded.getProperty("unicode"));
+		assertEquals("C:\\Users\\re\\config", loaded.getProperty("path"));
+	}
+
+	@Test
+	void storeToFileFiresStoreListener() throws IOException {
+		Path file = tempDir.resolve("listener.properties");
+		CustomProperties source = new CustomProperties();
+		source.setProperty("k", "v");
+		java.util.concurrent.atomic.AtomicReference<String> fired = new java.util.concurrent.atomic.AtomicReference<>();
+		CustomProperties.storeListener = fired::set;
+		try {
+			source.storeToFile(file.toString(), "test");
+		} finally {
+			CustomProperties.storeListener = null;
+		}
+		assertEquals(file.toString(), fired.get());
+	}
+
+	@Test
 	void loadFromFileOrEmptyReturnsEmptyPropertiesWhenMissing() {
 		CustomProperties properties = CustomProperties.loadFromFileOrEmpty(
 				tempDir.resolve("missing.properties").toString());

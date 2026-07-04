@@ -7,10 +7,12 @@ import java.io.ByteArrayOutputStream;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.net.URLDecoder;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.Properties;
+import java.util.function.Consumer;
 
 /**
  * StringSet of properties that can be stored in non-
@@ -20,6 +22,13 @@ public class CustomProperties extends Properties {
 	 * Serial version
 	 */
 	private static final long serialVersionUID = 2L;
+
+	/**
+	 * Invoked with the logical filename after every successful
+	 * {@link #storeToFile}. The browser build installs a listener that mirrors
+	 * the written file into persistent browser storage; unset on desktop.
+	 */
+	public static volatile Consumer<String> storeListener;
 
 	public static CustomProperties loadFromFile(String filename) throws IOException {
 		CustomProperties properties = new CustomProperties();
@@ -41,7 +50,76 @@ public class CustomProperties extends Properties {
 		try (FileOutputStream out = new FileOutputStream(DataDir.path(filename))) {
 			store(out, comments);
 		}
+		Consumer<String> listener = storeListener;
+		if (listener != null) {
+			listener.accept(filename);
+		}
 	}
+
+	/**
+	 * Writes the properties in {@code java.util.Properties} format, but without
+	 * delegating to {@link Properties#store(OutputStream, String)}: TeaVM's
+	 * classlib implements that via an {@code "ISO8859_1"} charset alias its
+	 * charset registry does not recognize, so it throws there. This
+	 * reimplements the same escaping (all output is 7-bit ASCII, with
+	 * non-Latin-1 characters emitted as {@code \\uXXXX}), so files written here
+	 * are byte-compatible with — and re-loadable by — a stock JDK. The date
+	 * comment the JDK adds is omitted; it is purely informational.
+	 */
+	@Override
+	public void store(OutputStream out, String comments) throws IOException {
+		StringBuilder sb = new StringBuilder();
+		if (comments != null) {
+			sb.append('#').append(comments.replace('\r', ' ').replace('\n', ' ')).append('\n');
+		}
+		for (String key : stringPropertyNames()) {
+			String value = getProperty(key);
+			sb.append(saveConvert(key, true))
+					.append('=')
+					.append(saveConvert(value == null ? "" : value, false))
+					.append('\n');
+		}
+		out.write(sb.toString().getBytes(StandardCharsets.ISO_8859_1));
+		out.flush();
+	}
+
+	/** Escapes a key or value exactly as {@code java.util.Properties} does. */
+	private static String saveConvert(String text, boolean escapeSpace) {
+		StringBuilder out = new StringBuilder(text.length() * 2);
+		for (int i = 0; i < text.length(); i++) {
+			char c = text.charAt(i);
+			switch (c) {
+				case '\\': out.append("\\\\"); break;
+				case '\t': out.append("\\t"); break;
+				case '\n': out.append("\\n"); break;
+				case '\r': out.append("\\r"); break;
+				case '\f': out.append("\\f"); break;
+				case ' ':
+					if (i == 0 || escapeSpace) out.append('\\');
+					out.append(' ');
+					break;
+				case '=':
+				case ':':
+				case '#':
+				case '!':
+					out.append('\\').append(c);
+					break;
+				default:
+					if (c < 0x20 || c > 0x7e) {
+						out.append("\\u")
+								.append(HEX[(c >> 12) & 0xF])
+								.append(HEX[(c >> 8) & 0xF])
+								.append(HEX[(c >> 4) & 0xF])
+								.append(HEX[c & 0xF]);
+					} else {
+						out.append(c);
+					}
+			}
+		}
+		return out.toString();
+	}
+
+	private static final char[] HEX = "0123456789abcdef".toCharArray();
 
 	public synchronized Object setProperty(String key, int value) {
 		return setProperty(key, String.valueOf(value));
