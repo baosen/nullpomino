@@ -31,18 +31,6 @@ genrule(
     cmd = "printf '%s\\n' $(SRCS) | sort > $@",
 )
 
-# Default config packaged as jar resources. The files keep their
-# workspace-relative paths (config/setting/sdl.cfg etc.) as resource names,
-# and the manifest lands at /config-manifest.txt.
-java_library(
-    name = "web_defaults",
-    resources = [
-        "//web:logback-web.xml",
-        ":config_files",
-        ":config_manifest",
-    ],
-)
-
 java_binary(
     name = "NullpoMinoSDL",
     main_class = "nullpomino.gui.sdl.NullpoMinoSDL",
@@ -52,18 +40,6 @@ java_binary(
         # The JNA desktop backend is resolved by reflection (SdlBackend),
         # so nothing depends on it at compile time.
         "//src/main/java:sdl_binding_jna",
-    ],
-)
-
-# Browser build: pure-Java backend, no JNA anywhere in the jar. Build the
-# deployable jar with `bazel build --config=web //:NullpoMinoWeb_deploy.jar`
-# (CheerpJ runs Java 17 bytecode at most); see web/build-site.sh.
-java_binary(
-    name = "NullpoMinoWeb",
-    main_class = "nullpomino.gui.web.NullpoMinoWeb",
-    runtime_deps = [
-        ":web_defaults",
-        "//src/main/java:web_main",
     ],
 )
 

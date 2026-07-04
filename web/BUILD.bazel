@@ -1,7 +1,3 @@
-# web/ is now a Bazel package; let the (soon-to-be-deleted) CheerpJ
-# web_defaults target in //BUILD.bazel keep referencing this resource.
-exports_files(["logback-web.xml"])
-
 # TeaVM ahead-of-time compile: the Java 17 app jar -> web/classes.js.
 #
 # MUST be built with --config=web (web/build-site.sh does): the app jar has to
