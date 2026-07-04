@@ -231,8 +231,10 @@ public class NullpoMinoSDL {
 	 * True when running on the pure-Java web backend (browser/CheerpJ). Spin
 	 * waits would starve the browser tab's event loop, so the FPS cap must
 	 * always sleep; the "perfect FPS" option is ignored in this mode.
+	 * Non-final so the web entry point can set it directly (the TeaVM target
+	 * has no {@code -D} system properties at launch).
 	 */
-	public static final boolean webMode = Boolean.getBoolean("nullpomino.web");
+	public static boolean webMode = Boolean.getBoolean("nullpomino.web");
 
 	/** P2P room session while one is active, null otherwise */
 	public static RoomSession roomSession;
@@ -270,6 +272,48 @@ public class NullpoMinoSDL {
 		LogConfig.configure("config/etc/log_sdl.xml");
 		log.info("NullpoMinoSDL Start");
 
+		bootstrap(args);
+		modeManager.loadGameModes(ModeRegistry.all());
+		registerDesktopStates();
+
+		// SDL init
+		try {
+			init();
+		} catch (Throwable e) {
+			log.error("SDL init failed", e);
+			String strErrorTitle = getUIText("InitFailedMessageGeneral_Title");
+			String strErrorMessage = String.format(getUIText("InitFailedMessageGeneral_Body"), e.toString());
+			try {
+				SDL3.INSTANCE.SDL_ShowSimpleMessageBox(
+					SDLConstants.SDL_MESSAGEBOX_ERROR, strErrorTitle, strErrorMessage, null);
+			} catch (Throwable t) {
+				System.err.println(strErrorTitle + ": " + strErrorMessage);
+			}
+			System.exit(-1);
+		}
+
+		// Run
+		try {
+			run();
+		} catch (Throwable e) {
+			log.error("Uncaught Exception", e);
+		} finally {
+			shutdown();
+		}
+
+		System.exit(0);
+	}
+
+	/**
+	 * Shared bootstrap used by both the desktop {@link #main} and the web
+	 * entry point: loads config/language/mode-description properties, seeds
+	 * default rule selections, initializes key and mouse input, and allocates
+	 * the mode manager and the (still-empty) state array. It deliberately does
+	 * NOT load game modes or register states — each entry point does that
+	 * itself, so the web build can exclude the netplay modes and states.
+	 * @param args command line arguments
+	 */
+	public static void bootstrap(String[] args) {
 		programArgs = args;
 		// Read configuration file
 		propConfig = CustomProperties.loadFromFileOrEmpty("config/setting/sdl.cfg");
@@ -298,9 +342,8 @@ public class NullpoMinoSDL {
 		propModeDesc = CustomProperties.loadFromFileOrEmpty(
 				"config/lang/modedesc_" + Locale.getDefault().getCountry() + ".properties");
 
-		// Mode read
+		// Mode manager (modes are loaded by the caller)
 		modeManager = new ModeManager();
-		modeManager.loadGameModes(ModeRegistry.all());
 
 		// Set default rule selections
 		try {
@@ -346,9 +389,18 @@ public class NullpoMinoSDL {
 
 		MouseInputSDL.initalizeMouseInput();
 
-		// State initialization
+		// State array (populated by the caller)
 		currentState = -1;
 		gameStates = new BaseStateSDL[STATE_MAX];
+	}
+
+	/**
+	 * Instantiate every SDL state, including the netplay states. Desktop only:
+	 * the netplay states pull in {@code java.net} socket code that cannot be
+	 * compiled for the browser target, so the web entry point registers its
+	 * own (netplay-free) subset instead.
+	 */
+	private static void registerDesktopStates() {
 		gameStates[STATE_TITLE] = new StateTitleSDL();
 		gameStates[STATE_CONFIG_MAINMENU] = new StateConfigMainMenuSDL();
 		gameStates[STATE_CONFIG_RULESELECT] = new StateConfigRuleSelectSDL();
@@ -371,33 +423,6 @@ public class NullpoMinoSDL {
 		gameStates[STATE_NET_CREATEROOM] = new StateNetCreateRoomSDL();
 		gameStates[STATE_NET_RANKING] = new StateNetRankingSDL();
 		gameStates[STATE_NET_RULECHANGE] = new StateNetRuleChangeSDL();
-
-		// SDL init
-		try {
-			init();
-		} catch (Throwable e) {
-			log.error("SDL init failed", e);
-			String strErrorTitle = getUIText("InitFailedMessageGeneral_Title");
-			String strErrorMessage = String.format(getUIText("InitFailedMessageGeneral_Body"), e.toString());
-			try {
-				SDL3.INSTANCE.SDL_ShowSimpleMessageBox(
-					SDLConstants.SDL_MESSAGEBOX_ERROR, strErrorTitle, strErrorMessage, null);
-			} catch (Throwable t) {
-				System.err.println(strErrorTitle + ": " + strErrorMessage);
-			}
-			System.exit(-1);
-		}
-
-		// Run
-		try {
-			run();
-		} catch (Throwable e) {
-			log.error("Uncaught Exception", e);
-		} finally {
-			shutdown();
-		}
-
-		System.exit(0);
 	}
 
 	/**
