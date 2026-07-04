@@ -11,11 +11,19 @@
     "org.junit.jupiter:junit-jupiter": -1593757697,
     "org.junit.platform:junit-platform-console": -1668891741,
     "org.slf4j:slf4j-api": -2005163028,
+    "org.slf4j:slf4j-nop": -1110392425,
+    "org.teavm:teavm-cli": 1719083166,
+    "org.teavm:teavm-extras-slf4j": -1432691933,
+    "org.teavm:teavm-jso-apis": -1999900996,
     "repositories": -1949687017
   },
   "__RESOLVED_ARTIFACTS_HASH": {
     "ch.qos.logback:logback-classic": -130418118,
     "ch.qos.logback:logback-core": 459824923,
+    "com.carrotsearch:hppc": 1907611881,
+    "com.fasterxml.jackson.core:jackson-annotations": -15199951,
+    "com.fasterxml.jackson.core:jackson-core": -1299936085,
+    "com.fasterxml.jackson.core:jackson-databind": -2138636618,
     "com.google.code.findbugs:jsr305": 870839855,
     "com.google.code.gson:gson": -1575757252,
     "com.google.errorprone:error_prone_annotations": 833623751,
@@ -23,9 +31,41 @@
     "com.google.guava:guava": -163533230,
     "com.google.guava:listenablefuture": 1079558157,
     "com.google.j2objc:j2objc-annotations": 248818742,
+    "com.jcraft:jzlib": -1423321085,
+    "commons-cli:commons-cli": -1049205324,
+    "commons-codec:commons-codec": -1543128303,
+    "commons-io:commons-io": -1396899653,
+    "commons-logging:commons-logging": 1248790901,
+    "javax.annotation:javax.annotation-api": -1009230154,
+    "javax.servlet:javax.servlet-api": 324870439,
+    "javax.websocket:javax.websocket-api": -1604983095,
+    "javax.websocket:javax.websocket-client-api": 1618686677,
+    "joda-time:joda-time": 998059758,
     "net.java.dev.jna:jna": -1115403190,
+    "org.apache.httpcomponents:httpclient": 545662179,
+    "org.apache.httpcomponents:httpcore": 67453319,
     "org.apiguardian:apiguardian-api": 1279798469,
     "org.checkerframework:checker-qual": -1533199059,
+    "org.eclipse.jetty.websocket:javax-websocket-client-impl": 1223223896,
+    "org.eclipse.jetty.websocket:javax-websocket-server-impl": -1375129431,
+    "org.eclipse.jetty.websocket:websocket-api": 1054326978,
+    "org.eclipse.jetty.websocket:websocket-client": -1503325589,
+    "org.eclipse.jetty.websocket:websocket-common": -577184596,
+    "org.eclipse.jetty.websocket:websocket-server": -1388271453,
+    "org.eclipse.jetty.websocket:websocket-servlet": -1699421231,
+    "org.eclipse.jetty:jetty-annotations": -1634060441,
+    "org.eclipse.jetty:jetty-client": -1435555814,
+    "org.eclipse.jetty:jetty-http": 409712216,
+    "org.eclipse.jetty:jetty-io": 172174053,
+    "org.eclipse.jetty:jetty-jndi": -157548289,
+    "org.eclipse.jetty:jetty-plus": 343932646,
+    "org.eclipse.jetty:jetty-security": -648519313,
+    "org.eclipse.jetty:jetty-server": -1518229489,
+    "org.eclipse.jetty:jetty-servlet": 701934883,
+    "org.eclipse.jetty:jetty-util": -1658507584,
+    "org.eclipse.jetty:jetty-util-ajax": 1764810790,
+    "org.eclipse.jetty:jetty-webapp": 2107052878,
+    "org.eclipse.jetty:jetty-xml": -1392218791,
     "org.junit.jupiter:junit-jupiter": -1017410220,
     "org.junit.jupiter:junit-jupiter-api": -1942402024,
     "org.junit.jupiter:junit-jupiter-engine": -1893674907,
@@ -35,8 +75,38 @@
     "org.junit.platform:junit-platform-engine": -140710484,
     "org.junit.platform:junit-platform-launcher": -1960497987,
     "org.junit.platform:junit-platform-reporting": 1599148999,
+    "org.mozilla:rhino": 1861784766,
     "org.opentest4j:opentest4j": -1711174392,
-    "org.slf4j:slf4j-api": 500377983
+    "org.ow2.asm:asm": -1101379267,
+    "org.ow2.asm:asm-analysis": -559036312,
+    "org.ow2.asm:asm-commons": 1034366166,
+    "org.ow2.asm:asm-tree": -1479389285,
+    "org.ow2.asm:asm-util": -824669353,
+    "org.slf4j:slf4j-api": 500377983,
+    "org.slf4j:slf4j-nop": 1026103713,
+    "org.teavm:teavm-c-incremental": -1357597907,
+    "org.teavm:teavm-classlib": -531931919,
+    "org.teavm:teavm-cli": 396074332,
+    "org.teavm:teavm-core": 659547632,
+    "org.teavm:teavm-devserver": -1029038172,
+    "org.teavm:teavm-extras-slf4j": 1941124829,
+    "org.teavm:teavm-interop": 1932276926,
+    "org.teavm:teavm-jso": 1252131739,
+    "org.teavm:teavm-jso-apis": -772920448,
+    "org.teavm:teavm-jso-impl": 1267431478,
+    "org.teavm:teavm-metaprogramming-api": 1757383172,
+    "org.teavm:teavm-metaprogramming-impl": 1474184435,
+    "org.teavm:teavm-platform": -579408000,
+    "org.teavm:teavm-relocated-libs-asm": -225681231,
+    "org.teavm:teavm-relocated-libs-asm-analysis": 902428895,
+    "org.teavm:teavm-relocated-libs-asm-commons": 1678695305,
+    "org.teavm:teavm-relocated-libs-asm-tree": -108237933,
+    "org.teavm:teavm-relocated-libs-asm-util": 2018108887,
+    "org.teavm:teavm-relocated-libs-commons-cli": -1008468963,
+    "org.teavm:teavm-relocated-libs-commons-io": 610119915,
+    "org.teavm:teavm-relocated-libs-hppc": -55900857,
+    "org.teavm:teavm-relocated-libs-rhino": 1073995771,
+    "org.teavm:teavm-tooling": -216935700
   },
   "conflict_resolution": {
     "com.google.errorprone:error_prone_annotations:2.5.1": "com.google.errorprone:error_prone_annotations:2.18.0"
@@ -53,6 +123,30 @@
         "jar": "c142955d757d923c6c626296bd97be2e0db1cfd33adeadbf2e2927403391e0a1"
       },
       "version": "1.5.37"
+    },
+    "com.carrotsearch:hppc": {
+      "shasums": {
+        "jar": "edc83b336476a2b06f7c17d09b17e98bb07678daf968c9825cc14275bdf20a26"
+      },
+      "version": "0.10.0"
+    },
+    "com.fasterxml.jackson.core:jackson-annotations": {
+      "shasums": {
+        "jar": "581bd61000ef7648943f781ca05689e56d03f6052748365a8e2b3a9b5d3fa32f"
+      },
+      "version": "2.18.2"
+    },
+    "com.fasterxml.jackson.core:jackson-core": {
+      "shasums": {
+        "jar": "d8054ae7c0d1c2d2f55d28e46026ebe5892881f3fab5f439233184381c3b4a1f"
+      },
+      "version": "2.18.2"
+    },
+    "com.fasterxml.jackson.core:jackson-databind": {
+      "shasums": {
+        "jar": "4b364e6850dc89172fcf1d4dd26b8ff5488eda44ff4657e22dd265203dd5ab3c"
+      },
+      "version": "2.18.2"
     },
     "com.google.code.findbugs:jsr305": {
       "shasums": {
@@ -96,11 +190,83 @@
       },
       "version": "2.8"
     },
+    "com.jcraft:jzlib": {
+      "shasums": {
+        "jar": "89b1360f407381bf61fde411019d8cbd009ebb10cff715f3669017a031027560"
+      },
+      "version": "1.1.3"
+    },
+    "commons-cli:commons-cli": {
+      "shasums": {
+        "jar": "d3d530d0f28fd0fbbffe2b0b338f70e8cb96f1605579e2e3abd4db29cac24e69"
+      },
+      "version": "1.9.0"
+    },
+    "commons-codec:commons-codec": {
+      "shasums": {
+        "jar": "e599d5318e97aa48f42136a2927e6dfa4e8881dff0e6c8e3109ddbbff51d7b7d"
+      },
+      "version": "1.11"
+    },
+    "commons-io:commons-io": {
+      "shasums": {
+        "jar": "f3ca0f8d63c40e23a56d54101c60d5edee136b42d84bfb85bc7963093109cf8b"
+      },
+      "version": "2.18.0"
+    },
+    "commons-logging:commons-logging": {
+      "shasums": {
+        "jar": "daddea1ea0be0f56978ab3006b8ac92834afeefbd9b7e4e6316fca57df0fa636"
+      },
+      "version": "1.2"
+    },
+    "javax.annotation:javax.annotation-api": {
+      "shasums": {
+        "jar": "e04ba5195bcd555dc95650f7cc614d151e4bcd52d29a10b8aa2197f3ab89ab9b"
+      },
+      "version": "1.3.2"
+    },
+    "javax.servlet:javax.servlet-api": {
+      "shasums": {
+        "jar": "af456b2dd41c4e82cf54f3e743bc678973d9fe35bd4d3071fa05c7e5333b8482"
+      },
+      "version": "3.1.0"
+    },
+    "javax.websocket:javax.websocket-api": {
+      "shasums": {
+        "jar": "dd93009fb5aa3798bcd9ab0492a292ddae0f0b1ed2e45a75867a9925c90e747a"
+      },
+      "version": "1.0"
+    },
+    "javax.websocket:javax.websocket-client-api": {
+      "shasums": {
+        "jar": "0102ee41121ed7b8834f1efc6ef1a0dbaf610c1ad8f0d941ad721662b17bd27e"
+      },
+      "version": "1.0"
+    },
+    "joda-time:joda-time": {
+      "shasums": {
+        "jar": "8d4d807adc8e92a83913d9ccd61e634b4907c78d88f3016d06b3b3d2b4795a02"
+      },
+      "version": "2.12.2"
+    },
     "net.java.dev.jna:jna": {
       "shasums": {
         "jar": "3f5233589a799eb66dc2969afa3433fb56859d3d787c58b9bc7dd9e86f0a250c"
       },
       "version": "5.16.0"
+    },
+    "org.apache.httpcomponents:httpclient": {
+      "shasums": {
+        "jar": "c8bc7e1c51a6d4ce72f40d2ebbabf1c4b68bfe76e732104b04381b493478e9d6"
+      },
+      "version": "4.5.14"
+    },
+    "org.apache.httpcomponents:httpcore": {
+      "shasums": {
+        "jar": "6c9b3dd142a09dc468e23ad39aad6f75a0f2b85125104469f026e52a474e464f"
+      },
+      "version": "4.4.16"
     },
     "org.apiguardian:apiguardian-api": {
       "shasums": {
@@ -113,6 +279,126 @@
         "jar": "e316255bbfcd9fe50d165314b85abb2b33cb2a66a93c491db648e498a82c2de1"
       },
       "version": "3.33.0"
+    },
+    "org.eclipse.jetty.websocket:javax-websocket-client-impl": {
+      "shasums": {
+        "jar": "121935b8a9590c83421113a1e33ece68f2f84e73ab423f847151d012e06effb3"
+      },
+      "version": "9.4.56.v20240826"
+    },
+    "org.eclipse.jetty.websocket:javax-websocket-server-impl": {
+      "shasums": {
+        "jar": "e5c255617de25375703ada94cea6699115d4663752f5e1090e6ff870d0b67733"
+      },
+      "version": "9.4.56.v20240826"
+    },
+    "org.eclipse.jetty.websocket:websocket-api": {
+      "shasums": {
+        "jar": "b6362de984ed8c67f8755bcceb33346789b136238b621652ddb7e8391b2c449f"
+      },
+      "version": "9.4.56.v20240826"
+    },
+    "org.eclipse.jetty.websocket:websocket-client": {
+      "shasums": {
+        "jar": "2b88f2994a257299527903e365883452c24c9160f1008c03337411b397e9f3f6"
+      },
+      "version": "9.4.56.v20240826"
+    },
+    "org.eclipse.jetty.websocket:websocket-common": {
+      "shasums": {
+        "jar": "239c482dfdad265ca37fd88a954579e32691de26276c319fff4ffff5437da307"
+      },
+      "version": "9.4.56.v20240826"
+    },
+    "org.eclipse.jetty.websocket:websocket-server": {
+      "shasums": {
+        "jar": "0d8959a54af499307a9e8718c5fc7390b7751ef8b184d4b491271ed04e3a4e62"
+      },
+      "version": "9.4.56.v20240826"
+    },
+    "org.eclipse.jetty.websocket:websocket-servlet": {
+      "shasums": {
+        "jar": "fa779712cb22157116411979fd5593d20f9db3e27fa9088e1f282c9aef4a5584"
+      },
+      "version": "9.4.56.v20240826"
+    },
+    "org.eclipse.jetty:jetty-annotations": {
+      "shasums": {
+        "jar": "23cbab95cb447ea70f4273e5e6cd176a7bf7695b88c8f718c91b547fafc822d8"
+      },
+      "version": "9.4.56.v20240826"
+    },
+    "org.eclipse.jetty:jetty-client": {
+      "shasums": {
+        "jar": "e894bc56bbdeb8680cf084637b4df23a0fc9dcf31049ae6e68b2f2ae2cd81e1e"
+      },
+      "version": "9.4.56.v20240826"
+    },
+    "org.eclipse.jetty:jetty-http": {
+      "shasums": {
+        "jar": "203bb49644f2be0aea6a6adb320e64808156588b854ff231a756f65847fcd493"
+      },
+      "version": "9.4.56.v20240826"
+    },
+    "org.eclipse.jetty:jetty-io": {
+      "shasums": {
+        "jar": "62a3f852e56e3fff74705bd84dbaa4f5fc5dd2182c980042c35731bcaceac287"
+      },
+      "version": "9.4.56.v20240826"
+    },
+    "org.eclipse.jetty:jetty-jndi": {
+      "shasums": {
+        "jar": "6ae3b4afc4851e49dc8b6d2027611e93f0d5e40f5e75770643eef3f32d0b31ff"
+      },
+      "version": "9.4.56.v20240826"
+    },
+    "org.eclipse.jetty:jetty-plus": {
+      "shasums": {
+        "jar": "020541fb512bef0bacb330e569ee393619a970f7dc271175673539f95c373648"
+      },
+      "version": "9.4.56.v20240826"
+    },
+    "org.eclipse.jetty:jetty-security": {
+      "shasums": {
+        "jar": "df7bb3cac6279d20e22add135b7046bfebdf158ced6b5454ccd70096bd22deb4"
+      },
+      "version": "9.4.56.v20240826"
+    },
+    "org.eclipse.jetty:jetty-server": {
+      "shasums": {
+        "jar": "afb44ddcd73a6f31f518af69c4ca6af0f0d43a8f3bf67b842ff954891ca77e65"
+      },
+      "version": "9.4.56.v20240826"
+    },
+    "org.eclipse.jetty:jetty-servlet": {
+      "shasums": {
+        "jar": "6761b175f9ce2efad5cdfe5952dee6b9ee673739a9d758f3a7abba5b8403757e"
+      },
+      "version": "9.4.56.v20240826"
+    },
+    "org.eclipse.jetty:jetty-util": {
+      "shasums": {
+        "jar": "08d10469827064960b00807963a0d221f1b706054c4559bca9c74c92f8906aaa"
+      },
+      "version": "9.4.56.v20240826"
+    },
+    "org.eclipse.jetty:jetty-util-ajax": {
+      "shasums": {
+        "jar": "cfb248aab6fbb4e5acfe4beed6a694471713d9ad4107d8f10ed9d59b9c254fed"
+      },
+      "version": "9.4.56.v20240826"
+    },
+    "org.eclipse.jetty:jetty-webapp": {
+      "shasums": {
+        "jar": "ea9f7d954e8b4062cf1ae2fbc686989f92b7570058fd5b465f4166786013b453"
+      },
+      "version": "9.4.56.v20240826"
+    },
+    "org.eclipse.jetty:jetty-xml": {
+      "shasums": {
+        "jar": "d9e1e8089abf2edbe1d8ccdaa614b8432024dbd0b9af9f8e316b720f7048fed9"
+      },
+      "version": "9.4.56.v20240826"
     },
     "org.junit.jupiter:junit-jupiter": {
       "shasums": {
@@ -168,23 +454,207 @@
       },
       "version": "1.10.2"
     },
+    "org.mozilla:rhino": {
+      "shasums": {
+        "jar": "2427fdcbc149ca0a25ccfbb7c71b01f39ad42708773a47816cd2342861766b63"
+      },
+      "version": "1.7.15"
+    },
     "org.opentest4j:opentest4j": {
       "shasums": {
         "jar": "48e2df636cab6563ced64dcdff8abb2355627cb236ef0bf37598682ddf742f1b"
       },
       "version": "1.3.0"
     },
+    "org.ow2.asm:asm": {
+      "shasums": {
+        "jar": "8cadd43ac5eb6d09de05faecca38b917a040bb9139c7edeb4cc81c740b713281"
+      },
+      "version": "9.7.1"
+    },
+    "org.ow2.asm:asm-analysis": {
+      "shasums": {
+        "jar": "85b29371884ba31bb76edf22323c2c24e172c3267a67152eba3d1ccc2e041ef2"
+      },
+      "version": "9.7.1"
+    },
+    "org.ow2.asm:asm-commons": {
+      "shasums": {
+        "jar": "9a579b54d292ad9be171d4313fd4739c635592c2b5ac3a459bbd1049cddec6a0"
+      },
+      "version": "9.7.1"
+    },
+    "org.ow2.asm:asm-tree": {
+      "shasums": {
+        "jar": "9929881f59eb6b840e86d54570c77b59ce721d104e6dfd7a40978991c2d3b41f"
+      },
+      "version": "9.7.1"
+    },
+    "org.ow2.asm:asm-util": {
+      "shasums": {
+        "jar": "f885be71b5c90556f5f1ad1c4f9276b29b96057c497d46666fe4ddbec3cb43c6"
+      },
+      "version": "9.7.1"
+    },
     "org.slf4j:slf4j-api": {
       "shasums": {
         "jar": "44508fd1576500688c790b190acdd16fec4f8c79a3e0b900afd70503cf055f55"
       },
       "version": "2.0.18"
+    },
+    "org.slf4j:slf4j-nop": {
+      "shasums": {
+        "jar": "40e6be27d583d884183ca466cd20203112691f2a075a650e9e8d5c2e51aa5f49"
+      },
+      "version": "2.0.18"
+    },
+    "org.teavm:teavm-c-incremental": {
+      "shasums": {
+        "jar": "f2d7c528a8bf7773d57dd2ebaba0c362ff7d6dd345e86408ece2a09695fd1aeb"
+      },
+      "version": "0.12.0"
+    },
+    "org.teavm:teavm-classlib": {
+      "shasums": {
+        "jar": "ddf0c165b29da706880778f63098fe255cc4c1b859a548a7ac7484bb38e13c78"
+      },
+      "version": "0.12.0"
+    },
+    "org.teavm:teavm-cli": {
+      "shasums": {
+        "jar": "403a6b8ff87fd9fce7d5cf0294674ab9d852d9b15cd45d580152dfd0abb8409c"
+      },
+      "version": "0.12.0"
+    },
+    "org.teavm:teavm-core": {
+      "shasums": {
+        "jar": "a49d14f776b2e76f448b1755e5fa271bc048c818083e1f46061a4b299cc811aa"
+      },
+      "version": "0.12.0"
+    },
+    "org.teavm:teavm-devserver": {
+      "shasums": {
+        "jar": "2f622db0b9d16bd50977eee6fdb8d336b193e427c227015959ff30ef4c8d7133"
+      },
+      "version": "0.12.0"
+    },
+    "org.teavm:teavm-extras-slf4j": {
+      "shasums": {
+        "jar": "a3139bd01ab270bb0da744580e513d746b31d5a1d864f5dad5ba26f66d9571a6"
+      },
+      "version": "0.12.0"
+    },
+    "org.teavm:teavm-interop": {
+      "shasums": {
+        "jar": "2443b6b5ebce2519af3d8ea9c934c6f5e4d8376174afcbd31bfda9e7e885481d"
+      },
+      "version": "0.12.0"
+    },
+    "org.teavm:teavm-jso": {
+      "shasums": {
+        "jar": "9c312885e29079d0750e0005318e5d9440ae2d26235b9a859fabf86dffe13858"
+      },
+      "version": "0.12.0"
+    },
+    "org.teavm:teavm-jso-apis": {
+      "shasums": {
+        "jar": "efbb6cbe3d2d12ec0872375ebb11a2c2e09a8d07749f2dec3f163c75e4bc985d"
+      },
+      "version": "0.12.0"
+    },
+    "org.teavm:teavm-jso-impl": {
+      "shasums": {
+        "jar": "70486d0a3a3733ec018b1a9563784db15cc8b3fa400c0d7a184642fc2efd45e9"
+      },
+      "version": "0.12.0"
+    },
+    "org.teavm:teavm-metaprogramming-api": {
+      "shasums": {
+        "jar": "fdb3c6db916d42c513f0cabfd1ada157cf36866ba1d9fd87a1ff716a1b2401eb"
+      },
+      "version": "0.12.0"
+    },
+    "org.teavm:teavm-metaprogramming-impl": {
+      "shasums": {
+        "jar": "7c7569943138e75a4756bd3e15eae0cabbeac788dbf59ac85e87bf42e14b88a4"
+      },
+      "version": "0.12.0"
+    },
+    "org.teavm:teavm-platform": {
+      "shasums": {
+        "jar": "58440126cce3fe998dadb1786eb11ced3ab6c72828f3374ad7abed2b1bde2ee5"
+      },
+      "version": "0.12.0"
+    },
+    "org.teavm:teavm-relocated-libs-asm": {
+      "shasums": {
+        "jar": "3609e046f2de801045109df9aae8ceb7a7241ce84f05cfe54de892d090572ba8"
+      },
+      "version": "0.12.0"
+    },
+    "org.teavm:teavm-relocated-libs-asm-analysis": {
+      "shasums": {
+        "jar": "1b72de5be4c46bf5a043b2a5ee90d83fee8fd5cb5736d9c5a79fe648f187e7f1"
+      },
+      "version": "0.12.0"
+    },
+    "org.teavm:teavm-relocated-libs-asm-commons": {
+      "shasums": {
+        "jar": "4307ca22003a3276cfa087b336b7c37f0f3c45468b179b1b45babfc8ace870e0"
+      },
+      "version": "0.12.0"
+    },
+    "org.teavm:teavm-relocated-libs-asm-tree": {
+      "shasums": {
+        "jar": "ffdf4593a7ae39aa12bbc7565de415c6aa12edeb93d1b967b8f5c558ba9fd651"
+      },
+      "version": "0.12.0"
+    },
+    "org.teavm:teavm-relocated-libs-asm-util": {
+      "shasums": {
+        "jar": "93ac8c34d49c9e10f1b5087e277d0449f0123c69ecff3ccc7d7575387a486750"
+      },
+      "version": "0.12.0"
+    },
+    "org.teavm:teavm-relocated-libs-commons-cli": {
+      "shasums": {
+        "jar": "0093b7ecbb880b6afaee940ec3e801031e950497321ccd14fbd999881b5cc7cc"
+      },
+      "version": "0.12.0"
+    },
+    "org.teavm:teavm-relocated-libs-commons-io": {
+      "shasums": {
+        "jar": "0e04b244fac7b79f2317626164e8de4687ebb20047dd284eec64cae21e67cb23"
+      },
+      "version": "0.12.0"
+    },
+    "org.teavm:teavm-relocated-libs-hppc": {
+      "shasums": {
+        "jar": "a66d35e29c30f07b819a0eeaeb714343d04b615a9b41a99dbbe3585563186ff6"
+      },
+      "version": "0.12.0"
+    },
+    "org.teavm:teavm-relocated-libs-rhino": {
+      "shasums": {
+        "jar": "2ddf01a6b8f5623171737150a2b92a43e13c0ebc7bddd958f64c0a7426e4f6be"
+      },
+      "version": "0.12.0"
+    },
+    "org.teavm:teavm-tooling": {
+      "shasums": {
+        "jar": "265d01c707d1c4f226785b0b34aee4b703e72c6654e4bf9bc8e510f88033f12a"
+      },
+      "version": "0.12.0"
     }
   },
   "dependencies": {
     "ch.qos.logback:logback-classic": [
       "ch.qos.logback:logback-core",
       "org.slf4j:slf4j-api"
+    ],
+    "com.fasterxml.jackson.core:jackson-databind": [
+      "com.fasterxml.jackson.core:jackson-annotations",
+      "com.fasterxml.jackson.core:jackson-core"
     ],
     "com.google.guava:guava": [
       "com.google.code.findbugs:jsr305",
@@ -193,6 +663,90 @@
       "com.google.guava:listenablefuture",
       "com.google.j2objc:j2objc-annotations",
       "org.checkerframework:checker-qual"
+    ],
+    "org.apache.httpcomponents:httpclient": [
+      "commons-codec:commons-codec",
+      "commons-logging:commons-logging",
+      "org.apache.httpcomponents:httpcore"
+    ],
+    "org.eclipse.jetty.websocket:javax-websocket-client-impl": [
+      "javax.websocket:javax.websocket-client-api",
+      "org.eclipse.jetty.websocket:websocket-client"
+    ],
+    "org.eclipse.jetty.websocket:javax-websocket-server-impl": [
+      "javax.websocket:javax.websocket-api",
+      "org.eclipse.jetty.websocket:javax-websocket-client-impl",
+      "org.eclipse.jetty.websocket:websocket-server",
+      "org.eclipse.jetty:jetty-annotations"
+    ],
+    "org.eclipse.jetty.websocket:websocket-client": [
+      "org.eclipse.jetty.websocket:websocket-common",
+      "org.eclipse.jetty:jetty-client",
+      "org.eclipse.jetty:jetty-io",
+      "org.eclipse.jetty:jetty-util"
+    ],
+    "org.eclipse.jetty.websocket:websocket-common": [
+      "org.eclipse.jetty.websocket:websocket-api",
+      "org.eclipse.jetty:jetty-io",
+      "org.eclipse.jetty:jetty-util"
+    ],
+    "org.eclipse.jetty.websocket:websocket-server": [
+      "org.eclipse.jetty.websocket:websocket-client",
+      "org.eclipse.jetty.websocket:websocket-common",
+      "org.eclipse.jetty.websocket:websocket-servlet",
+      "org.eclipse.jetty:jetty-http",
+      "org.eclipse.jetty:jetty-servlet"
+    ],
+    "org.eclipse.jetty.websocket:websocket-servlet": [
+      "javax.servlet:javax.servlet-api",
+      "org.eclipse.jetty.websocket:websocket-api"
+    ],
+    "org.eclipse.jetty:jetty-annotations": [
+      "javax.annotation:javax.annotation-api",
+      "org.eclipse.jetty:jetty-plus",
+      "org.eclipse.jetty:jetty-webapp",
+      "org.ow2.asm:asm",
+      "org.ow2.asm:asm-commons"
+    ],
+    "org.eclipse.jetty:jetty-client": [
+      "org.eclipse.jetty:jetty-http",
+      "org.eclipse.jetty:jetty-io"
+    ],
+    "org.eclipse.jetty:jetty-http": [
+      "org.eclipse.jetty:jetty-io",
+      "org.eclipse.jetty:jetty-util"
+    ],
+    "org.eclipse.jetty:jetty-io": [
+      "org.eclipse.jetty:jetty-util"
+    ],
+    "org.eclipse.jetty:jetty-jndi": [
+      "org.eclipse.jetty:jetty-util"
+    ],
+    "org.eclipse.jetty:jetty-plus": [
+      "org.eclipse.jetty:jetty-jndi",
+      "org.eclipse.jetty:jetty-webapp"
+    ],
+    "org.eclipse.jetty:jetty-security": [
+      "org.eclipse.jetty:jetty-server"
+    ],
+    "org.eclipse.jetty:jetty-server": [
+      "javax.servlet:javax.servlet-api",
+      "org.eclipse.jetty:jetty-http",
+      "org.eclipse.jetty:jetty-io"
+    ],
+    "org.eclipse.jetty:jetty-servlet": [
+      "org.eclipse.jetty:jetty-security",
+      "org.eclipse.jetty:jetty-util-ajax"
+    ],
+    "org.eclipse.jetty:jetty-util-ajax": [
+      "org.eclipse.jetty:jetty-util"
+    ],
+    "org.eclipse.jetty:jetty-webapp": [
+      "org.eclipse.jetty:jetty-servlet",
+      "org.eclipse.jetty:jetty-xml"
+    ],
+    "org.eclipse.jetty:jetty-xml": [
+      "org.eclipse.jetty:jetty-util"
     ],
     "org.junit.jupiter:junit-jupiter": [
       "org.junit.jupiter:junit-jupiter-api",
@@ -232,6 +786,124 @@
     "org.junit.platform:junit-platform-reporting": [
       "org.apiguardian:apiguardian-api",
       "org.junit.platform:junit-platform-launcher"
+    ],
+    "org.ow2.asm:asm-analysis": [
+      "org.ow2.asm:asm-tree"
+    ],
+    "org.ow2.asm:asm-commons": [
+      "org.ow2.asm:asm",
+      "org.ow2.asm:asm-tree"
+    ],
+    "org.ow2.asm:asm-tree": [
+      "org.ow2.asm:asm"
+    ],
+    "org.ow2.asm:asm-util": [
+      "org.ow2.asm:asm",
+      "org.ow2.asm:asm-analysis",
+      "org.ow2.asm:asm-tree"
+    ],
+    "org.slf4j:slf4j-nop": [
+      "org.slf4j:slf4j-api"
+    ],
+    "org.teavm:teavm-c-incremental": [
+      "org.teavm:teavm-core",
+      "org.teavm:teavm-tooling"
+    ],
+    "org.teavm:teavm-classlib": [
+      "com.jcraft:jzlib",
+      "commons-io:commons-io",
+      "joda-time:joda-time",
+      "org.teavm:teavm-jso-apis",
+      "org.teavm:teavm-jso-impl",
+      "org.teavm:teavm-metaprogramming-impl",
+      "org.teavm:teavm-platform"
+    ],
+    "org.teavm:teavm-cli": [
+      "org.eclipse.jetty:jetty-server",
+      "org.teavm:teavm-c-incremental",
+      "org.teavm:teavm-classlib",
+      "org.teavm:teavm-devserver",
+      "org.teavm:teavm-jso-impl",
+      "org.teavm:teavm-metaprogramming-impl",
+      "org.teavm:teavm-relocated-libs-commons-cli",
+      "org.teavm:teavm-tooling"
+    ],
+    "org.teavm:teavm-core": [
+      "org.teavm:teavm-interop",
+      "org.teavm:teavm-metaprogramming-api",
+      "org.teavm:teavm-relocated-libs-asm-commons",
+      "org.teavm:teavm-relocated-libs-asm-util",
+      "org.teavm:teavm-relocated-libs-hppc",
+      "org.teavm:teavm-relocated-libs-rhino"
+    ],
+    "org.teavm:teavm-devserver": [
+      "com.fasterxml.jackson.core:jackson-databind",
+      "javax.servlet:javax.servlet-api",
+      "org.apache.httpcomponents:httpclient",
+      "org.eclipse.jetty.websocket:javax-websocket-server-impl",
+      "org.eclipse.jetty.websocket:websocket-client",
+      "org.eclipse.jetty:jetty-server",
+      "org.teavm:teavm-core",
+      "org.teavm:teavm-relocated-libs-commons-io",
+      "org.teavm:teavm-tooling"
+    ],
+    "org.teavm:teavm-extras-slf4j": [
+      "org.teavm:teavm-jso"
+    ],
+    "org.teavm:teavm-jso-apis": [
+      "org.teavm:teavm-interop",
+      "org.teavm:teavm-jso"
+    ],
+    "org.teavm:teavm-jso-impl": [
+      "org.teavm:teavm-jso",
+      "org.teavm:teavm-jso-apis",
+      "org.teavm:teavm-relocated-libs-rhino"
+    ],
+    "org.teavm:teavm-metaprogramming-impl": [
+      "org.teavm:teavm-metaprogramming-api",
+      "org.teavm:teavm-relocated-libs-asm",
+      "org.teavm:teavm-relocated-libs-commons-io"
+    ],
+    "org.teavm:teavm-platform": [
+      "org.teavm:teavm-jso-apis"
+    ],
+    "org.teavm:teavm-relocated-libs-asm": [
+      "org.ow2.asm:asm"
+    ],
+    "org.teavm:teavm-relocated-libs-asm-analysis": [
+      "org.ow2.asm:asm-analysis",
+      "org.teavm:teavm-relocated-libs-asm-tree"
+    ],
+    "org.teavm:teavm-relocated-libs-asm-commons": [
+      "org.ow2.asm:asm-commons",
+      "org.teavm:teavm-relocated-libs-asm",
+      "org.teavm:teavm-relocated-libs-asm-tree"
+    ],
+    "org.teavm:teavm-relocated-libs-asm-tree": [
+      "org.ow2.asm:asm-tree",
+      "org.teavm:teavm-relocated-libs-asm"
+    ],
+    "org.teavm:teavm-relocated-libs-asm-util": [
+      "org.ow2.asm:asm-util",
+      "org.teavm:teavm-relocated-libs-asm",
+      "org.teavm:teavm-relocated-libs-asm-analysis",
+      "org.teavm:teavm-relocated-libs-asm-tree"
+    ],
+    "org.teavm:teavm-relocated-libs-commons-cli": [
+      "commons-cli:commons-cli"
+    ],
+    "org.teavm:teavm-relocated-libs-commons-io": [
+      "commons-io:commons-io"
+    ],
+    "org.teavm:teavm-relocated-libs-hppc": [
+      "com.carrotsearch:hppc"
+    ],
+    "org.teavm:teavm-relocated-libs-rhino": [
+      "org.mozilla:rhino"
+    ],
+    "org.teavm:teavm-tooling": [
+      "org.teavm:teavm-core",
+      "org.teavm:teavm-relocated-libs-commons-io"
     ]
   },
   "packages": {
@@ -305,6 +977,59 @@
       "ch.qos.logback.core.testUtil",
       "ch.qos.logback.core.util"
     ],
+    "com.carrotsearch:hppc": [
+      "com.carrotsearch.hppc",
+      "com.carrotsearch.hppc.comparators",
+      "com.carrotsearch.hppc.cursors",
+      "com.carrotsearch.hppc.internals",
+      "com.carrotsearch.hppc.predicates",
+      "com.carrotsearch.hppc.procedures",
+      "com.carrotsearch.hppc.sorting"
+    ],
+    "com.fasterxml.jackson.core:jackson-annotations": [
+      "com.fasterxml.jackson.annotation"
+    ],
+    "com.fasterxml.jackson.core:jackson-core": [
+      "com.fasterxml.jackson.core",
+      "com.fasterxml.jackson.core.async",
+      "com.fasterxml.jackson.core.base",
+      "com.fasterxml.jackson.core.exc",
+      "com.fasterxml.jackson.core.filter",
+      "com.fasterxml.jackson.core.format",
+      "com.fasterxml.jackson.core.internal.shaded.fdp.v2_18_2",
+      "com.fasterxml.jackson.core.io",
+      "com.fasterxml.jackson.core.io.schubfach",
+      "com.fasterxml.jackson.core.json",
+      "com.fasterxml.jackson.core.json.async",
+      "com.fasterxml.jackson.core.sym",
+      "com.fasterxml.jackson.core.type",
+      "com.fasterxml.jackson.core.util"
+    ],
+    "com.fasterxml.jackson.core:jackson-databind": [
+      "com.fasterxml.jackson.databind",
+      "com.fasterxml.jackson.databind.annotation",
+      "com.fasterxml.jackson.databind.cfg",
+      "com.fasterxml.jackson.databind.deser",
+      "com.fasterxml.jackson.databind.deser.impl",
+      "com.fasterxml.jackson.databind.deser.std",
+      "com.fasterxml.jackson.databind.exc",
+      "com.fasterxml.jackson.databind.ext",
+      "com.fasterxml.jackson.databind.introspect",
+      "com.fasterxml.jackson.databind.jdk14",
+      "com.fasterxml.jackson.databind.json",
+      "com.fasterxml.jackson.databind.jsonFormatVisitors",
+      "com.fasterxml.jackson.databind.jsonschema",
+      "com.fasterxml.jackson.databind.jsontype",
+      "com.fasterxml.jackson.databind.jsontype.impl",
+      "com.fasterxml.jackson.databind.module",
+      "com.fasterxml.jackson.databind.node",
+      "com.fasterxml.jackson.databind.ser",
+      "com.fasterxml.jackson.databind.ser.impl",
+      "com.fasterxml.jackson.databind.ser.std",
+      "com.fasterxml.jackson.databind.type",
+      "com.fasterxml.jackson.databind.util",
+      "com.fasterxml.jackson.databind.util.internal"
+    ],
     "com.google.code.findbugs:jsr305": [
       "javax.annotation",
       "javax.annotation.concurrent",
@@ -351,11 +1076,119 @@
     "com.google.j2objc:j2objc-annotations": [
       "com.google.j2objc.annotations"
     ],
+    "com.jcraft:jzlib": [
+      "com.jcraft.jzlib"
+    ],
+    "commons-cli:commons-cli": [
+      "org.apache.commons.cli"
+    ],
+    "commons-codec:commons-codec": [
+      "org.apache.commons.codec",
+      "org.apache.commons.codec.binary",
+      "org.apache.commons.codec.cli",
+      "org.apache.commons.codec.digest",
+      "org.apache.commons.codec.language",
+      "org.apache.commons.codec.language.bm",
+      "org.apache.commons.codec.net"
+    ],
+    "commons-io:commons-io": [
+      "org.apache.commons.io",
+      "org.apache.commons.io.build",
+      "org.apache.commons.io.channels",
+      "org.apache.commons.io.charset",
+      "org.apache.commons.io.comparator",
+      "org.apache.commons.io.file",
+      "org.apache.commons.io.file.attribute",
+      "org.apache.commons.io.file.spi",
+      "org.apache.commons.io.filefilter",
+      "org.apache.commons.io.function",
+      "org.apache.commons.io.input",
+      "org.apache.commons.io.input.buffer",
+      "org.apache.commons.io.monitor",
+      "org.apache.commons.io.output",
+      "org.apache.commons.io.serialization"
+    ],
+    "commons-logging:commons-logging": [
+      "org.apache.commons.logging",
+      "org.apache.commons.logging.impl"
+    ],
+    "javax.annotation:javax.annotation-api": [
+      "javax.annotation",
+      "javax.annotation.security",
+      "javax.annotation.sql"
+    ],
+    "javax.servlet:javax.servlet-api": [
+      "javax.servlet",
+      "javax.servlet.annotation",
+      "javax.servlet.descriptor",
+      "javax.servlet.http"
+    ],
+    "javax.websocket:javax.websocket-api": [
+      "javax.websocket",
+      "javax.websocket.server"
+    ],
+    "javax.websocket:javax.websocket-client-api": [
+      "javax.websocket"
+    ],
+    "joda-time:joda-time": [
+      "org.joda.time",
+      "org.joda.time.base",
+      "org.joda.time.chrono",
+      "org.joda.time.convert",
+      "org.joda.time.field",
+      "org.joda.time.format",
+      "org.joda.time.tz"
+    ],
     "net.java.dev.jna:jna": [
       "com.sun.jna",
       "com.sun.jna.internal",
       "com.sun.jna.ptr",
       "com.sun.jna.win32"
+    ],
+    "org.apache.httpcomponents:httpclient": [
+      "org.apache.http.auth",
+      "org.apache.http.auth.params",
+      "org.apache.http.client",
+      "org.apache.http.client.config",
+      "org.apache.http.client.entity",
+      "org.apache.http.client.methods",
+      "org.apache.http.client.params",
+      "org.apache.http.client.protocol",
+      "org.apache.http.client.utils",
+      "org.apache.http.conn",
+      "org.apache.http.conn.params",
+      "org.apache.http.conn.routing",
+      "org.apache.http.conn.scheme",
+      "org.apache.http.conn.socket",
+      "org.apache.http.conn.ssl",
+      "org.apache.http.conn.util",
+      "org.apache.http.cookie",
+      "org.apache.http.cookie.params",
+      "org.apache.http.impl.auth",
+      "org.apache.http.impl.client",
+      "org.apache.http.impl.conn",
+      "org.apache.http.impl.conn.tsccm",
+      "org.apache.http.impl.cookie",
+      "org.apache.http.impl.execchain"
+    ],
+    "org.apache.httpcomponents:httpcore": [
+      "org.apache.http",
+      "org.apache.http.annotation",
+      "org.apache.http.concurrent",
+      "org.apache.http.config",
+      "org.apache.http.entity",
+      "org.apache.http.impl",
+      "org.apache.http.impl.bootstrap",
+      "org.apache.http.impl.entity",
+      "org.apache.http.impl.io",
+      "org.apache.http.impl.pool",
+      "org.apache.http.io",
+      "org.apache.http.message",
+      "org.apache.http.params",
+      "org.apache.http.pool",
+      "org.apache.http.protocol",
+      "org.apache.http.ssl",
+      "org.apache.http.util"
     ],
     "org.apiguardian:apiguardian-api": [
       "org.apiguardian.api"
@@ -391,6 +1224,129 @@
       "org.checkerframework.common.value.qual",
       "org.checkerframework.dataflow.qual",
       "org.checkerframework.framework.qual"
+    ],
+    "org.eclipse.jetty.websocket:javax-websocket-client-impl": [
+      "org.eclipse.jetty.websocket.jsr356",
+      "org.eclipse.jetty.websocket.jsr356.annotations",
+      "org.eclipse.jetty.websocket.jsr356.client",
+      "org.eclipse.jetty.websocket.jsr356.decoders",
+      "org.eclipse.jetty.websocket.jsr356.encoders",
+      "org.eclipse.jetty.websocket.jsr356.endpoints",
+      "org.eclipse.jetty.websocket.jsr356.messages",
+      "org.eclipse.jetty.websocket.jsr356.metadata",
+      "org.eclipse.jetty.websocket.jsr356.utils"
+    ],
+    "org.eclipse.jetty.websocket:javax-websocket-server-impl": [
+      "org.eclipse.jetty.websocket.jsr356.server",
+      "org.eclipse.jetty.websocket.jsr356.server.deploy"
+    ],
+    "org.eclipse.jetty.websocket:websocket-api": [
+      "org.eclipse.jetty.websocket.api",
+      "org.eclipse.jetty.websocket.api.annotations",
+      "org.eclipse.jetty.websocket.api.extensions",
+      "org.eclipse.jetty.websocket.api.util"
+    ],
+    "org.eclipse.jetty.websocket:websocket-client": [
+      "org.eclipse.jetty.websocket.client",
+      "org.eclipse.jetty.websocket.client.io",
+      "org.eclipse.jetty.websocket.client.masks"
+    ],
+    "org.eclipse.jetty.websocket:websocket-common": [
+      "org.eclipse.jetty.websocket.common",
+      "org.eclipse.jetty.websocket.common.events",
+      "org.eclipse.jetty.websocket.common.events.annotated",
+      "org.eclipse.jetty.websocket.common.extensions",
+      "org.eclipse.jetty.websocket.common.extensions.compress",
+      "org.eclipse.jetty.websocket.common.extensions.fragment",
+      "org.eclipse.jetty.websocket.common.extensions.identity",
+      "org.eclipse.jetty.websocket.common.frames",
+      "org.eclipse.jetty.websocket.common.io",
+      "org.eclipse.jetty.websocket.common.io.http",
+      "org.eclipse.jetty.websocket.common.io.payload",
+      "org.eclipse.jetty.websocket.common.message",
+      "org.eclipse.jetty.websocket.common.scopes",
+      "org.eclipse.jetty.websocket.common.util"
+    ],
+    "org.eclipse.jetty.websocket:websocket-server": [
+      "org.eclipse.jetty.websocket.server",
+      "org.eclipse.jetty.websocket.server.pathmap"
+    ],
+    "org.eclipse.jetty.websocket:websocket-servlet": [
+      "org.eclipse.jetty.websocket.servlet"
+    ],
+    "org.eclipse.jetty:jetty-annotations": [
+      "org.eclipse.jetty.annotations"
+    ],
+    "org.eclipse.jetty:jetty-client": [
+      "org.eclipse.jetty.client",
+      "org.eclipse.jetty.client.api",
+      "org.eclipse.jetty.client.http",
+      "org.eclipse.jetty.client.jmx",
+      "org.eclipse.jetty.client.util"
+    ],
+    "org.eclipse.jetty:jetty-http": [
+      "org.eclipse.jetty.http",
+      "org.eclipse.jetty.http.compression",
+      "org.eclipse.jetty.http.pathmap"
+    ],
+    "org.eclipse.jetty:jetty-io": [
+      "org.eclipse.jetty.io",
+      "org.eclipse.jetty.io.jmx",
+      "org.eclipse.jetty.io.ssl"
+    ],
+    "org.eclipse.jetty:jetty-jndi": [
+      "org.eclipse.jetty.jndi",
+      "org.eclipse.jetty.jndi.factories",
+      "org.eclipse.jetty.jndi.java",
+      "org.eclipse.jetty.jndi.local"
+    ],
+    "org.eclipse.jetty:jetty-plus": [
+      "org.eclipse.jetty.plus.annotation",
+      "org.eclipse.jetty.plus.jndi",
+      "org.eclipse.jetty.plus.security",
+      "org.eclipse.jetty.plus.webapp"
+    ],
+    "org.eclipse.jetty:jetty-security": [
+      "org.eclipse.jetty.security",
+      "org.eclipse.jetty.security.authentication"
+    ],
+    "org.eclipse.jetty:jetty-server": [
+      "org.eclipse.jetty.server",
+      "org.eclipse.jetty.server.handler",
+      "org.eclipse.jetty.server.handler.gzip",
+      "org.eclipse.jetty.server.handler.jmx",
+      "org.eclipse.jetty.server.jmx",
+      "org.eclipse.jetty.server.nio",
+      "org.eclipse.jetty.server.resource",
+      "org.eclipse.jetty.server.session"
+    ],
+    "org.eclipse.jetty:jetty-servlet": [
+      "org.eclipse.jetty.servlet",
+      "org.eclipse.jetty.servlet.jmx",
+      "org.eclipse.jetty.servlet.listener"
+    ],
+    "org.eclipse.jetty:jetty-util": [
+      "org.eclipse.jetty.util",
+      "org.eclipse.jetty.util.annotation",
+      "org.eclipse.jetty.util.component",
+      "org.eclipse.jetty.util.compression",
+      "org.eclipse.jetty.util.log",
+      "org.eclipse.jetty.util.preventers",
+      "org.eclipse.jetty.util.resource",
+      "org.eclipse.jetty.util.security",
+      "org.eclipse.jetty.util.ssl",
+      "org.eclipse.jetty.util.statistic",
+      "org.eclipse.jetty.util.thread",
+      "org.eclipse.jetty.util.thread.strategy"
+    ],
+    "org.eclipse.jetty:jetty-util-ajax": [
+      "org.eclipse.jetty.util.ajax"
+    ],
+    "org.eclipse.jetty:jetty-webapp": [
+      "org.eclipse.jetty.webapp"
+    ],
+    "org.eclipse.jetty:jetty-xml": [
+      "org.eclipse.jetty.xml"
     ],
     "org.junit.jupiter:junit-jupiter-api": [
       "org.junit.jupiter.api",
@@ -477,20 +1433,347 @@
       "org.junit.platform.reporting.shadow.org.opentest4j.reporting.events.root",
       "org.junit.platform.reporting.shadow.org.opentest4j.reporting.schema"
     ],
+    "org.mozilla:rhino": [
+      "org.mozilla.classfile",
+      "org.mozilla.javascript",
+      "org.mozilla.javascript.annotations",
+      "org.mozilla.javascript.ast",
+      "org.mozilla.javascript.commonjs.module",
+      "org.mozilla.javascript.commonjs.module.provider",
+      "org.mozilla.javascript.debug",
+      "org.mozilla.javascript.jdk18",
+      "org.mozilla.javascript.json",
+      "org.mozilla.javascript.optimizer",
+      "org.mozilla.javascript.regexp",
+      "org.mozilla.javascript.serialize",
+      "org.mozilla.javascript.tools",
+      "org.mozilla.javascript.tools.debugger",
+      "org.mozilla.javascript.tools.debugger.treetable",
+      "org.mozilla.javascript.tools.jsc",
+      "org.mozilla.javascript.tools.shell",
+      "org.mozilla.javascript.typedarrays",
+      "org.mozilla.javascript.v8dtoa",
+      "org.mozilla.javascript.xml",
+      "org.mozilla.javascript.xmlimpl"
+    ],
     "org.opentest4j:opentest4j": [
       "org.opentest4j"
+    ],
+    "org.ow2.asm:asm": [
+      "org.objectweb.asm",
+      "org.objectweb.asm.signature"
+    ],
+    "org.ow2.asm:asm-analysis": [
+      "org.objectweb.asm.tree.analysis"
+    ],
+    "org.ow2.asm:asm-commons": [
+      "org.objectweb.asm.commons"
+    ],
+    "org.ow2.asm:asm-tree": [
+      "org.objectweb.asm.tree"
+    ],
+    "org.ow2.asm:asm-util": [
+      "org.objectweb.asm.util"
     ],
     "org.slf4j:slf4j-api": [
       "org.slf4j",
       "org.slf4j.event",
       "org.slf4j.helpers",
       "org.slf4j.spi"
+    ],
+    "org.slf4j:slf4j-nop": [
+      "org.slf4j.nop"
+    ],
+    "org.teavm:teavm-c-incremental": [
+      "org.teavm.tooling.c.incremental"
+    ],
+    "org.teavm:teavm-classlib": [
+      "org.teavm.classlib.impl",
+      "org.teavm.classlib.impl.console",
+      "org.teavm.classlib.impl.currency",
+      "org.teavm.classlib.impl.lambda",
+      "org.teavm.classlib.impl.nio",
+      "org.teavm.classlib.impl.record",
+      "org.teavm.classlib.impl.reflection",
+      "org.teavm.classlib.impl.string",
+      "org.teavm.classlib.impl.text",
+      "org.teavm.classlib.impl.tz",
+      "org.teavm.classlib.impl.unicode",
+      "org.teavm.classlib.java.awt",
+      "org.teavm.classlib.java.io",
+      "org.teavm.classlib.java.lang",
+      "org.teavm.classlib.java.lang.annotation",
+      "org.teavm.classlib.java.lang.invoke",
+      "org.teavm.classlib.java.lang.ref",
+      "org.teavm.classlib.java.lang.reflect",
+      "org.teavm.classlib.java.math",
+      "org.teavm.classlib.java.net",
+      "org.teavm.classlib.java.net.impl",
+      "org.teavm.classlib.java.nio",
+      "org.teavm.classlib.java.nio.channels",
+      "org.teavm.classlib.java.nio.charset",
+      "org.teavm.classlib.java.nio.charset.impl",
+      "org.teavm.classlib.java.nio.file",
+      "org.teavm.classlib.java.nio.file.attribute",
+      "org.teavm.classlib.java.security",
+      "org.teavm.classlib.java.text",
+      "org.teavm.classlib.java.util",
+      "org.teavm.classlib.java.util.concurrent",
+      "org.teavm.classlib.java.util.concurrent.atomic",
+      "org.teavm.classlib.java.util.function",
+      "org.teavm.classlib.java.util.jar",
+      "org.teavm.classlib.java.util.logging",
+      "org.teavm.classlib.java.util.random",
+      "org.teavm.classlib.java.util.regex",
+      "org.teavm.classlib.java.util.stream",
+      "org.teavm.classlib.java.util.stream.doubleimpl",
+      "org.teavm.classlib.java.util.stream.impl",
+      "org.teavm.classlib.java.util.stream.intimpl",
+      "org.teavm.classlib.java.util.stream.longimpl",
+      "org.teavm.classlib.java.util.zip",
+      "org.threeten.bp",
+      "org.threeten.bp.chrono",
+      "org.threeten.bp.format",
+      "org.threeten.bp.temporal",
+      "org.threeten.bp.zone"
+    ],
+    "org.teavm:teavm-cli": [
+      "org.teavm.cli",
+      "org.teavm.cli.devserver"
+    ],
+    "org.teavm:teavm-core": [
+      "org.teavm.ast",
+      "org.teavm.ast.analysis",
+      "org.teavm.ast.decompilation",
+      "org.teavm.ast.optimization",
+      "org.teavm.backend.c",
+      "org.teavm.backend.c.analyze",
+      "org.teavm.backend.c.generate",
+      "org.teavm.backend.c.generators",
+      "org.teavm.backend.c.intrinsic",
+      "org.teavm.backend.c.runtime",
+      "org.teavm.backend.c.runtime.fs",
+      "org.teavm.backend.c.transform",
+      "org.teavm.backend.c.util",
+      "org.teavm.backend.javascript",
+      "org.teavm.backend.javascript.ast",
+      "org.teavm.backend.javascript.codegen",
+      "org.teavm.backend.javascript.intrinsics.ref",
+      "org.teavm.backend.javascript.rendering",
+      "org.teavm.backend.javascript.spi",
+      "org.teavm.backend.javascript.templating",
+      "org.teavm.backend.lowlevel.analyze",
+      "org.teavm.backend.lowlevel.dependency",
+      "org.teavm.backend.lowlevel.generate",
+      "org.teavm.backend.lowlevel.transform",
+      "org.teavm.backend.wasm",
+      "org.teavm.backend.wasm.binary",
+      "org.teavm.backend.wasm.blob",
+      "org.teavm.backend.wasm.debug",
+      "org.teavm.backend.wasm.debug.info",
+      "org.teavm.backend.wasm.debug.parser",
+      "org.teavm.backend.wasm.debug.sourcemap",
+      "org.teavm.backend.wasm.disasm",
+      "org.teavm.backend.wasm.dwarf",
+      "org.teavm.backend.wasm.gc",
+      "org.teavm.backend.wasm.gc.vtable",
+      "org.teavm.backend.wasm.generate",
+      "org.teavm.backend.wasm.generate.common.methods",
+      "org.teavm.backend.wasm.generate.gc",
+      "org.teavm.backend.wasm.generate.gc.annotations",
+      "org.teavm.backend.wasm.generate.gc.classes",
+      "org.teavm.backend.wasm.generate.gc.methods",
+      "org.teavm.backend.wasm.generate.gc.strings",
+      "org.teavm.backend.wasm.generators",
+      "org.teavm.backend.wasm.generators.gc",
+      "org.teavm.backend.wasm.intrinsics",
+      "org.teavm.backend.wasm.intrinsics.gc",
+      "org.teavm.backend.wasm.model",
+      "org.teavm.backend.wasm.model.expression",
+      "org.teavm.backend.wasm.optimization",
+      "org.teavm.backend.wasm.parser",
+      "org.teavm.backend.wasm.render",
+      "org.teavm.backend.wasm.runtime",
+      "org.teavm.backend.wasm.runtime.fs",
+      "org.teavm.backend.wasm.runtime.gc",
+      "org.teavm.backend.wasm.runtime.math",
+      "org.teavm.backend.wasm.transformation",
+      "org.teavm.backend.wasm.transformation.gc",
+      "org.teavm.backend.wasm.wasi",
+      "org.teavm.cache",
+      "org.teavm.callgraph",
+      "org.teavm.classlib",
+      "org.teavm.common",
+      "org.teavm.common.json",
+      "org.teavm.debugging",
+      "org.teavm.debugging.information",
+      "org.teavm.debugging.javascript",
+      "org.teavm.dependency",
+      "org.teavm.diagnostics",
+      "org.teavm.model",
+      "org.teavm.model.analysis",
+      "org.teavm.model.classes",
+      "org.teavm.model.emit",
+      "org.teavm.model.instructions",
+      "org.teavm.model.lowlevel",
+      "org.teavm.model.optimization",
+      "org.teavm.model.text",
+      "org.teavm.model.transformation",
+      "org.teavm.model.util",
+      "org.teavm.parsing",
+      "org.teavm.parsing.resource",
+      "org.teavm.parsing.substitution",
+      "org.teavm.runtime",
+      "org.teavm.runtime.fs",
+      "org.teavm.runtime.fs.memory",
+      "org.teavm.runtime.heap",
+      "org.teavm.vm",
+      "org.teavm.vm.spi"
+    ],
+    "org.teavm:teavm-devserver": [
+      "org.teavm.devserver"
+    ],
+    "org.teavm:teavm-extras-slf4j": [
+      "org.teavm.extras.slf4j"
+    ],
+    "org.teavm:teavm-interop": [
+      "org.teavm.interop",
+      "org.teavm.interop.c"
+    ],
+    "org.teavm:teavm-jso": [
+      "org.teavm.jso"
+    ],
+    "org.teavm:teavm-jso-apis": [
+      "org.teavm.jso.ajax",
+      "org.teavm.jso.browser",
+      "org.teavm.jso.canvas",
+      "org.teavm.jso.core",
+      "org.teavm.jso.crypto",
+      "org.teavm.jso.dom.css",
+      "org.teavm.jso.dom.events",
+      "org.teavm.jso.dom.html",
+      "org.teavm.jso.dom.svg",
+      "org.teavm.jso.dom.types",
+      "org.teavm.jso.dom.xml",
+      "org.teavm.jso.file",
+      "org.teavm.jso.function",
+      "org.teavm.jso.gamepad",
+      "org.teavm.jso.geolocation",
+      "org.teavm.jso.indexeddb",
+      "org.teavm.jso.json",
+      "org.teavm.jso.media",
+      "org.teavm.jso.popover",
+      "org.teavm.jso.streams",
+      "org.teavm.jso.typedarrays",
+      "org.teavm.jso.webaudio",
+      "org.teavm.jso.webgl",
+      "org.teavm.jso.websocket",
+      "org.teavm.jso.workers"
+    ],
+    "org.teavm:teavm-jso-impl": [
+      "org.teavm.jso.impl",
+      "org.teavm.jso.impl.wasmgc"
+    ],
+    "org.teavm:teavm-metaprogramming-api": [
+      "org.teavm.metaprogramming",
+      "org.teavm.metaprogramming.reflect"
+    ],
+    "org.teavm:teavm-metaprogramming-impl": [
+      "org.teavm.metaprogramming.impl",
+      "org.teavm.metaprogramming.impl.model",
+      "org.teavm.metaprogramming.impl.optimization",
+      "org.teavm.metaprogramming.impl.reflect"
+    ],
+    "org.teavm:teavm-platform": [
+      "org.teavm.platform",
+      "org.teavm.platform.metadata",
+      "org.teavm.platform.plugin",
+      "org.teavm.platform.plugin.wasmgc"
+    ],
+    "org.teavm:teavm-relocated-libs-asm": [
+      "org.teavm.asm",
+      "org.teavm.asm.signature"
+    ],
+    "org.teavm:teavm-relocated-libs-asm-analysis": [
+      "org.teavm.asm.tree.analysis"
+    ],
+    "org.teavm:teavm-relocated-libs-asm-commons": [
+      "org.teavm.asm.commons"
+    ],
+    "org.teavm:teavm-relocated-libs-asm-tree": [
+      "org.teavm.asm.tree"
+    ],
+    "org.teavm:teavm-relocated-libs-asm-util": [
+      "org.teavm.asm.util"
+    ],
+    "org.teavm:teavm-relocated-libs-commons-cli": [
+      "org.teavm.apachecommons.cli"
+    ],
+    "org.teavm:teavm-relocated-libs-commons-io": [
+      "org.teavm.apachecommons.io",
+      "org.teavm.apachecommons.io.build",
+      "org.teavm.apachecommons.io.channels",
+      "org.teavm.apachecommons.io.charset",
+      "org.teavm.apachecommons.io.comparator",
+      "org.teavm.apachecommons.io.file",
+      "org.teavm.apachecommons.io.file.attribute",
+      "org.teavm.apachecommons.io.file.spi",
+      "org.teavm.apachecommons.io.filefilter",
+      "org.teavm.apachecommons.io.function",
+      "org.teavm.apachecommons.io.input",
+      "org.teavm.apachecommons.io.input.buffer",
+      "org.teavm.apachecommons.io.monitor",
+      "org.teavm.apachecommons.io.output",
+      "org.teavm.apachecommons.io.serialization"
+    ],
+    "org.teavm:teavm-relocated-libs-hppc": [
+      "org.teavm.hppc",
+      "org.teavm.hppc.comparators",
+      "org.teavm.hppc.cursors",
+      "org.teavm.hppc.internals",
+      "org.teavm.hppc.predicates",
+      "org.teavm.hppc.procedures",
+      "org.teavm.hppc.sorting"
+    ],
+    "org.teavm:teavm-relocated-libs-rhino": [
+      "org.teavm.rhino.classfile",
+      "org.teavm.rhino.javascript",
+      "org.teavm.rhino.javascript.annotations",
+      "org.teavm.rhino.javascript.ast",
+      "org.teavm.rhino.javascript.commonjs.module",
+      "org.teavm.rhino.javascript.commonjs.module.provider",
+      "org.teavm.rhino.javascript.debug",
+      "org.teavm.rhino.javascript.jdk18",
+      "org.teavm.rhino.javascript.json",
+      "org.teavm.rhino.javascript.optimizer",
+      "org.teavm.rhino.javascript.regexp",
+      "org.teavm.rhino.javascript.serialize",
+      "org.teavm.rhino.javascript.tools",
+      "org.teavm.rhino.javascript.tools.debugger",
+      "org.teavm.rhino.javascript.tools.debugger.treetable",
+      "org.teavm.rhino.javascript.tools.jsc",
+      "org.teavm.rhino.javascript.tools.shell",
+      "org.teavm.rhino.javascript.typedarrays",
+      "org.teavm.rhino.javascript.v8dtoa",
+      "org.teavm.rhino.javascript.xml",
+      "org.teavm.rhino.javascript.xmlimpl"
+    ],
+    "org.teavm:teavm-tooling": [
+      "org.teavm.tooling",
+      "org.teavm.tooling.builder",
+      "org.teavm.tooling.daemon",
+      "org.teavm.tooling.sources",
+      "org.teavm.tooling.util"
     ]
   },
   "repositories": {
     "https://repo1.maven.org/maven2/": [
       "ch.qos.logback:logback-classic",
       "ch.qos.logback:logback-core",
+      "com.carrotsearch:hppc",
+      "com.fasterxml.jackson.core:jackson-annotations",
+      "com.fasterxml.jackson.core:jackson-core",
+      "com.fasterxml.jackson.core:jackson-databind",
       "com.google.code.findbugs:jsr305",
       "com.google.code.gson:gson",
       "com.google.errorprone:error_prone_annotations",
@@ -498,9 +1781,41 @@
       "com.google.guava:guava",
       "com.google.guava:listenablefuture",
       "com.google.j2objc:j2objc-annotations",
+      "com.jcraft:jzlib",
+      "commons-cli:commons-cli",
+      "commons-codec:commons-codec",
+      "commons-io:commons-io",
+      "commons-logging:commons-logging",
+      "javax.annotation:javax.annotation-api",
+      "javax.servlet:javax.servlet-api",
+      "javax.websocket:javax.websocket-api",
+      "javax.websocket:javax.websocket-client-api",
+      "joda-time:joda-time",
       "net.java.dev.jna:jna",
+      "org.apache.httpcomponents:httpclient",
+      "org.apache.httpcomponents:httpcore",
       "org.apiguardian:apiguardian-api",
       "org.checkerframework:checker-qual",
+      "org.eclipse.jetty.websocket:javax-websocket-client-impl",
+      "org.eclipse.jetty.websocket:javax-websocket-server-impl",
+      "org.eclipse.jetty.websocket:websocket-api",
+      "org.eclipse.jetty.websocket:websocket-client",
+      "org.eclipse.jetty.websocket:websocket-common",
+      "org.eclipse.jetty.websocket:websocket-server",
+      "org.eclipse.jetty.websocket:websocket-servlet",
+      "org.eclipse.jetty:jetty-annotations",
+      "org.eclipse.jetty:jetty-client",
+      "org.eclipse.jetty:jetty-http",
+      "org.eclipse.jetty:jetty-io",
+      "org.eclipse.jetty:jetty-jndi",
+      "org.eclipse.jetty:jetty-plus",
+      "org.eclipse.jetty:jetty-security",
+      "org.eclipse.jetty:jetty-server",
+      "org.eclipse.jetty:jetty-servlet",
+      "org.eclipse.jetty:jetty-util",
+      "org.eclipse.jetty:jetty-util-ajax",
+      "org.eclipse.jetty:jetty-webapp",
+      "org.eclipse.jetty:jetty-xml",
       "org.junit.jupiter:junit-jupiter",
       "org.junit.jupiter:junit-jupiter-api",
       "org.junit.jupiter:junit-jupiter-engine",
@@ -510,8 +1825,38 @@
       "org.junit.platform:junit-platform-engine",
       "org.junit.platform:junit-platform-launcher",
       "org.junit.platform:junit-platform-reporting",
+      "org.mozilla:rhino",
       "org.opentest4j:opentest4j",
-      "org.slf4j:slf4j-api"
+      "org.ow2.asm:asm",
+      "org.ow2.asm:asm-analysis",
+      "org.ow2.asm:asm-commons",
+      "org.ow2.asm:asm-tree",
+      "org.ow2.asm:asm-util",
+      "org.slf4j:slf4j-api",
+      "org.slf4j:slf4j-nop",
+      "org.teavm:teavm-c-incremental",
+      "org.teavm:teavm-classlib",
+      "org.teavm:teavm-cli",
+      "org.teavm:teavm-core",
+      "org.teavm:teavm-devserver",
+      "org.teavm:teavm-extras-slf4j",
+      "org.teavm:teavm-interop",
+      "org.teavm:teavm-jso",
+      "org.teavm:teavm-jso-apis",
+      "org.teavm:teavm-jso-impl",
+      "org.teavm:teavm-metaprogramming-api",
+      "org.teavm:teavm-metaprogramming-impl",
+      "org.teavm:teavm-platform",
+      "org.teavm:teavm-relocated-libs-asm",
+      "org.teavm:teavm-relocated-libs-asm-analysis",
+      "org.teavm:teavm-relocated-libs-asm-commons",
+      "org.teavm:teavm-relocated-libs-asm-tree",
+      "org.teavm:teavm-relocated-libs-asm-util",
+      "org.teavm:teavm-relocated-libs-commons-cli",
+      "org.teavm:teavm-relocated-libs-commons-io",
+      "org.teavm:teavm-relocated-libs-hppc",
+      "org.teavm:teavm-relocated-libs-rhino",
+      "org.teavm:teavm-tooling"
     ]
   },
   "services": {
@@ -521,6 +1866,48 @@
       ],
       "org.slf4j.spi.SLF4JServiceProvider": [
         "ch.qos.logback.classic.spi.LogbackServiceProvider"
+      ]
+    },
+    "com.fasterxml.jackson.core:jackson-core": {
+      "com.fasterxml.jackson.core.JsonFactory": [
+        "com.fasterxml.jackson.core.JsonFactory"
+      ]
+    },
+    "com.fasterxml.jackson.core:jackson-databind": {
+      "com.fasterxml.jackson.core.ObjectCodec": [
+        "com.fasterxml.jackson.databind.ObjectMapper"
+      ]
+    },
+    "org.eclipse.jetty.websocket:javax-websocket-client-impl": {
+      "javax.websocket.ContainerProvider": [
+        "org.eclipse.jetty.websocket.jsr356.JettyClientContainerProvider"
+      ]
+    },
+    "org.eclipse.jetty.websocket:javax-websocket-server-impl": {
+      "javax.servlet.ServletContainerInitializer": [
+        "org.eclipse.jetty.websocket.jsr356.server.deploy.WebSocketServerContainerInitializer"
+      ],
+      "javax.websocket.server.ServerEndpointConfig$Configurator": [
+        "org.eclipse.jetty.websocket.jsr356.server.ContainerDefaultConfigurator"
+      ]
+    },
+    "org.eclipse.jetty.websocket:websocket-common": {
+      "org.eclipse.jetty.websocket.api.extensions.Extension": [
+        "org.eclipse.jetty.websocket.common.extensions.compress.DeflateFrameExtension",
+        "org.eclipse.jetty.websocket.common.extensions.compress.PerMessageDeflateExtension",
+        "org.eclipse.jetty.websocket.common.extensions.compress.XWebkitDeflateFrameExtension",
+        "org.eclipse.jetty.websocket.common.extensions.fragment.FragmentExtension",
+        "org.eclipse.jetty.websocket.common.extensions.identity.IdentityExtension"
+      ]
+    },
+    "org.eclipse.jetty.websocket:websocket-server": {
+      "javax.servlet.ServletContainerInitializer": [
+        "org.eclipse.jetty.websocket.server.NativeWebSocketServletContainerInitializer"
+      ]
+    },
+    "org.eclipse.jetty:jetty-http": {
+      "org.eclipse.jetty.http.HttpFieldPreEncoder": [
+        "org.eclipse.jetty.http.Http1FieldPreEncoder"
       ]
     },
     "org.junit.jupiter:junit-jupiter-engine": {
@@ -541,6 +1928,36 @@
     "org.junit.platform:junit-platform-reporting": {
       "org.junit.platform.launcher.TestExecutionListener": [
         "org.junit.platform.reporting.open.xml.OpenTestReportGeneratingListener"
+      ]
+    },
+    "org.slf4j:slf4j-nop": {
+      "org.slf4j.spi.SLF4JServiceProvider": [
+        "org.slf4j.nop.NOPServiceProvider"
+      ]
+    },
+    "org.teavm:teavm-classlib": {
+      "org.teavm.vm.spi.TeaVMPlugin": [
+        "org.teavm.classlib.impl.JCLPlugin"
+      ]
+    },
+    "org.teavm:teavm-extras-slf4j": {
+      "org.teavm.vm.spi.TeaVMPlugin": [
+        "org.teavm.extras.slf4j.Slf4jPlugin"
+      ]
+    },
+    "org.teavm:teavm-jso-impl": {
+      "org.teavm.vm.spi.TeaVMPlugin": [
+        "org.teavm.jso.impl.JSOPlugin"
+      ]
+    },
+    "org.teavm:teavm-metaprogramming-impl": {
+      "org.teavm.vm.spi.TeaVMPlugin": [
+        "org.teavm.metaprogramming.impl.MetaprogrammingPlugin"
+      ]
+    },
+    "org.teavm:teavm-platform": {
+      "org.teavm.vm.spi.TeaVMPlugin": [
+        "org.teavm.platform.plugin.PlatformPlugin"
       ]
     }
   },

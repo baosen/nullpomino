@@ -43,6 +43,34 @@ java_library(
     deps = [":sdl_binding"],
 )
 
+# Spike-only slice of the game logic (component/wallkick/randomizer/AI-base/
+# engine + manager, plus the util classes they need), deliberately excluding
+# logback so a TeaVM compile failure here can't be confused with a
+# logback/Joran failure. See tools/teavm/spike/BUILD.bazel.
+java_library(
+    name = "game_logic_spike",
+    srcs = [
+        "nullpomino/game/ai/AIPlayer.java",
+        "nullpomino/game/ai/DummyAI.java",
+        "nullpomino/game/event/EventReceiver.java",
+        "nullpomino/game/mode/GameMode.java",
+        "nullpomino/game/play/GameEngine.java",
+        "nullpomino/game/play/GameManager.java",
+        "nullpomino/util/ClassFactory.java",
+        "nullpomino/util/CustomProperties.java",
+        "nullpomino/util/DataDir.java",
+        "nullpomino/util/GeneralUtil.java",
+        "nullpomino/util/LegacyClassNames.java",
+    ] + glob([
+        "nullpomino/game/component/*.java",
+        "nullpomino/game/randomizer/*.java",
+        "nullpomino/game/wallkick/*.java",
+    ]),
+    javacopts = JAVACOPTS,
+    visibility = ["//visibility:public"],
+    deps = [SLF4J],
+)
+
 # Browser entry point: injects the web backend and seeds the writable
 # virtual filesystem before delegating to the SDL main.
 java_library(
