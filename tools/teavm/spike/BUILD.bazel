@@ -42,34 +42,5 @@ java_binary(
     ],
 )
 
-# TeaVM CLI, bundled as a deploy jar so its full transitive classpath
-# (teavm-tooling/core/classlib) is assembled by Bazel instead of hand-wired.
-# Bundles teavm-extras-slf4j too: it's a TeaVM compiler plugin
-# (META-INF/services/org.teavm.vm.spi.TeaVMPlugin), discovered from the
-# *tool's* own classpath, that substitutes a TeaVM-native logger for
-# slf4j-api's ServiceLoader/SecurityManager-based bootstrap.
-#
-# GOTCHA (0.14.1, must use a JDK <=17 to invoke — this repo has one at
-# /usr/lib/jvm/java-17-openjdk-amd64 — the tool's own ASM-based class reader
-# rejects newer bytecode versions it's asked to introspect): once any -p flag
-# is given, TeaVMTool.createResourceProvider() switches to a classpath-only
-# resolver that does NOT fall back to the launching JVM's own classpath —
-# so classlib/core/jso/etc, though bundled into this very deploy jar, become
-# invisible to the compiler ("ERROR: Class java.lang.System was not found")
-# unless *also* passed via -p. Passing them as separate jars is order-
-# sensitive and silently breaks depending on argument order; passing this
-# same already-fully-merged teavm_compiler_deploy.jar a second time, via its
-# own -p, sidesteps that fragility (one jar, no ordering ambiguity):
-#
-#   java -jar bazel-bin/tools/teavm/spike/teavm_compiler_deploy.jar \
-#     -t js -p <app_deploy.jar> -p bazel-bin/tools/teavm/spike/teavm_compiler_deploy.jar \
-#     -d <outdir> -f classes.js -O 1 <fully.qualified.MainClass>
-java_binary(
-    name = "teavm_compiler",
-    main_class = "org.teavm.cli.TeaVMRunner",
-    runtime_deps = [
-        "@maven//:org_teavm_teavm_cli",
-        "@maven//:org_teavm_teavm_extras_slf4j",
-        "@maven//:org_slf4j_slf4j_api",
-    ],
-)
+# The teavm_compiler target lives in //tools/teavm now (it's needed by the
+# production web build, not just this spike).
