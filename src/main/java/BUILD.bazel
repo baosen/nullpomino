@@ -43,6 +43,25 @@ java_library(
     deps = [":sdl_binding"],
 )
 
+TEAVM_JSO = [
+    "@maven//:org_teavm_teavm_interop",
+    "@maven//:org_teavm_teavm_jso",
+    "@maven//:org_teavm_teavm_jso_apis",
+    "@maven//:org_teavm_teavm_platform",
+]
+
+# Web backend: TeaVM JSO (Canvas2D/WebAudio/localStorage) implementation of the
+# SDL binding. Compiled to JS by //web:classes_js; also javac-compiles on the
+# JVM (JSO annotations are plain annotations there) so `bazel build //...`
+# stays green.
+java_library(
+    name = "sdl_binding_teavm",
+    srcs = glob(["nullpomino/gui/sdl/binding/teavm/*.java"]),
+    javacopts = JAVACOPTS,
+    visibility = ["//visibility:public"],
+    deps = [":sdl_binding"] + TEAVM_JSO,
+)
+
 # Spike-only slice of the game logic (component/wallkick/randomizer/AI-base/
 # engine + manager, plus the util classes they need), deliberately excluding
 # logback so a TeaVM compile failure here can't be confused with a
@@ -116,6 +135,53 @@ java_library(
         LOGBACK_CORE,
         SLF4J,
     ],
+)
+
+# Browser (TeaVM) variant of :core — the same engine/GUI cluster, but with the
+# socket-based NetBaseClient swapped for a socket-free stub. The netplay states
+# aren't reachable from the web entry point, but every mode's netplay lifecycle
+# hooks statically reach NetBaseClient.send -> java.net.Socket, which TeaVM's
+# classlib lacks; the stub keeps the reachable graph java.net-free. Logback
+# stays on the compile classpath (LogConfig references it) but is excluded from
+# the deploy jar (see //:web_deploy_env), and is never reached at runtime.
+java_library(
+    name = "core_web",
+    srcs = glob(
+        [
+            "nullpomino/util/*.java",
+            "nullpomino/game/**/*.java",
+            "nullpomino/gui/*.java",
+            "nullpomino/gui/net/*.java",
+            "nullpomino/gui/sdl/*.java",
+            "nullpomino/gui/sdl/widget/*.java",
+            "nullpomino/tool/airankstool/*.java",
+        ],
+        exclude = ["nullpomino/game/net/NetBaseClient.java"],
+    ) + ["//src/main/java-webstub:netbaseclient_webstub"],
+    javacopts = JAVACOPTS,
+    visibility = ["//visibility:public"],
+    deps = [
+        ":sdl_binding",
+        LOGBACK,
+        LOGBACK_CORE,
+        SLF4J,
+    ],
+)
+
+# Browser entry point (TeaVM): selects the JSO backend, seeds the virtual
+# filesystem, registers a netplay-free set of modes and states, then runs the
+# shared SDL main loop.
+java_library(
+    name = "teavm_main",
+    srcs = glob(["nullpomino/gui/teavm/*.java"]),
+    javacopts = JAVACOPTS,
+    visibility = ["//visibility:public"],
+    deps = [
+        ":core_web",
+        ":sdl_binding",
+        ":sdl_binding_teavm",
+        SLF4J,
+    ] + TEAVM_JSO,
 )
 
 java_library(

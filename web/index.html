@@ -6,174 +6,19 @@
   <title>NullpoMino+</title>
   <style>
     html, body { margin: 0; height: 100%; background: #000; overflow: hidden; }
-    #display { width: 100%; height: 100%; }
+    #game { display: block; width: 100%; height: 100%; }
   </style>
-  <script src="https://cjrtnc.leaningtech.com/4.3/loader.js"></script>
 </head>
 <body>
-  <div id="display"></div>
-  <!-- Powered by CheerpJ (https://cheerpj.com) — Community License attribution -->
-  <script type="module">
-    // /app/ maps to the WEB SERVER ROOT, not the page directory. Compute the
-    // page's base path so the same file works at a domain root and on
-    // subdirectory hosting (e.g. GitHub Pages project sites).
-    const base = location.pathname.replace(/\/[^/]*$/, "");
-
-    // ---- Web Audio bridge -------------------------------------------------
-    // CheerpJ's Java runtime has no javax.sound output, so the game's mixer
-    // calls into these natives (nullpomino.gui.sdl.binding.web.BrowserAudio).
-    const ctx = new (window.AudioContext || window.webkitAudioContext)();
-    const audios = new Map();   // id -> AudioBuffer
-    const tracks = new Map();   // id -> {gain, buffer, source, loop, playing, startedAt, pausedAt, pendingStart}
-    let nextAudioId = 1;
-    let nextTrackId = 1;
-    const stats = { plays: 0 }; // introspection for automated tests
-    window.__nullpoAudio = { ctx, tracks, audios, stats };
-
-    // Browsers keep the context suspended until a user gesture.
-    const resumeAudio = () => { if (ctx.state === "suspended") ctx.resume(); };
-    for (const ev of ["keydown", "keyup", "mousedown", "pointerdown", "touchstart"]) {
-      window.addEventListener(ev, resumeAudio, true);
-    }
-    ctx.onstatechange = () => {
-      if (ctx.state !== "running") return;
-      // Start loops (BGM) that were requested while suspended.
-      for (const t of tracks.values()) {
-        if (t.pendingStart) { t.pendingStart = false; startTrack(t); }
-      }
-    };
-
-    function stopSource(t) {
-      if (t.source) {
-        const s = t.source;
-        t.source = null;
-        try { s.stop(); } catch {}
-      }
-      t.playing = false;
-    }
-
-    function startTrack(t, offset = 0) {
-      if (!t.buffer) return;
-      stopSource(t);
-      const s = ctx.createBufferSource();
-      s.buffer = t.buffer;
-      s.loop = t.loop;
-      s.connect(t.gain);
-      s.onended = () => { if (t.source === s) { t.source = null; t.playing = false; } };
-      t.source = s;
-      t.playing = true;
-      t.startedAt = ctx.currentTime - offset;
-      t.pausedAt = null;
-      stats.plays++;
-      s.start(0, offset);
-    }
-
-    const audioNatives = {
-      Java_nullpomino_gui_sdl_binding_web_BrowserAudio_jsAudioInit(lib) {
-        return ctx ? 1 : 0;
-      },
-      async Java_nullpomino_gui_sdl_binding_web_BrowserAudio_jsLoadAudio(lib, url) {
-        try {
-          const res = await fetch(url);
-          if (!res.ok) return 0;
-          const buffer = await ctx.decodeAudioData(await res.arrayBuffer());
-          const id = nextAudioId++;
-          audios.set(id, buffer);
-          return id;
-        } catch {
-          return 0;
-        }
-      },
-      Java_nullpomino_gui_sdl_binding_web_BrowserAudio_jsAudioDurationFrames(lib, id) {
-        const b = audios.get(id);
-        return b ? b.length : 0;
-      },
-      Java_nullpomino_gui_sdl_binding_web_BrowserAudio_jsAudioSampleRate(lib, id) {
-        const b = audios.get(id);
-        return b ? Math.round(b.sampleRate) : 0;
-      },
-      Java_nullpomino_gui_sdl_binding_web_BrowserAudio_jsCreateTrack(lib) {
-        const gain = ctx.createGain();
-        gain.connect(ctx.destination);
-        const id = nextTrackId++;
-        tracks.set(id, { gain, buffer: null, source: null, loop: false,
-          playing: false, startedAt: 0, pausedAt: null, pendingStart: false });
-        return id;
-      },
-      Java_nullpomino_gui_sdl_binding_web_BrowserAudio_jsSetTrackAudio(lib, tid, aid) {
-        const t = tracks.get(tid);
-        if (!t) return;
-        stopSource(t);
-        t.buffer = audios.get(aid) || null;
-        t.pausedAt = null;
-        t.pendingStart = false;
-      },
-      Java_nullpomino_gui_sdl_binding_web_BrowserAudio_jsSetTrackLoops(lib, tid, loops) {
-        const t = tracks.get(tid);
-        if (t) t.loop = loops !== 0;
-      },
-      Java_nullpomino_gui_sdl_binding_web_BrowserAudio_jsPlayTrack(lib, tid) {
-        const t = tracks.get(tid);
-        if (!t || !t.buffer) return;
-        if (ctx.state !== "running") {
-          // Queue it (one-shots included) so it plays the instant the
-          // context resumes instead of being silently dropped — the
-          // resume() from the same gesture that triggered this play is
-          // already in flight but resolves asynchronously, so without
-          // queuing every sound issued before it resolves is lost.
-          t.pendingStart = true;
-          resumeAudio();
-          return;
-        }
-        startTrack(t);
-      },
-      Java_nullpomino_gui_sdl_binding_web_BrowserAudio_jsStopTrack(lib, tid) {
-        const t = tracks.get(tid);
-        if (!t) return;
-        stopSource(t);
-        t.pausedAt = null;
-        t.pendingStart = false;
-      },
-      Java_nullpomino_gui_sdl_binding_web_BrowserAudio_jsPauseTrack(lib, tid) {
-        const t = tracks.get(tid);
-        if (!t || !t.source || !t.buffer) return;
-        t.pausedAt = (ctx.currentTime - t.startedAt) % t.buffer.duration;
-        stopSource(t);
-      },
-      Java_nullpomino_gui_sdl_binding_web_BrowserAudio_jsResumeTrack(lib, tid) {
-        const t = tracks.get(tid);
-        if (!t || t.pausedAt == null) return;
-        startTrack(t, t.pausedAt);
-      },
-      Java_nullpomino_gui_sdl_binding_web_BrowserAudio_jsTrackPlaying(lib, tid) {
-        const t = tracks.get(tid);
-        return t && t.playing ? 1 : 0;
-      },
-      Java_nullpomino_gui_sdl_binding_web_BrowserAudio_jsSetTrackGain(lib, tid, gain) {
-        const t = tracks.get(tid);
-        if (t) t.gain.gain.value = gain;
-      },
-    };
-    // -----------------------------------------------------------------------
-
-    await cheerpjInit({
-      version: 17,
-      status: "splash",
-      natives: audioNatives,
-      javaProperties: [
-        // Persistent (IndexedDB) working directory: config, replays,
-        // rankings all live here and survive reloads.
-        "user.dir=/files/nullpomino",
-        // Read-only assets stay on the HTTP mount, fetched lazily per file.
-        `nullpomino.resdir=/app${base}/res`,
-        // Borderless game window filling the page viewport.
-        "nullpomino.fillscreen=true",
-      ],
-      // Keep the browser from stealing keys the game uses.
-      overrideShortcuts: (e) => ["F1","F2","F3","F4","F5","F11","F12"].includes(e.key),
-    });
-    cheerpjCreateDisplay(-1, -1, document.getElementById("display"));
-    await cheerpjRunMain("nullpomino.gui.web.NullpoMinoWeb", `/app${base}/nullpomino.jar`);
+  <canvas id="game"></canvas>
+  <script src="classes.js"></script>
+  <script>
+    // TeaVM's UMD bundle attaches main() to the global scope; invoke it.
+    (function () {
+      var m = (typeof main === "function") ? main
+        : (window.main || (window.$rt_exports && window.$rt_exports.main));
+      if (m) { m([]); } else { console.error("NullpoMino: TeaVM main() not found"); }
+    })();
   </script>
 </body>
 </html>

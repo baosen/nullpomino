@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: BSD-3-Clause
 package nullpomino.util;
 
+import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.ZoneOffset;
@@ -78,7 +79,7 @@ public class GeneralUtil {
 	 * @return Date and Time String
 	 */
 	public static String getCalendarString(Calendar c) {
-		return c.toInstant().atZone(ZoneId.systemDefault()).format(DISPLAY_FORMAT);
+		return instantOf(c).atZone(ZoneId.systemDefault()).format(DISPLAY_FORMAT);
 	}
 
 	/**
@@ -88,7 +89,9 @@ public class GeneralUtil {
 	 * @return Date and Time String
 	 */
 	public static String getCalendarString(Calendar c, TimeZone z) {
-		return c.toInstant().atZone(z.toZoneId()).format(DISPLAY_FORMAT);
+		// ZoneId.of(getID()) rather than TimeZone.toZoneId(): TeaVM's classlib
+		// does not implement toZoneId(). Equivalent for standard zone IDs.
+		return instantOf(c).atZone(ZoneId.of(z.getID())).format(DISPLAY_FORMAT);
 	}
 
 	/**
@@ -106,7 +109,15 @@ public class GeneralUtil {
 	 * @return Calendar String (Each field is separated with a hyphen '-')
 	 */
 	public static String exportCalendarString(Calendar c) {
-		return c.toInstant().atZone(ZoneOffset.UTC).format(EXPORT_FORMAT);
+		return instantOf(c).atZone(ZoneOffset.UTC).format(EXPORT_FORMAT);
+	}
+
+	/**
+	 * {@code Calendar.toInstant()} equivalent — spelled out because TeaVM's
+	 * classlib does not implement {@code toInstant()}. Byte-identical on the JVM.
+	 */
+	private static Instant instantOf(Calendar c) {
+		return Instant.ofEpochMilli(c.getTimeInMillis());
 	}
 
 	/**

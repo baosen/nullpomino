@@ -1,0 +1,61 @@
+package nullpomino.gui.teavm;
+
+import java.util.function.Supplier;
+
+import nullpomino.game.mode.GameMode;
+import nullpomino.gui.sdl.NullpoMinoSDL;
+import nullpomino.gui.sdl.binding.SdlBackend;
+import nullpomino.gui.sdl.binding.teavm.TeaVMBackend;
+import nullpomino.util.DataDir;
+import nullpomino.util.FactoryDefaults;
+import nullpomino.util.StandaloneModeRegistry;
+
+/**
+ * Browser (TeaVM) entry point.
+ *
+ * Runs the same SDL frontend as the desktop build, but on the Canvas2D/WebAudio
+ * backend and without netplay. It deliberately does NOT call
+ * {@link NullpoMinoSDL#main} (that path pulls in logback configuration and the
+ * netplay states, neither of which compiles under TeaVM); instead it reuses the
+ * shared {@link NullpoMinoSDL#bootstrap} and registers a netplay-free set of
+ * modes and states before entering the game loop. The loop itself is unchanged:
+ * TeaVM green threads make the blocking {@code Thread.sleep}-paced loop and DOM
+ * event delivery coexist.
+ */
+public final class NullpoMinoTeaVM {
+	private NullpoMinoTeaVM() {}
+
+	public static void main(String[] args) {
+		NullpoMinoSDL.webMode = true;
+		DataDir.setRoot("/data");
+
+		// Select the backend before any binding interface (or NullpoMinoSDL
+		// init) touches SDL3.INSTANCE.
+		SdlBackend.set(new TeaVMBackend());
+
+		// Persistence + assets: restore prior state, seed defaults, expose the
+		// res tree to File.canRead() probes, then mirror future writes.
+		WebFiles.restoreFromLocalStorage();
+		WebFiles.seedDefaults();
+		WebFiles.seedResMarkers();
+		WebFiles.installStoreMirror();
+
+		// Reflection is dead under TeaVM; register constructor suppliers so
+		// wallkicks/randomizers/AIs resolve without Class.forName.
+		FactoryDefaults.installAll();
+
+		NullpoMinoSDL.bootstrap(args);
+		for (Supplier<? extends GameMode> supplier : StandaloneModeRegistry.suppliers()) {
+			NullpoMinoSDL.modeManager.addMode(supplier.get());
+		}
+		NullpoMinoSDL.registerWebStates();
+
+		try {
+			NullpoMinoSDL.init();
+			NullpoMinoSDL.run();
+		} catch (Throwable e) {
+			System.err.println("Uncaught exception in web main: " + e);
+			e.printStackTrace();
+		}
+	}
+}

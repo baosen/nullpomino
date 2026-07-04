@@ -1,0 +1,10 @@
+# Browser-only source overrides. These files replace their same-named
+# counterparts under //src/main/java for the TeaVM web build (see :core_web),
+# where the originals reference JDK APIs (java.net sockets) that TeaVM's
+# classlib does not provide. Bazel compiles by the file's `package` statement,
+# not its path, so the stub lands as nullpomino.game.net.NetBaseClient.
+filegroup(
+    name = "netbaseclient_webstub",
+    srcs = ["nullpomino/game/net/NetBaseClient.java"],
+    visibility = ["//src/main/java:__pkg__"],
+)

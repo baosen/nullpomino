@@ -9,15 +9,19 @@ import nullpomino.game.ai.DummyAI;
 import nullpomino.game.ai.Nohoho;
 import nullpomino.game.ai.PoochyBot;
 import nullpomino.game.ai.PoochyBotDefensive;
-import nullpomino.game.ai.RanksAI;
 import nullpomino.game.ai.TSpinAI;
 
 /**
- * Compile-checked AI roster. Replaces the {@code config/list/ai.lst} text file
- * (which listed the same classes by FQN string, loaded reflectively): entries
- * here are direct class references so the compiler catches renames, and the
- * constructor suppliers let the browser (TeaVM) target build AIs without
- * {@code Class.forName}.
+ * Compile-checked roster of the browser-compatible AIs, feeding the TeaVM
+ * target's reflection-free {@link ClassFactory} registry via
+ * {@link FactoryDefaults}. Entries are direct class references so the compiler
+ * catches renames.
+ *
+ * <p>{@code RanksAI} is deliberately absent: it deserializes a rank table with
+ * {@code java.io.ObjectInputStream}, which TeaVM's classlib does not provide,
+ * and referencing it here would drag that unsupported class into the web
+ * build's reachable graph. The desktop build still loads RanksAI reflectively
+ * from {@code config/list/ai.lst}.
  */
 public final class AIRegistry {
 	private static final List<Class<? extends DummyAI>> AIS = List.of(
@@ -25,7 +29,6 @@ public final class AIRegistry {
 			TSpinAI.class,
 			PoochyBot.class,
 			PoochyBotDefensive.class,
-			RanksAI.class,
 			Nohoho.class,
 			ComboRaceBot.class);
 
@@ -36,7 +39,6 @@ public final class AIRegistry {
 			TSpinAI::new,
 			PoochyBot::new,
 			PoochyBotDefensive::new,
-			RanksAI::new,
 			Nohoho::new,
 			ComboRaceBot::new);
 

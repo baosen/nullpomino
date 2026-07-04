@@ -38,7 +38,10 @@ public final class SdlBackend {
 			try {
 				b = (Backend) Class.forName(cls).getDeclaredConstructor().newInstance();
 			} catch(ReflectiveOperationException e) {
-				throw new ExceptionInInitializerError(e);
+				// IllegalStateException (not ExceptionInInitializerError) so this
+				// reachable method stays free of a class TeaVM's classlib lacks;
+				// the browser build injects its backend, so this path is dead there.
+				throw new IllegalStateException("Cannot load SDL backend: " + cls, e);
 			}
 			backend = b;
 		}

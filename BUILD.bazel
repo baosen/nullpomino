@@ -51,6 +51,31 @@ java_binary(
     ],
 )
 
+# Deployment-environment stub: classes on its runtime classpath are EXCLUDED
+# from NullpoMinoTeaVM_deploy.jar. Logback cannot compile under TeaVM (Joran,
+# SAX, ServiceLoader), so excluding it turns any accidental reachability into a
+# fast "class not found" at TeaVM compile time instead of an obscure failure.
+# It stays on core_web's compile classpath (LogConfig references it) and is
+# never reached at runtime in the browser.
+java_binary(
+    name = "web_deploy_env",
+    create_executable = False,
+    runtime_deps = [
+        "@maven//:ch_qos_logback_logback_classic",
+        "@maven//:ch_qos_logback_logback_core",
+    ],
+)
+
+# Browser build (TeaVM): this jar is never executed on a JVM; it is the input
+# app jar fed to the TeaVM ahead-of-time compiler (//web:classes_js). Build it
+# with --config=web — TeaVM 0.14's ASM front end rejects bytecode newer than 17.
+java_binary(
+    name = "NullpoMinoTeaVM",
+    main_class = "nullpomino.gui.teavm.NullpoMinoTeaVM",
+    deploy_env = [":web_deploy_env"],
+    runtime_deps = ["//src/main/java:teavm_main"],
+)
+
 java_binary(
     name = "AIRanksTool",
     main_class = "nullpomino.tool.airankstool.AIRanksTool",

@@ -426,6 +426,33 @@ public class NullpoMinoSDL {
 	}
 
 	/**
+	 * Instantiate every SDL state EXCEPT the netplay states. Used by the
+	 * browser (TeaVM) entry point: it never references the {@code StateNet*SDL}
+	 * classes, so their {@code java.net} socket code stays out of the reachable
+	 * (and thus TeaVM-compiled) call graph. The netplay slots stay null, and
+	 * the title screen already hides the NETPLAY entry in web mode.
+	 */
+	public static void registerWebStates() {
+		gameStates[STATE_TITLE] = new StateTitleSDL();
+		gameStates[STATE_CONFIG_MAINMENU] = new StateConfigMainMenuSDL();
+		gameStates[STATE_CONFIG_RULESELECT] = new StateConfigRuleSelectSDL();
+		gameStates[STATE_CONFIG_GENERAL] = new StateConfigGeneralSDL();
+		gameStates[STATE_CONFIG_KEYBOARD] = new StateConfigKeyboardSDL();
+		gameStates[STATE_CONFIG_JOYSTICK_BUTTON] = new StateConfigJoystickButtonSDL();
+		gameStates[STATE_SELECTMODE] = new StateSelectModeSDL();
+		gameStates[STATE_INGAME] = new StateInGameSDL();
+		gameStates[STATE_REPLAYSELECT] = new StateReplaySelectSDL();
+		gameStates[STATE_CONFIG_AISELECT] = new StateConfigAISelectSDL();
+		gameStates[STATE_CONFIG_JOYSTICK_MAIN] = new StateConfigJoystickMainSDL();
+		gameStates[STATE_CONFIG_JOYSTICK_TEST] = new StateConfigJoystickTestSDL();
+		gameStates[STATE_CONFIG_GAMETUNING] = new StateConfigGameTuningSDL();
+		gameStates[STATE_CONFIG_RULESTYLESELECT] = new StateConfigRuleStyleSelectSDL();
+		gameStates[STATE_CONFIG_KEYBOARD_NAVI] = new StateConfigKeyboardNaviSDL();
+		gameStates[STATE_CONFIG_KEYBOARD_RESET] = new StateConfigKeyboardResetSDL();
+		gameStates[STATE_SELECTRULEFROMLIST] = new StateSelectRuleFromListSDL();
+	}
+
+	/**
 	 * SDL3 initialization
 	 */
 	public static void init() {
