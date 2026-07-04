@@ -56,8 +56,13 @@ public class StateTitleSDL extends DummyMenuChooseStateSDL {
 	 */
 	@Override
 	public void enter() {
-		// Update title bar
-		SDL3.INSTANCE.SDL_SetWindowTitle(NullpoMinoSDL.window, NullpoMinoSDL.GAME_NAME + " version" + GameManager.getVersionString());
+		// Update title bar. The browser tab shows just the game name; the
+		// version string is desktop-only (it reads "unknown" in a browser,
+		// where the .git dir isn't on the virtual filesystem).
+		String title = NullpoMinoSDL.webMode
+			? NullpoMinoSDL.GAME_NAME
+			: NullpoMinoSDL.GAME_NAME + " version" + GameManager.getVersionString();
+		SDL3.INSTANCE.SDL_SetWindowTitle(NullpoMinoSDL.window, title);
 		// Call GC
 		System.gc();
 
@@ -78,12 +83,15 @@ public class StateTitleSDL extends DummyMenuChooseStateSDL {
 
 		NormalFontSDL.printTTFFont(16, 432, NullpoMinoSDL.getUIText(uiText[cursor]));
 
-		// Bitmap font has no lowercase or hex digits a–f, so render via TTF.
-		// Right-aligned to one grid cell from the screen edge to mirror the
-		// margin the old version string used.
-		String buildString = GameManager.getCommitHash() + " (" + (GameManager.isDevBuild() ? "debug" : "release") + ")";
-		int buildWidth = NormalFontSDL.getTTFStringWidth(buildString);
-		NormalFontSDL.printTTFFont(640 - 16 - buildWidth, 448, buildString, NormalFontSDL.COLOR_LIGHTGRAY);
+		// Build/version string, bottom-right. Hidden on the web build, where
+		// the commit hash reads "unknown" (the .git dir isn't on the virtual
+		// filesystem). Rendered via TTF because the bitmap font has no
+		// lowercase or hex digits a–f.
+		if(!NullpoMinoSDL.webMode) {
+			String buildString = GameManager.getCommitHash() + " (" + (GameManager.isDevBuild() ? "debug" : "release") + ")";
+			int buildWidth = NormalFontSDL.getTTFStringWidth(buildString);
+			NormalFontSDL.printTTFFont(640 - 16 - buildWidth, 448, buildString, NormalFontSDL.COLOR_LIGHTGRAY);
+		}
 	}
 
 	@Override
