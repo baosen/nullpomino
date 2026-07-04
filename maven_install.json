@@ -12,9 +12,9 @@
     "org.junit.platform:junit-platform-console": -1668891741,
     "org.slf4j:slf4j-api": -2005163028,
     "org.slf4j:slf4j-nop": -1110392425,
-    "org.teavm:teavm-cli": 1719083166,
-    "org.teavm:teavm-extras-slf4j": -1432691933,
-    "org.teavm:teavm-jso-apis": -1999900996,
+    "org.teavm:teavm-cli": 612693281,
+    "org.teavm:teavm-extras-slf4j": 1755885478,
+    "org.teavm:teavm-jso-apis": 1188676415,
     "repositories": -1949687017
   },
   "__RESOLVED_ARTIFACTS_HASH": {
@@ -32,9 +32,9 @@
     "com.google.guava:listenablefuture": 1079558157,
     "com.google.j2objc:j2objc-annotations": 248818742,
     "com.jcraft:jzlib": -1423321085,
-    "commons-cli:commons-cli": -1049205324,
+    "commons-cli:commons-cli": -1828624061,
     "commons-codec:commons-codec": -1543128303,
-    "commons-io:commons-io": -1396899653,
+    "commons-io:commons-io": -515402013,
     "commons-logging:commons-logging": 1248790901,
     "javax.annotation:javax.annotation-api": -1009230154,
     "javax.servlet:javax.servlet-api": 324870439,
@@ -47,13 +47,13 @@
     "org.apiguardian:apiguardian-api": 1279798469,
     "org.checkerframework:checker-qual": -1533199059,
     "org.eclipse.jetty.websocket:javax-websocket-client-impl": 1223223896,
-    "org.eclipse.jetty.websocket:javax-websocket-server-impl": -1375129431,
+    "org.eclipse.jetty.websocket:javax-websocket-server-impl": -1122364375,
     "org.eclipse.jetty.websocket:websocket-api": 1054326978,
     "org.eclipse.jetty.websocket:websocket-client": -1503325589,
     "org.eclipse.jetty.websocket:websocket-common": -577184596,
     "org.eclipse.jetty.websocket:websocket-server": -1388271453,
     "org.eclipse.jetty.websocket:websocket-servlet": -1699421231,
-    "org.eclipse.jetty:jetty-annotations": -1634060441,
+    "org.eclipse.jetty:jetty-annotations": -1699372556,
     "org.eclipse.jetty:jetty-client": -1435555814,
     "org.eclipse.jetty:jetty-http": 409712216,
     "org.eclipse.jetty:jetty-io": 172174053,
@@ -77,36 +77,36 @@
     "org.junit.platform:junit-platform-reporting": 1599148999,
     "org.mozilla:rhino": 1861784766,
     "org.opentest4j:opentest4j": -1711174392,
-    "org.ow2.asm:asm": -1101379267,
-    "org.ow2.asm:asm-analysis": -559036312,
-    "org.ow2.asm:asm-commons": 1034366166,
-    "org.ow2.asm:asm-tree": -1479389285,
-    "org.ow2.asm:asm-util": -824669353,
+    "org.ow2.asm:asm": 611381606,
+    "org.ow2.asm:asm-analysis": -254710036,
+    "org.ow2.asm:asm-commons": 1032323649,
+    "org.ow2.asm:asm-tree": -1593303232,
+    "org.ow2.asm:asm-util": 610725920,
     "org.slf4j:slf4j-api": 500377983,
     "org.slf4j:slf4j-nop": 1026103713,
-    "org.teavm:teavm-c-incremental": -1357597907,
-    "org.teavm:teavm-classlib": -531931919,
-    "org.teavm:teavm-cli": 396074332,
-    "org.teavm:teavm-core": 659547632,
-    "org.teavm:teavm-devserver": -1029038172,
-    "org.teavm:teavm-extras-slf4j": 1941124829,
-    "org.teavm:teavm-interop": 1932276926,
-    "org.teavm:teavm-jso": 1252131739,
-    "org.teavm:teavm-jso-apis": -772920448,
-    "org.teavm:teavm-jso-impl": 1267431478,
-    "org.teavm:teavm-metaprogramming-api": 1757383172,
-    "org.teavm:teavm-metaprogramming-impl": 1474184435,
-    "org.teavm:teavm-platform": -579408000,
-    "org.teavm:teavm-relocated-libs-asm": -225681231,
-    "org.teavm:teavm-relocated-libs-asm-analysis": 902428895,
-    "org.teavm:teavm-relocated-libs-asm-commons": 1678695305,
-    "org.teavm:teavm-relocated-libs-asm-tree": -108237933,
-    "org.teavm:teavm-relocated-libs-asm-util": 2018108887,
-    "org.teavm:teavm-relocated-libs-commons-cli": -1008468963,
-    "org.teavm:teavm-relocated-libs-commons-io": 610119915,
-    "org.teavm:teavm-relocated-libs-hppc": -55900857,
-    "org.teavm:teavm-relocated-libs-rhino": 1073995771,
-    "org.teavm:teavm-tooling": -216935700
+    "org.teavm:teavm-c-incremental": 404209713,
+    "org.teavm:teavm-classlib": -875016009,
+    "org.teavm:teavm-cli": 290564021,
+    "org.teavm:teavm-core": 1279094410,
+    "org.teavm:teavm-devserver": 856421895,
+    "org.teavm:teavm-extras-slf4j": -866887351,
+    "org.teavm:teavm-interop": -1265741231,
+    "org.teavm:teavm-jso": 784732700,
+    "org.teavm:teavm-jso-apis": -472723213,
+    "org.teavm:teavm-jso-impl": 1816991266,
+    "org.teavm:teavm-metaprogramming-api": -44124066,
+    "org.teavm:teavm-metaprogramming-impl": -660814049,
+    "org.teavm:teavm-platform": -1863738065,
+    "org.teavm:teavm-relocated-libs-asm": -60708102,
+    "org.teavm:teavm-relocated-libs-asm-analysis": -976424143,
+    "org.teavm:teavm-relocated-libs-asm-commons": 2081820712,
+    "org.teavm:teavm-relocated-libs-asm-tree": -398823521,
+    "org.teavm:teavm-relocated-libs-asm-util": 193086742,
+    "org.teavm:teavm-relocated-libs-commons-cli": -2064673357,
+    "org.teavm:teavm-relocated-libs-commons-io": 154994957,
+    "org.teavm:teavm-relocated-libs-hppc": 1040621030,
+    "org.teavm:teavm-relocated-libs-rhino": -317158478,
+    "org.teavm:teavm-tooling": -1979021080
   },
   "conflict_resolution": {
     "com.google.errorprone:error_prone_annotations:2.5.1": "com.google.errorprone:error_prone_annotations:2.18.0"
@@ -198,9 +198,9 @@
     },
     "commons-cli:commons-cli": {
       "shasums": {
-        "jar": "d3d530d0f28fd0fbbffe2b0b338f70e8cb96f1605579e2e3abd4db29cac24e69"
+        "jar": "1b273d92160b9fa69c3e65389a5c4decd2f38a697e458e6f75080ae09e886404"
       },
-      "version": "1.9.0"
+      "version": "1.10.0"
     },
     "commons-codec:commons-codec": {
       "shasums": {
@@ -210,9 +210,9 @@
     },
     "commons-io:commons-io": {
       "shasums": {
-        "jar": "f3ca0f8d63c40e23a56d54101c60d5edee136b42d84bfb85bc7963093109cf8b"
+        "jar": "df90bba0fe3cb586b7f164e78fe8f8f4da3f2dd5c27fa645f888100ccc25dd72"
       },
-      "version": "2.18.0"
+      "version": "2.20.0"
     },
     "commons-logging:commons-logging": {
       "shasums": {
@@ -468,33 +468,33 @@
     },
     "org.ow2.asm:asm": {
       "shasums": {
-        "jar": "8cadd43ac5eb6d09de05faecca38b917a040bb9139c7edeb4cc81c740b713281"
+        "jar": "876eab6a83daecad5ca67eb9fcabb063c97b5aeb8cf1fca7a989ecde17522051"
       },
-      "version": "9.7.1"
+      "version": "9.8"
     },
     "org.ow2.asm:asm-analysis": {
       "shasums": {
-        "jar": "85b29371884ba31bb76edf22323c2c24e172c3267a67152eba3d1ccc2e041ef2"
+        "jar": "e640732fbcd3c6271925a504f125e38384688f4dfbbf92c8622dfcee0d09edb9"
       },
-      "version": "9.7.1"
+      "version": "9.8"
     },
     "org.ow2.asm:asm-commons": {
       "shasums": {
-        "jar": "9a579b54d292ad9be171d4313fd4739c635592c2b5ac3a459bbd1049cddec6a0"
+        "jar": "3301a1c1cb4c59fcc5292648dac1d7c5aed4c0f067dfbe88873b8cdfe77404f4"
       },
-      "version": "9.7.1"
+      "version": "9.8"
     },
     "org.ow2.asm:asm-tree": {
       "shasums": {
-        "jar": "9929881f59eb6b840e86d54570c77b59ce721d104e6dfd7a40978991c2d3b41f"
+        "jar": "14b7880cb7c85eed101e2710432fc3ffb83275532a6a894dc4c4095d49ad59f1"
       },
-      "version": "9.7.1"
+      "version": "9.8"
     },
     "org.ow2.asm:asm-util": {
       "shasums": {
-        "jar": "f885be71b5c90556f5f1ad1c4f9276b29b96057c497d46666fe4ddbec3cb43c6"
+        "jar": "8ba0460ecb28fd0e2980e5f3ef3433a513a457bc077f81a53bdc75b587a08d15"
       },
-      "version": "9.7.1"
+      "version": "9.8"
     },
     "org.slf4j:slf4j-api": {
       "shasums": {
@@ -510,141 +510,141 @@
     },
     "org.teavm:teavm-c-incremental": {
       "shasums": {
-        "jar": "f2d7c528a8bf7773d57dd2ebaba0c362ff7d6dd345e86408ece2a09695fd1aeb"
+        "jar": "d761a741b8ca52ac1761d4deaf8be5495ec98c85116577a1239c29871fe66576"
       },
-      "version": "0.12.0"
+      "version": "0.14.1"
     },
     "org.teavm:teavm-classlib": {
       "shasums": {
-        "jar": "ddf0c165b29da706880778f63098fe255cc4c1b859a548a7ac7484bb38e13c78"
+        "jar": "e64a8688d379731ab3af2faea18baf2a42ffa83b2ec8a8dc9d99c9bdb1d03b37"
       },
-      "version": "0.12.0"
+      "version": "0.14.1"
     },
     "org.teavm:teavm-cli": {
       "shasums": {
-        "jar": "403a6b8ff87fd9fce7d5cf0294674ab9d852d9b15cd45d580152dfd0abb8409c"
+        "jar": "50d43b18a797d659a441c8de4f10cd749b952093ded4118a7d0a4bc94b1812b9"
       },
-      "version": "0.12.0"
+      "version": "0.14.1"
     },
     "org.teavm:teavm-core": {
       "shasums": {
-        "jar": "a49d14f776b2e76f448b1755e5fa271bc048c818083e1f46061a4b299cc811aa"
+        "jar": "de8037b4cb01003945e2ed8e651641c330835e98368a789019f82b322f26151c"
       },
-      "version": "0.12.0"
+      "version": "0.14.1"
     },
     "org.teavm:teavm-devserver": {
       "shasums": {
-        "jar": "2f622db0b9d16bd50977eee6fdb8d336b193e427c227015959ff30ef4c8d7133"
+        "jar": "4b38666be588a4cea12afcefe35fc0858236215c45fd72381f7ba7eea3f4d9b8"
       },
-      "version": "0.12.0"
+      "version": "0.14.1"
     },
     "org.teavm:teavm-extras-slf4j": {
       "shasums": {
-        "jar": "a3139bd01ab270bb0da744580e513d746b31d5a1d864f5dad5ba26f66d9571a6"
+        "jar": "d392a558df4608db88edf3ec96789575eca19612ed1172c9ca0569af177d9f92"
       },
-      "version": "0.12.0"
+      "version": "0.14.1"
     },
     "org.teavm:teavm-interop": {
       "shasums": {
-        "jar": "2443b6b5ebce2519af3d8ea9c934c6f5e4d8376174afcbd31bfda9e7e885481d"
+        "jar": "ba95d80349e3ba842f6f9cfc834184b0253dfc37f5cae110b7e48d73d2fa8892"
       },
-      "version": "0.12.0"
+      "version": "0.14.1"
     },
     "org.teavm:teavm-jso": {
       "shasums": {
-        "jar": "9c312885e29079d0750e0005318e5d9440ae2d26235b9a859fabf86dffe13858"
+        "jar": "421b848c79d161c34e9f178d3d37b35e8efaadada487056c3fd3d4d3de1c172c"
       },
-      "version": "0.12.0"
+      "version": "0.14.1"
     },
     "org.teavm:teavm-jso-apis": {
       "shasums": {
-        "jar": "efbb6cbe3d2d12ec0872375ebb11a2c2e09a8d07749f2dec3f163c75e4bc985d"
+        "jar": "171abaff01d9c029218df911470184ed8e30e6b511be6bb03381a924ec4a8c3c"
       },
-      "version": "0.12.0"
+      "version": "0.14.1"
     },
     "org.teavm:teavm-jso-impl": {
       "shasums": {
-        "jar": "70486d0a3a3733ec018b1a9563784db15cc8b3fa400c0d7a184642fc2efd45e9"
+        "jar": "3cf0fabf3c1fbc1362c24d69c7016c31d5a24793e62ea1ffc8eaa3e8fd0d97b3"
       },
-      "version": "0.12.0"
+      "version": "0.14.1"
     },
     "org.teavm:teavm-metaprogramming-api": {
       "shasums": {
-        "jar": "fdb3c6db916d42c513f0cabfd1ada157cf36866ba1d9fd87a1ff716a1b2401eb"
+        "jar": "f7188cb258c6afb69b00d8d3d46c9eec73836882cdd347f17a409d0eaa548e74"
       },
-      "version": "0.12.0"
+      "version": "0.14.1"
     },
     "org.teavm:teavm-metaprogramming-impl": {
       "shasums": {
-        "jar": "7c7569943138e75a4756bd3e15eae0cabbeac788dbf59ac85e87bf42e14b88a4"
+        "jar": "c6c9856887ee6b012dba1c107e26ef5b417ea0d4af8179b409238cb909cc1f96"
       },
-      "version": "0.12.0"
+      "version": "0.14.1"
     },
     "org.teavm:teavm-platform": {
       "shasums": {
-        "jar": "58440126cce3fe998dadb1786eb11ced3ab6c72828f3374ad7abed2b1bde2ee5"
+        "jar": "f03d22d0e144980e3d9e98b03ca171aeede260c4de4f1991cae27fa81a846c9e"
       },
-      "version": "0.12.0"
+      "version": "0.14.1"
     },
     "org.teavm:teavm-relocated-libs-asm": {
       "shasums": {
-        "jar": "3609e046f2de801045109df9aae8ceb7a7241ce84f05cfe54de892d090572ba8"
+        "jar": "400496e463dddd878fed2b9b25a66deca2126f71bb68e41f82244b4315006018"
       },
-      "version": "0.12.0"
+      "version": "0.14.1"
     },
     "org.teavm:teavm-relocated-libs-asm-analysis": {
       "shasums": {
-        "jar": "1b72de5be4c46bf5a043b2a5ee90d83fee8fd5cb5736d9c5a79fe648f187e7f1"
+        "jar": "6bb5ef62ab00d557061d9b04dc4571f711fbe11d339783e55029b37b75d5159c"
       },
-      "version": "0.12.0"
+      "version": "0.14.1"
     },
     "org.teavm:teavm-relocated-libs-asm-commons": {
       "shasums": {
-        "jar": "4307ca22003a3276cfa087b336b7c37f0f3c45468b179b1b45babfc8ace870e0"
+        "jar": "d49685681db5039075f2fde01568f2bb6df14a99ef88d39b29df8e701e12e140"
       },
-      "version": "0.12.0"
+      "version": "0.14.1"
     },
     "org.teavm:teavm-relocated-libs-asm-tree": {
       "shasums": {
-        "jar": "ffdf4593a7ae39aa12bbc7565de415c6aa12edeb93d1b967b8f5c558ba9fd651"
+        "jar": "6b475fd62b8ddedfa0808c0c412c311f000a80a13123b6ba07f5da531164fd5b"
       },
-      "version": "0.12.0"
+      "version": "0.14.1"
     },
     "org.teavm:teavm-relocated-libs-asm-util": {
       "shasums": {
-        "jar": "93ac8c34d49c9e10f1b5087e277d0449f0123c69ecff3ccc7d7575387a486750"
+        "jar": "a41247ca7f023959712be0e713d3f2f5687b4dfeda6b112b2d976494d52cdc57"
       },
-      "version": "0.12.0"
+      "version": "0.14.1"
     },
     "org.teavm:teavm-relocated-libs-commons-cli": {
       "shasums": {
-        "jar": "0093b7ecbb880b6afaee940ec3e801031e950497321ccd14fbd999881b5cc7cc"
+        "jar": "0df3cce00582ebeed6f37efb475fe30f76d378642d1268dc7ebbb8049171419d"
       },
-      "version": "0.12.0"
+      "version": "0.14.1"
     },
     "org.teavm:teavm-relocated-libs-commons-io": {
       "shasums": {
-        "jar": "0e04b244fac7b79f2317626164e8de4687ebb20047dd284eec64cae21e67cb23"
+        "jar": "5e1a666948a40dada1d3fbce41503bad6ce86035662bf131c8df227b30859a79"
       },
-      "version": "0.12.0"
+      "version": "0.14.1"
     },
     "org.teavm:teavm-relocated-libs-hppc": {
       "shasums": {
-        "jar": "a66d35e29c30f07b819a0eeaeb714343d04b615a9b41a99dbbe3585563186ff6"
+        "jar": "7b82fedf747e0bf5d7a50acece86a8a684901e469165a3c5621c653128df4cd6"
       },
-      "version": "0.12.0"
+      "version": "0.14.1"
     },
     "org.teavm:teavm-relocated-libs-rhino": {
       "shasums": {
-        "jar": "2ddf01a6b8f5623171737150a2b92a43e13c0ebc7bddd958f64c0a7426e4f6be"
+        "jar": "49cedc9bfcdd44d30b8bc8d1d46d78fb7f8f2044b8c85c9c3f1ece33e94ee7e9"
       },
-      "version": "0.12.0"
+      "version": "0.14.1"
     },
     "org.teavm:teavm-tooling": {
       "shasums": {
-        "jar": "265d01c707d1c4f226785b0b34aee4b703e72c6654e4bf9bc8e510f88033f12a"
+        "jar": "f36e1ea7e080b5c021c7126688315bb973e7421094ffbf58fb2ce101bb81d577"
       },
-      "version": "0.12.0"
+      "version": "0.14.1"
     }
   },
   "dependencies": {
@@ -813,6 +813,7 @@
       "com.jcraft:jzlib",
       "commons-io:commons-io",
       "joda-time:joda-time",
+      "org.teavm:teavm-core",
       "org.teavm:teavm-jso-apis",
       "org.teavm:teavm-jso-impl",
       "org.teavm:teavm-metaprogramming-impl",
@@ -1080,7 +1081,8 @@
       "com.jcraft.jzlib"
     ],
     "commons-cli:commons-cli": [
-      "org.apache.commons.cli"
+      "org.apache.commons.cli",
+      "org.apache.commons.cli.help"
     ],
     "commons-codec:commons-codec": [
       "org.apache.commons.codec",
@@ -1515,6 +1517,8 @@
       "org.teavm.classlib.java.nio.charset.impl",
       "org.teavm.classlib.java.nio.file",
       "org.teavm.classlib.java.nio.file.attribute",
+      "org.teavm.classlib.java.nio.file.impl",
+      "org.teavm.classlib.java.nio.file.spi",
       "org.teavm.classlib.java.security",
       "org.teavm.classlib.java.text",
       "org.teavm.classlib.java.util",
@@ -1551,6 +1555,7 @@
       "org.teavm.backend.c.generate",
       "org.teavm.backend.c.generators",
       "org.teavm.backend.c.intrinsic",
+      "org.teavm.backend.c.intrinsic.reflection",
       "org.teavm.backend.c.runtime",
       "org.teavm.backend.c.runtime.fs",
       "org.teavm.backend.c.transform",
@@ -1559,6 +1564,7 @@
       "org.teavm.backend.javascript.ast",
       "org.teavm.backend.javascript.codegen",
       "org.teavm.backend.javascript.intrinsics.ref",
+      "org.teavm.backend.javascript.intrinsics.reflection",
       "org.teavm.backend.javascript.rendering",
       "org.teavm.backend.javascript.spi",
       "org.teavm.backend.javascript.templating",
@@ -1568,42 +1574,36 @@
       "org.teavm.backend.lowlevel.transform",
       "org.teavm.backend.wasm",
       "org.teavm.backend.wasm.binary",
-      "org.teavm.backend.wasm.blob",
       "org.teavm.backend.wasm.debug",
       "org.teavm.backend.wasm.debug.info",
       "org.teavm.backend.wasm.debug.parser",
       "org.teavm.backend.wasm.debug.sourcemap",
+      "org.teavm.backend.wasm.dependencies",
       "org.teavm.backend.wasm.disasm",
       "org.teavm.backend.wasm.dwarf",
-      "org.teavm.backend.wasm.gc",
-      "org.teavm.backend.wasm.gc.vtable",
       "org.teavm.backend.wasm.generate",
-      "org.teavm.backend.wasm.generate.common.methods",
-      "org.teavm.backend.wasm.generate.gc",
-      "org.teavm.backend.wasm.generate.gc.annotations",
-      "org.teavm.backend.wasm.generate.gc.classes",
-      "org.teavm.backend.wasm.generate.gc.methods",
-      "org.teavm.backend.wasm.generate.gc.strings",
+      "org.teavm.backend.wasm.generate.classes",
+      "org.teavm.backend.wasm.generate.methods",
+      "org.teavm.backend.wasm.generate.reflection",
+      "org.teavm.backend.wasm.generate.strings",
       "org.teavm.backend.wasm.generators",
-      "org.teavm.backend.wasm.generators.gc",
       "org.teavm.backend.wasm.intrinsics",
-      "org.teavm.backend.wasm.intrinsics.gc",
+      "org.teavm.backend.wasm.intrinsics.reflection",
       "org.teavm.backend.wasm.model",
       "org.teavm.backend.wasm.model.expression",
       "org.teavm.backend.wasm.optimization",
       "org.teavm.backend.wasm.parser",
       "org.teavm.backend.wasm.render",
       "org.teavm.backend.wasm.runtime",
-      "org.teavm.backend.wasm.runtime.fs",
-      "org.teavm.backend.wasm.runtime.gc",
       "org.teavm.backend.wasm.runtime.math",
       "org.teavm.backend.wasm.transformation",
-      "org.teavm.backend.wasm.transformation.gc",
-      "org.teavm.backend.wasm.wasi",
+      "org.teavm.backend.wasm.types",
+      "org.teavm.backend.wasm.vtable",
       "org.teavm.cache",
       "org.teavm.callgraph",
       "org.teavm.classlib",
       "org.teavm.common",
+      "org.teavm.common.binary",
       "org.teavm.common.json",
       "org.teavm.debugging",
       "org.teavm.debugging.information",
@@ -1623,10 +1623,12 @@
       "org.teavm.parsing",
       "org.teavm.parsing.resource",
       "org.teavm.parsing.substitution",
+      "org.teavm.reflection",
       "org.teavm.runtime",
       "org.teavm.runtime.fs",
       "org.teavm.runtime.fs.memory",
       "org.teavm.runtime.heap",
+      "org.teavm.runtime.reflect",
       "org.teavm.vm",
       "org.teavm.vm.spi"
     ],
@@ -1687,6 +1689,7 @@
     "org.teavm:teavm-platform": [
       "org.teavm.platform",
       "org.teavm.platform.metadata",
+      "org.teavm.platform.metadata.builders",
       "org.teavm.platform.plugin",
       "org.teavm.platform.plugin.wasmgc"
     ],
@@ -1707,7 +1710,8 @@
       "org.teavm.asm.util"
     ],
     "org.teavm:teavm-relocated-libs-commons-cli": [
-      "org.teavm.apachecommons.cli"
+      "org.teavm.apachecommons.cli",
+      "org.teavm.apachecommons.cli.help"
     ],
     "org.teavm:teavm-relocated-libs-commons-io": [
       "org.teavm.apachecommons.io",
