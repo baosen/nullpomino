@@ -15,6 +15,7 @@ import nullpomino.game.wallkick.ClassicWallkick;
 import nullpomino.game.wallkick.StandardWallkick;
 import nullpomino.game.wallkick.Wallkick;
 import nullpomino.util.GeneralUtil;
+import nullpomino.util.JdkRandom;
 
 /**
  * TeaVM feasibility spike: exercises a representative slice of the game
@@ -33,11 +34,24 @@ public final class SpikeMain {
 	static void exerciseGameLogic() {
 		System.out.println("=== SpikeMain start ===");
 		fieldLineClear();
+		randomDeterminism();
 		randomizers();
 		wallkicks();
 		gameEngine();
 		reflectiveFactory();
 		System.out.println("=== SpikeMain done ===");
+	}
+
+	private static void randomDeterminism() {
+		JdkRandom nonPowerOfTwo = new JdkRandom(12345L);
+		StringBuilder seq7 = new StringBuilder();
+		for(int i = 0; i < 10; i++) seq7.append(nonPowerOfTwo.nextInt(7)).append(' ');
+		System.out.println("JdkRandom.nextInt(7): " + seq7);
+
+		JdkRandom powerOfTwo = new JdkRandom(12345L);
+		StringBuilder seq8 = new StringBuilder();
+		for(int i = 0; i < 10; i++) seq8.append(powerOfTwo.nextInt(8)).append(' ');
+		System.out.println("JdkRandom.nextInt(8): " + seq8);
 	}
 
 	private static void fieldLineClear() {

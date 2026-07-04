@@ -4,6 +4,7 @@ import java.util.Arrays;
 import java.util.Random;
 
 import nullpomino.game.component.Piece;
+import nullpomino.util.JdkRandom;
 
 public abstract class Randomizer {
 
@@ -30,7 +31,7 @@ public abstract class Randomizer {
 	}
 
 	public void reseed(long seed) {
-		r = new Random(seed);
+		r = new JdkRandom(seed);
 	}
 
 	protected final void fillBag(int[] bag) {

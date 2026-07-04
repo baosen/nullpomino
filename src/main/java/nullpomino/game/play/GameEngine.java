@@ -20,6 +20,7 @@ import nullpomino.game.component.WallkickResult;
 import nullpomino.game.ai.DummyAI;
 import nullpomino.game.wallkick.Wallkick;
 import nullpomino.util.GeneralUtil;
+import nullpomino.util.JdkRandom;
 import nullpomino.game.randomizer.MemorylessRandomizer;
 import nullpomino.game.randomizer.Randomizer;
 
@@ -687,7 +688,7 @@ public class GameEngine {
 			Random tempRand = new Random();
 			randSeed = tempRand.nextLong();
 			log.debug("Player + {}Random seed :{}", playerID, Long.toString(randSeed, 16));
-			random = new Random(randSeed);
+			random = new JdkRandom(randSeed);
 		} else {
 			versionMajor = owner.replayProp.getProperty("version.core.major", 0f);
 			versionMinor = owner.replayProp.getProperty("version.core.minor", 0);
@@ -698,7 +699,7 @@ public class GameEngine {
 
 			String tempRand = owner.replayProp.getProperty(playerID + ".replay.randSeed", "0");
 			randSeed = Long.parseLong(tempRand, 16);
-			random = new Random(randSeed);
+			random = new JdkRandom(randSeed);
 
 			owRotateButtonDefaultRight = owner.replayProp.getProperty(playerID + ".tuning.owRotateButtonDefaultRight", -1);
 			owSkin = owner.replayProp.getProperty(playerID + ".tuning.owSkin", -1);

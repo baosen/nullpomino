@@ -14,6 +14,7 @@ import nullpomino.game.play.GameEngine;
 import nullpomino.game.play.GameManager;
 import nullpomino.util.CustomProperties;
 import nullpomino.util.GeneralUtil;
+import nullpomino.util.JdkRandom;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -382,7 +383,7 @@ public class SPFMode extends AbstractMode {
 
 		if(playerID == 1) {
 			engine.randSeed = owner.engine[0].randSeed;
-			engine.random = new Random(owner.engine[0].randSeed);
+			engine.random = new JdkRandom(owner.engine[0].randSeed);
 		}
 
 		engine.framecolor = PLAYER_COLOR_FRAME[playerID];

@@ -9,6 +9,7 @@ import nullpomino.game.play.GameEngine;
 import nullpomino.game.play.GameManager;
 import nullpomino.util.CustomProperties;
 import nullpomino.util.GeneralUtil;
+import nullpomino.util.JdkRandom;
 
 /**
  * VS-LINE RACE Mode
@@ -156,7 +157,7 @@ public class VSLineRaceMode extends AbstractMode {
 
 		if(playerID == 1) {
 			engine.randSeed = owner.engine[0].randSeed;
-			engine.random = new Random(owner.engine[0].randSeed);
+			engine.random = new JdkRandom(owner.engine[0].randSeed);
 		}
 
 		engine.framecolor = PLAYER_COLOR_FRAME[playerID];

@@ -60,6 +60,7 @@ java_library(
         "nullpomino/util/CustomProperties.java",
         "nullpomino/util/DataDir.java",
         "nullpomino/util/GeneralUtil.java",
+        "nullpomino/util/JdkRandom.java",
         "nullpomino/util/LegacyClassNames.java",
     ] + glob([
         "nullpomino/game/component/*.java",

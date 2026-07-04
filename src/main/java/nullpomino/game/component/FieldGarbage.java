@@ -5,6 +5,7 @@ package nullpomino.game.component;
 import java.util.Random;
 
 import nullpomino.game.play.GameEngine;
+import nullpomino.util.JdkRandom;
 
 public class FieldGarbage {
 	public static void garbageDrop(Field field, GameEngine engine, int drop, boolean big) {
@@ -119,8 +120,8 @@ public class FieldGarbage {
 	public static void addRandomHoverBlocks(Field field, GameEngine engine, int count, int[] colors, int minY,
 			boolean avoidLines, boolean flashMode)
 	{
-		Random posRand = new Random(engine.random.nextLong());
-		Random colorRand = new Random(engine.random.nextLong());
+		Random posRand = new JdkRandom(engine.random.nextLong());
+		Random colorRand = new JdkRandom(engine.random.nextLong());
 		int placeHeight = field.height-minY;
 		int placeSize = placeHeight * field.width;
 		boolean[][] placeBlock = new boolean[field.width][placeHeight];

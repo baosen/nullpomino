@@ -12,6 +12,7 @@ import nullpomino.game.play.GameEngine;
 import nullpomino.game.play.GameManager;
 import nullpomino.util.CustomProperties;
 import nullpomino.util.GeneralUtil;
+import nullpomino.util.JdkRandom;
 
 /**
  * AVALANCHE VS DIG RACE mode (Release Candidate 1)
@@ -379,7 +380,7 @@ public class AvalancheVSDigRaceMode extends AvalancheVSDummyMode {
 
 		engine.createFieldIfNeeded();
 		int y = engine.field.getHeight()-1;
-		Random rand = new Random(engine.random.nextLong());
+		Random rand = new JdkRandom(engine.random.nextLong());
 		int width = engine.field.getWidth();
 		int x = rand.nextInt(width);
 		engine.field.garbageDropPlace(x, y, false, 0);

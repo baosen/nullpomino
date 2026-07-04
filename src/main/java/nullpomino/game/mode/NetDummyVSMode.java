@@ -16,6 +16,7 @@ import nullpomino.game.play.GameManager;
 import nullpomino.game.wallkick.Wallkick;
 import nullpomino.gui.net.NetLobbyFrame;
 import nullpomino.util.GeneralUtil;
+import nullpomino.util.JdkRandom;
 import nullpomino.game.randomizer.Randomizer;
 
 /**
@@ -1468,7 +1469,7 @@ public class NetDummyVSMode extends NetDummyMode {
 					netvsPlayerActive[i] = true;
 					engine.stat = GameEngine.Status.READY;
 					engine.randSeed = randseed;
-					engine.random = new Random(randseed);
+					engine.random = new JdkRandom(randseed);
 
 					if((netCurrentRoomInfo.maxPlayers == 2) && (netvsNumPlayers == 2)) {
 						engine.isVisible = true;

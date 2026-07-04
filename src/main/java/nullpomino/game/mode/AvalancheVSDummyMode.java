@@ -13,6 +13,7 @@ import nullpomino.game.play.GameEngine;
 import nullpomino.game.play.GameManager;
 import nullpomino.util.CustomProperties;
 import nullpomino.util.GeneralUtil;
+import nullpomino.util.JdkRandom;
 
 /**
  * AVALANCHE VS DUMMY Mode
@@ -478,7 +479,7 @@ public abstract class AvalancheVSDummyMode extends AbstractMode {
 		receiver = engine.owner.receiver;
 		if(playerID == 1) {
 			engine.randSeed = owner.engine[0].randSeed;
-			engine.random = new Random(owner.engine[0].randSeed);
+			engine.random = new JdkRandom(owner.engine[0].randSeed);
 		}
 
 		engine.framecolor = PLAYER_COLOR_FRAME[playerID];
@@ -759,7 +760,7 @@ public abstract class AvalancheVSDummyMode extends AbstractMode {
 		engine.field.setAllAttribute(Block.BLOCK_ATTRIBUTE_GARBAGE, false);
 		engine.field.setAllAttribute(Block.BLOCK_ATTRIBUTE_ANTIGRAVITY, false);
 		engine.field.setAllSkin(engine.getSkin());
-		engine.field.shuffleColors(BLOCK_COLORS, numColors[playerID], new Random(rand.nextLong()));
+		engine.field.shuffleColors(BLOCK_COLORS, numColors[playerID], new JdkRandom(rand.nextLong()));
 	}
 
 	/*
