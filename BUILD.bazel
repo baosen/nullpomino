@@ -6,12 +6,28 @@ filegroup(
     visibility = ["//visibility:public"],
 )
 
-# Manifest of all default config files, read by the web bootstrap to seed
-# the persistent /files virtual filesystem on first run.
+# Manifest of all default config files, served next to the site so the web
+# bootstrap can fetch and seed them into the in-memory filesystem on first run.
 genrule(
     name = "config_manifest",
     srcs = [":config_files"],
     outs = ["config-manifest.txt"],
+    cmd = "printf '%s\\n' $(SRCS) | sort > $@",
+)
+
+filegroup(
+    name = "res_files",
+    srcs = glob(["res/**/*"]),
+    visibility = ["//visibility:public"],
+)
+
+# Manifest of every res/ asset. The web bootstrap fetches it to create empty
+# marker files so File.canRead() skin probes succeed; the real bytes are
+# fetched over HTTP on demand.
+genrule(
+    name = "res_manifest",
+    srcs = [":res_files"],
+    outs = ["res-manifest.txt"],
     cmd = "printf '%s\\n' $(SRCS) | sort > $@",
 )
 
@@ -21,7 +37,7 @@ genrule(
 java_library(
     name = "web_defaults",
     resources = [
-        "web/logback-web.xml",
+        "//web:logback-web.xml",
         ":config_files",
         ":config_manifest",
     ],
@@ -72,6 +88,7 @@ java_binary(
 java_binary(
     name = "NullpoMinoTeaVM",
     main_class = "nullpomino.gui.teavm.NullpoMinoTeaVM",
+    visibility = ["//web:__pkg__"],
     deploy_env = [":web_deploy_env"],
     runtime_deps = ["//src/main/java:teavm_main"],
 )

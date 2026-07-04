@@ -1,8 +1,10 @@
 build --java_language_version=25
 build --tool_java_language_version=11
 
-# Web build for the browser (CheerpJ): CheerpJ 4.3 runs Java 17 bytecode at
-# most, so compile and API-check against JDK 17 with `--config=web`.
+# Web build for the browser (TeaVM): TeaVM 0.14's ASM front end rejects
+# bytecode newer than Java 17, and the compiler itself must run on a JDK <=17,
+# so --config=web pins both the language level and the (hermetic remote) JDK
+# that //web:classes_js invokes via $(JAVA).
 build:web --java_language_version=17
 build:web --java_runtime_version=remotejdk_17
 

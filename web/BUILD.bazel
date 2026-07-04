@@ -1,0 +1,34 @@
+# web/ is now a Bazel package; let the (soon-to-be-deleted) CheerpJ
+# web_defaults target in //BUILD.bazel keep referencing this resource.
+exports_files(["logback-web.xml"])
+
+# TeaVM ahead-of-time compile: the Java 17 app jar -> web/classes.js.
+#
+# MUST be built with --config=web (web/build-site.sh does): the app jar has to
+# be <=17 bytecode (TeaVM 0.14's ASM rejects newer), and $(JAVA) has to be a
+# JDK <=17 for the compiler process itself. --config=web pins both
+# (java_language_version=17 + remotejdk_17). Tagged "manual" so a plain
+# `bazel build //...` (Java 25) never tries and fails.
+#
+# The compiler deploy jar is passed to -p a second time on purpose: once any -p
+# is given, TeaVM stops falling back to the launching JVM's classpath for its
+# own classlib; re-feeding the fully-merged compiler jar is the order-
+# independent fix (see //tools/teavm:teavm_compiler).
+genrule(
+    name = "classes_js",
+    srcs = [
+        "//:NullpoMinoTeaVM_deploy.jar",
+        "//tools/teavm:teavm_compiler_deploy.jar",
+    ],
+    outs = ["classes.js"],
+    cmd = "$(JAVA) -jar $(location //tools/teavm:teavm_compiler_deploy.jar) " +
+          "-t js " +
+          "-p $(location //:NullpoMinoTeaVM_deploy.jar) " +
+          "-p $(location //tools/teavm:teavm_compiler_deploy.jar) " +
+          "-d $(RULEDIR)/teavm-out -f classes.js -O 1 " +
+          "nullpomino.gui.teavm.NullpoMinoTeaVM && " +
+          "cp $(RULEDIR)/teavm-out/classes.js $@",
+    tags = ["manual"],
+    toolchains = ["@rules_java//toolchains:current_java_runtime"],
+    visibility = ["//visibility:public"],
+)
