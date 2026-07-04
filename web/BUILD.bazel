@@ -6,6 +6,14 @@
 # (java_language_version=17 + remotejdk_17). Tagged "manual" so a plain
 # `bazel build //...` (Java 25) never tries and fails.
 #
+# --strict is REQUIRED, not optional: without it TeaVM omits array-bounds and
+# null checks for speed, so out-of-range accesses read `undefined` instead of
+# throwing. The game relies on Java exception semantics in hot paths — e.g.
+# Field.getBlock catches ArrayIndexOutOfBoundsException to return null for
+# off-field cells, which the renderer hits every frame. Without --strict that
+# read returns undefined and the next deref crashes the game loop. The bounds
+# checks cost a few percent of frame time (still a comfortable 60 FPS).
+#
 # The compiler deploy jar is passed to -p a second time on purpose: once any -p
 # is given, TeaVM stops falling back to the launching JVM's classpath for its
 # own classlib; re-feeding the fully-merged compiler jar is the order-
@@ -18,7 +26,7 @@ genrule(
     ],
     outs = ["classes.js"],
     cmd = "$(JAVA) -jar $(location //tools/teavm:teavm_compiler_deploy.jar) " +
-          "-t js " +
+          "-t js --strict " +
           "-p $(location //:NullpoMinoTeaVM_deploy.jar) " +
           "-p $(location //tools/teavm:teavm_compiler_deploy.jar) " +
           "-d $(RULEDIR)/teavm-out -f classes.js -O 1 " +
