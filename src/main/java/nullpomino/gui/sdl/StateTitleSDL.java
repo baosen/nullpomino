@@ -25,30 +25,42 @@ public class StateTitleSDL extends DummyMenuChooseStateSDL {
 			-1
 	};
 
-	/** Active menu rows: NETPLAY is dropped on the web build, where raw
-	 * TCP/UDP netplay cannot work inside a browser. */
+	/** Active menu rows. On the web build two entries are dropped: NETPLAY
+	 * (raw TCP/UDP netplay cannot work inside a browser) and EXIT (quitting has
+	 * no meaning in a browser tab). */
 	private final String[] choices;
 	private final String[] uiText;
 	private final int[] destinations;
 	private final int exitCursor;
 
 	public StateTitleSDL () {
-		boolean hideNetplay = NullpoMinoSDL.webMode;
-		int count = CHOICES.length - (hideNetplay ? 1 : 0);
+		boolean web = NullpoMinoSDL.webMode;
+		int count = 0;
+		for(int i = 0; i < CHOICES.length; i++) {
+			if(web && isHiddenOnWeb(DESTINATIONS[i])) continue;
+			count++;
+		}
 		choices = new String[count];
 		uiText = new String[count];
 		destinations = new int[count];
 		int row = 0;
+		int exit = -1;
 		for(int i = 0; i < CHOICES.length; i++) {
-			if(hideNetplay && DESTINATIONS[i] == NullpoMinoSDL.STATE_NET_LOBBY) continue;
+			if(web && isHiddenOnWeb(DESTINATIONS[i])) continue;
 			choices[row] = CHOICES[i];
 			uiText[row] = UI_TEXT[i];
 			destinations[row] = DESTINATIONS[i];
+			if(DESTINATIONS[i] == -1) exit = row;	// EXIT (present on desktop only)
 			row++;
 		}
-		exitCursor = count - 1;
+		exitCursor = exit;
 		maxCursor = count - 1;
 		minChoiceY = 3;
+	}
+
+	/** Menu rows not shown on the web build (netplay and exit). */
+	private static boolean isHiddenOnWeb(int destination) {
+		return destination == NullpoMinoSDL.STATE_NET_LOBBY || destination == -1;
 	}
 
 	/*
