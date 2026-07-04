@@ -345,7 +345,7 @@ public class LineRaceMode extends NetDummyMode {
 					receiver.drawScoreFont(engine, playerID,  0, topY+i, String.format("%2d", i + 1), EventReceiver.COLOR_YELLOW, scale);
 					receiver.drawScoreFont(engine, playerID,  3, topY+i, GeneralUtil.getTime(rankingTime[goaltype][i]), (rankingRank == i), scale);
 					receiver.drawScoreFont(engine, playerID, 12, topY+i, String.valueOf(rankingPiece[goaltype][i]), (rankingRank == i), scale);
-					receiver.drawScoreFont(engine, playerID, 18, topY+i, String.format("%.5g", rankingPPS[goaltype][i]), (rankingRank == i), scale);
+					receiver.drawScoreFont(engine, playerID, 18, topY+i, GeneralUtil.formatG(rankingPPS[goaltype][i], 5), (rankingRank == i), scale);
 				}
 			}
 		} else {

@@ -305,31 +305,31 @@ public abstract class AbstractMode implements GameMode {
 					break;
 				case SPL:
 					receiver.drawMenuFont(engine, playerID, 0, y, "SCORE/LINE", color, scale);
-					receiver.drawMenuFont(engine, playerID, 0, y+1, String.format("%10g", engine.statistics.spl), scale);
+					receiver.drawMenuFont(engine, playerID, 0, y+1, String.format("%10s", GeneralUtil.formatG(engine.statistics.spl, 6)), scale);
 					break;
 				case SPM:
 					receiver.drawMenuFont(engine, playerID, 0, y, "SCORE/MIN", color, scale);
-					receiver.drawMenuFont(engine, playerID, 0, y+1, String.format("%10g", engine.statistics.spm), scale);
+					receiver.drawMenuFont(engine, playerID, 0, y+1, String.format("%10s", GeneralUtil.formatG(engine.statistics.spm, 6)), scale);
 					break;
 				case SPS:
 					receiver.drawMenuFont(engine, playerID, 0, y, "SCORE/SEC", color, scale);
-					receiver.drawMenuFont(engine, playerID, 0, y+1, String.format("%10g", engine.statistics.sps), scale);
+					receiver.drawMenuFont(engine, playerID, 0, y+1, String.format("%10s", GeneralUtil.formatG(engine.statistics.sps, 6)), scale);
 					break;
 				case LPM:
 					receiver.drawMenuFont(engine, playerID, 0, y, "LINE/MIN", color, scale);
-					receiver.drawMenuFont(engine, playerID, 0, y+1, String.format("%10g", engine.statistics.lpm), scale);
+					receiver.drawMenuFont(engine, playerID, 0, y+1, String.format("%10s", GeneralUtil.formatG(engine.statistics.lpm, 6)), scale);
 					break;
 				case LPS:
 					receiver.drawMenuFont(engine, playerID, 0, y, "LINE/SEC", color, scale);
-					receiver.drawMenuFont(engine, playerID, 0, y+1, String.format("%10g", engine.statistics.lps), scale);
+					receiver.drawMenuFont(engine, playerID, 0, y+1, String.format("%10s", GeneralUtil.formatG(engine.statistics.lps, 6)), scale);
 					break;
 				case PPM:
 					receiver.drawMenuFont(engine, playerID, 0, y, "PIECE/MIN", color, scale);
-					receiver.drawMenuFont(engine, playerID, 0, y+1, String.format("%10g", engine.statistics.ppm), scale);
+					receiver.drawMenuFont(engine, playerID, 0, y+1, String.format("%10s", GeneralUtil.formatG(engine.statistics.ppm, 6)), scale);
 					break;
 				case PPS:
 					receiver.drawMenuFont(engine, playerID, 0, y, "PIECE/SEC", color, scale);
-					receiver.drawMenuFont(engine, playerID, 0, y+1, String.format("%10g", engine.statistics.pps), scale);
+					receiver.drawMenuFont(engine, playerID, 0, y+1, String.format("%10s", GeneralUtil.formatG(engine.statistics.pps, 6)), scale);
 					break;
 				case MAXCHAIN:
 					receiver.drawMenuFont(engine, playerID, 0, y, "MAX CHAIN", color, scale);

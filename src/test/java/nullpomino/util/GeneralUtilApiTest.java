@@ -219,4 +219,19 @@ class GeneralUtilApiTest {
 		assertNotNull(r);
 		assertEquals("", r.strRuleName);
 	}
+
+	@Test
+	void formatGMatchesJdkPercentGForGameStatRanges() {
+		// formatG replaces String.format("%g",...) for the browser build (TeaVM
+		// lacks %g). It must produce identical output to the JDK's %g for the
+		// value ranges game statistics occupy (fixed-notation range).
+		double[] values = {0.0, 6.5, 1.0, 12.3456, 123.456, 0.0123, 1000.0, 99.9, 42.0, 250.75};
+		int[] precisions = {4, 5, 6};
+		for(int p : precisions) {
+			for(double v : values) {
+				assertEquals(String.format("%." + p + "g", v), GeneralUtil.formatG(v, p),
+						"formatG mismatch for value " + v + " precision " + p);
+			}
+		}
+	}
 }

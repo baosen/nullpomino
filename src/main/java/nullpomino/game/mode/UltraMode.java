@@ -486,7 +486,7 @@ public class UltraMode extends NetDummyMode {
 			receiver.drawScoreFont(engine, playerID, 0, 7, String.valueOf(engine.statistics.lines));
 
 			receiver.drawScoreFont(engine, playerID, 0, 9, "SCORE/MIN", EventReceiver.COLOR_BLUE);
-			receiver.drawScoreFont(engine, playerID, 0, 10, String.format("%-10g", engine.statistics.spm));
+			receiver.drawScoreFont(engine, playerID, 0, 10, String.format("%-10s", GeneralUtil.formatG(engine.statistics.spm, 6)));
 
 			receiver.drawScoreFont(engine, playerID, 0, 12, "LINE/MIN", EventReceiver.COLOR_BLUE);
 			receiver.drawScoreFont(engine, playerID, 0, 13, String.valueOf(engine.statistics.lpm));

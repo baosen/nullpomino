@@ -1409,7 +1409,7 @@ public class SPFMode extends AbstractMode {
 		drawResultStats(engine, playerID, receiver, 5, EventReceiver.COLOR_ORANGE,
 				Statistic.LINES, Statistic.PIECE);
 		drawResult(engine, playerID, receiver, 9, EventReceiver.COLOR_ORANGE,
-				"ATTACK/MIN", String.format("%10g", apm));
+				"ATTACK/MIN", String.format("%10s", GeneralUtil.formatG(apm, 6)));
 		drawResultStats(engine, playerID, receiver, 11, EventReceiver.COLOR_ORANGE,
 				Statistic.LPM, Statistic.PPS, Statistic.TIME);
 	}

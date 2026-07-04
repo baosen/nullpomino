@@ -1232,9 +1232,9 @@ public class VSBattleMode extends AbstractMode {
 		drawResultStats(engine, playerID, receiver, 4, EventReceiver.COLOR_ORANGE,
 				Statistic.LINES, Statistic.PIECE);
 		drawResult(engine, playerID, receiver, 8, EventReceiver.COLOR_ORANGE,
-				"ATK/LINE", String.format("%10g", apl));
+				"ATK/LINE", String.format("%10s", GeneralUtil.formatG(apl, 6)));
 		drawResult(engine, playerID, receiver, 10, EventReceiver.COLOR_ORANGE,
-				"ATTACK/MIN", String.format("%10g", apm));
+				"ATTACK/MIN", String.format("%10s", GeneralUtil.formatG(apm, 6)));
 		drawResultStats(engine, playerID, receiver, 12, EventReceiver.COLOR_ORANGE,
 				Statistic.LPM, Statistic.PPS, Statistic.TIME);
 	}

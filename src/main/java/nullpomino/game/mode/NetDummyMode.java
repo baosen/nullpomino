@@ -1142,12 +1142,12 @@ public class NetDummyMode extends AbstractMode implements NetLobbyListener {
 					} else if(netRankingType == NetSPRecord.RANKINGTYPE_GENERIC_TIME) {
 						receiver.drawMenuFont(engine, playerID, 5, 4 + c, GeneralUtil.getTime(netRankingTime[d].get(i)), (i == netRankingCursor[d]));
 						receiver.drawMenuFont(engine, playerID, 14, 4 + c, "" + netRankingPiece[d].get(i), (i == netRankingCursor[d]));
-						receiver.drawMenuFont(engine, playerID, 20, 4 + c, String.format("%.5g", netRankingPPS[d].get(i)), (i == netRankingCursor[d]));
+						receiver.drawMenuFont(engine, playerID, 20, 4 + c, GeneralUtil.formatG(netRankingPPS[d].get(i), 5), (i == netRankingCursor[d]));
 						receiver.drawTTFMenuFont(engine, playerID, 27, 4 + c, netRankingName[d].get(i), (i == netRankingCursor[d]));
 					} else if(netRankingType == NetSPRecord.RANKINGTYPE_SCORERACE) {
 						receiver.drawMenuFont(engine, playerID, 5, 4 + c, GeneralUtil.getTime(netRankingTime[d].get(i)), (i == netRankingCursor[d]));
 						receiver.drawMenuFont(engine, playerID, 14, 4 + c, "" + netRankingLines[d].get(i), (i == netRankingCursor[d]));
-						receiver.drawMenuFont(engine, playerID, 19, 4 + c, String.format("%.5g", netRankingSPL[d].get(i)), (i == netRankingCursor[d]));
+						receiver.drawMenuFont(engine, playerID, 19, 4 + c, GeneralUtil.formatG(netRankingSPL[d].get(i), 5), (i == netRankingCursor[d]));
 						receiver.drawTTFMenuFont(engine, playerID, 26, 4 + c, netRankingName[d].get(i), (i == netRankingCursor[d]));
 					} else if(netRankingType == NetSPRecord.RANKINGTYPE_DIGRACE) {
 						receiver.drawMenuFont(engine, playerID, 5, 4 + c, GeneralUtil.getTime(netRankingTime[d].get(i)), (i == netRankingCursor[d]));
@@ -1162,7 +1162,7 @@ public class NetDummyMode extends AbstractMode implements NetLobbyListener {
 					} else if(netRankingType == NetSPRecord.RANKINGTYPE_COMBORACE) {
 						receiver.drawMenuFont(engine, playerID, 5, 4 + c, "" + (netRankingScore[d].get(i) - 1), (i == netRankingCursor[d]));
 						receiver.drawMenuFont(engine, playerID, 11, 4 + c, GeneralUtil.getTime(netRankingTime[d].get(i)), (i == netRankingCursor[d]));
-						receiver.drawMenuFont(engine, playerID, 20, 4 + c, String.format("%.4g", netRankingPPS[d].get(i)), (i == netRankingCursor[d]));
+						receiver.drawMenuFont(engine, playerID, 20, 4 + c, GeneralUtil.formatG(netRankingPPS[d].get(i), 4), (i == netRankingCursor[d]));
 						receiver.drawTTFMenuFont(engine, playerID, 27, 4 + c, netRankingName[d].get(i), (i == netRankingCursor[d]));
 					} else if(netRankingType == NetSPRecord.RANKINGTYPE_DIGCHALLENGE) {
 						receiver.drawMenuFont(engine, playerID, 5, 4 + c, "" + netRankingScore[d].get(i), (i == netRankingCursor[d]));
@@ -1175,7 +1175,7 @@ public class NetDummyMode extends AbstractMode implements NetLobbyListener {
 						if(netRankingRollclear[d].get(i) == 2) fontcolor = EventReceiver.COLOR_ORANGE;
 						receiver.drawMenuFont(engine, playerID, 5, 4 + c, "" + netRankingLines[d].get(i), fontcolor);
 						receiver.drawMenuFont(engine, playerID, 11, 4 + c, GeneralUtil.getTime(netRankingTime[d].get(i)), (i == netRankingCursor[d]));
-						receiver.drawMenuFont(engine, playerID, 20, 4 + c, String.format("%.4g", netRankingPPS[d].get(i)), (i == netRankingCursor[d]));
+						receiver.drawMenuFont(engine, playerID, 20, 4 + c, GeneralUtil.formatG(netRankingPPS[d].get(i), 4), (i == netRankingCursor[d]));
 						receiver.drawTTFMenuFont(engine, playerID, 27, 4 + c, netRankingName[d].get(i), (i == netRankingCursor[d]));
 					}
 

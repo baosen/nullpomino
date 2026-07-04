@@ -477,7 +477,7 @@ public class ScoreRaceMode extends NetDummyMode {
 					receiver.drawScoreFont(engine, playerID, 0, topY+i, String.format("%2d", i + 1), EventReceiver.COLOR_YELLOW, scale);
 					receiver.drawScoreFont(engine, playerID, 3, topY+i, GeneralUtil.getTime(rankingTime[goaltype][i]), (rankingRank == i), scale);
 					receiver.drawScoreFont(engine, playerID, 12, topY+i, String.valueOf(rankingLines[goaltype][i]), (rankingRank == i), scale);
-					receiver.drawScoreFont(engine, playerID, 17, topY+i, String.format("%.6g", rankingSPL[goaltype][i]), (rankingRank == i), scale);
+					receiver.drawScoreFont(engine, playerID, 17, topY+i, GeneralUtil.formatG(rankingSPL[goaltype][i], 6), (rankingRank == i), scale);
 				}
 			}
 		} else {
@@ -500,13 +500,13 @@ public class ScoreRaceMode extends NetDummyMode {
 			receiver.drawScoreFont(engine, playerID, 0, 7, String.valueOf(engine.statistics.lines));
 
 			receiver.drawScoreFont(engine, playerID, 0, 9, "SCORE/MIN", EventReceiver.COLOR_BLUE);
-			receiver.drawScoreFont(engine, playerID, 0, 10, String.format("%-10g", engine.statistics.spm));
+			receiver.drawScoreFont(engine, playerID, 0, 10, String.format("%-10s", GeneralUtil.formatG(engine.statistics.spm, 6)));
 
 			receiver.drawScoreFont(engine, playerID, 0, 12, "LINE/MIN", EventReceiver.COLOR_BLUE);
 			receiver.drawScoreFont(engine, playerID, 0, 13, String.valueOf(engine.statistics.lpm));
 
 			receiver.drawScoreFont(engine, playerID, 0, 15, "SCORE/LINE", EventReceiver.COLOR_BLUE);
-			receiver.drawScoreFont(engine, playerID, 0, 16, String.format("%-10g", engine.statistics.spl));
+			receiver.drawScoreFont(engine, playerID, 0, 16, String.format("%-10s", GeneralUtil.formatG(engine.statistics.spl, 6)));
 
 			receiver.drawScoreFont(engine, playerID, 0, 18, "TIME", EventReceiver.COLOR_BLUE);
 			receiver.drawScoreFont(engine, playerID, 0, 19, GeneralUtil.getTime(engine.statistics.time));

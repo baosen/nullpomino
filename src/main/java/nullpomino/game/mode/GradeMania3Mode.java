@@ -1548,7 +1548,7 @@ public class GradeMania3Mode extends AbstractGradeMode {
 
 				if(rollPointsTotal > 0) {
 					receiver.drawMenuFont(engine, playerID, 0, 6, "ROLL POINT", EventReceiver.COLOR_BLUE);
-					String strRollPointsTotal = String.format("%10g", rollPointsTotal);
+					String strRollPointsTotal = String.format("%10s", GeneralUtil.formatG(rollPointsTotal, 6));
 					receiver.drawMenuFont(engine, playerID, 0, 7, strRollPointsTotal);
 				}
 

@@ -975,7 +975,7 @@ public class PracticeMode extends AbstractMode {
 
 			// 1分間あたり score
 			receiver.drawScoreFont(engine, playerID, 0, 11, "SCORE/MIN", EventReceiver.COLOR_BLUE);
-			receiver.drawScoreFont(engine, playerID, 0, 12, String.format("%-10g", engine.statistics.spm));
+			receiver.drawScoreFont(engine, playerID, 0, 12, String.format("%-10s", GeneralUtil.formatG(engine.statistics.spm, 6)));
 
 			// 1分間あたりのLines
 			receiver.drawScoreFont(engine, playerID, 0, 14, "LINE/MIN", EventReceiver.COLOR_BLUE);

@@ -48,6 +48,29 @@ public class GeneralUtil {
 	}
 
 	/**
+	 * Formats a floating-point value like the {@code %g} conversion, but using
+	 * only conversions TeaVM's Formatter implements ({@code %g} is not one of
+	 * them, and reaching it crashes the browser build). {@code %g} shows
+	 * {@code precision} significant digits; in the fixed-notation range — which
+	 * every realistic game statistic stays in — that equals {@code %f} with
+	 * {@code precision - 1 - floor(log10(|value|))} fraction digits, so this
+	 * matches the JDK's {@code %g} output for those values on both platforms.
+	 * @param value the value to format
+	 * @param precision number of significant digits (Java's %g default is 6)
+	 * @return the formatted value
+	 */
+	public static String formatG(double value, int precision) {
+		if(precision <= 0) precision = 1;
+		int fractionDigits = precision - 1;
+		if(value != 0.0 && !Double.isNaN(value) && !Double.isInfinite(value)) {
+			int exponent = (int) Math.floor(Math.log10(Math.abs(value)));
+			fractionDigits = precision - 1 - exponent;
+			if(fractionDigits < 0) fractionDigits = 0;
+		}
+		return String.format("%." + fractionDigits + "f", value);
+	}
+
+	/**
 	 * Returns ON if b is true, OFF if b is false
 	 * @param b Boolean variable to be checked
 	 * @return ON if b is true, OFF if b is false

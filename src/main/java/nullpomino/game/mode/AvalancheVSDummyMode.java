@@ -974,8 +974,8 @@ public abstract class AvalancheVSDummyMode extends AbstractMode {
 				"CLEARED", String.format("%10d", engine.statistics.lines),
 				"MAX CHAIN", String.format("%10d", engine.statistics.maxChain),
 				"PIECE", String.format("%10d", engine.statistics.totalPieceLocked),
-				"ATTACK/MIN", String.format("%10g", apm),
-				"PIECE/SEC", String.format("%10g", engine.statistics.pps),
+				"ATTACK/MIN", String.format("%10s", GeneralUtil.formatG(apm, 6)),
+				"PIECE/SEC", String.format("%10s", GeneralUtil.formatG(engine.statistics.pps, 6)),
 				"TIME", String.format("%10s", GeneralUtil.getTime(owner.engine[0].statistics.time)));
 	}
 }
