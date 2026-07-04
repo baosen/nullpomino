@@ -122,6 +122,13 @@ public class SoundManagerSDL {
 		SDL3Mixer lib = NullpoMinoSDL.mixerLib;
 		if(lib == null || clipMap.isEmpty()) return;
 
+		// Web Audio needs no pipeline warm-up (this exists for SDL's
+		// per-stream decoder init). Worse, in the browser the audio context
+		// starts suspended, so all 16 muted warm-up plays queue as pending and
+		// then fire together the instant the context resumes on the first
+		// gesture — a loud burst. Skip it entirely there.
+		if(NullpoMinoSDL.webMode) return;
+
 		String warmUpClipName = getWarmUpClipName();
 		MixAudio warmUpAudio = clipMap.get(warmUpClipName);
 		if(warmUpAudio == null) return;
