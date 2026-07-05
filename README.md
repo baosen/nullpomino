@@ -24,14 +24,14 @@ python3 -m http.server -d web/dist 8000 # other static file servers works too!
 ./NullpoMino
 ```
 
-### Tools
+### Netplay
 
-Swing-based utility programs live at the repo root alongside the
-Java sources under `src/main/java/nullpomino/tool/`:
+Netplay is peer-to-peer — see [NETPLAY.md](NETPLAY.md) for more info.
+
+### Tools
 
 - `./ruleeditor` — edit game rulesets
 - `./sequencer` — inspect replay piece sequences (by Zircean)
 - `./musiclisteditor` — configure BGM files
 - `./airankstool` — generate a Ranks AI data file
 
-Netplay is peer-to-peer and needs no server — see [NETPLAY.md](NETPLAY.md).
