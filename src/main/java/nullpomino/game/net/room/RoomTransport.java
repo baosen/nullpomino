@@ -38,7 +38,7 @@ public interface RoomTransport {
 	 */
 	void dial(String host, int port, int timeoutMs, DialCallback callback);
 
-	/** @return The bound listen port, or -1 before startListening (always 0 on web) */
+	/** @return The bound listen port, or -1 before startListening (a dummy constant on web) */
 	int getListenPort();
 
 	/** @return Address to advertise/display for the local peer: LAN IPv4 on desktop, clientId on web */

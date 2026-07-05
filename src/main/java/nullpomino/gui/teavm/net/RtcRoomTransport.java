@@ -193,7 +193,10 @@ public class RtcRoomTransport implements RoomTransport {
 
 	@Override
 	public int getListenPort() {
-		return 0;
+		// Ports are meaningless on web, but this value rides in the room
+		// announce, and the LAN announce codec rejects ports outside
+		// 1..65535 - so report a valid dummy instead of 0
+		return 1;
 	}
 
 	@Override

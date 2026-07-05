@@ -135,6 +135,33 @@ and broadcasts state; attack strength and KO attribution are computed by the
 attacking/dying client; race-mode placements are declared by the winner. The
 arbiter validates seats and sequencing, not gameplay.
 
+## The Web Build (WebRTC)
+
+The browser (TeaVM) build runs the exact same room engine - `RoomSession`,
+`RoomAuthority`, the wire protocol, migration - over different plumbing,
+selected via the `RoomNet`/`LoungeService` seams the entry point installs:
+
+| Piece | Desktop | Web |
+|---|---|---|
+| Peer links | TCP sockets (`TcpRoomTransport`/`RoomPeerLink`) | WebRTC DataChannels, ordered+reliable (`RtcRoomTransport`/`RtcPeerLink`) |
+| Peer address | IP + port | Signaling clientId (16 hex, per page load) |
+| Event dispatch | Dispatcher thread + blocking queue (`ThreadRoomDispatcher`) | Trampoline on the JS event loop (`WebRoomDispatcher`) |
+| Discovery + lounge | UDP broadcast beacons (`NetLanDiscovery`) | Public MQTT-over-WSS brokers, same packet codec (`MqttLoungeService`) |
+| Signaling | none needed (direct dial) | Non-trickle SDP offer/answer over per-peer broker inbox topics |
+| NAT traversal | port forwarding | STUN (Google + Cloudflare; no TURN - symmetric-NAT pairs cannot connect) |
+
+The brokers (default `broker.emqx.io` + `test.mosquitto.org`, bonded: connect
+to all, publish to all, dedupe inbound) carry only the lounge and the
+offer/answer handshake. Game traffic flows purely peer-to-peer; a broker
+dying mid-game affects nothing but discovery of new rooms, and arbiter
+migration works with every broker down. The lounge is public to anyone on
+the same brokers and topic root - the LAN trust model, internet-wide.
+Topics are versioned (`npp/v<major>/...`) so incompatible clients never meet.
+
+Web-only code lives in `src/main/java/nullpomino/gui/teavm/net/`; the
+shared codecs (`game/net/mqtt/MqttCodec`, `game/net/web/WebSignaling`) are
+pure Java with JVM unit tests.
+
 ## Configuration
 
 `config/etc/netroom.cfg`:
@@ -142,7 +169,16 @@ arbiter validates seats and sequencing, not gameplay.
 | Setting | Default | Notes |
 |---|---|---|
 | `netroom.port` | `9202` | Room TCP listen port (0 = ephemeral; busy port falls back to ephemeral) |
-| `netroom.lanAnnounce` | `true` | Broadcast the UDP 9201 beacon while joinable |
+| `netroom.lanAnnounce` | `true` | Announce to the lounge while joinable (UDP beacon / MQTT topic) |
+
+`config/etc/netweb.cfg` (web build only, re-fetched on every page load):
+
+| Setting | Default | Notes |
+|---|---|---|
+| `netweb.mqtt.brokers` | emqx + mosquitto | MQTT-over-WSS broker URLs, space-separated, bonded |
+| `netweb.mqtt.topicRoot` | `npp` | Topic prefix; protocol major version is appended |
+| `netweb.stun` | Google + Cloudflare | ICE servers; `turn:` URLs can be added later |
+| `netweb.iceGatherTimeout` | `3000` | Cap on ICE gathering before the SDP ships anyway |
 
 ## Key Files
 
@@ -160,7 +196,9 @@ arbiter validates seats and sequencing, not gameplay.
 | Lobby session object | `src/main/java/nullpomino/gui/net/NetLobbyFrame.java` |
 
 The threading model is deliberately simple: one reader + one writer thread per
-link, and a single dispatcher thread per session that owns all state. Per-peer
-FIFO ordering holds end-to-end, which is what the client's strict message
+link, and a single dispatcher per session that owns all state (a thread on
+desktop, a run-to-completion trampoline in the browser). Per-peer FIFO
+ordering holds end-to-end - TCP per link on desktop, an ordered reliable
+DataChannel per link on web - which is what the client's strict message
 ordering (roster before `roomjoinsuccess`, all `dead` before `finish`)
 depends on.
