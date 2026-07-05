@@ -12,6 +12,8 @@ import java.util.Calendar;
 import java.util.Deque;
 import java.util.Locale;
 
+import nullpomino.game.net.NetPlatform;
+import nullpomino.game.net.room.LanRoomNet;
 import nullpomino.game.net.room.RoomSession;
 import nullpomino.gui.GameKeyDummy;
 import nullpomino.gui.net.NetLobbyFrame;
@@ -273,6 +275,7 @@ public class NullpoMinoSDL {
 		log.info("NullpoMinoSDL Start");
 
 		bootstrap(args);
+		NetPlatform.installRoomNet(new LanRoomNet());
 		modeManager.loadGameModes(ModeRegistry.all());
 		registerDesktopStates();
 

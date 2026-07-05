@@ -21,7 +21,7 @@ import org.slf4j.LoggerFactory;
  * block the dispatcher or another peer. Queue overflow closes the link:
  * a consumer that far behind is effectively dead.
  */
-public class RoomPeerLink {
+public class RoomPeerLink extends RoomLink {
 	/** Log */
 	private static final Logger log = LoggerFactory.getLogger(RoomPeerLink.class);
 
@@ -41,12 +41,6 @@ public class RoomPeerLink {
 
 	/** true if this side dialed the connection */
 	public final boolean outbound;
-
-	/** Peer uid this link is bound to; -1 until the handshake binds it. Dispatcher-confined. */
-	public int uid = -1;
-
-	/** Time of the last inbound byte (liveness) */
-	public volatile long lastInboundMillis = System.currentTimeMillis();
 
 	public RoomPeerLink(Socket socket, boolean outbound, RoomEventSink sink) {
 		this(socket, outbound, sink, RoomProtocol.WRITE_QUEUE_MAX);
@@ -117,6 +111,7 @@ public class RoomPeerLink {
 	 * farewell lines (deny/bye) that must reach the peer before the socket
 	 * dies. Falls back to an immediate close when the queue is full.
 	 */
+	@Override
 	public void closeAfterFlush(String reason) {
 		if(closed.get()) return;
 		flushCloseReason = reason;
@@ -129,6 +124,7 @@ public class RoomPeerLink {
 	 * Queue a line for sending (newline appended). Non-blocking, callable
 	 * from any thread; a no-op after close. Overflow closes the link.
 	 */
+	@Override
 	public void sendLine(String line) {
 		if(closed.get()) return;
 		if(!writeQueue.offer(NetUtil.stringToBytes(line + "\n"))) {
@@ -140,6 +136,7 @@ public class RoomPeerLink {
 	 * Close the link. Idempotent; fires {@link RoomEventSink#onLinkClosed}
 	 * exactly once, from whichever caller wins.
 	 */
+	@Override
 	public void close(String reason) {
 		if(!closed.compareAndSet(false, true)) return;
 
@@ -156,11 +153,13 @@ public class RoomPeerLink {
 	}
 
 	/** @return true once the link is closed */
+	@Override
 	public boolean isClosed() {
 		return closed.get();
 	}
 
 	/** @return The peer's IP address as observed on this socket */
+	@Override
 	public String getRemoteAddress() {
 		return (socket.getInetAddress() == null) ? "?" : socket.getInetAddress().getHostAddress();
 	}

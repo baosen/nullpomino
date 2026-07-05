@@ -53,13 +53,13 @@ class RoomMigrationTest {
     }
 
     private RoomSession create(String name) throws Exception {
-        RoomSession s = RoomSession.create(name, testConfig(), null);
+        RoomSession s = RoomSession.create(name, testConfig(), null, new LanRoomNet());
         sessions.add(s);
         return s;
     }
 
     private RoomSession join(RoomSession target, String name) throws Exception {
-        RoomSession s = RoomSession.join("127.0.0.1", target.getListenPort(), name, testConfig(), null);
+        RoomSession s = RoomSession.join("127.0.0.1", target.getListenPort(), name, testConfig(), null, new LanRoomNet());
         sessions.add(s);
         awaitState(s, RoomSession.State.READY);
         return s;

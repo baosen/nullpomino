@@ -3,18 +3,17 @@
 package nullpomino.game.net.room;
 
 /**
- * Receives transport-level events from {@link RoomTransport} and
- * {@link RoomPeerLink}. Implementations are called from reader/accept
- * threads and must be thread-safe and non-blocking (typically they just
+ * Receives transport-level events from a {@link RoomTransport} and
+ * its {@link RoomLink}s. Implementations are called from transport threads or event contexts and must be thread-safe and non-blocking (typically they just
  * enqueue a {@link RoomEvent} for the dispatcher).
  */
 public interface RoomEventSink {
 	/** A new inbound connection was accepted (link already started, not yet uid-bound) */
-	void onLinkAccepted(RoomPeerLink link);
+	void onLinkAccepted(RoomLink link);
 
 	/** A complete newline-terminated line arrived (without the newline) */
-	void onLine(RoomPeerLink link, String line);
+	void onLine(RoomLink link, String line);
 
 	/** The link died; fired exactly once per link */
-	void onLinkClosed(RoomPeerLink link, String reason);
+	void onLinkClosed(RoomLink link, String reason);
 }

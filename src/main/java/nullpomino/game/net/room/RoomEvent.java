@@ -23,26 +23,26 @@ public final class RoomEvent {
 	}
 
 	public final Type type;
-	public final RoomPeerLink link;
+	public final RoomLink link;
 	public final String line;
 	public final String reason;
 
-	private RoomEvent(Type type, RoomPeerLink link, String line, String reason) {
+	private RoomEvent(Type type, RoomLink link, String line, String reason) {
 		this.type = type;
 		this.link = link;
 		this.line = line;
 		this.reason = reason;
 	}
 
-	public static RoomEvent linkAccepted(RoomPeerLink link) {
+	public static RoomEvent linkAccepted(RoomLink link) {
 		return new RoomEvent(Type.LINK_ACCEPTED, link, null, null);
 	}
 
-	public static RoomEvent line(RoomPeerLink link, String line) {
+	public static RoomEvent line(RoomLink link, String line) {
 		return new RoomEvent(Type.LINE, link, line, null);
 	}
 
-	public static RoomEvent linkClosed(RoomPeerLink link, String reason) {
+	public static RoomEvent linkClosed(RoomLink link, String reason) {
 		return new RoomEvent(Type.LINK_CLOSED, link, null, reason);
 	}
 

@@ -3,103 +3,47 @@
 package nullpomino.game.net.room;
 
 import java.io.IOException;
-import java.net.BindException;
-import java.net.InetSocketAddress;
-import java.net.ServerSocket;
-import java.net.Socket;
-import java.util.concurrent.CopyOnWriteArrayList;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * Listens for and dials room peer connections. Contains no protocol
- * logic - it only creates {@link RoomPeerLink}s and pumps events into
- * the {@link RoomEventSink}.
+ * logic - it only creates {@link RoomLink}s and pumps events into the
+ * {@link RoomEventSink}. Desktop rooms use {@link TcpRoomTransport};
+ * the browser build supplies a WebRTC implementation where "host" is a
+ * signaling clientId and ports are meaningless.
  */
-public class RoomTransport {
-	/** Log */
-	private static final Logger log = LoggerFactory.getLogger(RoomTransport.class);
+public interface RoomTransport {
+	/** Receives the result of an asynchronous {@link #dial}; may fire on any thread */
+	interface DialCallback {
+		/** The link is started; the handshake (hello) is the caller's job */
+		void onDialed(RoomLink link);
 
-	private final RoomEventSink sink;
-	private ServerSocket serverSocket;
-	private volatile boolean shutdownRequested = false;
-	private final CopyOnWriteArrayList<RoomPeerLink> links = new CopyOnWriteArrayList<RoomPeerLink>();
-
-	public RoomTransport(RoomEventSink sink) {
-		this.sink = sink;
+		/** The connection could not be established */
+		void onDialFailed(String reason);
 	}
 
 	/**
-	 * Bind the listen socket and start the accept thread. If the configured
-	 * port is busy, falls back to an ephemeral port with a warning (LAN
-	 * discovery carries the real port; internet play needs the forwarded one).
-	 * @param configuredPort Preferred port (0 = ephemeral)
-	 * @return The actually bound port
-	 * @throws IOException When even an ephemeral bind fails
+	 * Start accepting inbound connections. TCP binds a listen socket; the
+	 * WebRTC transport registers its signaling inbox instead.
+	 * @param configuredPort Preferred port (0 = ephemeral; ignored on web)
+	 * @return The actually bound port (0 on web)
+	 * @throws IOException When listening cannot be started at all
 	 */
-	public int startListening(int configuredPort) throws IOException {
-		try {
-			serverSocket = new ServerSocket(configuredPort);
-		} catch (BindException e) {
-			if(configuredPort == 0) throw e;
-			log.warn("Port {} is busy, falling back to an ephemeral port", configuredPort);
-			serverSocket = new ServerSocket(0);
-		}
-
-		Thread acceptThread = new Thread(this::acceptLoop, "RoomAccept");
-		acceptThread.setDaemon(true);
-		acceptThread.start();
-
-		log.info("Room transport listening on port {}", serverSocket.getLocalPort());
-		return serverSocket.getLocalPort();
-	}
-
-	private void acceptLoop() {
-		try {
-			while(!shutdownRequested) {
-				Socket socket = serverSocket.accept();
-				RoomPeerLink link = new RoomPeerLink(socket, false, sink);
-				links.add(link);
-				link.start();
-				sink.onLinkAccepted(link);
-			}
-		} catch (IOException e) {
-			if(!shutdownRequested) log.warn("Room accept loop stopped", e);
-		}
-	}
+	int startListening(int configuredPort) throws IOException;
 
 	/**
-	 * Dial a peer. BLOCKS up to timeoutMs - callers on the dispatcher thread
-	 * should dial from a helper thread.
-	 * @return The started link (handshake is the caller's job)
-	 * @throws IOException When the connection fails
+	 * Dial a peer asynchronously. NEVER blocks the caller; the callback
+	 * fires later from a transport-owned thread or event context. Dials
+	 * are performed in submission order.
+	 * @param host Peer address: IP/hostname on TCP, signaling clientId on WebRTC
 	 */
-	public RoomPeerLink dial(String host, int port, int timeoutMs) throws IOException {
-		Socket socket = new Socket();
-		socket.connect(new InetSocketAddress(host, port), timeoutMs);
-		RoomPeerLink link = new RoomPeerLink(socket, true, sink);
-		links.add(link);
-		link.start();
-		return link;
-	}
+	void dial(String host, int port, int timeoutMs, DialCallback callback);
 
-	/** @return The bound listen port, or -1 before startListening */
-	public int getListenPort() {
-		ServerSocket s = serverSocket;
-		return (s == null) ? -1 : s.getLocalPort();
-	}
+	/** @return The bound listen port, or -1 before startListening (always 0 on web) */
+	int getListenPort();
 
-	/** Close the listen socket and every link */
-	public void shutdown() {
-		shutdownRequested = true;
-		try {
-			if(serverSocket != null) serverSocket.close();
-		} catch (IOException e) {
-			log.debug("Exception on server socket close", e);
-		}
-		for(RoomPeerLink link: links) {
-			link.close(RoomProtocol.DENY_SHUTDOWN);
-		}
-	}
+	/** @return Address to advertise/display for the local peer: LAN IPv4 on desktop, clientId on web */
+	String getDisplayAddress();
+
+	/** Stop listening and close every link */
+	void shutdown();
 }

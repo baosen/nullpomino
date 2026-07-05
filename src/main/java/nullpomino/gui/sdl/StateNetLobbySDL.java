@@ -10,6 +10,7 @@ import java.util.List;
 import java.util.Random;
 
 import nullpomino.game.net.NetLanDiscovery;
+import nullpomino.game.net.NetPlatform;
 import nullpomino.game.net.room.RoomConfig;
 import nullpomino.game.net.room.RoomProtocol;
 import nullpomino.game.net.room.RoomSession;
@@ -525,7 +526,7 @@ public class StateNetLobbySDL extends BaseStateSDL {
 
 		RoomSession session;
 		try {
-			session = RoomSession.join(host, port, name, RoomConfig.load(), null);
+			session = RoomSession.join(host, port, name, RoomConfig.load(), null, NetPlatform.roomNet());
 		} catch(IOException e) {
 			nl.chatLogLobby.appendSystem("JOIN FAILED: " + e.getMessage(), NormalFontSDL.COLOR_RED);
 			return;
@@ -553,7 +554,7 @@ public class StateNetLobbySDL extends BaseStateSDL {
 
 		RoomSession session;
 		try {
-			session = RoomSession.create(name, RoomConfig.load(), null);
+			session = RoomSession.create(name, RoomConfig.load(), null, NetPlatform.roomNet());
 		} catch(IOException e) {
 			nl.chatLogLobby.appendSystem("CREATE FAILED: " + e.getMessage(), NormalFontSDL.COLOR_RED);
 			return;

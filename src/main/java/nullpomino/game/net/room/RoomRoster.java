@@ -20,11 +20,11 @@ public class RoomRoster {
 		public String host;
 		public int listenPort;
 		/** Link to this member; null for the local peer's own entry */
-		public RoomPeerLink link;
+		public RoomLink link;
 		/** true once the member reported all its peer links are up */
 		public boolean linksOk;
 
-		public Entry(int uid, String name, String host, int listenPort, RoomPeerLink link) {
+		public Entry(int uid, String name, String host, int listenPort, RoomLink link) {
 			this.uid = uid;
 			this.name = name;
 			this.host = host;
@@ -48,7 +48,7 @@ public class RoomRoster {
 	}
 
 	/** @return The entry bound to this link, or null */
-	public Entry getByLink(RoomPeerLink link) {
+	public Entry getByLink(RoomLink link) {
 		for(Entry entry: members.values()) {
 			if(entry.link == link) return entry;
 		}

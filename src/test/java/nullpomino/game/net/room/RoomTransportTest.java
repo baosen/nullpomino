@@ -17,29 +17,29 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 
 /**
- * Loopback-socket tests for {@link RoomTransport} and {@link RoomPeerLink}:
+ * Loopback-socket tests for {@link TcpRoomTransport} and {@link RoomPeerLink}:
  * accept/dial, line delivery both ways, partial-packet reassembly,
- * close-once semantics, ephemeral fallback, and write-overflow.
+ * close-once semantics, ephemeral fallback, dial failure, and write-overflow.
  */
 class RoomTransportTest {
 
     /** Records every sink event into inspectable queues */
     private static final class RecordingSink implements RoomEventSink {
-        final BlockingQueue<RoomPeerLink> accepted = new LinkedBlockingQueue<RoomPeerLink>();
+        final BlockingQueue<RoomLink> accepted = new LinkedBlockingQueue<RoomLink>();
         final BlockingQueue<String> lines = new LinkedBlockingQueue<String>();
         final BlockingQueue<String> closes = new LinkedBlockingQueue<String>();
         final AtomicInteger closeCount = new AtomicInteger();
 
-        public void onLinkAccepted(RoomPeerLink link) { accepted.add(link); }
-        public void onLine(RoomPeerLink link, String line) { lines.add(line); }
-        public void onLinkClosed(RoomPeerLink link, String reason) {
+        public void onLinkAccepted(RoomLink link) { accepted.add(link); }
+        public void onLine(RoomLink link, String line) { lines.add(line); }
+        public void onLinkClosed(RoomLink link, String reason) {
             closeCount.incrementAndGet();
             closes.add(reason);
         }
     }
 
-    private RoomTransport transportA;
-    private RoomTransport transportB;
+    private TcpRoomTransport transportA;
+    private TcpRoomTransport transportB;
 
     @AfterEach
     void tearDown() {
@@ -47,19 +47,32 @@ class RoomTransportTest {
         if (transportB != null) transportB.shutdown();
     }
 
+    /** Drive the async dial API synchronously for test convenience */
+    private static RoomPeerLink dialSync(TcpRoomTransport transport, String host, int port)
+            throws InterruptedException {
+        final BlockingQueue<Object> result = new LinkedBlockingQueue<Object>();
+        transport.dial(host, port, 2000, new RoomTransport.DialCallback() {
+            public void onDialed(RoomLink link) { result.add(link); }
+            public void onDialFailed(String reason) { result.add("FAILED: " + reason); }
+        });
+        Object outcome = result.poll(5, TimeUnit.SECONDS);
+        assertTrue(outcome instanceof RoomPeerLink, String.valueOf(outcome));
+        return (RoomPeerLink) outcome;
+    }
+
     @Test
     void dialAcceptAndExchangeLines() throws Exception {
         RecordingSink sinkA = new RecordingSink();
         RecordingSink sinkB = new RecordingSink();
-        transportA = new RoomTransport(sinkA);
-        transportB = new RoomTransport(sinkB);
+        transportA = new TcpRoomTransport(sinkA);
+        transportB = new TcpRoomTransport(sinkB);
         int portA = transportA.startListening(0);
 
-        RoomPeerLink bToA = transportB.dial("127.0.0.1", portA, 2000);
-        RoomPeerLink aToB = sinkA.accepted.poll(5, TimeUnit.SECONDS);
+        RoomPeerLink bToA = dialSync(transportB, "127.0.0.1", portA);
+        RoomLink aToB = sinkA.accepted.poll(5, TimeUnit.SECONDS);
         assertNotNull(aToB);
         assertTrue(bToA.outbound);
-        assertFalse(aToB.outbound);
+        assertFalse(((RoomPeerLink) aToB).outbound);
 
         bToA.sendLine("room\thello\tjoin\t7.5\tfalse\t9202\tSomeone");
         assertEquals("room\thello\tjoin\t7.5\tfalse\t9202\tSomeone",
@@ -72,7 +85,7 @@ class RoomTransportTest {
     @Test
     void partialPacketsAreReassembled() throws Exception {
         RecordingSink sinkA = new RecordingSink();
-        transportA = new RoomTransport(sinkA);
+        transportA = new TcpRoomTransport(sinkA);
         int portA = transportA.startListening(0);
 
         try (Socket raw = new Socket("127.0.0.1", portA)) {
@@ -92,12 +105,12 @@ class RoomTransportTest {
     void closeFiresExactlyOncePerSide() throws Exception {
         RecordingSink sinkA = new RecordingSink();
         RecordingSink sinkB = new RecordingSink();
-        transportA = new RoomTransport(sinkA);
-        transportB = new RoomTransport(sinkB);
+        transportA = new TcpRoomTransport(sinkA);
+        transportB = new TcpRoomTransport(sinkB);
         int portA = transportA.startListening(0);
 
-        RoomPeerLink bToA = transportB.dial("127.0.0.1", portA, 2000);
-        RoomPeerLink aToB = sinkA.accepted.poll(5, TimeUnit.SECONDS);
+        RoomPeerLink bToA = dialSync(transportB, "127.0.0.1", portA);
+        RoomLink aToB = sinkA.accepted.poll(5, TimeUnit.SECONDS);
         assertNotNull(aToB);
 
         bToA.close("test close");
@@ -115,7 +128,7 @@ class RoomTransportTest {
     void busyPortFallsBackToEphemeral() throws Exception {
         try (ServerSocket blocker = new ServerSocket(0)) {
             RecordingSink sink = new RecordingSink();
-            transportA = new RoomTransport(sink);
+            transportA = new TcpRoomTransport(sink);
             int bound = transportA.startListening(blocker.getLocalPort());
 
             assertTrue(bound > 0);
@@ -125,14 +138,33 @@ class RoomTransportTest {
     }
 
     @Test
+    void dialFailureReportsThroughCallback() throws Exception {
+        RecordingSink sink = new RecordingSink();
+        transportA = new TcpRoomTransport(sink);
+
+        // A port that nothing listens on: grab an ephemeral port and close it
+        int deadPort;
+        try (ServerSocket probe = new ServerSocket(0)) {
+            deadPort = probe.getLocalPort();
+        }
+
+        final BlockingQueue<String> failures = new LinkedBlockingQueue<String>();
+        transportA.dial("127.0.0.1", deadPort, 1000, new RoomTransport.DialCallback() {
+            public void onDialed(RoomLink link) { failures.add("UNEXPECTED SUCCESS"); }
+            public void onDialFailed(String reason) { failures.add("failed"); }
+        });
+        assertEquals("failed", failures.poll(5, TimeUnit.SECONDS));
+    }
+
+    @Test
     void writeQueueOverflowClosesLink() throws Exception {
         RecordingSink sinkA = new RecordingSink();
-        transportA = new RoomTransport(sinkA);
+        transportA = new TcpRoomTransport(sinkA);
         int portA = transportA.startListening(0);
 
         // Raw socket that never reads, so the peer's writes eventually queue up
         try (Socket raw = new Socket("127.0.0.1", portA)) {
-            RoomPeerLink aLink = sinkA.accepted.poll(5, TimeUnit.SECONDS);
+            RoomLink aLink = sinkA.accepted.poll(5, TimeUnit.SECONDS);
             assertNotNull(aLink);
 
             // Tiny queue via the package-private capacity: rebuild a link on the same

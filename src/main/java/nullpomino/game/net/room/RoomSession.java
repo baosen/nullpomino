@@ -3,11 +3,7 @@
 package nullpomino.game.net.room;
 
 import java.io.IOException;
-import java.net.Inet4Address;
-import java.net.InetAddress;
-import java.net.NetworkInterface;
 import java.util.ArrayList;
-import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -75,14 +71,14 @@ public class RoomSession implements RoomEndpoint, RoomEventSink {
 	private String token = "";
 	private int localUid = -1;
 	private int arbiterUid = -1;
-	private volatile RoomPeerLink arbiterLink;   // null when local peer is arbiter; set from the dialer thread
+	private volatile RoomLink arbiterLink;   // null when local peer is arbiter; set from the dial callback
 	private String displayHost = "?";
 
 	/** Local stats identity (personal bests etc.), independent of the mirror */
 	private final NetPlayerInfo selfLocal = new NetPlayerInfo();
 
 	/** Links accepted/dialed but not yet uid-bound */
-	private final Set<RoomPeerLink> pendingLinks = new HashSet<RoomPeerLink>();
+	private final Set<RoomLink> pendingLinks = new HashSet<RoomLink>();
 
 	/** Joiner handshake bookkeeping */
 	private int peerOksAwaited = 0;
@@ -121,12 +117,12 @@ public class RoomSession implements RoomEndpoint, RoomEventSink {
 	private final Map<Integer, Integer> peerdownReports = new HashMap<Integer, Integer>();
 	private long peerdownWindowEnd = 0;
 
-	private RoomSession(String playerName, RoomConfig config, Listener listener) {
+	private RoomSession(String playerName, RoomConfig config, Listener listener, RoomNet net) {
 		this.selfName = playerName;
 		this.config = config;
 		this.listener = listener;
 		this.records = new RoomLocalRecords();
-		this.transport = new RoomTransport(this);
+		this.transport = net.createTransport(this);
 		selfLocal.strName = playerName;
 		records.loadInto(selfLocal);
 		dispatcherThread = new Thread(this::dispatchLoop, "RoomDispatcher");
@@ -134,11 +130,13 @@ public class RoomSession implements RoomEndpoint, RoomEventSink {
 	}
 
 	/** Create a session and become the first arbiter. The listen port is bound when this returns. */
-	public static RoomSession create(String playerName, RoomConfig config, Listener listener) throws IOException {
-		RoomSession session = new RoomSession(playerName, config, listener);
+	public static RoomSession create(String playerName, RoomConfig config, Listener listener,
+		RoomNet net) throws IOException
+	{
+		RoomSession session = new RoomSession(playerName, config, listener, net);
 		session.transport.startListening(config.listenPort);
 		session.token = RoomProtocol.generateToken(session.rand);
-		session.displayHost = getLanAddress();
+		session.displayHost = session.transport.getDisplayAddress();
 
 		session.authority = new RoomAuthority(session.new AuthoritySink(), session.rand);
 		session.localUid = session.authority.reserveUid();
@@ -158,19 +156,18 @@ public class RoomSession implements RoomEndpoint, RoomEventSink {
 
 	/** Join an existing session via its arbiter. Progress is reported through the listener. */
 	public static RoomSession join(String host, int port, String playerName, RoomConfig config,
-		Listener listener) throws IOException
+		Listener listener, RoomNet net) throws IOException
 	{
-		RoomSession session = new RoomSession(playerName, config, listener);
+		RoomSession session = new RoomSession(playerName, config, listener, net);
 		session.transport.startListening(config.listenPort);
 		session.displayHost = host;
 		session.joinStartedAt = System.currentTimeMillis();
 		session.dispatcherThread.start();
 		session.startTicks();
 
-		// Dial off-thread: transport.dial blocks
-		Thread dialer = new Thread(() -> {
-			try {
-				RoomPeerLink link = session.transport.dial(host, port, config.joinTimeout);
+		session.transport.dial(host, port, config.joinTimeout, new RoomTransport.DialCallback() {
+			@Override
+			public void onDialed(RoomLink link) {
 				synchronized(session.pendingLinks) {
 					session.pendingLinks.add(link);
 				}
@@ -178,13 +175,13 @@ public class RoomSession implements RoomEndpoint, RoomEventSink {
 				link.sendLine(RoomProtocol.buildHelloJoin(GameManager.getVersionMajor(),
 					GameManager.isDevBuild(), session.transport.getListenPort(), playerName,
 					session.selfLocal.rating, session.selfLocal.playCount, session.selfLocal.winCount));
-			} catch (IOException e) {
-				log.info("Room join dial failed", e);
-				session.queue.add(RoomEvent.shutdown("JOIN_FAILED:" + e.getMessage()));
 			}
-		}, "RoomDialer");
-		dialer.setDaemon(true);
-		dialer.start();
+
+			@Override
+			public void onDialFailed(String reason) {
+				session.queue.add(RoomEvent.shutdown("JOIN_FAILED:" + reason));
+			}
+		});
 		return session;
 	}
 
@@ -356,23 +353,23 @@ public class RoomSession implements RoomEndpoint, RoomEventSink {
 
 	// RoomEventSink (transport threads -> queue)
 	@Override
-	public void onLinkAccepted(RoomPeerLink link) {
+	public void onLinkAccepted(RoomLink link) {
 		queue.add(RoomEvent.linkAccepted(link));
 	}
 
 	@Override
-	public void onLine(RoomPeerLink link, String line) {
+	public void onLine(RoomLink link, String line) {
 		queue.add(RoomEvent.line(link, line));
 	}
 
 	@Override
-	public void onLinkClosed(RoomPeerLink link, String reason) {
+	public void onLinkClosed(RoomLink link, String reason) {
 		queue.add(RoomEvent.linkClosed(link, reason));
 	}
 
 	// ================================================================ inbound lines
 
-	private void onLineEvent(RoomPeerLink link, String line) {
+	private void onLineEvent(RoomLink link, String line) {
 		if(!RoomProtocol.isRoomFrame(line)) {
 			// Pre-stamped game/gstat traffic from a peer
 			if(line.startsWith("game\t") || line.startsWith("gstat\t")) {
@@ -420,7 +417,7 @@ public class RoomSession implements RoomEndpoint, RoomEventSink {
 		log.debug("Unhandled room frame: {}", parts[1]);
 	}
 
-	private void onHello(RoomPeerLink link, String[] parts) {
+	private void onHello(RoomLink link, String[] parts) {
 		RoomProtocol.Hello hello = RoomProtocol.parseHello(parts);
 		if(hello == null) {
 			link.close("malformed hello");
@@ -501,7 +498,7 @@ public class RoomSession implements RoomEndpoint, RoomEventSink {
 	}
 
 	/** Send the full state snapshot to a joiner's link */
-	private void sendSnapshot(RoomPeerLink link) {
+	private void sendSnapshot(RoomLink link) {
 		NetRoomInfo room = authority.getRoom();
 		if(room != null) {
 			link.sendLine(RoomProtocol.buildSnapRoom(room.roomID, room.exportString()));
@@ -532,7 +529,7 @@ public class RoomSession implements RoomEndpoint, RoomEventSink {
 		}
 	}
 
-	private void onWelcome(RoomPeerLink link, String[] parts) {
+	private void onWelcome(RoomLink link, String[] parts) {
 		RoomProtocol.Welcome welcome = RoomProtocol.parseWelcome(parts);
 		if(welcome == null) {
 			doShutdown("JOIN_FAILED:malformed welcome");
@@ -576,25 +573,25 @@ public class RoomSession implements RoomEndpoint, RoomEventSink {
 			return;
 		}
 
-		Thread dialer = new Thread(() -> {
-			for(RoomRoster.Entry e: toDial) {
-				try {
-					RoomPeerLink link = transport.dial(e.host, e.listenPort, config.joinTimeout);
+		// The transport performs the dials sequentially in submission order
+		for(RoomRoster.Entry e: toDial) {
+			transport.dial(e.host, e.listenPort, config.joinTimeout, new RoomTransport.DialCallback() {
+				@Override
+				public void onDialed(RoomLink link) {
 					link.uid = e.uid;
 					link.sendLine(RoomProtocol.buildHelloPeer(GameManager.getVersionMajor(),
 						GameManager.isDevBuild(), token, localUid, transport.getListenPort()));
-				} catch (IOException ex) {
-					log.info("Room peer dial to uid {} failed", e.uid, ex);
-					queue.add(RoomEvent.shutdown("JOIN_FAILED:peer dial " + e.uid));
-					return;
 				}
-			}
-		}, "RoomDialer");
-		dialer.setDaemon(true);
-		dialer.start();
+
+				@Override
+				public void onDialFailed(String reason) {
+					queue.add(RoomEvent.shutdown("JOIN_FAILED:peer dial " + e.uid));
+				}
+			});
+		}
 	}
 
-	private void onPeerOk(RoomPeerLink link, String[] parts) {
+	private void onPeerOk(RoomLink link, String[] parts) {
 		int uid = Integer.parseInt(parts[2]);
 		link.uid = uid;
 		RoomRoster.Entry entry = roster.get(uid);
@@ -626,24 +623,24 @@ public class RoomSession implements RoomEndpoint, RoomEventSink {
 		}
 	}
 
-	private void onRoomOk(RoomPeerLink link) {
+	private void onRoomOk(RoomLink link) {
 		RoomRoster.Entry entry = roster.getByLink(link);
 		if(entry != null) entry.linksOk = true;
 	}
 
-	private void onDeny(RoomPeerLink link, String[] parts) {
+	private void onDeny(RoomLink link, String[] parts) {
 		String reason = (parts.length > 2) ? parts[2] : "?";
 		log.info("Room deny: {}", reason);
 		if(link == arbiterLink) doShutdown("JOIN_FAILED:" + reason);
 		else link.close("denied");
 	}
 
-	private void onBye(RoomPeerLink link) {
+	private void onBye(RoomLink link) {
 		link.close("bye");
 		// LINK_CLOSED handles the rest
 	}
 
-	private void onControlFrame(RoomPeerLink link, String line) {
+	private void onControlFrame(RoomLink link, String line) {
 		if(!isArbiter()) return;
 		String payload = RoomProtocol.unwrapControl(line);
 		if((payload == null) || (link.uid < 0)) return;
@@ -949,7 +946,7 @@ public class RoomSession implements RoomEndpoint, RoomEventSink {
 
 	// ================================================================ link loss / liveness / shutdown
 
-	private void onLinkClosedEvent(RoomPeerLink link, String reason) {
+	private void onLinkClosedEvent(RoomLink link, String reason) {
 		synchronized(pendingLinks) {
 			if(pendingLinks.remove(link)) return;   // unbound link died: nothing else to do
 		}
@@ -1029,7 +1026,7 @@ public class RoomSession implements RoomEndpoint, RoomEventSink {
 	}
 
 	/** A successor announced itself on our existing link to it */
-	private void onArbiterClaim(RoomPeerLink link, String[] parts) {
+	private void onArbiterClaim(RoomLink link, String[] parts) {
 		int claimUid;
 		try {
 			claimUid = Integer.parseInt(parts[2]);
@@ -1218,26 +1215,4 @@ public class RoomSession implements RoomEndpoint, RoomEventSink {
 		}
 	}
 
-	// ================================================================ helpers
-
-	/** @return The machine's LAN IPv4 address, or "?" when undeterminable */
-	public static String getLanAddress() {
-		try {
-			Enumeration<NetworkInterface> interfaces = NetworkInterface.getNetworkInterfaces();
-			while(interfaces.hasMoreElements()) {
-				NetworkInterface ni = interfaces.nextElement();
-				if(!ni.isUp() || ni.isLoopback()) continue;
-				Enumeration<InetAddress> addresses = ni.getInetAddresses();
-				while(addresses.hasMoreElements()) {
-					InetAddress addr = addresses.nextElement();
-					if((addr instanceof Inet4Address) && addr.isSiteLocalAddress()) {
-						return addr.getHostAddress();
-					}
-				}
-			}
-			return InetAddress.getLocalHost().getHostAddress();
-		} catch (Exception e) {
-			return "?";
-		}
-	}
 }

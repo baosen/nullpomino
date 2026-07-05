@@ -111,7 +111,7 @@ class RoomClientIntegrationTest {
     }
 
     private Peer createPeer(String name) throws Exception {
-        Peer p = new Peer(RoomSession.create(name, testConfig(), null), name);
+        Peer p = new Peer(RoomSession.create(name, testConfig(), null, new LanRoomNet()), name);
         peers.add(p);
         p.awaitLobbyMode(NetLobbyFrame.LOBBYMODE_LOBBY);
         return p;
@@ -119,7 +119,7 @@ class RoomClientIntegrationTest {
 
     private Peer joinPeer(Peer target, String name) throws Exception {
         Peer p = new Peer(RoomSession.join("127.0.0.1", target.session.getListenPort(),
-                name, testConfig(), null), name);
+                name, testConfig(), null, new LanRoomNet()), name);
         peers.add(p);
         p.awaitLobbyMode(NetLobbyFrame.LOBBYMODE_LOBBY);
         return p;
