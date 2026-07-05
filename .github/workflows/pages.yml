@@ -21,15 +21,15 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       # Enables Pages (source: GitHub Actions) on first run if needed.
-      - uses: actions/configure-pages@v5
+      - uses: actions/configure-pages@v6
         with:
           enablement: true
 
       - name: Cache Bazel
-        uses: actions/cache@v4
+        uses: actions/cache@v6
         with:
           path: ~/.cache/bazel
           key: bazel-web-${{ hashFiles('MODULE.bazel', 'maven_install.json', '.bazelversion') }}
@@ -39,7 +39,7 @@ jobs:
       - name: Build site
         run: sh web/build-site.sh
 
-      - uses: actions/upload-pages-artifact@v3
+      - uses: actions/upload-pages-artifact@v5
         with:
           path: web/dist
 
