@@ -703,9 +703,14 @@ public class StateNetLobbySDL extends BaseStateSDL {
 		NormalFontSDL.printFont(552, 258, "USERS", NormalFontSDL.COLOR_YELLOW);
 		int py = 274;
 		int shown = 0;
+		// Column runs from x=552 to the room table's right edge (x=632); the
+		// bitmap font's old 5-char cap was really this same pixel budget
+		// (5 * 16px), so size it off the TTF font's real advance instead of a
+		// magic char count.
+		int usersListMaxChars = Math.max(1, (632 - 552 - 4) / NormalFontSDL.getTTFCharWidthPx());
 		String ownName = presenceName;
 		if(ownName.length() > 0) {
-			String name = ownName.length() > 5 ? ownName.substring(0, 5) : ownName;
+			String name = ownName.length() > usersListMaxChars ? ownName.substring(0, usersListMaxChars) : ownName;
 			NormalFontSDL.printTTFFont(552, py, name, NormalFontSDL.COLOR_WHITE);
 			py += 16;
 			shown++;
@@ -715,7 +720,7 @@ public class StateNetLobbySDL extends BaseStateSDL {
 				if(shown >= 13) break;
 				if(presenceInstanceId.equals(visitor.instanceId)) continue;
 				String name = visitor.playerName == null ? "" : visitor.playerName;
-				if(name.length() > 5) name = name.substring(0, 5);
+				if(name.length() > usersListMaxChars) name = name.substring(0, usersListMaxChars);
 				NormalFontSDL.printTTFFont(552, py, name, NormalFontSDL.COLOR_WHITE);
 				py += 16;
 				shown++;
