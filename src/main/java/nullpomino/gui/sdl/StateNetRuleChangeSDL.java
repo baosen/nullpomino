@@ -67,7 +67,7 @@ public class StateNetRuleChangeSDL extends BaseStateSDL {
 		okBtn = new ButtonSDL(  8, 424, 124, 32, "OK",
 				new Runnable() { public void run() { apply(); } });
 		okBtn.primary = true;
-		tuningBtn = new ButtonSDL(140, 424, 160, 32, "TUNING...",
+		tuningBtn = new ButtonSDL(140, 424, 160, 32, "TUNE",
 				new Runnable() { public void run() { openTuning(); } });
 		cancelBtn = new ButtonSDL(508, 424, 124, 32, "CANCEL",
 				new Runnable() { public void run() { NullpoMinoSDL.goBack(); } });
