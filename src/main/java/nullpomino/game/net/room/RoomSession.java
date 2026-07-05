@@ -10,9 +10,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Random;
 import java.util.Set;
-import java.util.Timer;
-import java.util.TimerTask;
-import java.util.concurrent.LinkedBlockingQueue;
 
 import nullpomino.game.net.NetLanDiscovery;
 import nullpomino.game.net.NetPlayerInfo;
@@ -58,9 +55,7 @@ public class RoomSession implements RoomEndpoint, RoomEventSink {
 	private final RoomLocalRecords records;
 	private final Random rand = new Random();
 
-	private final LinkedBlockingQueue<RoomEvent> queue = new LinkedBlockingQueue<RoomEvent>();
-	private final Thread dispatcherThread;
-	private final Timer tickTimer = new Timer("RoomTick", true);
+	private final RoomDispatcher dispatcher;
 
 	/** Non-null iff this peer is the arbiter */
 	private RoomAuthority authority;
@@ -123,10 +118,9 @@ public class RoomSession implements RoomEndpoint, RoomEventSink {
 		this.listener = listener;
 		this.records = new RoomLocalRecords();
 		this.transport = net.createTransport(this);
+		this.dispatcher = net.createDispatcher();
 		selfLocal.strName = playerName;
 		records.loadInto(selfLocal);
-		dispatcherThread = new Thread(this::dispatchLoop, "RoomDispatcher");
-		dispatcherThread.setDaemon(true);
 	}
 
 	/** Create a session and become the first arbiter. The listen port is bound when this returns. */
@@ -148,8 +142,7 @@ public class RoomSession implements RoomEndpoint, RoomEventSink {
 
 		session.setState(State.READY, "created");
 		session.startAnnouncer();
-		session.dispatcherThread.start();
-		session.startTicks();
+		session.startDispatcher();
 		log.info("Room session created, listening on {}", session.transport.getListenPort());
 		return session;
 	}
@@ -162,8 +155,7 @@ public class RoomSession implements RoomEndpoint, RoomEventSink {
 		session.transport.startListening(config.listenPort);
 		session.displayHost = host;
 		session.joinStartedAt = System.currentTimeMillis();
-		session.dispatcherThread.start();
-		session.startTicks();
+		session.startDispatcher();
 
 		session.transport.dial(host, port, config.joinTimeout, new RoomTransport.DialCallback() {
 			@Override
@@ -179,18 +171,15 @@ public class RoomSession implements RoomEndpoint, RoomEventSink {
 
 			@Override
 			public void onDialFailed(String reason) {
-				session.queue.add(RoomEvent.shutdown("JOIN_FAILED:" + reason));
+				session.dispatcher.post(RoomEvent.shutdown("JOIN_FAILED:" + reason));
 			}
 		});
 		return session;
 	}
 
-	private void startTicks() {
-		tickTimer.schedule(new TimerTask() {
-			@Override public void run() {
-				queue.add(RoomEvent.tick());
-			}
-		}, 1000, 1000);
+	private void startDispatcher() {
+		dispatcher.start(this::handleEvent);
+		dispatcher.startTicker(1000);
 	}
 
 	/**
@@ -257,12 +246,12 @@ public class RoomSession implements RoomEndpoint, RoomEventSink {
 		if(state == State.CLOSED) return;
 		String trimmed = line.endsWith("\n") ? line.substring(0, line.length() - 1) : line;
 		if(trimmed.length() == 0) return;
-		queue.add(RoomEvent.localSend(trimmed));
+		dispatcher.post(RoomEvent.localSend(trimmed));
 	}
 
 	@Override
 	public void clientReady() {
-		queue.add(RoomEvent.localSend(" clientready"));
+		dispatcher.post(RoomEvent.localSend(" clientready"));
 	}
 
 	@Override
@@ -287,7 +276,7 @@ public class RoomSession implements RoomEndpoint, RoomEventSink {
 
 	@Override
 	public void shutdown() {
-		queue.add(RoomEvent.shutdown("LEFT"));
+		dispatcher.post(RoomEvent.shutdown("LEFT"));
 	}
 
 	public boolean isArbiter() {
@@ -304,13 +293,10 @@ public class RoomSession implements RoomEndpoint, RoomEventSink {
 
 	// ================================================================ dispatcher
 
-	private void dispatchLoop() {
+	/** Dispatcher entry: any escaped exception tears the session down */
+	private void handleEvent(RoomEvent event) {
 		try {
-			while(state != State.CLOSED) {
-				processOneEvent(queue.take());
-			}
-		} catch (InterruptedException e) {
-			Thread.currentThread().interrupt();
+			processOneEvent(event);
 		} catch (Throwable e) {
 			log.error("Room dispatcher died", e);
 			doShutdown("dispatcher error: " + e);
@@ -354,17 +340,17 @@ public class RoomSession implements RoomEndpoint, RoomEventSink {
 	// RoomEventSink (transport threads -> queue)
 	@Override
 	public void onLinkAccepted(RoomLink link) {
-		queue.add(RoomEvent.linkAccepted(link));
+		dispatcher.post(RoomEvent.linkAccepted(link));
 	}
 
 	@Override
 	public void onLine(RoomLink link, String line) {
-		queue.add(RoomEvent.line(link, line));
+		dispatcher.post(RoomEvent.line(link, line));
 	}
 
 	@Override
 	public void onLinkClosed(RoomLink link, String reason) {
-		queue.add(RoomEvent.linkClosed(link, reason));
+		dispatcher.post(RoomEvent.linkClosed(link, reason));
 	}
 
 	// ================================================================ inbound lines
@@ -585,7 +571,7 @@ public class RoomSession implements RoomEndpoint, RoomEventSink {
 
 				@Override
 				public void onDialFailed(String reason) {
-					queue.add(RoomEvent.shutdown("JOIN_FAILED:peer dial " + e.uid));
+					dispatcher.post(RoomEvent.shutdown("JOIN_FAILED:peer dial " + e.uid));
 				}
 			});
 		}
@@ -1170,9 +1156,8 @@ public class RoomSession implements RoomEndpoint, RoomEventSink {
 	/** Package-private: tests sever this peer without a graceful bye */
 	void killAbruptly() {
 		state = State.CLOSED;
-		tickTimer.cancel();
+		dispatcher.shutdown();
 		transport.shutdown();
-		queue.add(RoomEvent.tick());   // wake the dispatcher so it observes CLOSED
 	}
 
 	private void doShutdown(String reason) {
@@ -1188,7 +1173,7 @@ public class RoomSession implements RoomEndpoint, RoomEventSink {
 			e.link.sendLine(RoomProtocol.LINE_BYE);
 			e.link.closeAfterFlush("bye sent");
 		}
-		tickTimer.cancel();
+		dispatcher.shutdown();
 		transport.shutdown();
 
 		if(!closedFired) {

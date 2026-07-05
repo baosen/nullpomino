@@ -12,4 +12,7 @@ package nullpomino.game.net.room;
 public interface RoomNet {
 	/** @return A fresh transport delivering its events into the given sink */
 	RoomTransport createTransport(RoomEventSink sink);
+
+	/** @return A fresh event dispatcher for one session */
+	RoomDispatcher createDispatcher();
 }

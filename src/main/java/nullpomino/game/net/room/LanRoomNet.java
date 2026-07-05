@@ -12,4 +12,9 @@ public class LanRoomNet implements RoomNet {
 	public RoomTransport createTransport(RoomEventSink sink) {
 		return new TcpRoomTransport(sink);
 	}
+
+	@Override
+	public RoomDispatcher createDispatcher() {
+		return new ThreadRoomDispatcher();
+	}
 }
