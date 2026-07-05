@@ -78,7 +78,7 @@ class StateConfigGeneralSDLTest {
 		assertFalse(readBoolean(state, "bgm"), "BGM defaults to OFF");
 		assertFalse(readBoolean(state, "bgmpreload"));
 		assertTrue(readBoolean(state, "showbg"));
-		assertTrue(readBoolean(state, "showfps"));
+		assertFalse(readBoolean(state, "showfps"));
 		assertFalse(readBoolean(state, "enableframestep"));
 		assertEquals(60, readInt(state, "maxfps"));
 		assertTrue(readBoolean(state, "showlineeffect"));

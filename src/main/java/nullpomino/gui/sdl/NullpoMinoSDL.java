@@ -105,7 +105,7 @@ public class NullpoMinoSDL {
 	public static boolean quit = false;
 
 	/** FPS display */
-	public static boolean showfps = true;
+	public static boolean showfps = false;
 
 	/** FPS calculation interval */
 	protected static long calcInterval = 0;
@@ -611,7 +611,7 @@ public class NullpoMinoSDL {
 		long overSleepTime = 0L;
 		int noDelays = 0;
 
-		showfps = propConfig.getProperty("option.showfps", true);
+		showfps = propConfig.getProperty("option.showfps", false);
 		perfectFPSMode = propConfig.getProperty("option.perfectFPSMode", false);
 		perfectYield = propConfig.getProperty("option.perfectYield", false);
 

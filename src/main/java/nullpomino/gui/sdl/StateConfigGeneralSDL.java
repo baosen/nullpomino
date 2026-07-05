@@ -150,7 +150,7 @@ public class StateConfigGeneralSDL extends DummyMenuScrollStateSDL {
 		bgm = prop.getProperty("option.bgm", false);
 		bgmpreload = prop.getProperty("option.bgmpreload", false);
 		showbg = prop.getProperty("option.showbg", true);
-		showfps = prop.getProperty("option.showfps", true);
+		showfps = prop.getProperty("option.showfps", false);
 		enableframestep = prop.getProperty("option.enableframestep", false);
 		maxfps = prop.getProperty("option.maxfps", 60);
 		showlineeffect = prop.getProperty("option.showlineeffect", true);

@@ -59,7 +59,7 @@ class StateConfigGeneralSDLLogicTest {
 		assertTrue(state.se);
 		assertFalse(state.bgm);
 		assertTrue(state.showbg);
-		assertTrue(state.showfps);
+		assertFalse(state.showfps);
 		assertEquals(60, state.maxfps);
 		assertTrue(state.showlineeffect);
 		assertEquals(0, state.lineeffectspeed);
