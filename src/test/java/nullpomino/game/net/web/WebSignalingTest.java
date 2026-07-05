@@ -20,13 +20,13 @@ class WebSignalingTest {
 
     @Test
     void topicsFollowTheScheme() {
-        String root = WebSignaling.root("npp", 7);
-        assertEquals("npp/v7", root);
-        assertEquals("npp/v7/lounge/rooms/abc123", WebSignaling.topicRooms(root, "abc123"));
-        assertEquals("npp/v7/lounge/chat", WebSignaling.topicChat(root));
-        assertEquals("npp/v7/lounge/presence", WebSignaling.topicPresence(root));
-        assertEquals("npp/v7/lounge/#", WebSignaling.loungeFilter(root));
-        assertEquals("npp/v7/sig/00ff00ff00ff00ff", WebSignaling.topicSig(root, "00ff00ff00ff00ff"));
+        String root = WebSignaling.root("npp", "7.5");
+        assertEquals("npp/v7.5", root);
+        assertEquals("npp/v7.5/lounge/rooms/abc123", WebSignaling.topicRooms(root, "abc123"));
+        assertEquals("npp/v7.5/lounge/chat", WebSignaling.topicChat(root));
+        assertEquals("npp/v7.5/lounge/presence", WebSignaling.topicPresence(root));
+        assertEquals("npp/v7.5/lounge/#", WebSignaling.loungeFilter(root));
+        assertEquals("npp/v7.5/sig/00ff00ff00ff00ff", WebSignaling.topicSig(root, "00ff00ff00ff00ff"));
     }
 
     @Test

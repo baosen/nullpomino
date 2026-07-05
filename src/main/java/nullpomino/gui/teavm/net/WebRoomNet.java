@@ -2,7 +2,6 @@
 // SPDX-License-Identifier: BSD-3-Clause
 package nullpomino.gui.teavm.net;
 
-import nullpomino.game.net.NetLanDiscovery;
 import nullpomino.game.net.room.RoomBeacon;
 import nullpomino.game.net.room.RoomDispatcher;
 import nullpomino.game.net.room.RoomEventSink;
@@ -26,10 +25,6 @@ public class WebRoomNet implements RoomNet {
 
 	@Override
 	public RoomBeacon createBeacon() {
-		// TODO(webrtc): announce over the MQTT lounge topics
-		return new RoomBeacon() {
-			@Override public void start(Supplier supplier) {}
-			@Override public void stop() {}
-		};
+		return new MqttRoomBeacon();
 	}
 }

@@ -29,10 +29,10 @@ public final class WebSignaling {
 
 	/**
 	 * @param topicRoot Configured root, e.g. "npp"
-	 * @param versionMajor Game protocol major version - incompatible clients never meet
-	 * @return The versioned topic prefix, e.g. "npp/v7"
+	 * @param versionMajor Game protocol major version (e.g. "7.5") - incompatible clients never meet
+	 * @return The versioned topic prefix, e.g. "npp/v7.5"
 	 */
-	public static String root(String topicRoot, int versionMajor) {
+	public static String root(String topicRoot, String versionMajor) {
 		return topicRoot + "/v" + versionMajor;
 	}
 
