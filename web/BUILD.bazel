@@ -1,3 +1,41 @@
+load("@rules_java//java:defs.bzl", "java_binary")
+
+# TeaVM CLI, bundled as a deploy jar so its full transitive classpath
+# (teavm-tooling/core/classlib) is assembled by Bazel instead of hand-wired.
+# Bundles teavm-extras-slf4j too: it's a TeaVM compiler plugin
+# (META-INF/services/org.teavm.vm.spi.TeaVMPlugin), discovered from the
+# *tool's* own classpath, that substitutes a TeaVM-native logger for
+# slf4j-api's ServiceLoader/SecurityManager-based bootstrap.
+#
+# Must be invoked with a JDK <=17 (the tool's own ASM-based class reader
+# rejects newer bytecode versions it's asked to introspect). :classes_js
+# gets this via $(JAVA), resolved from the default build config's
+# remotejdk_17.
+#
+# GOTCHA (0.14.1): once any -p flag is given, TeaVMTool.createResourceProvider()
+# switches to a classpath-only resolver that does NOT fall back to the
+# launching JVM's own classpath — so classlib/core/jso/etc, though bundled
+# into this very deploy jar, become invisible to the compiler ("ERROR: Class
+# java.lang.System was not found") unless *also* passed via -p. Passing them
+# as separate jars is order-sensitive and silently breaks depending on
+# argument order; passing this same already-fully-merged
+# teavm_compiler_deploy.jar a second time, via its own -p, sidesteps that
+# fragility (one jar, no ordering ambiguity):
+#
+#   java -jar bazel-bin/web/teavm_compiler_deploy.jar \
+#     -t js -p <app_deploy.jar> -p bazel-bin/web/teavm_compiler_deploy.jar \
+#     -d <outdir> -f classes.js -O 1 <fully.qualified.MainClass>
+java_binary(
+    name = "teavm_compiler",
+    main_class = "org.teavm.cli.TeaVMRunner",
+    visibility = ["//visibility:private"],
+    runtime_deps = [
+        "@maven//:org_slf4j_slf4j_api",
+        "@maven//:org_teavm_teavm_cli",
+        "@maven//:org_teavm_teavm_extras_slf4j",
+    ],
+)
+
 # TeaVM ahead-of-time compile: the Java 17 app jar -> web/classes.js.
 #
 # The app jar has to be <=17 bytecode (TeaVM 0.14's ASM rejects newer), and
@@ -17,18 +55,18 @@
 # The compiler deploy jar is passed to -p a second time on purpose: once any -p
 # is given, TeaVM stops falling back to the launching JVM's classpath for its
 # own classlib; re-feeding the fully-merged compiler jar is the order-
-# independent fix (see //tools/teavm:teavm_compiler).
+# independent fix (see :teavm_compiler).
 genrule(
     name = "classes_js",
     srcs = [
         "//:NullpoMinoTeaVM_deploy.jar",
-        "//tools/teavm:teavm_compiler_deploy.jar",
+        ":teavm_compiler_deploy.jar",
     ],
     outs = ["classes.js"],
-    cmd = "$(JAVA) -jar $(location //tools/teavm:teavm_compiler_deploy.jar) " +
+    cmd = "$(JAVA) -jar $(location :teavm_compiler_deploy.jar) " +
           "-t js --strict " +
           "-p $(location //:NullpoMinoTeaVM_deploy.jar) " +
-          "-p $(location //tools/teavm:teavm_compiler_deploy.jar) " +
+          "-p $(location :teavm_compiler_deploy.jar) " +
           "-d $(RULEDIR)/teavm-out -f classes.js -O 1 " +
           "nullpomino.gui.teavm.NullpoMinoTeaVM && " +
           "cp $(RULEDIR)/teavm-out/classes.js $@",
