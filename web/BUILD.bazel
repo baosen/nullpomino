@@ -1,10 +1,10 @@
 # TeaVM ahead-of-time compile: the Java 17 app jar -> web/classes.js.
 #
-# MUST be built with --config=web (web/build-site.sh does): the app jar has to
-# be <=17 bytecode (TeaVM 0.14's ASM rejects newer), and $(JAVA) has to be a
-# JDK <=17 for the compiler process itself. --config=web pins both
-# (java_language_version=17 + remotejdk_17). Tagged "manual" so a plain
-# `bazel build //...` (Java 25) never tries and fails.
+# The app jar has to be <=17 bytecode (TeaVM 0.14's ASM rejects newer), and
+# $(JAVA) has to be a JDK <=17 for the compiler process itself — both already
+# satisfied by the default build config (java_language_version=17 +
+# remotejdk_17). Tagged "manual" to keep this web/TeaVM-specific artifact out
+# of a plain `bazel build //...` sweep.
 #
 # --strict is REQUIRED, not optional: without it TeaVM omits array-bounds and
 # null checks for speed, so out-of-range accesses read `undefined` instead of

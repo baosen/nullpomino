@@ -5,7 +5,7 @@
 ### Building
 
 #### Prerequisites
-- Java 25 (JDK 25) or later
+- Java 17 (JDK 17) or later
 - [Bazel](https://bazel.build/) (see `.bazelversion`)
 
 #### Run

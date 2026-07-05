@@ -59,8 +59,9 @@ java_binary(
 )
 
 # Browser build (TeaVM): this jar is never executed on a JVM; it is the input
-# app jar fed to the TeaVM ahead-of-time compiler (//web:classes_js). Build it
-# with --config=web — TeaVM 0.14's ASM front end rejects bytecode newer than 17.
+# app jar fed to the TeaVM ahead-of-time compiler (//web:classes_js). TeaVM
+# 0.14's ASM front end rejects bytecode newer than 17, which the default
+# build config already satisfies.
 java_binary(
     name = "NullpoMinoTeaVM",
     main_class = "nullpomino.gui.teavm.NullpoMinoTeaVM",

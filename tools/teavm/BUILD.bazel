@@ -9,7 +9,8 @@ load("@rules_java//java:defs.bzl", "java_binary")
 #
 # Must be invoked with a JDK <=17 (the tool's own ASM-based class reader
 # rejects newer bytecode versions it's asked to introspect). //web:classes_js
-# runs it under --config=web, whose remotejdk_17 is reachable via $(JAVA).
+# gets this via $(JAVA), resolved from the default build config's
+# remotejdk_17.
 #
 # GOTCHA (0.14.1): once any -p flag is given, TeaVMTool.createResourceProvider()
 # switches to a classpath-only resolver that does NOT fall back to the

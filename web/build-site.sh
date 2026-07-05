@@ -6,9 +6,10 @@
 set -eu
 cd "$(dirname "$0")/.."
 
-# --config=web: TeaVM 0.14's ASM front end rejects bytecode newer than Java 17,
-# and the compiler must run on a JDK <=17 (both pinned by --config=web).
-bazel build --config=web //web:classes_js //:config_manifest //:res_manifest
+# TeaVM 0.14's ASM front end rejects bytecode newer than Java 17, and the
+# compiler must run on a JDK <=17 — the default .bazelrc config already
+# builds and compiles at Java 17, so no special flag is needed here.
+bazel build //web:classes_js //:config_manifest //:res_manifest
 
 rm -rf web/dist
 mkdir -p web/dist
