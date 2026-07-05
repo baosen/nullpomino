@@ -2,24 +2,29 @@
 
 **NullpoMino+** is an open-source action puzzle game that works on the Java platform. It has a wide variety of single-player modes and netplay to allow players to compete over the Internet or LAN.
 
-### Building
+## Building
 
-#### Prerequisites
-- Java 17 (JDK 17) or later
+### Prerequisites
+
+- Java 17 (JDK 17)
 - [Bazel](https://bazel.build/) (see `.bazelversion`)
 
-#### Run
+### Run
+
+#### Web
+
+```bash
+web/build-site.sh
+python3 -m http.server -d web/dist 8000 # other static file servers works too!
+```
+
+#### Desktop/laptop
 
 ```bash
 ./NullpoMino
 ```
 
-The launcher invokes `bazel build` on first run to produce
-`bazel-bin/NullpoMinoSDL_deploy.jar`, then launches the game. The SDL
-frontend uses JNA to load `SDL3`, `SDL3_image`, `SDL3_mixer`, and
-`SDL3_ttf` from your system library path.
-
-#### Standalone tools
+### Tools
 
 Swing-based utility programs live at the repo root alongside the
 Java sources under `src/main/java/nullpomino/tool/`:
