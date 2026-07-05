@@ -1,2 +1,3 @@
 - STRICTLY MUST: Use Jujutsu (`jj`) for version control (VCS), not `git`.
 - STRICTLY FORBIDDEN: Using Jujutsu (`jj`) or `git` in a sub-agent running in parallel, because it causes conflicts.
+- GOTCHA: This repo's working bookmark is named `nullpomino+`, and the `+` is not a valid bare bookmark-name character, so `jj bookmark` subcommands (`set`/`move`/`delete`/`track`/…) reject the unquoted name with `Failed to parse bookmark name: Syntax error`. Pass it as a jj string literal — wrap in double quotes, then single-quote for the shell: `jj bookmark set '"nullpomino+"' -r <rev>`. (Revsets are fine unquoted, e.g. `"nullpomino+"@baosen`; it's only the name argument to `jj bookmark` that needs this.)
