@@ -16,6 +16,11 @@ public class StateConfigRuleStyleSelectSDL extends DummyMenuChooseStateSDL {
 		minChoiceY = 3;
 	}
 
+	@Override
+	public void enter() {
+		closeBtn = newCloseButton();
+	}
+
 	/*
 	 * Draw the screen
 	 */

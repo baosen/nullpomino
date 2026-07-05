@@ -138,6 +138,7 @@ public class StateConfigGeneralSDL extends DummyMenuScrollStateSDL {
 		loadConfig(NullpoMinoSDL.propConfig);
 		syncRuntimeFullscreen(true);
 		rebuildList();
+		closeBtn = newCloseButton();
 	}
 
 	/**

@@ -76,6 +76,11 @@ public class StateConfigMainMenuSDL extends DummyMenuChooseStateSDL {
 		minChoiceY = 3;
 	}
 
+	@Override
+	public void enter() {
+		closeBtn = newCloseButton();
+	}
+
 	/*
 	 * Draw the screen
 	 */
@@ -92,6 +97,8 @@ public class StateConfigMainMenuSDL extends DummyMenuChooseStateSDL {
 		}
 
 		NormalFontSDL.printTTFFont(16, 432, NullpoMinoSDL.getUIText(UI_TEXT[cursor]));
+
+		super.render();
 	}
 
 	@Override

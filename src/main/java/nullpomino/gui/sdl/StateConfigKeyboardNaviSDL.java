@@ -41,6 +41,8 @@ public class StateConfigKeyboardNaviSDL extends DummyMenuChooseStateSDL {
 
 		NormalFontSDL.printFontGrid(2, 3, "COPY FROM GAME KEYS", (cursor == 0));
 		NormalFontSDL.printFontGrid(2, 4, "CUSTOMIZE", (cursor == 1));
+
+		super.render();
 	}
 
 	@Override
@@ -75,6 +77,7 @@ public class StateConfigKeyboardNaviSDL extends DummyMenuChooseStateSDL {
 	 */
 	@Override
 	public void enter() {
+		closeBtn = newCloseButton();
 	}
 
 	/*

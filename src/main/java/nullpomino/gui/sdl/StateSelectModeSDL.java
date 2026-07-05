@@ -69,6 +69,7 @@ public class StateSelectModeSDL extends DummyMenuScrollStateSDL {
 	@Override
 	public void enter() {
 		prepareModeList();
+		closeBtn = newCloseButton();
 	}
 
 	/*

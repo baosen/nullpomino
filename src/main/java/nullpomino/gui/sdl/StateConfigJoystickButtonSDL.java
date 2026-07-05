@@ -4,6 +4,7 @@ package nullpomino.gui.sdl;
 
 import nullpomino.gui.sdl.binding.SDL3;
 import nullpomino.gui.sdl.binding.SDLConstants;
+import nullpomino.gui.sdl.widget.ButtonSDL;
 
 /**
  * Joystick buttonState of the configuration screen
@@ -35,6 +36,9 @@ public class StateConfigJoystickButtonSDL extends BaseStateSDL {
 
 	/** Previous frame OfJoystick Of input State */
 	protected boolean previousJoyPressedState[];
+
+	/** Top-right "X" close button. */
+	private ButtonSDL closeBtn;
 
 	/**
 	 * Button settings initialization
@@ -108,6 +112,8 @@ public class StateConfigJoystickButtonSDL extends BaseStateSDL {
 		NormalFontSDL.printFontGrid(1, 21, "ENTER:     OK",     NormalFontSDL.COLOR_GREEN);
 		NormalFontSDL.printFontGrid(1, 22, "DELETE:    NO SET", NormalFontSDL.COLOR_GREEN);
 		NormalFontSDL.printFontGrid(1, 23, "BACKSPACE: CANCEL", NormalFontSDL.COLOR_GREEN);
+
+		closeBtn.render();
 	}
 
 	/*
@@ -116,6 +122,8 @@ public class StateConfigJoystickButtonSDL extends BaseStateSDL {
 	@Override
 	public void update() {
 		MouseInputSDL.mouseInput.update();
+
+		if(closeBtn.update(MouseInputSDL.mouseInput.getMouseX(), MouseInputSDL.mouseInput.getMouseY(), MouseInputSDL.mouseInput.isMouseClicked())) return;
 
 		// PageUp/PageDown is edge-detected; poll once per frame so the
 		// shared previous-state stays in sync even during the entry gate.
@@ -224,6 +232,7 @@ public class StateConfigJoystickButtonSDL extends BaseStateSDL {
 	@Override
 	public void enter() {
 		reset();
+		closeBtn = new ButtonSDL(604, 4, 28, 24, "X", new Runnable() { public void run() { NullpoMinoSDL.goBack(); } });
 		NullpoMinoSDL.enableSpecialKeys = false;
 	}
 

@@ -4,6 +4,7 @@ package nullpomino.gui.sdl;
 
 import nullpomino.gui.sdl.binding.SDL3;
 import nullpomino.gui.sdl.binding.SDLConstants;
+import nullpomino.gui.sdl.widget.ButtonSDL;
 
 /**
  * Joystick State of the test screen
@@ -14,6 +15,9 @@ public class StateConfigJoystickTestSDL extends BaseStateSDL {
 
 	/** Player number */
 	public int player;
+
+	/** Top-right "X" close button. */
+	private ButtonSDL closeBtn;
 
 	/** UseJoystick Of number */
 	protected int joyNumber;
@@ -96,6 +100,8 @@ public class StateConfigJoystickTestSDL extends BaseStateSDL {
 		if(frame >= KEYACCEPTFRAME) {
 			NormalFontSDL.printFontGrid(1, 23, "ENTER/BACKSPACE: EXIT", NormalFontSDL.COLOR_GREEN);
 		}
+
+		closeBtn.render();
 	}
 
 	/*
@@ -104,6 +110,8 @@ public class StateConfigJoystickTestSDL extends BaseStateSDL {
 	@Override
 	public void update() {
 		MouseInputSDL.mouseInput.update();
+
+		if(closeBtn.update(MouseInputSDL.mouseInput.getMouseX(), MouseInputSDL.mouseInput.getMouseY(), MouseInputSDL.mouseInput.isMouseClicked())) return;
 
 		if(frame >= KEYACCEPTFRAME) {
 			// Backspace, Enter/Return, Escape, mouse back / right-click → exit
@@ -143,6 +151,7 @@ public class StateConfigJoystickTestSDL extends BaseStateSDL {
 	@Override
 	public void enter() {
 		reset();
+		closeBtn = new ButtonSDL(604, 4, 28, 24, "X", new Runnable() { public void run() { NullpoMinoSDL.goBack(); } });
 		NullpoMinoSDL.enableSpecialKeys = false;
 	}
 

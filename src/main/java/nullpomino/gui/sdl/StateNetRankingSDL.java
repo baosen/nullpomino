@@ -21,6 +21,7 @@ public class StateNetRankingSDL extends BaseStateSDL {
 	private TabStripSDL tabStrip;
 	private TableSDL rankingTable;
 	private ButtonSDL backBtn;
+	private ButtonSDL closeBtn;
 	private WidgetSDL focused;
 	private int lastRequestedStyle = -1;
 
@@ -44,6 +45,7 @@ public class StateNetRankingSDL extends BaseStateSDL {
 		backBtn = new ButtonSDL(508, 424, 124, 32, "BACK",
 				new Runnable() { public void run() { NullpoMinoSDL.goBack(); } });
 		backBtn.primary = true;
+		closeBtn = new ButtonSDL(604, 4, 28, 24, "X", new Runnable() { public void run() { NullpoMinoSDL.goBack(); } });
 
 		setFocus(rankingTable);
 		requestStyle(tabStrip.getActiveTab());
@@ -125,6 +127,7 @@ public class StateNetRankingSDL extends BaseStateSDL {
 
 		if(rankingTable.update(mx, my, clicked)) setFocus(rankingTable);
 		backBtn.update(mx, my, clicked);
+		closeBtn.update(mx, my, clicked);
 
 		for(NullpoMinoSDL.KeyEvent ev : NullpoMinoSDL.frameKeyEvents) {
 			if(ev.scancode == SDLConstants.SDL_SCANCODE_ESCAPE && !ev.repeat) {
@@ -173,6 +176,7 @@ public class StateNetRankingSDL extends BaseStateSDL {
 		tabStrip.render();
 		rankingTable.render();
 		backBtn.render();
+		closeBtn.render();
 
 		int style = tabStrip.getActiveTab();
 		if(style >= 0 && style < nl.mpRankingRows.length && nl.mpRankingRows[style] == null) {

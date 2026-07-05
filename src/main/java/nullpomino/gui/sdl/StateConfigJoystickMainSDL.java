@@ -3,6 +3,7 @@
 package nullpomino.gui.sdl;
 
 import nullpomino.gui.sdl.binding.SDL3;
+import nullpomino.gui.sdl.widget.ButtonSDL;
 import nullpomino.util.CustomProperties;
 import nullpomino.util.GeneralUtil;
 
@@ -12,6 +13,9 @@ import nullpomino.util.GeneralUtil;
 public class StateConfigJoystickMainSDL extends BaseStateSDL {
 	/** Player number */
 	public int player;
+
+	/** Top-right "X" close button. */
+	private ButtonSDL closeBtn;
 
 	/** Cursor position */
 	protected int cursor;
@@ -64,6 +68,7 @@ public class StateConfigJoystickMainSDL extends BaseStateSDL {
 	@Override
 	public void enter() {
 		loadConfig(NullpoMinoSDL.propConfig);
+		closeBtn = new ButtonSDL(604, 4, 28, 24, "X", new Runnable() { public void run() { NullpoMinoSDL.goBack(); } });
 	}
 
 	/*
@@ -90,6 +95,8 @@ public class StateConfigJoystickMainSDL extends BaseStateSDL {
 		if(cursor == 3) NormalFontSDL.printTTFFont(16, 432, NullpoMinoSDL.getUIText("ConfigJoystickMain_JoyBorder"));
 		if(cursor == 4) NormalFontSDL.printTTFFont(16, 432, NullpoMinoSDL.getUIText("ConfigJoystickMain_JoyIgnoreAxis"));
 		if(cursor == 5) NormalFontSDL.printTTFFont(16, 432, NullpoMinoSDL.getUIText("ConfigJoystickMain_JoyIgnorePOV"));
+
+		closeBtn.render();
 	}
 
 	/*
@@ -99,6 +106,7 @@ public class StateConfigJoystickMainSDL extends BaseStateSDL {
 	public void update() {
 		// Mouse: hover slides the cursor, click confirms, back/right-click/Escape cancels.
 		MouseInputSDL.mouseInput.update();
+		if(closeBtn.update(MouseInputSDL.mouseInput.getMouseX(), MouseInputSDL.mouseInput.getMouseY(), MouseInputSDL.mouseInput.isMouseClicked())) return;
 		boolean mouseConfirm = false;
 		if(MouseInputSDL.mouseInput.isMouseMoved()) {
 			int row = (MouseInputSDL.mouseInput.getMouseY() >> 4) - 3;

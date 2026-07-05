@@ -9,6 +9,7 @@ import java.util.ArrayList;
 
 import nullpomino.game.ai.AIPlayer;
 import nullpomino.gui.sdl.binding.SDL3;
+import nullpomino.gui.sdl.widget.ButtonSDL;
 import nullpomino.util.ClassFactory;
 import nullpomino.util.GeneralUtil;
 import nullpomino.util.LegacyClassNames;
@@ -59,6 +60,9 @@ public class StateConfigAISelectSDL extends BaseStateSDL {
 	/** Cursor position */
 	protected int cursor = 0;
 
+	/** Top-right "X" close button. */
+	private ButtonSDL closeBtn;
+
 	/**
 	 * Constructor
 	 */
@@ -91,6 +95,8 @@ public class StateConfigAISelectSDL extends BaseStateSDL {
 		for(int i = 0; i < aiPathList.length; i++) {
 			if(currentAINormalized.equals(LegacyClassNames.translate(aiPathList[i]))) aiID = i;
 		}
+
+		closeBtn = new ButtonSDL(604, 4, 28, 24, "X", new Runnable() { public void run() { NullpoMinoSDL.goBack(); } });
 	}
 
 	/**
@@ -165,6 +171,8 @@ public class StateConfigAISelectSDL extends BaseStateSDL {
 		NormalFontSDL.printFontGrid(2, 9, "AI SHOW INFO:" + GeneralUtil.getONorOFF(aiShowState), (cursor == 6));
 
 		NormalFontSDL.printFontGrid(1, 28, "A:OK B:CANCEL", NormalFontSDL.COLOR_GREEN);
+
+		closeBtn.render();
 	}
 
 	/*
@@ -174,6 +182,7 @@ public class StateConfigAISelectSDL extends BaseStateSDL {
 	public void update() {
 		// Mouse: hover slides the cursor, click confirms, right-click / back / Escape cancels.
 		MouseInputSDL.mouseInput.update();
+		if(closeBtn.update(MouseInputSDL.mouseInput.getMouseX(), MouseInputSDL.mouseInput.getMouseY(), MouseInputSDL.mouseInput.isMouseClicked())) return;
 		boolean mouseConfirm = false;
 		if(MouseInputSDL.mouseInput.isMouseMoved()) {
 			int row = (MouseInputSDL.mouseInput.getMouseY() >> 4) - 3;

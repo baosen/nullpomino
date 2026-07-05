@@ -48,6 +48,7 @@ public class StateReplaySelectSDL extends DummyMenuScrollStateSDL {
 		list = getReplayFileList();
 		if (list != null) { maxCursor = list.length-1; }
 		setReplayRuleAndModeList();
+		closeBtn = newCloseButton();
 	}
 
 	/**

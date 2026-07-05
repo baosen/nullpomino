@@ -138,6 +138,7 @@ public class StateConfigRuleSelectSDL extends DummyMenuScrollStateSDL {
 		strRuleFileList = extractFileNameListFromRuleEntries();
 		list = strRuleNameList;
 		maxCursor = list.length-1;
+		closeBtn = newCloseButton();
 
 		if(style == 0) {
 			strCurrentFileName = NullpoMinoSDL.propGlobal.getProperty(player + ".rulefile", "");

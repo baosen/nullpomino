@@ -18,6 +18,11 @@ public class StateConfigKeyboardResetSDL extends DummyMenuChooseStateSDL {
 		minChoiceY = 4;
 	}
 
+	@Override
+	public void enter() {
+		closeBtn = newCloseButton();
+	}
+
 	/*
 	 * Draw the screen
 	 */

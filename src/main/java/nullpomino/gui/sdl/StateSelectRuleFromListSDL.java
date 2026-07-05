@@ -130,6 +130,7 @@ public class StateSelectRuleFromListSDL extends DummyMenuScrollStateSDL {
 	@Override
 	public void enter() {
 		prepareRuleList();
+		closeBtn = newCloseButton();
 	}
 
 	/*

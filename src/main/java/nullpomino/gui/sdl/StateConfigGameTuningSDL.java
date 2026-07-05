@@ -139,6 +139,7 @@ public class StateConfigGameTuningSDL extends DummyMenuScrollStateSDL {
 		isPreview = false;
 		loadConfig(NullpoMinoSDL.propGlobal);
 		rebuildList();
+		closeBtn = newCloseButton();
 	}
 
 	/*

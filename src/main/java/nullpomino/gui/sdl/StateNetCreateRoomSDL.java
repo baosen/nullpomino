@@ -119,6 +119,8 @@ public class StateNetCreateRoomSDL extends BaseStateSDL {
 	private ButtonSDL cancelBtn;
 	/** Rated-mode only: convert the current preset selection into an editable custom room. */
 	private ButtonSDL customRatedBtn;
+	/** Top-right "X" close button. */
+	private ButtonSDL closeBtn;
 
 	/** Label rendered to the left of each widget. */
 	private static final class Field {
@@ -373,6 +375,7 @@ public class StateNetCreateRoomSDL extends BaseStateSDL {
 		customRatedBtn = new ButtonSDL(140, btnY, 160, 32, "CUSTOMIZE",
 				new Runnable() { public void run() { flipRatedToCustom(); } });
 		cancelBtn = new ButtonSDL(508, btnY, 124, 32, "CANCEL", new Runnable() { public void run() { cancel(); } });
+		closeBtn = new ButtonSDL(604, 4, 28, 24, "X", new Runnable() { public void run() { NullpoMinoSDL.goBack(); } });
 
 		// Build the per-tab widget arrays in the order they appear on screen.
 		tabFields = new Field[][] {
@@ -651,6 +654,7 @@ public class StateNetCreateRoomSDL extends BaseStateSDL {
 		if(watchBtn.update(mx, my, clicked))         clicked = false;
 		if(customRatedBtn.update(mx, my, clicked))   clicked = false;
 		cancelBtn.update(mx, my, clicked);
+		closeBtn.update(mx, my, clicked);
 
 		// Render-overlay step for any open dropdown happens in render().
 
@@ -1145,6 +1149,7 @@ public class StateNetCreateRoomSDL extends BaseStateSDL {
 		watchBtn.render();
 		customRatedBtn.render();
 		cancelBtn.render();
+		closeBtn.render();
 
 		// Open dropdowns render on top of everything else.
 		int mx = MouseInputSDL.mouseInput.getMouseX();

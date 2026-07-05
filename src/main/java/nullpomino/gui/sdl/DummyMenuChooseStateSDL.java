@@ -2,6 +2,8 @@
 // SPDX-License-Identifier: BSD-3-Clause
 package nullpomino.gui.sdl;
 
+import nullpomino.gui.sdl.widget.ButtonSDL;
+
 /**
  * Dummy class for menus where the player picks from a list of options
  */
@@ -17,6 +19,9 @@ public abstract class DummyMenuChooseStateSDL extends BaseStateSDL {
 
 	/** Set to false to ignore mouse input */
 	protected boolean mouseEnabled;
+
+	/** Top-right "X" close button. Null unless a subclass builds one via {@link #newCloseButton()}. */
+	protected ButtonSDL closeBtn;
 
 	/**
 	 * Set true by {@link NullpoMinoSDL#doTransition(int)} after this state's
@@ -41,13 +46,36 @@ public abstract class DummyMenuChooseStateSDL extends BaseStateSDL {
 		return was;
 	}
 
+	/**
+	 * Standard top-right "X" close button for cursor-list menu screens,
+	 * styled after the netplay Lounge's corner X but wired to the ordinary
+	 * back-navigation every ESC/cancel already performs here (not a hard
+	 * teardown). Subclasses that want one call this from {@code enter()} and
+	 * assign the result to {@link #closeBtn}; update/render wiring then
+	 * happens automatically in this class. Mouse-only by design - like the
+	 * Lounge's X, it is not part of any keyboard focus cycle.
+	 */
+	protected ButtonSDL newCloseButton() {
+		return new ButtonSDL(604, 4, 28, 24, "X", new Runnable() {
+			public void run() { NullpoMinoSDL.goBack(); }
+		});
+	}
+
 	@Override
 	public void update()
 	{
 		// Mouse
 		boolean mouseConfirm = false;
-		if (mouseEnabled)
+		if (mouseEnabled) {
 			mouseConfirm = updateMouseInput();
+
+			// Top-right "X" close button (see newCloseButton()). Short-circuits
+			// like the onDecide()/onCancel() checks below so we don't keep
+			// running this frame's input against a state we just navigated away from.
+			if (closeBtn != null && closeBtn.update(MouseInputSDL.mouseInput.getMouseX(),
+					MouseInputSDL.mouseInput.getMouseY(), MouseInputSDL.mouseInput.isMouseClicked()))
+				return;
+		}
 
 		if (maxCursor >= 0) {
 
@@ -138,6 +166,17 @@ public abstract class DummyMenuChooseStateSDL extends BaseStateSDL {
 			}
 		}
 		return false;
+	}
+
+	/**
+	 * Draws the top-right "X" close button, if this screen built one.
+	 * {@link DummyMenuScrollStateSDL#render()} always forwards here via
+	 * super.render(), as do the direct subclasses that already call
+	 * super.render(); the rest need one explicit super.render() call.
+	 */
+	@Override
+	public void render() {
+		if (closeBtn != null) closeBtn.render();
 	}
 
 	protected void renderChoices(int x, String[] choices)

@@ -5,6 +5,7 @@ package nullpomino.gui.sdl;
 import nullpomino.game.play.GameManager;
 import nullpomino.gui.sdl.binding.SDL3;
 import nullpomino.gui.sdl.binding.SDLConstants;
+import nullpomino.gui.sdl.widget.ButtonSDL;
 import nullpomino.util.GeneralUtil;
 
 /**
@@ -43,6 +44,9 @@ public class StateConfigKeyboardSDL extends BaseStateSDL {
 
 	/** Previous key input state */
 	protected boolean[] previousKeyPressedState;
+
+	/** Top-right "X" close button. */
+	private ButtonSDL closeBtn;
 
 	/**
 	 * Button settings initialization
@@ -146,6 +150,8 @@ public class StateConfigKeyboardSDL extends BaseStateSDL {
 			NormalFontSDL.printFontGrid(1, 22, "ENTER:          SAVE & EXIT", NormalFontSDL.COLOR_GREEN);
 			NormalFontSDL.printFontGrid(1, 23, "ESC/BACKSPACE:  CANCEL", NormalFontSDL.COLOR_GREEN);
 		}
+
+		closeBtn.render();
 	}
 
 	/*
@@ -158,6 +164,8 @@ public class StateConfigKeyboardSDL extends BaseStateSDL {
 
 		// Track mouse so click + hover can drive the cursor in menu mode.
 		MouseInputSDL.mouseInput.update();
+
+		if(closeBtn.update(MouseInputSDL.mouseInput.getMouseX(), MouseInputSDL.mouseInput.getMouseY(), MouseInputSDL.mouseInput.isMouseClicked())) return;
 
 		if(frame >= KEYACCEPTFRAME) {
 			if(keyConfigRestFrame > 0) {
@@ -281,6 +289,7 @@ public class StateConfigKeyboardSDL extends BaseStateSDL {
 	@Override
 	public void enter() {
 		reset();
+		closeBtn = new ButtonSDL(604, 4, 28, 24, "X", new Runnable() { public void run() { NullpoMinoSDL.goBack(); } });
 		NullpoMinoSDL.enableSpecialKeys = false;
 		SDL3.INSTANCE.SDL_SetWindowTitle(NullpoMinoSDL.window, NullpoMinoSDL.GAME_NAME + " version" + GameManager.getVersionString());
 	}

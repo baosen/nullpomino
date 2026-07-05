@@ -18,6 +18,7 @@ import nullpomino.game.wallkick.Wallkick;
 import nullpomino.gui.net.NetLobbyFrame;
 import nullpomino.gui.net.NetLobbyListener;
 import nullpomino.gui.sdl.binding.SDL3;
+import nullpomino.gui.sdl.widget.ButtonSDL;
 import nullpomino.util.GeneralUtil;
 import nullpomino.game.randomizer.Randomizer;
 
@@ -54,6 +55,9 @@ public class StateNetGameSDL extends BaseStateSDL implements NetLobbyListener {
 	 */
 	public NetLobbyFrame netLobby;
 
+	/** Top-right "X" close button. No inline action - folded into the leaveRoom flag in update() so it goes through the same safe room-teardown path as ESC/mouse-back. */
+	private ButtonSDL closeBtn;
+
 	@Override
 	public void enter() {
 		NullpoMinoSDL.disableAutoInputUpdate = true;
@@ -62,6 +66,7 @@ public class StateNetGameSDL extends BaseStateSDL implements NetLobbyListener {
 		NullpoMinoSDL.maxFPS = 60;
 		NullpoMinoSDL.allowQuit = false;
 		instance = this;
+		closeBtn = new ButtonSDL(604, 4, 28, 24, "X");
 
 		netLobby = NullpoMinoSDL.netLobby;
 		if(netLobby == null) {
@@ -120,6 +125,7 @@ public class StateNetGameSDL extends BaseStateSDL implements NetLobbyListener {
 		} catch(Exception e) {
 			if(gameManager == null || !gameManager.getQuitFlag()) log.error("render fail", e);
 		}
+		closeBtn.render();
 	}
 
 	@Override
@@ -139,6 +145,7 @@ public class StateNetGameSDL extends BaseStateSDL implements NetLobbyListener {
 			}
 		}
 		MouseInputSDL.mouseInput.update();
+		if(closeBtn.update(MouseInputSDL.mouseInput.getMouseX(), MouseInputSDL.mouseInput.getMouseY(), MouseInputSDL.mouseInput.isMouseClicked())) leaveRoom = true;
 		if(MouseInputSDL.mouseInput.isMouseBackClicked()) leaveRoom = true;
 		if(leaveRoom) {
 			if(nl != null && nl.isRoomSession() && nl.netPlayerClient != null && nl.netPlayerClient.isConnected()) {
