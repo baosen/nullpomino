@@ -236,6 +236,29 @@ public interface GameMode {
 	}
 
 	/**
+	 * Map a 0-based {@code drawMenuFont} row (the {@code y} argument fed to
+	 * that method) to the settings-menu item a mouse hovering that row
+	 * should select, or -1 when the row holds no selectable item. Frontends
+	 * compute the row under the pointer and call this, so each mode owns its
+	 * own SETTING-screen layout.
+	 *
+	 * <p>The default matches the common {@link AbstractMode#drawMenu}
+	 * layout: every item spans two rows (label then value) starting at row
+	 * 0, so row {@code r} belongs to item {@code r / 2}, bounded by
+	 * {@link #getMenuItemCount()} (or a sane fallback when the count is
+	 * unknown). Modes that draw differently — one row per item, a row
+	 * offset, or paging (e.g. {@link nullpomino.game.mode.PracticeMode}) —
+	 * override this.
+	 */
+	public default int getMenuItemForRow(int row) {
+		if(row < 0) return -1;
+		int item = row >> 1;
+		int count = getMenuItemCount();
+		int max = (count > 0) ? count - 1 : 19;
+		return (item <= max) ? item : -1;
+	}
+
+	/**
 	 * Render Ready->Go screen.
 	 * @param engine GameEngine
 	 * @param playerID Player ID

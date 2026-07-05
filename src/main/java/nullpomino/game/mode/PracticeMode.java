@@ -640,6 +640,20 @@ public class PracticeMode extends AbstractMode {
 		return true;
 	}
 
+	/**
+	 * Practice settings draw one option per row (not the two-row
+	 * label/value pairs {@link AbstractMode#drawMenu} produces), the first
+	 * option at row 3, and split the 46 options across two pages of 23. Map
+	 * the hovered row to an option on the page {@code menuCursor} is
+	 * currently on, so a hover never silently jumps between pages.
+	 */
+	@Override
+	public int getMenuItemForRow(int row) {
+		int itemInPage = row - 3;
+		if(itemInPage < 0 || itemInPage >= 23) return -1;
+		return (menuCursor < 23 ? 0 : 23) + itemInPage;
+	}
+
 	/*
 	 * Setting screen drawing
 	 */

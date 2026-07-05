@@ -93,6 +93,27 @@ class GameModeDefaultsTest {
 	}
 
 	@Test
+	void defaultMenuItemForRowAssumesTwoRowsPerItemFromRowZero() {
+		GameMode mode = new MinimalStub();
+
+		// Standard drawMenu layout: label + value per item starting at row
+		// 0, so both rows of item i collapse to i.
+		assertEquals(0, mode.getMenuItemForRow(0));
+		assertEquals(0, mode.getMenuItemForRow(1));
+		assertEquals(1, mode.getMenuItemForRow(2));
+		assertEquals(1, mode.getMenuItemForRow(3));
+
+		// Rows above the menu are not selectable.
+		assertEquals(-1, mode.getMenuItemForRow(-1));
+
+		// With no item count exposed the fallback caps hover at item 19, so
+		// pointing far below the last row doesn't run the cursor off the end.
+		assertEquals(19, mode.getMenuItemForRow(38));
+		assertEquals(19, mode.getMenuItemForRow(39));
+		assertEquals(-1, mode.getMenuItemForRow(40));
+	}
+
+	@Test
 	void defaultModeFlagsReportNeitherNetplayNorVsMode() {
 		GameMode mode = new MinimalStub();
 

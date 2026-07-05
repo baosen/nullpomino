@@ -648,26 +648,23 @@ public class StateInGameSDL extends BaseStateSDL {
 		MouseInputSDL.mouseInput.update();
 		Controller ctrl = engine.ctrl;
 
-		// Hover: each menu item is rendered as two rows (label + value),
-		// 16 px per row, so item index = (mouseY - baseY) / 32. baseY
-		// matches drawMenuFont's offsetY + 4 / + 52 split. We only set the
-		// cursor when the mode exposes one (getMenuCursor != -1) and only
-		// when the row actually changed to avoid fighting keyboard input
-		// every frame.
+		// Hover: slide the cursor to the item under the pointer. The
+		// pixel->item math lives in settingHoverItem, which mirrors
+		// drawMenuFont's layout and defers the row->item step to the mode
+		// (layouts differ: two-row label/value vs. PracticeMode's single row
+		// per item on a full-screen menuOnly page). We only steer a mode
+		// that exposes a cursor (getMenuCursor != -1) and only when the item
+		// actually changed, so we don't fight keyboard input every frame.
 		if(MouseInputSDL.mouseInput.isMouseMoved()) {
 			int currentCursor = gameManager.mode.getMenuCursor();
 			if(currentCursor >= 0) {
 				int offsetY = gameManager.receiver.getFieldDisplayPositionY(engine, 0);
-				int baseY = offsetY + (engine.displaysize == -1 ? 4 : 52);
 				int my = MouseInputSDL.mouseInput.getMouseY();
-				if(my >= baseY) {
-					int item = (my - baseY) / 32;
-					int itemMax = gameManager.mode.getMenuItemCount();
-					int upper = itemMax > 0 ? itemMax - 1 : 19;
-					if(item >= 0 && item <= upper && item != currentCursor) {
-						gameManager.mode.setMenuCursor(item);
-						ResourceHolderSDL.soundManager.play("cursor");
-					}
+				int item = settingHoverItem(gameManager.mode, my, offsetY,
+						engine.owner.menuOnly, engine.displaysize == -1);
+				if(item >= 0 && item != currentCursor) {
+					gameManager.mode.setMenuCursor(item);
+					ResourceHolderSDL.soundManager.play("cursor");
 				}
 			}
 		}
@@ -689,6 +686,29 @@ public class StateInGameSDL extends BaseStateSDL {
 				|| NullpoMinoSDL.isEscapePushedThisFrame()) {
 			ctrl.buttonPress[Controller.BUTTON_B] = true;
 		}
+	}
+
+	/**
+	 * Pure mapping from a mouse Y (screen pixels) to the SETTING-screen menu
+	 * item under the pointer, or -1 when the pointer isn't over a selectable
+	 * row. Hoisted out of {@link #injectSettingMouseInput} so the geometry
+	 * is unit-testable without an SDL window.
+	 *
+	 * <p>Mirrors {@link RendererSDL#drawMenuFont}'s vertical layout: when
+	 * {@code menuOnly}, text is drawn at raw {@code row * 16} with no field
+	 * offset (the full-screen menu {@link nullpomino.game.mode.PracticeMode}
+	 * uses); otherwise the field offset plus the small-display split
+	 * (+4 when {@code smallDisplay}, else +52) applies. Rows are 16 px tall
+	 * either way. The row->item translation is delegated to
+	 * {@link GameMode#getMenuItemForRow} so per-mode layouts stay with the
+	 * mode.
+	 */
+	static int settingHoverItem(GameMode mode, int mouseY, int offsetY,
+			boolean menuOnly, boolean smallDisplay) {
+		int baseY = menuOnly ? 0 : offsetY + (smallDisplay ? 4 : 52);
+		if(mouseY < baseY) return -1;
+		int row = (mouseY - baseY) / 16;
+		return mode.getMenuItemForRow(row);
 	}
 
 	/**
