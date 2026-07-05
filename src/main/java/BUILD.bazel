@@ -120,7 +120,7 @@ java_library(
 # shared SDL main loop.
 java_library(
     name = "teavm_main",
-    srcs = glob(["nullpomino/gui/teavm/*.java"]),
+    srcs = glob(["nullpomino/gui/teavm/**/*.java"]),
     javacopts = JAVACOPTS,
     visibility = ["//visibility:public"],
     deps = [

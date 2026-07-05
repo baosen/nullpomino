@@ -1,7 +1,6 @@
 package nullpomino.util;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 
 import java.util.List;
@@ -34,28 +33,15 @@ class FactoryDefaultsTest {
 	}
 
 	@Test
-	void standaloneModesMatchModeRegistryMinusNetplay() throws Exception {
-		List<Class<? extends GameMode>> expected = ModeRegistry.all().stream()
-				.filter(cls -> {
-					try {
-						return !cls.getDeclaredConstructor().newInstance().isNetplayMode();
-					} catch (ReflectiveOperationException e) {
-						throw new AssertionError(e);
-					}
-				})
-				.toList();
+	void standaloneModesMatchModeRegistry() {
+		List<Class<? extends GameMode>> expected = ModeRegistry.all();
 
 		List<? extends Class<? extends GameMode>> actual = StandaloneModeRegistry.suppliers().stream()
 				.map(s -> s.get().getClass())
 				.toList();
 
 		assertEquals(expected, actual,
-				"StandaloneModeRegistry must equal ModeRegistry minus the netplay modes, in order");
-
-		for (var supplier : StandaloneModeRegistry.suppliers()) {
-			GameMode mode = supplier.get();
-			assertFalse(mode.isNetplayMode(),
-					mode.getClass().getName() + " is a netplay mode and must not be in StandaloneModeRegistry");
-		}
+				"StandaloneModeRegistry must equal ModeRegistry, in order (netplay modes"
+						+ " included - the web build plays them over WebRTC)");
 	}
 }

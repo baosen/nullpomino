@@ -430,11 +430,10 @@ public class NullpoMinoSDL {
 	}
 
 	/**
-	 * Instantiate every SDL state EXCEPT the netplay states. Used by the
-	 * browser (TeaVM) entry point: it never references the {@code StateNet*SDL}
-	 * classes, so their {@code java.net} socket code stays out of the reachable
-	 * (and thus TeaVM-compiled) call graph. The netplay slots stay null, and
-	 * the title screen already hides the NETPLAY entry in web mode.
+	 * Instantiate every SDL state for the browser (TeaVM) entry point.
+	 * Netplay states are included: browser netplay runs the room engine over
+	 * WebRTC DataChannels behind the RoomNet seam, so no {@code java.net}
+	 * socket code enters the reachable (and thus TeaVM-compiled) call graph.
 	 */
 	public static void registerWebStates() {
 		gameStates[STATE_TITLE] = new StateTitleSDL();
@@ -447,6 +446,7 @@ public class NullpoMinoSDL {
 		gameStates[STATE_INGAME] = new StateInGameSDL();
 		gameStates[STATE_REPLAYSELECT] = new StateReplaySelectSDL();
 		gameStates[STATE_CONFIG_AISELECT] = new StateConfigAISelectSDL();
+		gameStates[STATE_NETGAME] = new StateNetGameSDL();
 		gameStates[STATE_CONFIG_JOYSTICK_MAIN] = new StateConfigJoystickMainSDL();
 		gameStates[STATE_CONFIG_JOYSTICK_TEST] = new StateConfigJoystickTestSDL();
 		gameStates[STATE_CONFIG_GAMETUNING] = new StateConfigGameTuningSDL();
@@ -454,6 +454,10 @@ public class NullpoMinoSDL {
 		gameStates[STATE_CONFIG_KEYBOARD_NAVI] = new StateConfigKeyboardNaviSDL();
 		gameStates[STATE_CONFIG_KEYBOARD_RESET] = new StateConfigKeyboardResetSDL();
 		gameStates[STATE_SELECTRULEFROMLIST] = new StateSelectRuleFromListSDL();
+		gameStates[STATE_NET_LOBBY] = new StateNetLobbySDL();
+		gameStates[STATE_NET_CREATEROOM] = new StateNetCreateRoomSDL();
+		gameStates[STATE_NET_RANKING] = new StateNetRankingSDL();
+		gameStates[STATE_NET_RULECHANGE] = new StateNetRuleChangeSDL();
 	}
 
 	/**

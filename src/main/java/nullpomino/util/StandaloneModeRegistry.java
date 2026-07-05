@@ -24,6 +24,9 @@ import nullpomino.game.mode.GradeManiaMode;
 import nullpomino.game.mode.LineRaceMode;
 import nullpomino.game.mode.MarathonMode;
 import nullpomino.game.mode.MarathonPlusMode;
+import nullpomino.game.mode.NetVSBattleMode;
+import nullpomino.game.mode.NetVSDigRaceMode;
+import nullpomino.game.mode.NetVSLineRaceMode;
 import nullpomino.game.mode.PhantomManiaMode;
 import nullpomino.game.mode.PhysicianMode;
 import nullpomino.game.mode.PhysicianVSMode;
@@ -46,17 +49,14 @@ import nullpomino.game.mode.VSDigRaceMode;
 import nullpomino.game.mode.VSLineRaceMode;
 
 /**
- * Constructor suppliers for every non-netplay {@link GameMode}, in
- * {@link ModeRegistry} order. Used by the browser (TeaVM) entry point, which
- * loads modes by instantiation rather than reflectively (TeaVM cannot resolve
- * {@code Class.forName}).
- *
- * <p>Deliberately separate from {@link ModeRegistry}, and deliberately does
- * NOT reference {@code NetVSBattleMode}/{@code NetVSLineRaceMode}/
- * {@code NetVSDigRaceMode}: naming those constructors here would make the
- * netplay modes (and their {@code java.net} socket code) statically reachable
- * from the web build, which does not compile under TeaVM. The desktop build
- * keeps using {@link ModeRegistry#all()} unchanged.
+ * Constructor suppliers for every {@link GameMode}, in {@link ModeRegistry}
+ * order. Used by the browser (TeaVM) entry point, which loads modes by
+ * instantiation rather than reflectively (TeaVM cannot resolve
+ * {@code Class.forName}). Includes the netplay modes: they are web-safe,
+ * since the netplay client stack reaches sockets only through the
+ * RoomNet/RoomTransport seam (WebRTC on the web) and the legacy
+ * {@code NetBaseClient} base class is the socket-free webstub.
+ * The desktop build keeps using {@link ModeRegistry#all()} unchanged.
  */
 public final class StandaloneModeRegistry {
 	private static final List<Supplier<? extends GameMode>> SUPPLIERS = List.of(
@@ -90,6 +90,9 @@ public final class StandaloneModeRegistry {
 			VSDigRaceMode::new,
 			VSBattleMode::new,
 			ToolVSMapEditMode::new,
+			NetVSBattleMode::new,
+			NetVSLineRaceMode::new,
+			NetVSDigRaceMode::new,
 			AvalancheMode::new,
 			AvalancheFeverMode::new,
 			AvalancheVSMode::new,
@@ -103,7 +106,7 @@ public final class StandaloneModeRegistry {
 
 	private StandaloneModeRegistry() {}
 
-	/** Constructor suppliers for all non-netplay modes, in ModeRegistry order. */
+	/** Constructor suppliers for all modes, in ModeRegistry order. */
 	public static List<Supplier<? extends GameMode>> suppliers() {
 		return SUPPLIERS;
 	}
