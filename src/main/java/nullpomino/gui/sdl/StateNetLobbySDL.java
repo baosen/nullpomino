@@ -673,8 +673,11 @@ public class StateNetLobbySDL extends BaseStateSDL {
 
 		roomTable.render();
 		if(roomTable.getRowCount() == 0) {
-			NormalFontSDL.printFont(24, 96, "NO ROOMS FOUND ON LAN", NormalFontSDL.COLOR_DARKBLUE);
-			NormalFontSDL.printFont(24, 116, "CREATE ONE OR TYPE /JOIN <HOST:PORT>", NormalFontSDL.COLOR_DARKBLUE);
+			NormalFontSDL.printFont(24, 96, NullpoMinoSDL.webMode
+				? "NO ROOMS FOUND ONLINE" : "NO ROOMS FOUND ON LAN", NormalFontSDL.COLOR_DARKBLUE);
+			NormalFontSDL.printFont(24, 116, NullpoMinoSDL.webMode
+				? "CREATE ONE OR TYPE /JOIN <ROOM CODE>"
+				: "CREATE ONE OR TYPE /JOIN <HOST:PORT>", NormalFontSDL.COLOR_DARKBLUE);
 		}
 
 		joinBtn.render();

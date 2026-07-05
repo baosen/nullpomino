@@ -58,9 +58,9 @@ public class StateTitleSDL extends DummyMenuChooseStateSDL {
 		minChoiceY = 3;
 	}
 
-	/** Menu rows not shown on the web build (netplay and exit). */
+	/** Menu rows not shown on the web build (exit only - there is no process to quit). */
 	private static boolean isHiddenOnWeb(int destination) {
-		return destination == NullpoMinoSDL.STATE_NET_LOBBY || destination == -1;
+		return destination == -1;
 	}
 
 	/*

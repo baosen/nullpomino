@@ -6,6 +6,7 @@ import nullpomino.game.mode.GameMode;
 import nullpomino.game.net.NetPlatform;
 import nullpomino.gui.sdl.NullpoMinoSDL;
 import nullpomino.gui.teavm.net.MqttLoungeService;
+import nullpomino.gui.teavm.net.WebNetDebug;
 import nullpomino.gui.teavm.net.WebRoomNet;
 import nullpomino.gui.sdl.binding.SdlBackend;
 import nullpomino.gui.sdl.binding.teavm.TeaVMBackend;
@@ -55,6 +56,7 @@ public final class NullpoMinoTeaVM {
 
 		// Netplay: WebRTC DataChannel mesh + MQTT lounge/signaling
 		NetPlatform.install(new WebRoomNet(), new MqttLoungeService());
+		WebNetDebug.install();
 
 		NullpoMinoSDL.bootstrap(args);
 		for (Supplier<? extends GameMode> supplier : StandaloneModeRegistry.suppliers()) {
