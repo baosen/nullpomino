@@ -500,6 +500,12 @@ public class UltraMode extends NetDummyMode {
 			if((time < 10 * 60) && (time > 0)) fontcolor = EventReceiver.COLOR_RED;
 			receiver.drawScoreFont(engine, playerID, 0, 16, GeneralUtil.getTime(time), fontcolor);
 
+			if(netIsNetPlay) {
+				drawControlsHelpSmall(engine, playerID, 42);
+			} else {
+				drawControlsHelp(engine, playerID, 19);
+			}
+
 			if((lastevent != EVENT_NONE) && (scgettime < 120)) {
 				String strPieceName = Piece.getPieceName(lastpiece);
 

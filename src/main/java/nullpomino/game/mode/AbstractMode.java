@@ -344,6 +344,71 @@ public abstract class AbstractMode implements GameMode {
 		}
 	}
 
+	/** Key names for the MOVE/TURN/HOLD/DROP controls-help block. */
+	private record ControlsHelpKeys(String left, String right, String cw, String ccw, String hard, String soft, String hold) {}
+
+	private ControlsHelpKeys getControlsHelpKeys(GameEngine engine) {
+		String left  = receiver.getKeyNameByButtonID(engine, Controller.BUTTON_LEFT);
+		String right = receiver.getKeyNameByButtonID(engine, Controller.BUTTON_RIGHT);
+		String cw    = receiver.getKeyNameByButtonID(engine, Controller.BUTTON_A);
+		String ccw   = receiver.getKeyNameByButtonID(engine, Controller.BUTTON_B);
+		String hard  = receiver.getKeyNameByButtonID(engine, Controller.BUTTON_UP);
+		String soft  = receiver.getKeyNameByButtonID(engine, Controller.BUTTON_DOWN);
+		String hold  = (engine.ruleopt != null && engine.ruleopt.holdEnable)
+				? receiver.getKeyNameByButtonID(engine, Controller.BUTTON_D) : "OFF";
+		return new ControlsHelpKeys(left, right, cw, ccw, hard, soft, hold);
+	}
+
+	/**
+	 * Draws a condensed 5-row in-game control reference in the score column,
+	 * starting at grid row y (row y is left blank to space it from the stat
+	 * above). Key names come from the current player's active in-game keymap.
+	 * HOLD shows "OFF" when the rule disables hold.
+	 * @param engine GameEngine
+	 * @param playerID Player ID
+	 * @param y Top grid row (score column, 16px cells)
+	 */
+	protected void drawControlsHelp(GameEngine engine, int playerID, int y) {
+		ControlsHelpKeys k = getControlsHelpKeys(engine);
+		receiver.drawScoreFont(engine, playerID, 0, y + 1, "MOVE:" + k.left() + "/" + k.right(), EventReceiver.COLOR_BLUE);
+		receiver.drawScoreFont(engine, playerID, 0, y + 2, "TURN:" + k.cw() + "/" + k.ccw(),     EventReceiver.COLOR_BLUE);
+		receiver.drawScoreFont(engine, playerID, 0, y + 3, "HOLD:" + k.hold(),                   EventReceiver.COLOR_BLUE);
+		receiver.drawScoreFont(engine, playerID, 0, y + 4, "DROP:" + k.hard() + "/" + k.soft(),  EventReceiver.COLOR_BLUE);
+	}
+
+	/**
+	 * Half-scale (8px-row) variant of {@link #drawControlsHelp} for modes with
+	 * very little room left in the score column: a blank spacer row then
+	 * MOVE/TURN/HOLD/DROP, each row half the height of the normal score font.
+	 * y8 is in 8px grid units (double a normal 16px row index), not the same
+	 * units as drawControlsHelp's y.
+	 * @param engine GameEngine
+	 * @param playerID Player ID
+	 * @param y8 Top grid row (score column, 8px cells)
+	 */
+	protected void drawControlsHelpSmall(GameEngine engine, int playerID, int y8) {
+		ControlsHelpKeys k = getControlsHelpKeys(engine);
+		receiver.drawScoreFont(engine, playerID, 0, y8 + 1, "MOVE:" + k.left() + "/" + k.right(), EventReceiver.COLOR_BLUE, 0.5f);
+		receiver.drawScoreFont(engine, playerID, 0, y8 + 2, "TURN:" + k.cw() + "/" + k.ccw(),     EventReceiver.COLOR_BLUE, 0.5f);
+		receiver.drawScoreFont(engine, playerID, 0, y8 + 3, "HOLD:" + k.hold(),                   EventReceiver.COLOR_BLUE, 0.5f);
+		receiver.drawScoreFont(engine, playerID, 0, y8 + 4, "DROP:" + k.hard() + "/" + k.soft(),  EventReceiver.COLOR_BLUE, 0.5f);
+	}
+
+	/**
+	 * Same content as {@link #drawControlsHelpSmall} but with no blank spacer
+	 * row, for modes with only exactly 4 half-scale rows free.
+	 * @param engine GameEngine
+	 * @param playerID Player ID
+	 * @param y8 Top grid row (score column, 8px cells)
+	 */
+	protected void drawControlsHelpSmallTight(GameEngine engine, int playerID, int y8) {
+		ControlsHelpKeys k = getControlsHelpKeys(engine);
+		receiver.drawScoreFont(engine, playerID, 0, y8,     "MOVE:" + k.left() + "/" + k.right(), EventReceiver.COLOR_BLUE, 0.5f);
+		receiver.drawScoreFont(engine, playerID, 0, y8 + 1, "TURN:" + k.cw() + "/" + k.ccw(),     EventReceiver.COLOR_BLUE, 0.5f);
+		receiver.drawScoreFont(engine, playerID, 0, y8 + 2, "HOLD:" + k.hold(),                   EventReceiver.COLOR_BLUE, 0.5f);
+		receiver.drawScoreFont(engine, playerID, 0, y8 + 3, "DROP:" + k.hard() + "/" + k.soft(),  EventReceiver.COLOR_BLUE, 0.5f);
+	}
+
 	/**
 	 * Default method to render controller input display
 	 * @param engine GameEngine

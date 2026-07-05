@@ -907,6 +907,8 @@ public class GradeMania3Mode extends AbstractGradeMode {
 			if(medalSK >= 1) receiver.drawScoreFont(engine, playerID, 0, 21, "SK", getMedalFontColor(medalSK));
 			if(medalCO >= 1) receiver.drawScoreFont(engine, playerID, 3, 21, "CO", getMedalFontColor(medalCO));
 
+			drawControlsHelpSmall(engine, playerID, 44);
+
 			// Section Time
 			if((showsectiontime == true) && (sectiontime != null)) {
 				int x = (receiver.getNextDisplayType() == 2) ? 8 : 12;

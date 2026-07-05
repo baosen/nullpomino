@@ -955,6 +955,8 @@ public class PracticeMode extends AbstractMode {
 				receiver.drawScoreFont(engine, playerID, 0, 17, "ROLL TIME", EventReceiver.COLOR_BLUE);
 				receiver.drawScoreFont(engine, playerID, 0, 18, GeneralUtil.getTime(remainTime), ((remainTime > 0) && (remainTime < 10 * 60)));
 			}
+
+			drawControlsHelp(engine, playerID, 19);
 		} else {
 			//  levelTypesMANIAAt other times
 
@@ -1013,6 +1015,8 @@ public class PracticeMode extends AbstractMode {
 				receiver.drawScoreFont(engine, playerID, 0, 20, "ROLL TIME", EventReceiver.COLOR_BLUE);
 				receiver.drawScoreFont(engine, playerID, 0, 21, GeneralUtil.getTime(remainTime), ((remainTime > 0) && (remainTime < 10 * 60)));
 			}
+
+			drawControlsHelpSmall(engine, playerID, 44);
 
 			// Line clear event
 			if((lastevent != EVENT_NONE) && (scgettime < 120)) {

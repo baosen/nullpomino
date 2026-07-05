@@ -343,6 +343,8 @@ public class ExtremeMode extends AbstractMarathonMode {
 			receiver.drawScoreFont(engine, playerID, 0, 11, "TIME", EventReceiver.COLOR_BLUE);
 			receiver.drawScoreFont(engine, playerID, 0, 12, GeneralUtil.getTime(engine.statistics.time));
 
+			if(!(engine.gameActive && engine.ending == 2)) drawControlsHelp(engine, playerID, 13);
+
 			if((engine.gameActive) && (engine.ending == 2)) {
 				int remainRollTime = ROLLTIMELIMIT - rolltime;
 				if(remainRollTime < 0) remainRollTime = 0;

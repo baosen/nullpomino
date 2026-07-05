@@ -432,6 +432,8 @@ public class TechnicianMode extends AbstractMarathonMode {
 				receiver.drawScoreFont(engine, playerID, 0, 17, "+" + (lasttimebonus / 60) + "SEC.", EventReceiver.COLOR_YELLOW);
 			}
 
+			drawControlsHelp(engine, playerID, netIsNetPlay ? 20 : 18);
+
 			// Ending time
 			if( (engine.gameActive) && ((engine.ending == 2) || (rolltime > 0)) ) {
 				int remainRollTime = TIMELIMIT_ROLL - rolltime;

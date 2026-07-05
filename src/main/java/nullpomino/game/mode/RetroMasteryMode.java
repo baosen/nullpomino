@@ -342,6 +342,8 @@ public class RetroMasteryMode extends AbstractMode {
 
 			receiver.drawScoreFont(engine, playerID, 0, 12, "TIME", EventReceiver.COLOR_BLUE);
 			receiver.drawScoreFont(engine, playerID, 0, 13, GeneralUtil.getTime(engine.statistics.time));
+
+			drawControlsHelp(engine, playerID, 14);
 		}
 	}
 

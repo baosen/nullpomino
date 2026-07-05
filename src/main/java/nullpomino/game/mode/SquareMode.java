@@ -344,6 +344,8 @@ public class SquareMode extends AbstractMode {
 				// Normal timer
 				receiver.drawScoreFont(engine, playerID, 0, 13, GeneralUtil.getTime(engine.statistics.time));
 			}
+
+			drawControlsHelp(engine, playerID, 14);
 		}
 	}
 

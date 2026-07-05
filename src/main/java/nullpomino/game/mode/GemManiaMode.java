@@ -965,6 +965,8 @@ public class GemManiaMode extends AbstractMode {
 				receiver.drawScoreFont(engine, playerID, 0, 20, strLimitTime, ((engine.timerActive) && (limittimeNow < 600) && (limittimeNow % 4 == 0)));
 			}
 
+			drawControlsHelpSmall(engine, playerID, 42);
+
 			// Section Time
 			if((showsectiontime == true) && (sectiontime != null)) {
 				int y = (receiver.getNextDisplayType() == 2) ? 4 : 2;

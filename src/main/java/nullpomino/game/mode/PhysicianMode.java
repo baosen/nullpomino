@@ -279,6 +279,8 @@ public class PhysicianMode extends AbstractMode {
 
 			receiver.drawScoreFont(engine, playerID, 0, 13, "TIME", EventReceiver.COLOR_BLUE);
 			receiver.drawScoreFont(engine, playerID, 0, 14, GeneralUtil.getTime(engine.statistics.time));
+
+			drawControlsHelp(engine, playerID, 15);
 		}
 	}
 

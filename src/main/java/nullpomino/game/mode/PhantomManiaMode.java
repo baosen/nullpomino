@@ -414,6 +414,8 @@ public class PhantomManiaMode extends AbstractDeathMode {
 			if(medalRO >= 1) receiver.drawScoreFont(engine, playerID, 0, 22, "RO", getMedalFontColor(medalRO));
 			if(medalCO >= 1) receiver.drawScoreFont(engine, playerID, 3, 22, "CO", getMedalFontColor(medalCO));
 
+			drawControlsHelpSmallTight(engine, playerID, 46);
+
 			if(showsectiontime.value && (sectiontime != null)) {
 				int x = (receiver.getNextDisplayType() == 2) ? 8 : 12;
 				int x2 = (receiver.getNextDisplayType() == 2) ? 9 : 12;

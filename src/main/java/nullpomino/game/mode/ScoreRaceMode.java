@@ -511,6 +511,12 @@ public class ScoreRaceMode extends NetDummyMode {
 			receiver.drawScoreFont(engine, playerID, 0, 18, "TIME", EventReceiver.COLOR_BLUE);
 			receiver.drawScoreFont(engine, playerID, 0, 19, GeneralUtil.getTime(engine.statistics.time));
 
+			if(netIsNetPlay) {
+				drawControlsHelpSmallTight(engine, playerID, 46);
+			} else {
+				drawControlsHelp(engine, playerID, 20);
+			}
+
 			if((lastevent != EVENT_NONE) && (scgettime < 120)) {
 				String strPieceName = Piece.getPieceName(lastpiece);
 

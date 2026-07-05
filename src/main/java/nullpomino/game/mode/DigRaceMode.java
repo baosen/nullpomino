@@ -474,6 +474,8 @@ public class DigRaceMode extends NetDummyMode {
 
 			receiver.drawScoreFont(engine, playerID, 0, 15, "TIME", EventReceiver.COLOR_BLUE);
 			receiver.drawScoreFont(engine, playerID, 0, 16, GeneralUtil.getTime(engine.statistics.time));
+
+			drawControlsHelp(engine, playerID, 19);
 		}
 
 		// NET: Number of spectators

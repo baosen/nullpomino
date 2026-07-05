@@ -331,6 +331,8 @@ public class AvalancheMode extends Avalanche1PDummyMode {
 			receiver.drawScoreFont(engine, playerID, 0, 12, "TIME", EventReceiver.COLOR_BLUE);
 			receiver.drawScoreFont(engine, playerID, 0, 13, GeneralUtil.getTime(engine.statistics.time));
 
+			drawControlsHelp(engine, playerID, 14);
+
 			receiver.drawScoreFont(engine, playerID, 11, 6, "CLEARED", EventReceiver.COLOR_BLUE);
 			receiver.drawScoreFont(engine, playerID, 11, 7, String.valueOf(blocksCleared));
 

@@ -376,6 +376,8 @@ public class AvalancheFeverMode extends Avalanche1PDummyMode {
 			if (timeLimitAddDisplay > 0)
 				receiver.drawScoreFont(engine, playerID, 0, 14, "(+" + (timeLimitAdd/60) + " SEC.)");
 
+			drawControlsHelp(engine, playerID, 15);
+
 			receiver.drawScoreFont(engine, playerID, 11, 6, "BOARDS", EventReceiver.COLOR_BLUE);
 			receiver.drawScoreFont(engine, playerID, 11, 7, String.valueOf(boardsPlayed));
 

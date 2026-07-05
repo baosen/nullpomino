@@ -335,6 +335,8 @@ public class MarathonMode extends AbstractMarathonMode {
 			receiver.drawScoreFont(engine, playerID, 0, 12, "TIME", EventReceiver.COLOR_BLUE);
 			receiver.drawScoreFont(engine, playerID, 0, 13, GeneralUtil.getTime(engine.statistics.time));
 
+			drawControlsHelp(engine, playerID, netIsNetPlay ? 20 : 14);
+
 			if((lastevent != EVENT_NONE) && (scgettime < 120)) {
 				String strPieceName = Piece.getPieceName(lastpiece);
 
