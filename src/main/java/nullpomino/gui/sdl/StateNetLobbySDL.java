@@ -705,9 +705,8 @@ public class StateNetLobbySDL extends BaseStateSDL {
 		int shown = 0;
 		String ownName = presenceName;
 		if(ownName.length() > 0) {
-			String name = NormalFontSDL.safeString(ownName);
-			if(name.length() > 5) name = name.substring(0, 5);
-			NormalFontSDL.printFont(552, py, name, NormalFontSDL.COLOR_WHITE);
+			String name = ownName.length() > 5 ? ownName.substring(0, 5) : ownName;
+			NormalFontSDL.printTTFFont(552, py, name, NormalFontSDL.COLOR_WHITE);
 			py += 16;
 			shown++;
 		}
@@ -715,9 +714,9 @@ public class StateNetLobbySDL extends BaseStateSDL {
 			for(NetLanDiscovery.Presence visitor : lounge.snapshotPresence()) {
 				if(shown >= 13) break;
 				if(presenceInstanceId.equals(visitor.instanceId)) continue;
-				String name = NormalFontSDL.safeString(visitor.playerName);
+				String name = visitor.playerName == null ? "" : visitor.playerName;
 				if(name.length() > 5) name = name.substring(0, 5);
-				NormalFontSDL.printFont(552, py, name, NormalFontSDL.COLOR_WHITE);
+				NormalFontSDL.printTTFFont(552, py, name, NormalFontSDL.COLOR_WHITE);
 				py += 16;
 				shown++;
 			}

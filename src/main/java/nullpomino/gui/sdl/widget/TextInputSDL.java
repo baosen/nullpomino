@@ -13,8 +13,12 @@ import nullpomino.gui.sdl.binding.SDLStructs;
  * - Backspace / Delete
  * - Clipboard: Ctrl+C (copy), Ctrl+V (paste), Ctrl+X (cut), Ctrl+A (select all) [copy/paste only, no selection]
  *
- * Uses the 16px bitmap font for Latin-1 input. Non-Latin characters are accepted
- * (stored in the internal String) but rendered as the bitmap font's fallback glyph.
+ * Renders with the case-sensitive TTF font (the same one used for in-game
+ * player names), so typed text keeps its real casing instead of being
+ * force-uppercased. The TTF glyphs are proportional-width, but caret/scroll
+ * bookkeeping below still uses a per-character budget (an average glyph width
+ * rather than a true monospace cell) since precise per-frame layout isn't
+ * needed for those.
  */
 public class TextInputSDL extends WidgetSDL {
 	/** Current text content. */
@@ -59,7 +63,7 @@ public class TextInputSDL extends WidgetSDL {
 		if(!visible || !enabled) return false;
 		if(leftJustPressed && containsPoint(mx, my)) {
 			// Place caret under the click
-			int charX = Math.max(0, (mx - (x + 4)) / 16);
+			int charX = Math.max(0, (mx - (x + 4)) / NormalFontSDL.getTTFCharWidthPx());
 			caret = Math.min(text.length(), scrollChar + charX);
 			return true;
 		}
@@ -141,7 +145,7 @@ public class TextInputSDL extends WidgetSDL {
 	}
 
 	private int maxVisibleChars() {
-		return Math.max(1, (w - 8) / 16);
+		return Math.max(1, (w - 8) / NormalFontSDL.getTTFCharWidthPx());
 	}
 
 	private void clampScroll() {
@@ -160,42 +164,42 @@ public class TextInputSDL extends WidgetSDL {
 		int innerX = x + 4;
 		int innerY = y + (h - 16) / 2;
 		int visible = maxVisibleChars();
+		String display = maskIfPassword(text);
 
-		if(text.length() == 0 && !focused && placeholder != null && placeholder.length() > 0) {
-			String hint = NormalFontSDL.safeString(placeholder);
+		if(display.length() == 0 && !focused && placeholder != null && placeholder.length() > 0) {
+			String hint = placeholder;
 			if(hint.length() > visible) hint = hint.substring(0, visible);
-			NormalFontSDL.printFont(innerX, innerY, hint, NormalFontSDL.COLOR_DARKBLUE);
+			NormalFontSDL.printTTFFont(innerX, innerY, hint, NormalFontSDL.COLOR_DARKBLUE);
 		} else {
-			String display = text;
-			if(password && display.length() > 0) {
-				StringBuilder sb = new StringBuilder(display.length());
-				for(int i = 0; i < display.length(); i++) sb.append('*');
-				display = sb.toString();
-			} else {
-				display = NormalFontSDL.safeString(display);
-			}
 			int end = Math.min(display.length(), scrollChar + visible);
 			if(scrollChar < end) {
-				NormalFontSDL.printFont(innerX, innerY, display.substring(scrollChar, end), NormalFontSDL.COLOR_WHITE);
+				NormalFontSDL.printTTFFont(innerX, innerY, display.substring(scrollChar, end), NormalFontSDL.COLOR_WHITE);
 			}
 		}
 
 		// Caret: 1px vertical bar drawn when focused and blink state is on.
 		if(focused) {
+			int caretEnd = Math.max(scrollChar, Math.min(caret, display.length()));
+			int caretX = innerX + NormalFontSDL.getTTFStringWidth(display.substring(scrollChar, caretEnd));
 			long t = System.currentTimeMillis() / 500L;
 			if((t & 1L) == 0L) {
-				int caretX = innerX + (caret - scrollChar) * 16;
 				fillRect(caretX, innerY, 2, 16, 255, 255, 255, 255);
 			}
 			// IME preedit underline (if any)
 			String ime = NullpoMinoSDL.imeComposition;
 			if(ime != null && ime.length() > 0) {
-				int caretX = innerX + (caret - scrollChar) * 16;
-				int imeW = Math.min(ime.length(), visible - (caret - scrollChar)) * 16;
+				int imeW = Math.min(ime.length(), visible - (caret - scrollChar)) * NormalFontSDL.getTTFCharWidthPx();
 				if(imeW > 0) {
 					fillRect(caretX, innerY + 14, imeW, 2, 255, 255, 0, 255);
 				}
 			}
 		}
+	}
+
+	private String maskIfPassword(String s) {
+		if(!password || s.length() == 0) return s;
+		StringBuilder sb = new StringBuilder(s.length());
+		for(int i = 0; i < s.length(); i++) sb.append('*');
+		return sb.toString();
 	}
 }

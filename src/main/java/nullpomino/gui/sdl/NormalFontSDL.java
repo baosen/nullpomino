@@ -80,6 +80,18 @@ public class NormalFontSDL {
 		return w.getValue();
 	}
 
+	/**
+	 * Rough average TTF glyph advance in px, for legacy char-count layout math
+	 * (scroll windows, truncation, wrap width) that predates proportional-font
+	 * rendering. Falls back to 16 (the bitmap font's cell size) if TTF is
+	 * unavailable. Not for precise positioning — use {@link #getTTFStringWidth}
+	 * for that.
+	 */
+	public static int getTTFCharWidthPx() {
+		int w = getTTFStringWidth("MMMMMMMMMM");
+		return (w > 0) ? Math.max(1, w / 10) : 16;
+	}
+
 	private static SDLStructs.SDL_Color.ByValue color(int fontColor) {
 		int[] rgb = getFontColorRGB(fontColor);
 		return new SDLStructs.SDL_Color.ByValue(rgb[0], rgb[1], rgb[2]);

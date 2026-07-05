@@ -34,7 +34,7 @@ public class StateNetRankingSDL extends BaseStateSDL {
 
 		TableSDL.Column[] cols = {
 			new TableSDL.Column("RANK",   68),
-			new TableSDL.Column("NAME",  260),
+			new TableSDL.Column("NAME",  260, true),
 			new TableSDL.Column("RATE",   96),
 			new TableSDL.Column("PLAYS",  96),
 			new TableSDL.Column("WINS",   96),

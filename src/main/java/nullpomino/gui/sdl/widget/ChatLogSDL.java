@@ -45,15 +45,29 @@ public class ChatLogSDL extends WidgetSDL {
 	}
 
 	public synchronized void appendSystem(String msg, int color) {
-		push(new Entry(System.currentTimeMillis(), "", color, msg, color));
+		push(new Entry(System.currentTimeMillis(), "", color, stripControlChars(msg), color));
 	}
 
 	public synchronized void appendUser(String user, Calendar time, String msg) {
 		// 'name:' in cyan, message body in plain white so the speaker stands
 		// out at a glance. No trailing space in the prefix — render() inserts
 		// a half-char gap so the body doesn't butt up against the colon.
-		String prefix = user + ":";
-		push(new Entry(time.getTimeInMillis(), prefix, NormalFontSDL.COLOR_CYAN, msg, NormalFontSDL.COLOR_WHITE));
+		String prefix = stripControlChars(user) + ":";
+		push(new Entry(time.getTimeInMillis(), prefix, NormalFontSDL.COLOR_CYAN, stripControlChars(msg), NormalFontSDL.COLOR_WHITE));
+	}
+
+	/** Strips control characters (e.g. a literal newline from unsanitized network
+	 * chat input) that would otherwise desync this widget's own line-wrap
+	 * accounting or render as a stray glyph in the TTF font, which — unlike the
+	 * bitmap font — doesn't special-case '\n' as a line break. */
+	private static String stripControlChars(String s) {
+		if(s == null) return "";
+		StringBuilder sb = new StringBuilder(s.length());
+		for(int i = 0; i < s.length(); i++) {
+			char c = s.charAt(i);
+			if(c >= 0x20) sb.append(c);
+		}
+		return sb.toString();
 	}
 
 	public synchronized void clear() {
@@ -95,7 +109,7 @@ public class ChatLogSDL extends WidgetSDL {
 
 	private int wrapChars() {
 		if(lineWrapChars > 0) return lineWrapChars;
-		return Math.max(10, (w - 8) / 16);
+		return Math.max(10, (w - 8) / NormalFontSDL.getTTFCharWidthPx());
 	}
 
 	@Override
@@ -153,12 +167,11 @@ public class ChatLogSDL extends WidgetSDL {
 		for(int i = startLine; i < endLine; i++) {
 			RenderedLine ln = lines.get(i);
 			if(ln.prefix.length() > 0) {
-				String prefSafe = NormalFontSDL.safeString(ln.prefix);
-				NormalFontSDL.printFont(x + 4, drawY, prefSafe, ln.prefixColor);
-				NormalFontSDL.printFont(x + 4 + prefSafe.length() * 16 + prefixGapPx, drawY,
-						NormalFontSDL.safeString(ln.body), ln.bodyColor);
+				NormalFontSDL.printTTFFont(x + 4, drawY, ln.prefix, ln.prefixColor);
+				int prefixWidth = NormalFontSDL.getTTFStringWidth(ln.prefix);
+				NormalFontSDL.printTTFFont(x + 4 + prefixWidth + prefixGapPx, drawY, ln.body, ln.bodyColor);
 			} else {
-				NormalFontSDL.printFont(x + 4, drawY, NormalFontSDL.safeString(ln.body), ln.bodyColor);
+				NormalFontSDL.printTTFFont(x + 4, drawY, ln.body, ln.bodyColor);
 			}
 			drawY += 16;
 		}

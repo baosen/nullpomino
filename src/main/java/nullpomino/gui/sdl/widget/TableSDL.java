@@ -17,9 +17,17 @@ public class TableSDL extends WidgetSDL {
 	public static class Column {
 		public final String header;
 		public final int widthPx;
+		/** When true, this column's cell values are drawn with the case-sensitive
+		 * TTF font (for user-entered names) instead of the uppercase-only bitmap
+		 * font. Headers always use the bitmap font regardless of this flag. */
+		public final boolean ttf;
 		public Column(String header, int widthPx) {
+			this(header, widthPx, false);
+		}
+		public Column(String header, int widthPx, boolean ttf) {
 			this.header = header;
 			this.widthPx = widthPx;
+			this.ttf = ttf;
 		}
 	}
 
@@ -198,10 +206,17 @@ public class TableSDL extends WidgetSDL {
 
 			int cx = x + 4;
 			for(int c = 0; c < columns.length && c < row.length; c++) {
-				String s = NormalFontSDL.safeString(row[c] == null ? "" : row[c]);
-				int colWidthChars = Math.max(1, (columns[c].widthPx - 4) / 16);
-				if(s.length() > colWidthChars) s = s.substring(0, colWidthChars);
-				NormalFontSDL.printFont(cx, ry + (rowHeight - 16) / 2, s, rowColor);
+				String raw = row[c] == null ? "" : row[c];
+				if(columns[c].ttf) {
+					int colWidthChars = Math.max(1, (columns[c].widthPx - 4) / NormalFontSDL.getTTFCharWidthPx());
+					String s = raw.length() > colWidthChars ? raw.substring(0, colWidthChars) : raw;
+					NormalFontSDL.printTTFFont(cx, ry + (rowHeight - 16) / 2, s, rowColor);
+				} else {
+					String s = NormalFontSDL.safeString(raw);
+					int colWidthChars = Math.max(1, (columns[c].widthPx - 4) / 16);
+					if(s.length() > colWidthChars) s = s.substring(0, colWidthChars);
+					NormalFontSDL.printFont(cx, ry + (rowHeight - 16) / 2, s, rowColor);
+				}
 				cx += columns[c].widthPx;
 			}
 		}
