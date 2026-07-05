@@ -169,7 +169,7 @@ public class TextInputSDL extends WidgetSDL {
 		if(display.length() == 0 && !focused && placeholder != null && placeholder.length() > 0) {
 			String hint = placeholder;
 			if(hint.length() > visible) hint = hint.substring(0, visible);
-			NormalFontSDL.printTTFFont(innerX, innerY, hint, NormalFontSDL.COLOR_DARKBLUE);
+			NormalFontSDL.printTTFFont(innerX, innerY, hint, NormalFontSDL.COLOR_LIGHTGRAY);
 		} else {
 			int end = Math.min(display.length(), scrollChar + visible);
 			if(scrollChar < end) {
