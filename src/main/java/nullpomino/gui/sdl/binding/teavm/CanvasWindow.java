@@ -34,8 +34,8 @@ final class CanvasWindow implements SdlWindow {
 			document.getBody().appendChild(el);
 		}
 		this.canvas = el;
-		resizeToViewport();
 		this.display = (CanvasRenderingContext2D) canvas.getContext("2d");
+		resizeToViewport();
 
 		bridge.install(canvas);
 		Window.current().addEventListener("resize", e -> resizeToViewport());
@@ -46,6 +46,10 @@ final class CanvasWindow implements SdlWindow {
 		int h = Math.max(Window.current().getInnerHeight(), 1);
 		canvas.setWidth(w);
 		canvas.setHeight(h);
+		// Resizing a canvas resets its 2D context state (including
+		// imageSmoothingEnabled) back to the default, so this must be
+		// re-applied on every resize, not just once at creation.
+		CanvasRenderer.disableSmoothing(display);
 	}
 
 	void setTitle(String title) {

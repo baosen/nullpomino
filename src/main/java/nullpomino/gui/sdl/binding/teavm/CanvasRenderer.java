@@ -144,5 +144,5 @@ final class CanvasRenderer implements SdlRenderer {
 	}
 
 	@JSBody(params = {"c"}, script = "c.imageSmoothingEnabled = false;")
-	private static native void disableSmoothing(CanvasRenderingContext2D c);
+	static native void disableSmoothing(CanvasRenderingContext2D c);
 }
