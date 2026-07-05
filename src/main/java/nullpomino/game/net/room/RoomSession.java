@@ -92,8 +92,9 @@ public class RoomSession implements RoomEndpoint, RoomEventSink {
 	private final Map<Integer, List<int[]>> pendingRatings = new HashMap<Integer, List<int[]>>();     // scope -> [uid, rating]
 	private final Map<Integer, List<String>> pendingRatingNames = new HashMap<Integer, List<String>>();
 
-	/** LAN beacon */
-	private NetLanDiscovery.Announcer announcer;
+	/** Lounge beacon (LAN broadcast on desktop, MQTT topic on web) */
+	private final RoomBeacon beacon;
+	private boolean beaconStarted = false;
 
 	/** What the beacon currently announces; null = nothing to announce yet
 	 *  (no room created). Refreshed by the dispatcher, read by the announcer. */
@@ -119,6 +120,7 @@ public class RoomSession implements RoomEndpoint, RoomEventSink {
 		this.records = new RoomLocalRecords();
 		this.transport = net.createTransport(this);
 		this.dispatcher = net.createDispatcher();
+		this.beacon = net.createBeacon();
 		selfLocal.strName = playerName;
 		records.loadInto(selfLocal);
 	}
@@ -221,12 +223,9 @@ public class RoomSession implements RoomEndpoint, RoomEventSink {
 	}
 
 	private void startAnnouncer() {
-		if(!config.lanAnnounce || (announcer != null)) return;
-		announcer = new NetLanDiscovery.Announcer(() -> {
-			NetLanDiscovery.Announce a = beaconSnapshot;
-			return (a == null) ? null : NetLanDiscovery.encodeRoomAnnounce(a);
-		});
-		announcer.start();
+		if(!config.lanAnnounce || beaconStarted) return;
+		beaconStarted = true;
+		beacon.start(() -> beaconSnapshot);
 	}
 
 	// ================================================================ RoomEndpoint (client seam)
@@ -1165,10 +1164,7 @@ public class RoomSession implements RoomEndpoint, RoomEventSink {
 		log.info("Mesh session closed: {}", reason);
 		setState(State.CLOSED, reason);
 
-		if(announcer != null) {
-			announcer.shutdown();
-			announcer = null;
-		}
+		beacon.stop();
 		for(RoomRoster.Entry e: roster.linkedMembers()) {
 			e.link.sendLine(RoomProtocol.LINE_BYE);
 			e.link.closeAfterFlush("bye sent");

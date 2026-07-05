@@ -15,4 +15,7 @@ public interface RoomNet {
 
 	/** @return A fresh event dispatcher for one session */
 	RoomDispatcher createDispatcher();
+
+	/** @return A fresh lounge beacon for one session */
+	RoomBeacon createBeacon();
 }

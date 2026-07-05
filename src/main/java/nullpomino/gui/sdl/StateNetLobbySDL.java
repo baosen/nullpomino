@@ -3,12 +3,12 @@
 package nullpomino.gui.sdl;
 
 import java.io.IOException;
-import java.net.SocketException;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
 import java.util.Random;
 
+import nullpomino.game.net.LoungeService;
 import nullpomino.game.net.NetLanDiscovery;
 import nullpomino.game.net.NetPlatform;
 import nullpomino.game.net.room.RoomConfig;
@@ -23,10 +23,11 @@ import nullpomino.gui.sdl.widget.TextInputSDL;
 import nullpomino.gui.sdl.widget.WidgetSDL;
 
 /**
- * The netplay LAN lounge — the direct entry point from the title menu.
- * Sessionless by default: the room table is fed from LAN discovery beacons
- * (each room is its own P2P session), and lobby chat is a UDP broadcast every
- * LAN peer on this screen sees. CREATE spins up a new room session and opens
+ * The netplay lounge — the direct entry point from the title menu.
+ * Sessionless by default: the room table is fed from discovery beacons
+ * (each room is its own P2P session; UDP broadcast on LAN, an MQTT topic on
+ * web), and lobby chat reaches every peer on this screen the same way.
+ * CREATE spins up a new room session and opens
  * the create-room form; JOIN/VIEW connect to the selected beacon's session
  * (VIEW as spectator); {@code /join host:port} in chat reaches rooms UDP
  * discovery can't (internet play). Errors and progress appear as colored
@@ -51,8 +52,9 @@ public class StateNetLobbySDL extends BaseStateSDL {
 
 	private WidgetSDL focused;
 
-	/** LAN discovery listener, null when the UDP port couldn't be bound */
-	private NetLanDiscovery.Listener lanListener;
+	/** Platform lounge (rooms/chat/presence); open only while on this screen */
+	private LoungeService lounge;
+	private boolean loungeOpen;
 
 	/** Rooms currently shown in the table, index-parallel to its rows */
 	private List<NetLanDiscovery.Announce> roomRows = new ArrayList<NetLanDiscovery.Announce>();
@@ -74,10 +76,9 @@ public class StateNetLobbySDL extends BaseStateSDL {
 	private String lastMirroredName;
 	private String lastMirroredTeam;
 
-	/** Presence beacon while on this screen */
-	private NetLanDiscovery.Announcer presenceAnnouncer;
+	/** Presence identity while on this screen */
 	private String presenceInstanceId = "";
-	private volatile String presenceName = "";
+	private String presenceName = "";
 
 	@Override
 	public void enter() {
@@ -145,38 +146,33 @@ public class StateNetLobbySDL extends BaseStateSDL {
 		// Top-right corner: the hard quit (tears down everything netplay)
 		disconnectBtn = new ButtonSDL(604, 4, 28, 24, "X", new Runnable() { public void run() { NullpoMinoSDL.endNetplay(); } });
 
-		// Listen for room beacons + lounge chat. Best-effort: if the UDP port
-		// can't be bound, CREATE and /join still work.
+		// Listen for room beacons + lounge chat. Best-effort: if the lounge
+		// can't open (UDP port busy / broker unreachable), CREATE and /join
+		// still work on desktop.
 		roomRows = new ArrayList<NetLanDiscovery.Announce>();
 		lanKey = "";
-		try {
-			lanListener = new NetLanDiscovery.Listener();
-			lanListener.setChatConsumer(new NetLanDiscovery.ChatConsumer() {
-				public void onChat(String playerName, String message) {
-					// ChatLogSDL appends are synchronized - safe from the listener thread
-					NetLobbyFrame lobby = NullpoMinoSDL.netLobby;
-					if(lobby != null) lobby.chatLogLobby.appendUser(playerName, Calendar.getInstance(), message);
-				}
-			});
-			lanListener.start();
-		} catch (SocketException e) {
-			lanListener = null;
-			nl.chatLogLobby.appendSystem("LAN DISCOVERY UNAVAILABLE - CREATE OR /JOIN <HOST:PORT> STILL WORK",
+		lounge = NetPlatform.lounge();
+		lounge.setChatConsumer(new NetLanDiscovery.ChatConsumer() {
+			public void onChat(String playerName, String message) {
+				// ChatLogSDL appends are synchronized - safe from any thread
+				NetLobbyFrame lobby = NullpoMinoSDL.netLobby;
+				if(lobby != null) lobby.chatLogLobby.appendUser(playerName, Calendar.getInstance(), message);
+			}
+		});
+		loungeOpen = lounge.open();
+		if(!loungeOpen) {
+			nl.chatLogLobby.appendSystem("LOUNGE UNAVAILABLE - CREATE OR /JOIN <HOST:PORT> STILL WORK",
 				NormalFontSDL.COLOR_RED);
 		}
 		refreshRoomTable();
 
 		// Announce our presence while on this screen so other lounges list us.
-		// Blank names announce nothing (the supplier's null skips the cycle).
+		// Blank names announce nothing.
 		lastMirroredName = nameInput.getText();
 		lastMirroredTeam = teamInput.getText();
 		presenceName = nameInput.getText().trim();
 		presenceInstanceId = Long.toHexString(chatRand.nextLong());
-		presenceAnnouncer = new NetLanDiscovery.Announcer(() -> {
-			String name = presenceName;
-			return (name.length() == 0) ? null : NetLanDiscovery.encodePresence(name, presenceInstanceId);
-		});
-		presenceAnnouncer.start();
+		lounge.setPresence(presenceName, presenceInstanceId);
 
 		// New players type their name first; everyone else lands on the chat
 		setFocus(nameInput.getText().length() == 0 ? (WidgetSDL)nameInput : (WidgetSDL)chatInput);
@@ -184,13 +180,9 @@ public class StateNetLobbySDL extends BaseStateSDL {
 
 	@Override
 	public void leave() {
-		if(lanListener != null) {
-			lanListener.shutdown();
-			lanListener = null;
-		}
-		if(presenceAnnouncer != null) {
-			presenceAnnouncer.shutdown();
-			presenceAnnouncer = null;
+		if(lounge != null) {
+			lounge.close();
+			loungeOpen = false;
 		}
 		// Persist name/team for chat-only visitors too (connectToRoom also
 		// writes them on use). NEVER touch the room session here - this also
@@ -239,6 +231,7 @@ public class StateNetLobbySDL extends BaseStateSDL {
 			lastMirroredName = nameNow;
 			nl.propConfig.setProperty("serverselect.txtfldPlayerName.text", nameNow);
 			presenceName = nameNow.trim();
+			if(lounge != null) lounge.setPresence(presenceName, presenceInstanceId);
 		}
 		String teamNow = teamInput.getText();
 		if(!teamNow.equals(lastMirroredTeam)) {
@@ -446,13 +439,9 @@ public class StateNetLobbySDL extends BaseStateSDL {
 	// ---------------- room table from beacons ----------------
 
 	private void refreshRoomTable() {
-		if(lanListener == null) return;   // UDP bind failed: the table stays empty
+		if(!loungeOpen) return;   // lounge unavailable: the table stays empty
 
-		List<NetLanDiscovery.Announce> snap = new ArrayList<NetLanDiscovery.Announce>();
-		for(NetLanDiscovery.Announce a : lanListener.snapshot()) {
-			if(a.room) snap.add(a);
-		}
-		snap = NetLanDiscovery.dedupeBySession(snap);
+		List<NetLanDiscovery.Announce> snap = lounge.snapshotRooms();
 
 		// The key covers every displayed field + join identity, so any beacon
 		// change triggers exactly one rebuild (beacons tick at 1.5s)
@@ -650,12 +639,10 @@ public class StateNetLobbySDL extends BaseStateSDL {
 
 		String name = nameInput.getText().trim();
 		if(name.length() == 0) name = "???";
-		String msgId = Long.toHexString(chatRand.nextLong());
 		// Local echo first (deterministic on every platform); the looped-back
-		// broadcast copy dedupes away via the pre-registered msgId
-		if(lanListener != null) lanListener.markSeen(msgId);
+		// copy dedupes away via the msgId the lounge pre-registers
 		nl.chatLogLobby.appendUser(name, Calendar.getInstance(), msg);
-		NetLanDiscovery.broadcastPacket(NetLanDiscovery.encodeChat(name, msgId, msg));
+		lounge.sendChat(name, msg);
 	}
 
 	/** Draw a short dim vertical divider (2x2 dots stacked) between button groups. */
@@ -721,8 +708,8 @@ public class StateNetLobbySDL extends BaseStateSDL {
 			py += 16;
 			shown++;
 		}
-		if(lanListener != null) {
-			for(NetLanDiscovery.Presence visitor : lanListener.snapshotPresence()) {
+		if(loungeOpen) {
+			for(NetLanDiscovery.Presence visitor : lounge.snapshotPresence()) {
 				if(shown >= 13) break;
 				if(presenceInstanceId.equals(visitor.instanceId)) continue;
 				String name = NormalFontSDL.safeString(visitor.playerName);

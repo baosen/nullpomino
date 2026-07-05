@@ -13,18 +13,27 @@ import nullpomino.game.net.room.RoomNet;
  */
 public final class NetPlatform {
 	private static volatile RoomNet roomNet;
+	private static volatile LoungeService lounge;
 
 	private NetPlatform() {}
 
-	/** Install the platform's room networking. Called once at startup. */
-	public static void installRoomNet(RoomNet net) {
+	/** Install the platform's netplay implementation. Called once at startup. */
+	public static void install(RoomNet net, LoungeService loungeService) {
 		roomNet = net;
+		lounge = loungeService;
 	}
 
 	/** @return The installed room networking (never null once the entry point ran) */
 	public static RoomNet roomNet() {
 		RoomNet net = roomNet;
-		if(net == null) throw new IllegalStateException("NetPlatform.installRoomNet was never called");
+		if(net == null) throw new IllegalStateException("NetPlatform.install was never called");
 		return net;
+	}
+
+	/** @return The installed lounge service (never null once the entry point ran) */
+	public static LoungeService lounge() {
+		LoungeService service = lounge;
+		if(service == null) throw new IllegalStateException("NetPlatform.install was never called");
+		return service;
 	}
 }

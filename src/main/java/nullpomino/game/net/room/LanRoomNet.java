@@ -17,4 +17,9 @@ public class LanRoomNet implements RoomNet {
 	public RoomDispatcher createDispatcher() {
 		return new ThreadRoomDispatcher();
 	}
+
+	@Override
+	public RoomBeacon createBeacon() {
+		return new LanRoomBeacon();
+	}
 }

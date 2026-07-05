@@ -12,7 +12,7 @@ import java.util.Arrays;
 import java.util.Calendar;
 import java.util.LinkedList;
 import java.util.Locale;
-import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.LinkedBlockingDeque;
 import java.util.zip.Adler32;
 
 import nullpomino.game.component.RuleOptions;
@@ -151,7 +151,9 @@ public class NetLobbyFrame implements NetMessageListener {
 
 	// ---------------- Message pump ----------------
 
-	protected final ConcurrentLinkedQueue<String[]> pendingMessages = new ConcurrentLinkedQueue<String[]>();
+	// LinkedBlockingDeque rather than ConcurrentLinkedQueue: TeaVM 0.14 has no CLQ,
+	// and this queue must exist in the web-reachable graph for browser netplay
+	protected final LinkedBlockingDeque<String[]> pendingMessages = new LinkedBlockingDeque<String[]>();
 	protected volatile boolean pendingDisconnect;
 	protected volatile Throwable pendingDisconnectEx;
 
