@@ -349,15 +349,15 @@ public class StateNetCreateRoomSDL extends BaseStateSDL {
 		// netlobby.cfg, plus a text-based preset-code for sharing settings.
 		presetID        = new SpinnerSDL(colR, rowY + rowH * 0, wShort, 22, 0, 99, 1,
 				nl.propConfig.getProperty("createroom.defaultPresetID", 0));
-		presetSaveBtn   = new ButtonSDL(colR,        rowY + rowH * 1, 140, 22, "SAVE SLOT",
+		presetSaveBtn   = new ButtonSDL(colR,        rowY + rowH * 1, 152, 22, "SAVE SLOT",
 				new Runnable() { public void run() { saveCurrentAsPreset(); } });
-		presetLoadBtn   = new ButtonSDL(colR + 152,  rowY + rowH * 1, 140, 22, "LOAD SLOT",
+		presetLoadBtn   = new ButtonSDL(colR + 164,  rowY + rowH * 1, 152, 22, "LOAD SLOT",
 				new Runnable() { public void run() { loadCurrentPreset(); } });
 		presetCodeInput = new TextInputSDL(colR, rowY + rowH * 3, wFull, 22);
 		presetCodeInput.maxChars = 2048;
-		presetExportBtn = new ButtonSDL(colR,        rowY + rowH * 4, 140, 22, "EXPORT",
+		presetExportBtn = new ButtonSDL(colR,        rowY + rowH * 4, 152, 22, "EXPORT",
 				new Runnable() { public void run() { exportPresetCode(); } });
-		presetImportBtn = new ButtonSDL(colR + 152,  rowY + rowH * 4, 140, 22, "IMPORT",
+		presetImportBtn = new ButtonSDL(colR + 164,  rowY + rowH * 4, 152, 22, "IMPORT",
 				new Runnable() { public void run() { importPresetCode(); } });
 
 		// Bottom button row — OK (create) aligned with the tab strip's left
