@@ -14,6 +14,7 @@ import nullpomino.game.mode.GameMode;
 import nullpomino.game.wallkick.Wallkick;
 import nullpomino.gui.sdl.binding.SDL3;
 import nullpomino.gui.sdl.binding.SDLConstants;
+import nullpomino.gui.sdl.widget.ButtonSDL;
 import nullpomino.util.CustomProperties;
 import nullpomino.util.GeneralUtil;
 import nullpomino.game.randomizer.Randomizer;
@@ -52,6 +53,15 @@ public class StateInGameSDL extends BaseStateSDL {
 	/** Current game mode name */
 	protected String modeName;
 
+	/**
+	 * Top-right "X" close button, shown only on the pre-game SETTING screen
+	 * (mode.onSetting()/renderSetting() - e.g. PRACTICE MODE SETTINGS) and
+	 * hidden during actual gameplay. No inline action - folded into the
+	 * synthetic BUTTON_B press in injectSettingMouseInput() so it goes
+	 * through the same per-mode cancel/quitflag logic as Escape.
+	 */
+	private ButtonSDL closeBtn;
+
 	/*
 	 * Called when entering this state
 	 */
@@ -63,6 +73,7 @@ public class StateInGameSDL extends BaseStateSDL {
 		fastforward = 0;
 		cursor = 0;
 		prevInGameFlag = false;
+		closeBtn = new ButtonSDL(604, 4, 28, 24, "X");
 	}
 
 	/**
@@ -286,6 +297,10 @@ public class StateInGameSDL extends BaseStateSDL {
 					NormalFontSDL.printFont(offsetX, offsetY + 376, "e" + (fastforward + 1), NormalFontSDL.COLOR_ORANGE);
 				if(gameManager.replayShowInvisible)
 					NormalFontSDL.printFont(offsetX, offsetY + 392, "SHOW INVIS", NormalFontSDL.COLOR_ORANGE);
+
+				if(gameManager.engine[0].stat == GameEngine.Status.SETTING) {
+					closeBtn.render();
+				}
 			}
 		}
 	}
@@ -677,11 +692,15 @@ public class StateInGameSDL extends BaseStateSDL {
 		if(wheel > 0) ctrl.buttonPress[Controller.BUTTON_RIGHT] = true;
 		else if(wheel < 0) ctrl.buttonPress[Controller.BUTTON_LEFT] = true;
 
-		if(MouseInputSDL.mouseInput.isMouseClicked()) {
+		boolean clicked = MouseInputSDL.mouseInput.isMouseClicked();
+		boolean closeClicked = closeBtn.update(MouseInputSDL.mouseInput.getMouseX(), MouseInputSDL.mouseInput.getMouseY(), clicked);
+
+		if(clicked && !closeClicked) {
 			ctrl.buttonPress[Controller.BUTTON_A] = true;
 		}
 
-		if(MouseInputSDL.mouseInput.isMouseBackClicked()
+		if(closeClicked
+				|| MouseInputSDL.mouseInput.isMouseBackClicked()
 				|| MouseInputSDL.mouseInput.isMouseRightClicked()
 				|| NullpoMinoSDL.isEscapePushedThisFrame()) {
 			ctrl.buttonPress[Controller.BUTTON_B] = true;
