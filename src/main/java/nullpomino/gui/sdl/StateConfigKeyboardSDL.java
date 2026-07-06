@@ -2,7 +2,6 @@
 // SPDX-License-Identifier: BSD-3-Clause
 package nullpomino.gui.sdl;
 
-import nullpomino.game.play.GameManager;
 import nullpomino.gui.sdl.binding.SDL3;
 import nullpomino.gui.sdl.binding.SDLConstants;
 import nullpomino.gui.sdl.widget.ButtonSDL;
@@ -291,7 +290,7 @@ public class StateConfigKeyboardSDL extends BaseStateSDL {
 		reset();
 		closeBtn = new ButtonSDL(604, 4, 28, 24, "X", new Runnable() { public void run() { NullpoMinoSDL.goBack(); } });
 		NullpoMinoSDL.enableSpecialKeys = false;
-		SDL3.INSTANCE.SDL_SetWindowTitle(NullpoMinoSDL.window, NullpoMinoSDL.GAME_NAME + " version" + GameManager.getVersionString());
+		SDL3.INSTANCE.SDL_SetWindowTitle(NullpoMinoSDL.window, NullpoMinoSDL.GAME_NAME);
 	}
 
 	/*

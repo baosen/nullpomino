@@ -68,13 +68,7 @@ public class StateTitleSDL extends DummyMenuChooseStateSDL {
 	 */
 	@Override
 	public void enter() {
-		// Update title bar. The browser tab shows just the game name; the
-		// version string is desktop-only (it reads "unknown" in a browser,
-		// where the .git dir isn't on the virtual filesystem).
-		String title = NullpoMinoSDL.webMode
-			? NullpoMinoSDL.GAME_NAME
-			: NullpoMinoSDL.GAME_NAME + " version" + GameManager.getVersionString();
-		SDL3.INSTANCE.SDL_SetWindowTitle(NullpoMinoSDL.window, title);
+		SDL3.INSTANCE.SDL_SetWindowTitle(NullpoMinoSDL.window, NullpoMinoSDL.GAME_NAME);
 		// Call GC
 		System.gc();
 
