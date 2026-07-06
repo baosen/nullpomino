@@ -111,9 +111,9 @@ public class StateNetLobbySDL extends BaseStateSDL {
 		teamInput.setText(nl.propConfig.getProperty("serverselect.txtfldPlayerTeam.text", ""));
 
 		TableSDL.Column[] cols = {
-			new TableSDL.Column("NAME",         196, true),
+			new TableSDL.Column("NAME",         144, true),
 			new TableSDL.Column("RULE",          84, true),
-			new TableSDL.Column("MODE",         100, true),
+			new TableSDL.Column("MODE",         152, true),
 			new TableSDL.Column("STATUS",       100, true),
 			new TableSDL.Column("PLAYERS",       60, true),
 			new TableSDL.Column("SPECTATORS",    84, true),
