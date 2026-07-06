@@ -52,16 +52,17 @@ class StateNetCreateRoomSDLTest {
 	}
 
 	@Test
-	void modeTypeLabelsListMultiplayerSinglePlayerAndRatedInEnumOrder() throws Exception {
+	void modeTypeLabelsListMultiplayerAndSinglePlayerInEnumOrder() throws Exception {
 		Field f = StateNetCreateRoomSDL.class.getDeclaredField("MODE_TYPE_LABELS");
 		f.setAccessible(true);
 		String[] labels = (String[]) f.get(null);
 
+		// RATED (RoomCreateMode ordinal 2) is intentionally omitted — preset-based
+		// rated rooms are a dedicated-server concept P2P room sessions can't create.
 		assertArrayEquals(
-				new String[] {"MULTIPLAYER", "SINGLE PLAYER", "RATED"},
+				new String[] {"MULTIPLAYER", "SINGLE PLAYER"},
 				labels);
-		assertEquals(RoomCreateMode.values().length, labels.length,
-				"label count must stay parallel to RoomCreateMode enum");
+		assertEquals(2, labels.length);
 	}
 
 	@Test

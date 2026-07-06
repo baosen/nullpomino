@@ -54,8 +54,12 @@ public class StateNetCreateRoomSDL extends BaseStateSDL {
 
 	private static final String[] TSPIN_TYPE_LABELS   = { "DISABLE", "T-ONLY", "ALL SPIN" };
 	private static final String[] SPIN_CHECK_LABELS   = { "4-POINT", "IMMOBILE" };
-	/** Labels on the MODE TYPE selector; indices match {@link RoomCreateMode#ordinal()}. */
-	private static final String[] MODE_TYPE_LABELS    = { "MULTIPLAYER", "SINGLE PLAYER", "RATED" };
+	/**
+	 * Labels on the MODE TYPE selector; indices match {@link RoomCreateMode#ordinal()}.
+	 * RATED (ordinal 2) is intentionally omitted — preset-based rated rooms are a
+	 * dedicated-server concept, and P2P room sessions can't create them.
+	 */
+	private static final String[] MODE_TYPE_LABELS    = { "MULTIPLAYER", "SINGLE PLAYER" };
 
 	private TabStripSDL tabStrip;
 
@@ -161,9 +165,10 @@ public class StateNetCreateRoomSDL extends BaseStateSDL {
 		} else {
 			nl.createRoomMode = readLastModeFromConfig(nl);
 		}
-		// Preset-based rated rooms are a server concept; room sessions rate
-		// plain multiplayer rooms locally instead
-		if(nl.isRoomSession() && (nl.createRoomMode == RoomCreateMode.RATED)) {
+		// RATED (server-preset rooms) is no longer offered; fold any stale RATED
+		// value (old config / detail view) back to MULTIPLAYER so the 2-item
+		// selector never receives an out-of-range index.
+		if(nl.createRoomMode == RoomCreateMode.RATED) {
 			nl.createRoomMode = RoomCreateMode.MULTIPLAYER;
 		}
 		ratedMode = !detailMode && nl.createRoomMode == RoomCreateMode.RATED;
@@ -483,10 +488,6 @@ public class StateNetCreateRoomSDL extends BaseStateSDL {
 	private void onModeChanged() {
 		NetLobbyFrame nl = NullpoMinoSDL.netLobby;
 		if(nl == null) return;
-		// Room sessions have no rated presets: bounce the selector back
-		if(nl.isRoomSession() && (currentMode() == RoomCreateMode.RATED)) {
-			modeSelector.setSelectedIndex(RoomCreateMode.MULTIPLAYER.ordinal());
-		}
 		RoomCreateMode mode = currentMode();
 		RoomCreateMode prevMode = (lastModeIndex >= 0 && lastModeIndex < RoomCreateMode.values().length)
 				? RoomCreateMode.values()[lastModeIndex] : RoomCreateMode.MULTIPLAYER;

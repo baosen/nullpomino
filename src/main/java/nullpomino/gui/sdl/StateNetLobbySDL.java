@@ -111,8 +111,7 @@ public class StateNetLobbySDL extends BaseStateSDL {
 		teamInput.setText(nl.propConfig.getProperty("serverselect.txtfldPlayerTeam.text", ""));
 
 		TableSDL.Column[] cols = {
-			new TableSDL.Column("NAME",         144, true),
-			new TableSDL.Column("RATED",         52, true),
+			new TableSDL.Column("NAME",         196, true),
 			new TableSDL.Column("RULE",          84, true),
 			new TableSDL.Column("MODE",         100, true),
 			new TableSDL.Column("STATUS",       100, true),
@@ -451,7 +450,7 @@ public class StateNetLobbySDL extends BaseStateSDL {
 		StringBuilder key = new StringBuilder();
 		for(NetLanDiscovery.Announce a : snap) {
 			key.append(a.sessionId).append('/').append(a.hostPort()).append('/')
-				.append(a.roomName).append('/').append(a.rated).append('/').append(a.ruleName).append('/')
+				.append(a.roomName).append('/').append(a.ruleName).append('/')
 				.append(a.mode).append('/').append(a.playing).append('/').append(a.seated).append('/')
 				.append(a.maxPlayers).append('/').append(a.spectators).append('\n');
 		}
@@ -481,7 +480,6 @@ public class StateNetLobbySDL extends BaseStateSDL {
 	private static String[] rowFromAnnounce(NetLobbyFrame nl, NetLanDiscovery.Announce a) {
 		return new String[] {
 			a.roomName,
-			nl.getUIText(a.rated ? "RoomTable_Rated_True" : "RoomTable_Rated_False"),
 			a.ruleName.length() == 0 ? nl.getUIText("RoomTable_RuleName_Any") : a.ruleName.toUpperCase(),
 			a.mode,
 			nl.getUIText(a.playing ? "RoomTable_Status_Playing" : "RoomTable_Status_Waiting"),
