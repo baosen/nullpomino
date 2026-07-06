@@ -111,13 +111,13 @@ public class StateNetLobbySDL extends BaseStateSDL {
 		teamInput.setText(nl.propConfig.getProperty("serverselect.txtfldPlayerTeam.text", ""));
 
 		TableSDL.Column[] cols = {
-			new TableSDL.Column("NAME",         144),
-			new TableSDL.Column("RATED",         52),
-			new TableSDL.Column("RULE",          84),
-			new TableSDL.Column("MODE",         100),
-			new TableSDL.Column("STATUS",       100),
-			new TableSDL.Column("PLAYERS",       60),
-			new TableSDL.Column("SPECTATORS",    84),
+			new TableSDL.Column("NAME",         144, true),
+			new TableSDL.Column("RATED",         52, true),
+			new TableSDL.Column("RULE",          84, true),
+			new TableSDL.Column("MODE",         100, true),
+			new TableSDL.Column("STATUS",       100, true),
+			new TableSDL.Column("PLAYERS",       60, true),
+			new TableSDL.Column("SPECTATORS",    84, true),
 		};
 		roomTable = new TableSDL(8, 32, 624, 188, cols);
 		// Small header font (8px/char) fits full words in narrow columns
