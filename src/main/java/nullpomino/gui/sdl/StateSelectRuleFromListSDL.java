@@ -91,26 +91,16 @@ public class StateSelectRuleFromListSDL extends DummyMenuScrollStateSDL {
 	 */
 	protected void prepareRuleList() {
 		strCurrentMode = NullpoMinoSDL.propGlobal.getProperty("name.mode", "");
-		if(strCurrentMode != null) {
-			RuleEntry entry = mapRuleEntries.get(strCurrentMode);
+		RuleEntry entry = mapRuleEntries.get(strCurrentMode);
+		int ruleCount = (entry != null) ? entry.listName.size() : 0;
 
-			if(entry == null) {
-				list = new String[1];
-				maxCursor = list.length - 1;
-				list[0] = "(CURRENT RULE)";
-			} else {
-				list = new String[1 + entry.listName.size()];
-				maxCursor = list.length - 1;
-				list[0] = "(CURRENT RULE)";
-				for(int i = 0; i < entry.listName.size(); i++) {
-					list[i + 1] = entry.listName.get(i);
-				}
-			}
-		} else {
-			list = new String[1];
-			maxCursor = list.length - 1;
-			list[0] = "(CURRENT RULE)";
+		// Recommended rules first, then "(CURRENT RULE)" as the last entry
+		list = new String[ruleCount + 1];
+		maxCursor = list.length - 1;
+		for(int i = 0; i < ruleCount; i++) {
+			list[i] = entry.listName.get(i);
 		}
+		list[ruleCount] = "(CURRENT RULE)";
 
 		int defaultCursor = 0;
 		String strLastRule = NullpoMinoSDL.propGlobal.getProperty("lastrule." + strCurrentMode);
@@ -148,7 +138,9 @@ public class StateSelectRuleFromListSDL extends DummyMenuScrollStateSDL {
 	@Override
 	protected boolean onDecide() {
 		ResourceHolderSDL.soundManager.play("decide");
-		if(cursor >= 1) {
+		// The last entry is the "(CURRENT RULE)" placeholder (keep the configured rule)
+		boolean isCurrentRule = (cursor == list.length - 1);
+		if(!isCurrentRule) {
 			NullpoMinoSDL.propGlobal.setProperty("lastrule." + strCurrentMode, list[cursor]);
 		} else {
 			NullpoMinoSDL.propGlobal.setProperty("lastrule." + strCurrentMode, "");
@@ -156,9 +148,9 @@ public class StateSelectRuleFromListSDL extends DummyMenuScrollStateSDL {
 		NullpoMinoSDL.saveConfig();
 
 		String strRulePath = null;
-		if(cursor >= 1) {
+		if(!isCurrentRule) {
 			RuleEntry entry = mapRuleEntries.get(strCurrentMode);
-			strRulePath = entry.listPath.get(cursor - 1);
+			strRulePath = entry.listPath.get(cursor);
 		}
 
 		StateInGameSDL s = (StateInGameSDL)NullpoMinoSDL.gameStates[NullpoMinoSDL.STATE_INGAME];

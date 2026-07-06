@@ -93,7 +93,7 @@ class StateSelectRuleFromListSDLTest {
 	}
 
 	@Test
-	void prepareRuleListPrependsCurrentRulePlaceholderForKnownMode() throws Exception {
+	void prepareRuleListAppendsCurrentRulePlaceholderForKnownMode() throws Exception {
 		StateSelectRuleFromListSDL state = new StateSelectRuleFromListSDL();
 		NullpoMinoSDL.propGlobal.setProperty("name.mode", "MARATHON");
 
@@ -102,9 +102,31 @@ class StateSelectRuleFromListSDLTest {
 		String[] list = readList(state);
 		assertTrue(list.length >= 2,
 				"a known mode in the bundled list must produce >1 entries");
-		assertEquals("(CURRENT RULE)", list[0]);
-		// Whatever the rules are, they must be non-null strings.
-		for(int i = 1; i < list.length; i++) assertNotNull(list[i]);
+		assertEquals("(CURRENT RULE)", list[list.length - 1],
+				"the placeholder must be the last entry");
+		// Everything above the placeholder is a real, non-null rule name.
+		for(int i = 0; i < list.length - 1; i++) {
+			assertNotNull(list[i]);
+			assertTrue(!"(CURRENT RULE)".equals(list[i]),
+					"only the last entry may be the placeholder");
+		}
+	}
+
+	@Test
+	void prepareRuleListDefaultsCursorToFirstRuleForKnownModeWithoutLastRule() throws Exception {
+		StateSelectRuleFromListSDL state = new StateSelectRuleFromListSDL();
+		NullpoMinoSDL.propGlobal.setProperty("name.mode", "MARATHON");
+		// No lastrule.MARATHON is set, so the cursor should default to the top.
+
+		state.enter();
+
+		String[] list = readList(state);
+		assertTrue(list.length >= 2,
+				"a known mode in the bundled list must produce >1 entries");
+		assertEquals(0, readCursor(state),
+				"cursor defaults to the first entry (top) when no last rule is remembered");
+		assertTrue(!"(CURRENT RULE)".equals(list[0]),
+				"the first entry is a real rule, not the placeholder");
 	}
 
 	@Test
@@ -138,11 +160,12 @@ class StateSelectRuleFromListSDLTest {
 	}
 
 	@Test
-	void onDecideAtCursorZeroSavesEmptyLastRuleAndStartsGameWithoutRulePath() throws Exception {
+	void onDecideAtCurrentRuleEntrySavesEmptyLastRuleAndStartsGameWithoutRulePath() throws Exception {
 		StateSelectRuleFromListSDL state = new StateSelectRuleFromListSDL();
 		NullpoMinoSDL.propGlobal.setProperty("name.mode", "MARATHON");
 		state.enter();
-		setCursor(state, 0);
+		// The "(CURRENT RULE)" placeholder is now the last entry.
+		setCursor(state, readList(state).length - 1);
 
 		Method onDecide = DummyMenuChooseStateSDL.class.getDeclaredMethod("onDecide");
 		onDecide.setAccessible(true);
@@ -152,7 +175,7 @@ class StateSelectRuleFromListSDLTest {
 		assertEquals("", NullpoMinoSDL.propGlobal.getProperty("lastrule.MARATHON", "<missing>"));
 		assertEquals(NullpoMinoSDL.STATE_INGAME, NullpoMinoSDL.currentState);
 		InGameStub stub = (InGameStub) NullpoMinoSDL.gameStates[NullpoMinoSDL.STATE_INGAME];
-		assertTrue(stub.startedWithNullPath, "cursor=0 must start a game with no rule override");
+		assertTrue(stub.startedWithNullPath, "(CURRENT RULE) must start a game with no rule override");
 	}
 
 	@Test
