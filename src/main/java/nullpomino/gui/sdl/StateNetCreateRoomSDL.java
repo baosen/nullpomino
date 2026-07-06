@@ -50,7 +50,7 @@ import nullpomino.gui.sdl.widget.WidgetSDL;
 public class StateNetCreateRoomSDL extends BaseStateSDL {
 	private static final Logger log = LoggerFactory.getLogger(StateNetCreateRoomSDL.class);
 
-	private static final String[] TAB_LABELS = { "BASIC", "SPEED", "BONUS", "GARBAGE", "MISC", "PRESET" };
+	private static final String[] TAB_LABELS = { "BASIC", "SPEED", "BONUS", "GARBAGE", "PRESET" };
 
 	private static final String[] TSPIN_TYPE_LABELS   = { "DISABLE", "T-ONLY", "ALL SPIN" };
 	private static final String[] SPIN_CHECK_LABELS   = { "4-POINT", "IMMOBILE" };
@@ -102,7 +102,7 @@ public class StateNetCreateRoomSDL extends BaseStateSDL {
 	private CheckboxSDL target;
 	private CheckboxSDL reduceLineSend;
 
-	// MISC
+	// BASIC — auto-start / hurry-up timer settings (folded in from the former MISC tab)
 	private SpinnerSDL hurryupSeconds;
 	private SpinnerSDL hurryupInterval;
 	private CheckboxSDL tnet2Timer;
@@ -294,11 +294,15 @@ public class StateNetCreateRoomSDL extends BaseStateSDL {
 		maxPlayers.enabled = nl.createRoomMode != RoomCreateMode.SINGLE_PLAYER;
 		preOnePlayerMaxPlayers = (nl.createRoomMode == RoomCreateMode.SINGLE_PLAYER) ? Math.max(1, src.maxPlayers) : src.maxPlayers;
 
-		autoStartSeconds = new SpinnerSDL(colR, rowY + rowH * 4, wShort, 22, 0, 600, 1, src.autoStartSeconds);
-		useMap    = new CheckboxSDL(colR, rowY + rowH * 5, wFull, 22, "USE MAP",   src.useMap);
-		mapSetID  = new SpinnerSDL (colR, rowY + rowH * 6, wShort, 22, 0, 99, 1,
+		autoStartSeconds   = new SpinnerSDL (colR, rowY + rowH * 4,  wShort, 22, 0, 600, 1, src.autoStartSeconds);
+		hurryupSeconds     = new SpinnerSDL (colR, rowY + rowH * 5,  wShort, 22, -1, 9999, 1, src.hurryupSeconds);
+		hurryupInterval    = new SpinnerSDL (colR, rowY + rowH * 6,  wShort, 22,  1,   99, 1, src.hurryupInterval);
+		tnet2Timer         = new CheckboxSDL(colR, rowY + rowH * 7,  wFull,  22, "TNET2 TIMER",          src.autoStartTNET2);
+		disableAfterCancel = new CheckboxSDL(colR, rowY + rowH * 8,  wFull,  22, "DISABLE AFTER CANCEL", src.disableTimerAfterSomeoneCancelled);
+		useMap             = new CheckboxSDL(colR, rowY + rowH * 9,  wFull,  22, "USE MAP",   src.useMap);
+		mapSetID           = new SpinnerSDL (colR, rowY + rowH * 10, wShort, 22, 0, 99, 1,
 				nl.propConfig.getProperty("createroom.defaultMapSetID", 0));
-		ruleLock  = new CheckboxSDL(colR, rowY + rowH * 7, wFull, 22, "RULE LOCK", src.ruleLock);
+		ruleLock           = new CheckboxSDL(colR, rowY + rowH * 11, wFull,  22, "RULE LOCK", src.ruleLock);
 
 		// SPEED
 		gravity     = new SpinnerSDL(colR, rowY + rowH * 0, wShort, 22, 0, 99, 1, src.gravity);
@@ -330,12 +334,6 @@ public class StateNetCreateRoomSDL extends BaseStateSDL {
 		fractGarbage    = new CheckboxSDL(colR, rowY + rowH * 5, wFull, 22, "FRACTIONAL GARBAGE", src.useFractionalGarbage);
 		target          = new CheckboxSDL(colR, rowY + rowH * 6, wFull, 22, "TARGET",             src.isTarget);
 		reduceLineSend  = new CheckboxSDL(colR, rowY + rowH * 7, wFull, 22, "REDUCE LINE SEND",   src.reduceLineSend);
-
-		// MISC
-		hurryupSeconds  = new SpinnerSDL(colR, rowY + rowH * 0, wShort, 22, -1, 9999, 1, src.hurryupSeconds);
-		hurryupInterval = new SpinnerSDL(colR, rowY + rowH * 1, wShort, 22, 1, 99,   1, src.hurryupInterval);
-		tnet2Timer         = new CheckboxSDL(colR, rowY + rowH * 2, wFull, 22, "TNET2 TIMER",           src.autoStartTNET2);
-		disableAfterCancel = new CheckboxSDL(colR, rowY + rowH * 3, wFull, 22, "DISABLE AFTER CANCEL",  src.disableTimerAfterSomeoneCancelled);
 
 		// PRESET tab: save/load current form state from numbered slots in
 		// netlobby.cfg, plus a text-based preset-code for sharing settings.
@@ -372,7 +370,11 @@ public class StateNetCreateRoomSDL extends BaseStateSDL {
 				new Field("ROOM NAME",    roomName),
 				new Field("MODE",         modeDropdown),
 				new Field("MAX PLAYERS",  maxPlayers),
-				new Field("AUTOSTART",    autoStartSeconds, "SECONDS"),
+				new Field("AUTOSTART",    autoStartSeconds,   "SECONDS"),
+				new Field("HURRYUP",      hurryupSeconds,     "SECONDS"),
+				new Field("HURRYUP",      hurryupInterval,    "INTERVAL"),
+				new Field("",             tnet2Timer),
+				new Field("",             disableAfterCancel),
 				new Field("",             useMap),
 				new Field("MAP SET ID",   mapSetID),
 				new Field("",             ruleLock),
@@ -408,13 +410,6 @@ public class StateNetCreateRoomSDL extends BaseStateSDL {
 				new Field("",             fractGarbage),
 				new Field("",             target),
 				new Field("",             reduceLineSend),
-			},
-			// MISC
-			{
-				new Field("HURRYUP",      hurryupSeconds,   "SECONDS"),
-				new Field("HURRYUP",      hurryupInterval,  "INTERVAL"),
-				new Field("",             tnet2Timer),
-				new Field("",             disableAfterCancel),
 			},
 			// PRESET
 			{
