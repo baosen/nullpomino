@@ -39,6 +39,8 @@ public class TableSDL extends WidgetSDL {
 	public int headerHeight = 20;
 	/** When false, the header-row stripe + column labels are not drawn (row area expands to fill). */
 	public boolean showHeader = true;
+	/** Bitmap font scale for header labels only (2.0f, 1.0f, or 0.5f). Cell text is unaffected. */
+	public float headerFontScale = 1.0f;
 
 	private int selected = -1;
 	private int scroll = 0;
@@ -181,11 +183,12 @@ public class TableSDL extends WidgetSDL {
 			// Header stripe + column labels
 			fillRect(x, y, w, headerHeight, 32, 32, 64, 240);
 			int colX = x + 4;
+			int headerCharPx = (int)(16 * headerFontScale);
 			for(Column c : columns) {
 				String s = NormalFontSDL.safeString(c.header == null ? "" : c.header);
-				int maxChars = Math.max(1, (c.widthPx - 4) / 16);
+				int maxChars = Math.max(1, (c.widthPx - 4) / headerCharPx);
 				if(s.length() > maxChars) s = s.substring(0, maxChars);
-				NormalFontSDL.printFont(colX, y + (headerHeight - 16) / 2, s, NormalFontSDL.COLOR_YELLOW);
+				NormalFontSDL.printFont(colX, y + (headerHeight - headerCharPx) / 2, s, NormalFontSDL.COLOR_YELLOW, headerFontScale);
 				colX += c.widthPx;
 			}
 			fillRect(x, y + headerHeight - 1, w, 1, 128, 128, 128, 255);

@@ -111,15 +111,18 @@ public class StateNetLobbySDL extends BaseStateSDL {
 		teamInput.setText(nl.propConfig.getProperty("serverselect.txtfldPlayerTeam.text", ""));
 
 		TableSDL.Column[] cols = {
-			new TableSDL.Column("NAME",  144),
-			new TableSDL.Column("RATED",  84),
-			new TableSDL.Column("RULE",   84),
-			new TableSDL.Column("MODE",  108),
-			new TableSDL.Column("STATUS",100),
-			new TableSDL.Column("PLY",    52),
-			new TableSDL.Column("SPC",    52),
+			new TableSDL.Column("NAME",         144),
+			new TableSDL.Column("RATED",         52),
+			new TableSDL.Column("RULE",          84),
+			new TableSDL.Column("MODE",         100),
+			new TableSDL.Column("STATUS",       100),
+			new TableSDL.Column("PLAYERS",       60),
+			new TableSDL.Column("SPECTATORS",    84),
 		};
 		roomTable = new TableSDL(8, 32, 624, 188, cols);
+		// Small header font (8px/char) fits full words in narrow columns
+		// instead of abbreviating PLAYERS/SPECTATORS to PLY/SPC.
+		roomTable.headerFontScale = 0.5f;
 
 		// Chat input along the bottom; Enter sends (handled in handleGlobalKey).
 		// The USERS column (fed by presence beacons) takes the right edge.
