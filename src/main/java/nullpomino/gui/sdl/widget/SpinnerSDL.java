@@ -35,6 +35,15 @@ public class SpinnerSDL extends WidgetSDL {
 		return value;
 	}
 
+	/**
+	 * Last committed value, without forcing an editor commit. Safe to call every
+	 * frame (e.g. during render) — unlike {@link #getValue()}, it won't clamp or
+	 * overwrite text the user is mid-way through typing.
+	 */
+	public int peekValue() {
+		return value;
+	}
+
 	public void setValue(int v) {
 		value = clamp(v);
 		editor.setText(String.valueOf(value));

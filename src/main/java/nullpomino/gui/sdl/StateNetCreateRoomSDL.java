@@ -7,6 +7,7 @@ package nullpomino.gui.sdl;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Supplier;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -128,9 +129,11 @@ public class StateNetCreateRoomSDL extends BaseStateSDL {
 	private static final class Field {
 		final String label;
 		final WidgetSDL widget;
-		final String unit;   // optional; rendered right of the widget. null/"" = none
-		Field(String label, WidgetSDL widget) { this(label, widget, null); }
-		Field(String label, WidgetSDL widget, String unit) {
+		/** Optional unit annotation, resolved each frame (so it can vary with the value). null = none. */
+		final Supplier<String> unit;
+		Field(String label, WidgetSDL widget) { this(label, widget, (Supplier<String>)null); }
+		Field(String label, WidgetSDL widget, String unit) { this(label, widget, () -> unit); }
+		Field(String label, WidgetSDL widget, Supplier<String> unit) {
 			this.label = label; this.widget = widget; this.unit = unit;
 		}
 	}
@@ -372,7 +375,7 @@ public class StateNetCreateRoomSDL extends BaseStateSDL {
 				new Field("MAX PLAYERS",  maxPlayers),
 				new Field("AUTOSTART",    autoStartSeconds,   "SECONDS"),
 				new Field("HURRYUP",      hurryupSeconds,     "SECONDS"),
-				new Field("HURRYUP",      hurryupInterval,    "INTERVAL"),
+				new Field("HURRYUP",      hurryupInterval,    () -> hurryupInterval.peekValue() == 1 ? "INTERVAL" : "INTERVALS"),
 				new Field("",             tnet2Timer),
 				new Field("",             disableAfterCancel),
 				new Field("",             useMap),
@@ -1025,10 +1028,11 @@ public class StateNetCreateRoomSDL extends BaseStateSDL {
 						NormalFontSDL.COLOR_WHITE);
 			}
 			f.widget.render();
-			if(f.unit != null && f.unit.length() > 0) {
+			String unit = (f.unit != null) ? f.unit.get() : null;
+			if(unit != null && unit.length() > 0) {
 				// Same color as the label text to its left.
 				NormalFontSDL.printFont(f.widget.x + f.widget.w + 8, f.widget.y + 3,
-						NormalFontSDL.safeString(f.unit), NormalFontSDL.COLOR_WHITE);
+						NormalFontSDL.safeString(unit), NormalFontSDL.COLOR_WHITE);
 			}
 		}
 
