@@ -124,11 +124,15 @@ public class StateNetCreateRoomSDL extends BaseStateSDL {
 	/** Top-right "X" close button. */
 	private ButtonSDL closeBtn;
 
-	/** Label rendered to the left of each widget. */
+	/** Label to the left of the widget; optional unit annotation drawn to its right. */
 	private static final class Field {
 		final String label;
 		final WidgetSDL widget;
-		Field(String label, WidgetSDL widget) { this.label = label; this.widget = widget; }
+		final String unit;   // optional; rendered right of the widget. null/"" = none
+		Field(String label, WidgetSDL widget) { this(label, widget, null); }
+		Field(String label, WidgetSDL widget, String unit) {
+			this.label = label; this.widget = widget; this.unit = unit;
+		}
 	}
 
 	/** Per-tab focusable widgets; populated in {@link #enter()}. */
@@ -368,7 +372,7 @@ public class StateNetCreateRoomSDL extends BaseStateSDL {
 				new Field("ROOM NAME",    roomName),
 				new Field("MODE",         modeDropdown),
 				new Field("MAX PLAYERS",  maxPlayers),
-				new Field("AUTOSTART S",  autoStartSeconds),
+				new Field("AUTOSTART",    autoStartSeconds, "SECONDS"),
 				new Field("",             useMap),
 				new Field("MAP SET ID",   mapSetID),
 				new Field("",             ruleLock),
@@ -407,8 +411,8 @@ public class StateNetCreateRoomSDL extends BaseStateSDL {
 			},
 			// MISC
 			{
-				new Field("HURRYUP S",    hurryupSeconds),
-				new Field("HURRYUP INT",  hurryupInterval),
+				new Field("HURRYUP",      hurryupSeconds,   "SECONDS"),
+				new Field("HURRYUP",      hurryupInterval,  "INTERVAL"),
 				new Field("",             tnet2Timer),
 				new Field("",             disableAfterCancel),
 			},
@@ -1026,6 +1030,11 @@ public class StateNetCreateRoomSDL extends BaseStateSDL {
 						NormalFontSDL.COLOR_WHITE);
 			}
 			f.widget.render();
+			if(f.unit != null && f.unit.length() > 0) {
+				// Same color as the label text to its left.
+				NormalFontSDL.printFont(f.widget.x + f.widget.w + 8, f.widget.y + 3,
+						NormalFontSDL.safeString(f.unit), NormalFontSDL.COLOR_WHITE);
+			}
 		}
 
 		// Button row
