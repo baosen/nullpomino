@@ -243,7 +243,7 @@ public class StateNetCreateRoomSDL extends BaseStateSDL {
 
 	/** Read saved defaults (createroom.default*) from lobby config into the given room info. */
 	private void loadDefaultsFromConfig(NetLobbyFrame nl, NetRoomInfo r) {
-		r.maxPlayers = nl.propConfig.getProperty("createroom.defaultMaxPlayers", 6);
+		r.maxPlayers = nl.propConfig.getProperty("createroom.defaultMaxPlayers", 2);
 		r.autoStartSeconds = nl.propConfig.getProperty("createroom.defaultAutoStartSeconds", 15);
 		r.gravity = nl.propConfig.getProperty("createroom.defaultGravity", 1);
 		r.denominator = nl.propConfig.getProperty("createroom.defaultDenominator", 60);
