@@ -121,8 +121,6 @@ public class StateNetCreateRoomSDL extends BaseStateSDL {
 	private ButtonSDL joinBtn;
 	private ButtonSDL watchBtn;
 	private ButtonSDL cancelBtn;
-	/** Rated-mode only: convert the current preset selection into an editable custom room. */
-	private ButtonSDL customRatedBtn;
 	/** Top-right "X" close button. */
 	private ButtonSDL closeBtn;
 
@@ -138,11 +136,7 @@ public class StateNetCreateRoomSDL extends BaseStateSDL {
 
 	private WidgetSDL focused;
 	private boolean detailMode;  // true when viewing an existing room (read-only)
-	private boolean ratedMode;   // true when building a rated room (preset required)
 	private String statusLine = "";
-
-	/** Preset dropdown used in rated mode; shown only on the BASIC tab when rated. */
-	private DropdownSDL presetDropdown;
 
 	/** Last observed mode selector index — drives the {@link #onModeChanged()} edge detector. */
 	private int lastModeIndex;
@@ -171,7 +165,6 @@ public class StateNetCreateRoomSDL extends BaseStateSDL {
 		if(nl.createRoomMode == RoomCreateMode.RATED) {
 			nl.createRoomMode = RoomCreateMode.MULTIPLAYER;
 		}
-		ratedMode = !detailMode && nl.createRoomMode == RoomCreateMode.RATED;
 
 		tabStrip = new TabStripSDL(8, 32, 624, 28, TAB_LABELS);
 		tabStrip.setActiveTab(0);
@@ -179,18 +172,6 @@ public class StateNetCreateRoomSDL extends BaseStateSDL {
 		buildWidgets(nl, source);
 		lastModeIndex = modeSelector.getSelectedIndex();
 		applyDetailModeEnabled();
-
-		if(ratedMode) {
-			// Ask the server for the current style's rated-room presets; the
-			// response arrives asynchronously and will populate presetDropdown.
-			nl.presets.clear();
-			nl.presetsDirty = false;
-			if(nl.netPlayerClient != null && nl.netPlayerClient.isConnected()) {
-				nl.netPlayerClient.send("getpresets\t" + nl.createRoomStyle + "\n");
-			}
-			presetDropdown = new DropdownSDL(216, 76 + 26 * 7, 400, 22);
-			refreshPresetDropdown();
-		}
 
 		setFocus(detailMode ? (WidgetSDL)joinBtn : (WidgetSDL)modeSelector);
 	}
@@ -376,9 +357,6 @@ public class StateNetCreateRoomSDL extends BaseStateSDL {
 		joinBtn   = new ButtonSDL(140, btnY, 124, 32, "JOIN",   new Runnable() { public void run() { submit(true,  false); } });
 		joinBtn.primary = true;
 		watchBtn  = new ButtonSDL(272, btnY, 124, 32, "WATCH",  new Runnable() { public void run() { submit(true,  true); } });
-		// In rated mode, CUSTOM sits where JOIN/WATCH would live in detail mode.
-		customRatedBtn = new ButtonSDL(140, btnY, 160, 32, "CUSTOMIZE",
-				new Runnable() { public void run() { flipRatedToCustom(); } });
 		cancelBtn = new ButtonSDL(508, btnY, 124, 32, "CANCEL", new Runnable() { public void run() { cancel(); } });
 		closeBtn = new ButtonSDL(604, 4, 28, 24, "X", new Runnable() { public void run() { NullpoMinoSDL.goBack(); } });
 
@@ -452,31 +430,9 @@ public class StateNetCreateRoomSDL extends BaseStateSDL {
 		for(Field[] tab : tabFields) for(Field f : tab) f.widget.enabled = editable;
 		// MAX PLAYERS is also disabled when SINGLE_PLAYER is selected (value coerced to 1).
 		if(editable && currentMode() == RoomCreateMode.SINGLE_PLAYER) maxPlayers.enabled = false;
-		// In rated mode the server picks the rule from the preset, so RULE LOCK
-		// has no effect — hide it so it doesn't visually collide with the
-		// PRESET dropdown that shares BASIC row 7.
-		ruleLock.visible = !ratedMode;
-		if(!ruleLock.visible) ruleLock.enabled = false;
 		okBtn.visible = editable;
 		joinBtn.visible = detailMode;
 		watchBtn.visible = detailMode;
-		customRatedBtn.visible = ratedMode && !detailMode;
-	}
-
-	/**
-	 * Switch out of rated-preset mode: keep everything the user has typed so
-	 * far, seed the form from the currently-selected preset, and continue
-	 * editing as a regular custom room.
-	 */
-	private void flipRatedToCustom() {
-		NetLobbyFrame nl = NullpoMinoSDL.netLobby;
-		if(nl == null) return;
-		if(presetDropdown != null && !nl.presets.isEmpty()) {
-			int idx = Math.max(0, presetDropdown.getSelectedIndex());
-			if(idx < nl.presets.size()) applyRoomInfoToForm(nl.presets.get(idx));
-		}
-		modeSelector.setSelectedIndex(RoomCreateMode.MULTIPLAYER.ordinal());
-		onModeChanged();
 	}
 
 	/**
@@ -492,7 +448,6 @@ public class StateNetCreateRoomSDL extends BaseStateSDL {
 		RoomCreateMode prevMode = (lastModeIndex >= 0 && lastModeIndex < RoomCreateMode.values().length)
 				? RoomCreateMode.values()[lastModeIndex] : RoomCreateMode.MULTIPLAYER;
 		nl.createRoomMode = mode;
-		ratedMode = mode == RoomCreateMode.RATED;
 
 		// Rebuild the MODE dropdown against the right list file, preserving
 		// the user's current selection when the list still contains it.
@@ -501,9 +456,7 @@ public class StateNetCreateRoomSDL extends BaseStateSDL {
 		setDropdownSelection(modeDropdown, prevModeName);
 
 		// MAX PLAYERS: coerce to 1 in SINGLE_PLAYER, otherwise unlock to 1..6.
-		// Only touch the value on transitions into/out of SINGLE_PLAYER — MULTI
-		// ↔ RATED swaps leave the spinner alone so values set by the preset
-		// (via applyRoomInfoToForm on the CUSTOMIZE path) survive.
+		// Only touch the value on transitions into/out of SINGLE_PLAYER.
 		if(mode == RoomCreateMode.SINGLE_PLAYER) {
 			if(prevMode != RoomCreateMode.SINGLE_PLAYER) preOnePlayerMaxPlayers = maxPlayers.getValue();
 			maxPlayers.min = 1;
@@ -515,23 +468,6 @@ public class StateNetCreateRoomSDL extends BaseStateSDL {
 			maxPlayers.max = 6;
 			if(prevMode == RoomCreateMode.SINGLE_PLAYER) maxPlayers.setValue(preOnePlayerMaxPlayers);
 			maxPlayers.enabled = true;
-		}
-
-		// Preset dropdown lifecycle: request + show on entering RATED, discard on leaving.
-		if(mode == RoomCreateMode.RATED) {
-			if(presetDropdown == null) {
-				presetDropdown = new DropdownSDL(216, 76 + 26 * 7, 400, 22);
-			}
-			nl.presets.clear();
-			nl.presetsDirty = false;
-			if(nl.netPlayerClient != null && nl.netPlayerClient.isConnected()) {
-				nl.netPlayerClient.send("getpresets\t" + nl.createRoomStyle + "\n");
-			}
-			refreshPresetDropdown();
-		} else {
-			nl.presets.clear();
-			nl.presetsDirty = false;
-			presetDropdown = null;
 		}
 
 		applyDetailModeEnabled();
@@ -585,32 +521,12 @@ public class StateNetCreateRoomSDL extends BaseStateSDL {
 
 	private Field[] activeTab() { return tabFields[tabStrip.getActiveTab()]; }
 
-	/** Rebuild preset dropdown items from {@code nl.presets}. */
-	private void refreshPresetDropdown() {
-		if(presetDropdown == null) return;
-		NetLobbyFrame nl = NullpoMinoSDL.netLobby;
-		if(nl == null) return;
-		String[] labels = new String[nl.presets.size()];
-		for(int i = 0; i < nl.presets.size(); i++) {
-			NetRoomInfo p = nl.presets.get(i);
-			labels[i] = (p.strName != null && p.strName.length() > 0) ? p.strName : ("PRESET " + i);
-		}
-		presetDropdown.setItems(labels);
-		if(labels.length > 0) presetDropdown.setSelectedIndex(0);
-	}
-
 	@Override
 	public void update() {
 		NetLobbyFrame nl = NullpoMinoSDL.netLobby;
 		if(nl == null) { NullpoMinoSDL.enterStateClear(NullpoMinoSDL.STATE_TITLE); return; }
 		nl.pump();
 		MouseInputSDL.mouseInput.update();
-
-		// Rated preset response arrived — repopulate the dropdown.
-		if(ratedMode && nl.presetsDirty) {
-			nl.presetsDirty = false;
-			refreshPresetDropdown();
-		}
 
 		int mx = MouseInputSDL.mouseInput.getMouseX();
 		int my = MouseInputSDL.mouseInput.getMouseY();
@@ -639,21 +555,15 @@ public class StateNetCreateRoomSDL extends BaseStateSDL {
 			if(f.widget.update(mx, my, clicked)) { setFocus(f.widget); clicked = false; }
 		}
 		// Mode-selector edge detector: when BASIC tab's first dropdown flips,
-		// rewire the form for the new mode (list source, MAX PLAYERS lock,
-		// preset visibility).
+		// rewire the form for the new mode (list source, MAX PLAYERS lock).
 		if(!detailMode && modeSelector.getSelectedIndex() != lastModeIndex) {
 			onModeChanged();
-		}
-		// Rated mode: the preset dropdown lives on the BASIC tab below the form.
-		if(ratedMode && presetDropdown != null && tabStrip.getActiveTab() == 0) {
-			if(presetDropdown.update(mx, my, clicked)) { setFocus(presetDropdown); clicked = false; }
 		}
 
 		// Button row always visible.
 		if(okBtn.update(mx, my, clicked))            clicked = false;
 		if(joinBtn.update(mx, my, clicked))          clicked = false;
 		if(watchBtn.update(mx, my, clicked))         clicked = false;
-		if(customRatedBtn.update(mx, my, clicked))   clicked = false;
 		cancelBtn.update(mx, my, clicked);
 		closeBtn.update(mx, my, clicked);
 
@@ -723,7 +633,6 @@ public class StateNetCreateRoomSDL extends BaseStateSDL {
 		if(okBtn.visible) list.add(okBtn);
 		if(joinBtn.visible) list.add(joinBtn);
 		if(watchBtn.visible) list.add(watchBtn);
-		if(customRatedBtn.visible) list.add(customRatedBtn);
 		list.add(cancelBtn);
 
 		int idx = list.indexOf(focused);
@@ -741,7 +650,6 @@ public class StateNetCreateRoomSDL extends BaseStateSDL {
 		if(okBtn.visible) row.add(okBtn);
 		if(joinBtn.visible) row.add(joinBtn);
 		if(watchBtn.visible) row.add(watchBtn);
-		if(customRatedBtn.visible) row.add(customRatedBtn);
 		row.add(cancelBtn);
 		for(int i = 0; i < row.size(); i++) {
 			if(focused == row.get(i)) {
@@ -777,16 +685,6 @@ public class StateNetCreateRoomSDL extends BaseStateSDL {
 		String msg;
 		RoomCreateMode mode = currentMode();
 		switch(mode) {
-			case RATED: {
-				// ratedroomcreate\t<name>\t<maxPlayers>\t<presetIndex>\t<mode>
-				if(r.strName == null || r.strName.trim().length() == 0) { statusLine = "ROOM NAME REQUIRED"; return; }
-				if(presetDropdown == null || nl.presets.isEmpty()) { statusLine = "NO PRESETS AVAILABLE"; return; }
-				int presetIdx = Math.max(0, presetDropdown.getSelectedIndex());
-				String name = NetUtil.urlEncode(r.strName);
-				String modeName = NetUtil.urlEncode(r.strMode == null ? "" : r.strMode);
-				msg = "ratedroomcreate\t" + name + "\t" + r.maxPlayers + "\t" + presetIdx + "\t" + modeName + "\n";
-				break;
-			}
 			case SINGLE_PLAYER: {
 				// singleroomcreate\t<name>\t<mode> — server fills the rest from the player's rule.
 				if(r.strName == null || r.strName.trim().length() == 0) { statusLine = "ROOM NAME REQUIRED"; return; }
@@ -954,11 +852,9 @@ public class StateNetCreateRoomSDL extends BaseStateSDL {
 
 	/**
 	 * Persist the last-used mode pick under a mode-type-specific key so the
-	 * dropdown preselects it next session. Rated rooms don't save — their
-	 * mode is effectively always the rated rule's mode.
+	 * dropdown preselects it next session.
 	 */
 	private void savePreviousMode(NetLobbyFrame nl) {
-		if(currentMode() == RoomCreateMode.RATED) return;
 		String mode = modeDropdown.getSelectedItem();
 		if(mode == null) mode = "";
 		String key = (currentMode() == RoomCreateMode.SINGLE_PLAYER)
@@ -1115,7 +1011,6 @@ public class StateNetCreateRoomSDL extends BaseStateSDL {
 		String title;
 		if(detailMode) title = "ROOM DETAIL";
 		else switch(currentMode()) {
-			case RATED:        title = "CREATE RATED ROOM"; break;
 			case SINGLE_PLAYER: title = "CREATE 1P ROOM";   break;
 			default:           title = "CREATE ROOM";       break;
 		}
@@ -1133,22 +1028,10 @@ public class StateNetCreateRoomSDL extends BaseStateSDL {
 			f.widget.render();
 		}
 
-		// Rated mode: show the preset dropdown + loading status on the BASIC tab.
-		if(ratedMode && tabStrip.getActiveTab() == 0 && presetDropdown != null) {
-			NormalFontSDL.printFont(16, 76 + 26 * 7 + 3, "PRESET", NormalFontSDL.COLOR_WHITE);
-			if(nl.presets.isEmpty()) {
-				NormalFontSDL.printFont(216, 76 + 26 * 7 + 3,
-						"WAITING FOR PRESETS...", NormalFontSDL.COLOR_YELLOW);
-			} else {
-				presetDropdown.render();
-			}
-		}
-
 		// Button row
 		okBtn.render();
 		joinBtn.render();
 		watchBtn.render();
-		customRatedBtn.render();
 		cancelBtn.render();
 		closeBtn.render();
 
@@ -1158,10 +1041,6 @@ public class StateNetCreateRoomSDL extends BaseStateSDL {
 		for(Field f : tab) {
 			if(f.widget instanceof DropdownSDL) ((DropdownSDL)f.widget).renderOverlay(mx, my);
 		}
-		if(ratedMode && tabStrip.getActiveTab() == 0 && presetDropdown != null && !nl.presets.isEmpty()) {
-			presetDropdown.renderOverlay(mx, my);
-		}
-
 		if(statusLine.length() > 0) {
 			NormalFontSDL.printFont(16, 466, NormalFontSDL.safeString(statusLine), NormalFontSDL.COLOR_RED);
 		}
