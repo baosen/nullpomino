@@ -14,9 +14,10 @@ import nullpomino.gui.sdl.binding.SdlHandles.SdlWindow;
 
 /**
  * TeaVM/Canvas2D implementation of the neutral {@link SDL3} interface. Mirrors
- * the desktop web backend method-for-method; joystick, screenshot and real
- * fullscreen are no-ops (all null-guarded in the frontend). Clipboard uses an
- * in-app fallback plus a best-effort async write to the system clipboard.
+ * the desktop web backend method-for-method; joystick and screenshot are no-ops
+ * (all null-guarded in the frontend). Fullscreen drives the browser Fullscreen
+ * API via {@link CanvasWindow}. Clipboard uses an in-app fallback plus a
+ * best-effort async write to the system clipboard.
  */
 final class TeaVMSDL3 implements SDL3 {
 
@@ -46,6 +47,7 @@ final class TeaVMSDL3 implements SDL3 {
 	}
 
 	@Override public byte SDL_SetWindowFullscreen(SdlWindow w, int fullscreen) {
+		if (w instanceof CanvasWindow) ((CanvasWindow) w).setFullscreen(fullscreen != 0);
 		return 1;
 	}
 

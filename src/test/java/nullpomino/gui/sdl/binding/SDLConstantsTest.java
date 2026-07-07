@@ -134,4 +134,20 @@ class SDLConstantsTest {
 		assertEquals(3, SDLConstants.SDL_LOGICAL_PRESENTATION_OVERSCAN);
 		assertEquals(4, SDLConstants.SDL_LOGICAL_PRESENTATION_INTEGER_SCALE);
 	}
+
+	@Test
+	void fullscreenWindowEventsMatchSdl3StableValues() {
+		// Must equal the real SDL3-stable SDL_EventType values so the desktop
+		// (JNA) path, which forwards native event.type verbatim, decodes them
+		// correctly. Distinctness guards against a value collision that would
+		// misfire the guarded resync branches in processEvent().
+		assertEquals(0x217, SDLConstants.SDL_EVENT_WINDOW_ENTER_FULLSCREEN);
+		assertEquals(0x218, SDLConstants.SDL_EVENT_WINDOW_LEAVE_FULLSCREEN);
+		assertNotEquals(SDLConstants.SDL_EVENT_WINDOW_ENTER_FULLSCREEN,
+				SDLConstants.SDL_EVENT_WINDOW_LEAVE_FULLSCREEN);
+		assertNotEquals(SDLConstants.SDL_EVENT_WINDOW_ENTER_FULLSCREEN,
+				SDLConstants.SDL_EVENT_WINDOW_CLOSE_REQUESTED);
+		assertNotEquals(SDLConstants.SDL_EVENT_WINDOW_LEAVE_FULLSCREEN,
+				SDLConstants.SDL_EVENT_KEY_DOWN);
+	}
 }

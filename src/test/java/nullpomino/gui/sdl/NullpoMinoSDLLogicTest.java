@@ -15,6 +15,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import nullpomino.gui.sdl.binding.SDLConstants;
+import nullpomino.util.CustomProperties;
 
 /**
  * Pins the navigation and state management logic in
@@ -35,6 +36,8 @@ class NullpoMinoSDLLogicTest {
 	private Deque<Integer> originalForward;
 	private GameKeySDL[] originalGameKey;
 	private boolean[] originalKeyPressed;
+	private CustomProperties originalPropConfig;
+	private boolean originalFullscreen;
 
 	@BeforeEach
 	void setUp() throws Exception {
@@ -45,6 +48,9 @@ class NullpoMinoSDLLogicTest {
 		originalForward = snapshot("forwardStack");
 		originalGameKey = GameKeySDL.gamekey;
 		originalKeyPressed = NullpoMinoSDL.keyPressedState;
+		originalPropConfig = NullpoMinoSDL.propConfig;
+		originalFullscreen = NullpoMinoSDL.fullscreen;
+		NullpoMinoSDL.propConfig = new CustomProperties();
 
 		// Set up stub states so enterState / goBack / goForward work.
 		BaseStateSDL[] stubs = new BaseStateSDL[NullpoMinoSDL.STATE_MAX];
@@ -70,6 +76,8 @@ class NullpoMinoSDLLogicTest {
 		restore("forwardStack", originalForward);
 		GameKeySDL.gamekey = originalGameKey;
 		NullpoMinoSDL.keyPressedState = originalKeyPressed;
+		NullpoMinoSDL.propConfig = originalPropConfig;
+		NullpoMinoSDL.fullscreen = originalFullscreen;
 	}
 
 	/* ---------- hasCurrentState ---------- */
@@ -330,6 +338,51 @@ class NullpoMinoSDLLogicTest {
 	void isEscapePushedThisFrameHandlesEmptyEventList() {
 		NullpoMinoSDL.frameKeyEvents.clear();
 		assertFalse(NullpoMinoSDL.isEscapePushedThisFrame());
+	}
+
+	/* ---------- syncFullscreenFlag (external fullscreen resync, e.g. Escape) ---------- */
+
+	@Test
+	void syncFullscreenFlagEntersAndPersistsWhenPreviouslyWindowed() {
+		NullpoMinoSDL.fullscreen = false;
+
+		assertTrue(NullpoMinoSDL.syncFullscreenFlag(true), "flag changed windowed->fullscreen");
+		assertTrue(NullpoMinoSDL.fullscreen);
+		assertTrue(NullpoMinoSDL.propConfig.getProperty("option.fullscreen", false),
+				"the new fullscreen state must be persisted");
+	}
+
+	@Test
+	void syncFullscreenFlagLeavesAndPersistsWhenPreviouslyFullscreen() {
+		NullpoMinoSDL.fullscreen = true;
+
+		assertTrue(NullpoMinoSDL.syncFullscreenFlag(false), "flag changed fullscreen->windowed");
+		assertFalse(NullpoMinoSDL.fullscreen);
+		assertFalse(NullpoMinoSDL.propConfig.getProperty("option.fullscreen", true),
+				"the new windowed state must be persisted (covers browser Escape)");
+	}
+
+	@Test
+	void syncFullscreenFlagIsNoOpWhenAlreadyFullscreen() {
+		// The game's own toggleFullscreen() sets the flag before SDL emits the
+		// enter event, and Chrome fires both fullscreenchange + webkitfullscreenchange
+		// for a single change — the duplicate must neither flip nor re-persist.
+		NullpoMinoSDL.fullscreen = true;
+
+		assertFalse(NullpoMinoSDL.syncFullscreenFlag(true), "no change when already fullscreen");
+		assertTrue(NullpoMinoSDL.fullscreen);
+		assertFalse(NullpoMinoSDL.propConfig.containsKey("option.fullscreen"),
+				"a guarded no-op must not touch the config");
+	}
+
+	@Test
+	void syncFullscreenFlagIsNoOpWhenAlreadyWindowed() {
+		NullpoMinoSDL.fullscreen = false;
+
+		assertFalse(NullpoMinoSDL.syncFullscreenFlag(false), "no change when already windowed");
+		assertFalse(NullpoMinoSDL.fullscreen);
+		assertFalse(NullpoMinoSDL.propConfig.containsKey("option.fullscreen"),
+				"a guarded no-op must not touch the config");
 	}
 
 	/* ---------- Private helpers ---------- */

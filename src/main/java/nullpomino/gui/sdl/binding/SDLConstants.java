@@ -39,6 +39,8 @@ public final class SDLConstants {
 	public static final int SDL_EVENT_WINDOW_SHOWN          = 0x202;
 	public static final int SDL_EVENT_WINDOW_RESIZED        = 0x206;
 	public static final int SDL_EVENT_WINDOW_CLOSE_REQUESTED = 0x212;
+	public static final int SDL_EVENT_WINDOW_ENTER_FULLSCREEN = 0x217;
+	public static final int SDL_EVENT_WINDOW_LEAVE_FULLSCREEN = 0x218;
 	public static final int SDL_EVENT_KEY_DOWN              = 0x300;
 	public static final int SDL_EVENT_KEY_UP                = 0x301;
 	public static final int SDL_EVENT_TEXT_EDITING          = 0x302;

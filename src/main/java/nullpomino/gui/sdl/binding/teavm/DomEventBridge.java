@@ -4,7 +4,9 @@ import java.util.ArrayDeque;
 import java.util.Deque;
 import java.util.Set;
 
+import org.teavm.jso.JSBody;
 import org.teavm.jso.browser.Window;
+import org.teavm.jso.dom.events.Event;
 import org.teavm.jso.dom.events.EventListener;
 import org.teavm.jso.dom.events.KeyboardEvent;
 import org.teavm.jso.dom.events.MouseEvent;
@@ -75,6 +77,19 @@ final class DomEventBridge {
 		document.addEventListener("keydown", keyDown);
 		document.addEventListener("keyup", keyUp);
 
+		// The browser can leave fullscreen on its own (e.g. Escape), which we can't
+		// prevent. Feed the real state back through the SDL queue so the game's
+		// fullscreen flag stays in sync.
+		EventListener<Event> fsChange = e -> {
+			SDLStructs.SDL_Event ev = new SDLStructs.SDL_Event();
+			ev.type = isBrowserFullscreen()
+					? SDLConstants.SDL_EVENT_WINDOW_ENTER_FULLSCREEN
+					: SDLConstants.SDL_EVENT_WINDOW_LEAVE_FULLSCREEN;
+			queue.add(ev);
+		};
+		document.addEventListener("fullscreenchange", fsChange);
+		document.addEventListener("webkitfullscreenchange", fsChange);
+
 		EventListener<MouseEvent> move = e -> {
 			mouseX = e.getOffsetX();
 			mouseY = e.getOffsetY();
@@ -112,6 +127,10 @@ final class DomEventBridge {
 	int mouseButtonMask() {
 		return mouseButtons;
 	}
+
+	@JSBody(params = {}, script =
+		"return !!(document.fullscreenElement || document.webkitFullscreenElement);")
+	private static native boolean isBrowserFullscreen();
 
 	private static int maskFor(short domButton) {
 		switch (domButton) {

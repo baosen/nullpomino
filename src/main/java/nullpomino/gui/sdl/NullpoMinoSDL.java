@@ -578,6 +578,22 @@ public class NullpoMinoSDL {
 	}
 
 	/**
+	 * Resync the fullscreen flag and config to a state the OS/browser reported
+	 * outside our control (e.g. the user pressing Escape to leave browser
+	 * fullscreen). Guarded so it is a no-op when the flag already matches — which
+	 * is the case for the game's own {@link #toggleFullscreen()} (it sets the flag
+	 * before SDL emits the enter/leave event) and on the desktop path. Returns
+	 * true when the flag actually changed, so the caller persists only genuine
+	 * external changes (and a duplicate browser event is a harmless no-op).
+	 */
+	static boolean syncFullscreenFlag(boolean nowFullscreen) {
+		if(fullscreen == nowFullscreen) return false;
+		fullscreen = nowFullscreen;
+		propConfig.setProperty("option.fullscreen", nowFullscreen);
+		return true;
+	}
+
+	/**
 	 * Map window coordinates to logical 640x480 coordinates.
 	 * Returns logical X, or -1 if mapping fails.
 	 */
@@ -1071,6 +1087,12 @@ public class NullpoMinoSDL {
 				imeCompositionLength = event.getTextEditingLength();
 			} else if(type == SDLConstants.SDL_EVENT_MOUSE_WHEEL) {
 				mouseWheelDelta += event.getMouseWheelY();
+			} else if(type == SDLConstants.SDL_EVENT_WINDOW_ENTER_FULLSCREEN) {
+				// Resync when fullscreen changes outside our control (e.g. the web
+				// backend reporting a browser-driven change). Persist only real changes.
+				if(syncFullscreenFlag(true)) saveConfig();
+			} else if(type == SDLConstants.SDL_EVENT_WINDOW_LEAVE_FULLSCREEN) {
+				if(syncFullscreenFlag(false)) saveConfig();
 			}
 			// Window resize events are handled automatically by SDL_SetRenderLogicalPresentation
 		}
