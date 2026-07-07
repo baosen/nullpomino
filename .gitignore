@@ -54,3 +54,4 @@ log/
 # JaCoCo offline-instrumentation execution data (emitted when the bazel-built
 # instrumented classes are run directly, e.g. local single-test verification)
 /jacoco.exec
+.tokensave/
