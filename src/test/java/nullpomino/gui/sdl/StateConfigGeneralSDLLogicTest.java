@@ -4,10 +4,18 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import java.lang.reflect.Proxy;
+
 import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import nullpomino.gui.sdl.binding.SDL3;
+import nullpomino.gui.sdl.binding.SDL3Image;
+import nullpomino.gui.sdl.binding.SDL3TTF;
+import nullpomino.gui.sdl.binding.SDL3Mixer;
+import nullpomino.gui.sdl.binding.SdlBackend;
 import nullpomino.util.CustomProperties;
 
 /**
@@ -24,6 +32,35 @@ class StateConfigGeneralSDLLogicTest {
 	private StateConfigGeneralSDL state;
 	private CustomProperties originalPropConfig;
 	private CustomProperties originalPropGlobal;
+
+	/**
+	 * The fullscreen-toggle path calls {@code SDL3.INSTANCE}, whose default
+	 * backend loads the native SDL3 library. Inject a no-op stub backend so
+	 * the test is hermetic (no libSDL3 on CI runners).
+	 */
+	@BeforeAll
+	static void stubSdlBackend() {
+		SdlBackend.set(new SdlBackend.Backend() {
+			public SDL3 sdl3() { return stub(SDL3.class); }
+			public SDL3Image image() { return stub(SDL3Image.class); }
+			public SDL3TTF ttf() { return stub(SDL3TTF.class); }
+			public SDL3Mixer mixerOrNull() { return null; }
+		});
+	}
+
+	private static <T> T stub(Class<T> iface) {
+		return iface.cast(Proxy.newProxyInstance(iface.getClassLoader(), new Class<?>[] {iface},
+			(proxy, method, args) -> {
+				Class<?> rt = method.getReturnType();
+				if(rt == byte.class) return (byte) 0;
+				if(rt == int.class) return 0;
+				if(rt == long.class) return 0L;
+				if(rt == float.class) return 0f;
+				if(rt == double.class) return 0d;
+				if(rt == boolean.class) return false;
+				return null;
+			}));
+	}
 
 	@BeforeEach
 	void setUp() {

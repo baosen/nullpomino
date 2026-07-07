@@ -39,12 +39,6 @@ PKG_DEPS = {
 
 FILE_DEPS = {
     "nullpomino/game/mode/ModeReplayCharacterisationTest.java": [":testutil"],
-    # Reaches NullpoMinoSDL.toggleFullscreen, whose SDL3.INSTANCE static init
-    # resolves the JNA backend by reflection.
-    "nullpomino/gui/sdl/StateConfigGeneralSDLLogicTest.java": [
-        "//src/main/java:sdl_binding_jna",
-        "@maven//:net_java_dev_jna_jna",
-    ],
 }
 
 # One java_test per test file: parallel, individually runnable, and cached at
