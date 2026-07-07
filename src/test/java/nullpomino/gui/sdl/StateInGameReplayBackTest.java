@@ -103,6 +103,40 @@ class StateInGameReplayBackTest {
 		assertFalse(StateInGameSDL.shouldPollReplayBack(gm, false));
 	}
 
+	// ---- shouldShowReplayTimeline: same gate, but RESULT is allowed ----
+
+	@Test
+	void timelineShownDuringPlaybackAndOnResult() {
+		// The timeline stays usable on the result screen so a finished
+		// replay can be scrubbed back without RETRYing; the back button
+		// (shouldPollReplayBack) must still yield to RESULT's cancel path.
+		FakeGameManager gm = new FakeGameManager();
+		gm.replayMode = true;
+		gm.engine = engines(gm, GameEngine.Status.MOVE);
+		assertTrue(StateInGameSDL.shouldShowReplayTimeline(gm, false));
+
+		gm.engine = engines(gm, GameEngine.Status.RESULT);
+		assertTrue(StateInGameSDL.shouldShowReplayTimeline(gm, false));
+		assertFalse(StateInGameSDL.shouldPollReplayBack(gm, false));
+	}
+
+	@Test
+	void timelineHiddenOnSettingPauseRerecordAndNonReplay() {
+		FakeGameManager gm = new FakeGameManager();
+		gm.replayMode = true;
+		gm.engine = engines(gm, GameEngine.Status.SETTING);
+		assertFalse(StateInGameSDL.shouldShowReplayTimeline(gm, false));
+
+		gm.engine = engines(gm, GameEngine.Status.MOVE);
+		assertFalse(StateInGameSDL.shouldShowReplayTimeline(gm, /*pause=*/ true));
+		gm.replayRerecord = true;
+		assertFalse(StateInGameSDL.shouldShowReplayTimeline(gm, false));
+		gm.replayRerecord = false;
+		gm.replayMode = false;
+		assertFalse(StateInGameSDL.shouldShowReplayTimeline(gm, false));
+		assertFalse(StateInGameSDL.shouldShowReplayTimeline(null, false));
+	}
+
 	private static GameEngine[] engines(GameManager owner, GameEngine.Status stat) {
 		// engine[0] gets the requested status; helper keeps each test focused
 		// on the predicate rather than the engine init dance.

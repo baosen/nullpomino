@@ -88,10 +88,19 @@ public class StateInGameSDL extends BaseStateSDL {
 
 	/** Timeline bar geometry, recomputed each frame from the field position. */
 	private int barX, barW;
-	private static final int BAR_Y = 444, BAR_H = 8;
-	/** Taller hit zone than the 8px track so the bar is easy to grab. */
-	private static final int BAR_HIT_TOP = 440, BAR_HIT_BOTTOM = 456;
+	/**
+	 * One bottom row: transport buttons on the left (at the field's X, below
+	 * the mode's feedback text like "DOUBLE"), the bar to their right, and a
+	 * mm:ss.cc timestamp at the far right. Bar is vertically centered on the
+	 * buttons.
+	 */
 	private static final int BTN_W = 28, BTN_H = 20, BTN_GAP = 8, BTN_Y = 458;
+	private static final int BAR_Y = BTN_Y + (BTN_H - 8) / 2, BAR_H = 8;
+	/** Taller hit zone than the 8px track so the bar is easy to grab. */
+	private static final int BAR_HIT_TOP = BTN_Y - 2, BAR_HIT_BOTTOM = BTN_Y + BTN_H + 2;
+	/** "00:00.00" is 8 bitmap glyphs of 16px. */
+	private static final int TS_W = 8 * 16;
+	private static final int TS_X = NullpoMinoSDL.LOGICAL_WIDTH - TS_W - 4;
 
 	/*
 	 * Called when entering this state
@@ -341,7 +350,7 @@ public class StateInGameSDL extends BaseStateSDL {
 					closeBtn.render();
 				}
 
-				if(shouldPollReplayBack(gameManager, pause) && replayTotalFrames() > 0) {
+				if(shouldShowReplayTimeline(gameManager, pause) && replayTotalFrames() > 0) {
 					renderReplayTimeline();
 				}
 			}
@@ -656,6 +665,12 @@ public class StateInGameSDL extends BaseStateSDL {
 					MouseInputSDL.mouseInput.isMouseClicked());
 			replayMouseBack = closeClicked || MouseInputSDL.mouseInput.isMouseBackClicked();
 			updateReplayTimeline();
+		} else if(shouldShowReplayTimeline(gameManager, pause)) {
+			// An engine is on RESULT: its mouse handler above already ran
+			// mouseInput.update() this frame (a second call would eat the
+			// click edge), so only poll the timeline here. Scrubbing back
+			// from the result screen re-simulates into live playback.
+			updateReplayTimeline();
 		}
 
 		if(gameManager != null) {
@@ -688,13 +703,32 @@ public class StateInGameSDL extends BaseStateSDL {
 	 * directly testable without driving the rest of {@code update()}.
 	 */
 	static boolean shouldPollReplayBack(GameManager gameManager, boolean pause) {
+		if(!shouldShowReplayTimeline(gameManager, pause)) return false;
+		for(int i = 0; i < gameManager.getPlayers(); i++) {
+			GameEngine engine = gameManager.engine[i];
+			if(engine != null && engine.stat == GameEngine.Status.RESULT) {
+				return false;
+			}
+		}
+		return true;
+	}
+
+	/**
+	 * Whether the replay timeline (scrub bar + transport buttons) should be
+	 * shown and polled. Wider than {@link #shouldPollReplayBack}: RESULT is
+	 * allowed so a finished replay can be scrubbed back without RETRYing —
+	 * the result screen's own mouse handling (RETRY/END row at
+	 * offsetY+340..356) doesn't reach the bottom timeline row. SETTING stays
+	 * excluded; its click-to-confirm would fight the bar.
+	 */
+	static boolean shouldShowReplayTimeline(GameManager gameManager, boolean pause) {
 		if(gameManager == null) return false;
 		if(!gameManager.replayMode) return false;
 		if(gameManager.replayRerecord) return false;
 		if(pause) return false;
 		for(int i = 0; i < gameManager.getPlayers(); i++) {
 			GameEngine engine = gameManager.engine[i];
-			if(engine != null && (engine.stat == GameEngine.Status.RESULT || engine.stat == GameEngine.Status.SETTING)) {
+			if(engine != null && engine.stat == GameEngine.Status.SETTING) {
 				return false;
 			}
 		}
@@ -858,18 +892,16 @@ public class StateInGameSDL extends BaseStateSDL {
 	}
 
 	/**
-	 * Position the timeline bar under the playboard (x from the field, y
-	 * anchored to the bottom of the 640x480 logical screen) and center the
-	 * three transport buttons below it.
+	 * Position the bottom row: buttons start at the field's X, the bar fills
+	 * the space between the buttons and the right-edge timestamp.
 	 */
 	private void layoutReplayTimeline() {
 		GameEngine eng = gameManager.engine[0];
-		barX = gameManager.receiver.getFieldDisplayPositionX(eng, 0) + 4;
-		barW = eng.fieldWidth * gameManager.receiver.getBlockGraphicsHeight(eng, 0);
-		int rowW = BTN_W * 3 + BTN_GAP * 2;
-		stepBackBtn.x = barX + (barW - rowW) / 2;
+		stepBackBtn.x = gameManager.receiver.getFieldDisplayPositionX(eng, 0) + 4;
 		playPauseBtn.x = stepBackBtn.x + BTN_W + BTN_GAP;
 		stepFwdBtn.x = playPauseBtn.x + BTN_W + BTN_GAP;
+		barX = stepFwdBtn.x + BTN_W + 12;
+		barW = TS_X - 8 - barX;
 	}
 
 	/** Draw the timeline track, progress fill, drag handle, and transport buttons. */
@@ -885,6 +917,19 @@ public class StateInGameSDL extends BaseStateSDL {
 		WidgetSDL.drawRect(barX, BAR_Y, barW, BAR_H, 180, 180, 180, 255);
 		int handleX = barX + Math.max(0, Math.min(fillW - 2, barW - 4));
 		WidgetSDL.fillRect(handleX, BAR_Y - 2, 4, BAR_H + 4, 255, 255, 255, 255);
+
+		// Playback position as mm:ss.cc at the far right of the row. Follows
+		// the drag preview while scrubbing, like the fill does.
+		NormalFontSDL.printFont(TS_X, BAR_Y - 4, GeneralUtil.getTime(cur), NormalFontSDL.COLOR_WHITE);
+
+		// While dragging, also show the raw frame number the release would
+		// seek to, floating above the handle (clamped to the screen edges).
+		if(scrubbing) {
+			String frameStr = String.valueOf(scrubTarget);
+			int frameW = frameStr.length() * 16;
+			int frameX = Math.max(0, Math.min(handleX + 2 - frameW / 2, NullpoMinoSDL.LOGICAL_WIDTH - frameW));
+			NormalFontSDL.printFont(frameX, BAR_Y - 20, frameStr, NormalFontSDL.COLOR_CYAN);
+		}
 
 		stepBackBtn.render();
 		playPauseBtn.render();
