@@ -27,11 +27,12 @@ import org.junit.jupiter.api.Test;
 class StateNetCreateRoomSDLTest {
 
 	@Test
-	void tabLabelsAreSixOrderedSections() throws Exception {
+	void tabLabelsAreFiveOrderedSections() throws Exception {
+		// MISC was folded into the BASIC tab, leaving five sections.
 		Field f = StateNetCreateRoomSDL.class.getDeclaredField("TAB_LABELS");
 		f.setAccessible(true);
 		assertArrayEquals(
-				new String[] {"BASIC", "SPEED", "BONUS", "GARBAGE", "MISC", "PRESET"},
+				new String[] {"BASIC", "SPEED", "BONUS", "GARBAGE", "PRESET"},
 				(String[]) f.get(null));
 	}
 
