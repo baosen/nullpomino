@@ -7,9 +7,9 @@ config/rule/StandardFriends.rul
 config/rule/StandardJ.rul
 
 :MARATHON+
-config/rule/StandardFriends.rul
 config/rule/Standard.rul
 config/rule/StandardFastB.rul
+config/rule/StandardFriends.rul
 config/rule/StandardJ.rul
 
 :EXTREME
