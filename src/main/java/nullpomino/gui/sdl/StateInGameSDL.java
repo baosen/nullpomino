@@ -974,12 +974,17 @@ public class StateInGameSDL extends BaseStateSDL {
 		// Wheel over the bar steps the paused playback one frame per tick
 		// (up = forward). Dragging is too coarse for single frames on long
 		// replays (one pixel covers total/barW frames), so this is the fine
-		// control.
+		// control. Wheel over the buttons instead adjusts the replay speed,
+		// mirroring the LEFT/RIGHT arrow keys' fastforward control (0..98).
 		int wheel = (int) NullpoMinoSDL.mouseWheelDelta;
 		boolean overBar = mx >= barX && mx < barX + barW && my >= BAR_HIT_TOP && my < BAR_HIT_BOTTOM;
+		boolean overButtons = mx >= stepBackBtn.x && mx < stepFwdBtn.x + BTN_W
+				&& my >= BAR_HIT_TOP && my < BAR_HIT_BOTTOM;
 		if(wheel != 0 && overBar) {
 			replayPaused = true;
 			seekReplay(gameManager.engine[0].replayTimer + wheel);
+		} else if(wheel != 0 && overButtons) {
+			fastforward = Math.max(0, Math.min(98, fastforward + wheel));
 		}
 
 		// Drag-to-scrub: a press inside the hit zone grabs the handle and the
