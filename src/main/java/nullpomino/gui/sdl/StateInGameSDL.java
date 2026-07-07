@@ -90,17 +90,18 @@ public class StateInGameSDL extends BaseStateSDL {
 	private int barX, barW;
 	/**
 	 * One bottom row: transport buttons on the left (at the field's X, below
-	 * the mode's feedback text like "DOUBLE"), the bar to their right, and a
-	 * mm:ss.cc timestamp at the far right. Bar is vertically centered on the
+	 * the mode's feedback text like "DOUBLE"), the bar to their right, and
+	 * the current frame number at the far right (the mode already shows the
+	 * clock as TIME in the score area). Bar is vertically centered on the
 	 * buttons.
 	 */
 	private static final int BTN_W = 28, BTN_H = 20, BTN_GAP = 8, BTN_Y = 458;
 	private static final int BAR_Y = BTN_Y + (BTN_H - 8) / 2, BAR_H = 8;
 	/** Taller hit zone than the 8px track so the bar is easy to grab. */
 	private static final int BAR_HIT_TOP = BTN_Y - 2, BAR_HIT_BOTTOM = BTN_Y + BTN_H + 2;
-	/** "00:00.00" is 8 bitmap glyphs of 16px. */
-	private static final int TS_W = 8 * 16;
-	private static final int TS_X = NullpoMinoSDL.LOGICAL_WIDTH - TS_W - 4;
+	/** Frame-count readout: 8 bitmap digits of 16px covers any replay length. */
+	private static final int READOUT_W = 8 * 16;
+	private static final int READOUT_X = NullpoMinoSDL.LOGICAL_WIDTH - READOUT_W - 4;
 
 	/*
 	 * Called when entering this state
@@ -612,8 +613,11 @@ public class StateInGameSDL extends BaseStateSDL {
 			}
 		}
 
-		// Execute game loops
-		if((!pause && !replayPaused) || (GameKeySDL.gamekey[0].isPushKey(GameKeySDL.BUTTON_FRAMESTEP) && enableframestep)) {
+		// Execute game loops. Suspended while scrubbing: the drag's live seek
+		// is the only thing moving the engine, otherwise playback would
+		// advance past the handle every frame and force a fresh
+		// reset+re-simulate on each tick.
+		if((!pause && !replayPaused && !scrubbing) || (GameKeySDL.gamekey[0].isPushKey(GameKeySDL.BUTTON_FRAMESTEP) && enableframestep)) {
 			if(gameManager != null) {
 				for(int i = 0; i < Math.min(gameManager.getPlayers(), 2); i++) {
 					if(!gameManager.replayMode || gameManager.replayRerecord || !gameManager.engine[i].gameActive) {
@@ -901,7 +905,7 @@ public class StateInGameSDL extends BaseStateSDL {
 		playPauseBtn.x = stepBackBtn.x + BTN_W + BTN_GAP;
 		stepFwdBtn.x = playPauseBtn.x + BTN_W + BTN_GAP;
 		barX = stepFwdBtn.x + BTN_W + 12;
-		barW = TS_X - 8 - barX;
+		barW = READOUT_X - 8 - barX;
 	}
 
 	/** Draw the timeline track, progress fill, drag handle, and transport buttons. */
@@ -918,18 +922,9 @@ public class StateInGameSDL extends BaseStateSDL {
 		int handleX = barX + Math.max(0, Math.min(fillW - 2, barW - 4));
 		WidgetSDL.fillRect(handleX, BAR_Y - 2, 4, BAR_H + 4, 255, 255, 255, 255);
 
-		// Playback position as mm:ss.cc at the far right of the row. Follows
-		// the drag preview while scrubbing, like the fill does.
-		NormalFontSDL.printFont(TS_X, BAR_Y - 4, GeneralUtil.getTime(cur), NormalFontSDL.COLOR_WHITE);
-
-		// While dragging, also show the raw frame number the release would
-		// seek to, floating above the handle (clamped to the screen edges).
-		if(scrubbing) {
-			String frameStr = String.valueOf(scrubTarget);
-			int frameW = frameStr.length() * 16;
-			int frameX = Math.max(0, Math.min(handleX + 2 - frameW / 2, NullpoMinoSDL.LOGICAL_WIDTH - frameW));
-			NormalFontSDL.printFont(frameX, BAR_Y - 20, frameStr, NormalFontSDL.COLOR_CYAN);
-		}
+		// Playback position as a raw frame count at the far right of the row.
+		// Follows the drag position while scrubbing, like the fill does.
+		NormalFontSDL.printFont(READOUT_X, BAR_Y - 4, String.valueOf(cur), NormalFontSDL.COLOR_WHITE);
 
 		stepBackBtn.render();
 		playPauseBtn.render();
@@ -977,20 +972,35 @@ public class StateInGameSDL extends BaseStateSDL {
 			gameManager.updateAll();
 		}
 
-		// Drag-to-scrub: a press inside the hit zone grabs the handle, the
-		// preview follows the pointer while held, and the seek commits on
-		// release. A plain click is a one-frame drag, so click-to-jump falls
-		// out of the same path.
-		if(clicked && mx >= barX && mx < barX + barW && my >= BAR_HIT_TOP && my < BAR_HIT_BOTTOM) {
+		// Wheel over the bar steps the paused playback one frame per tick
+		// (up = forward). Dragging is too coarse for single frames on long
+		// replays (one pixel covers total/barW frames), so this is the fine
+		// control.
+		int wheel = (int) NullpoMinoSDL.mouseWheelDelta;
+		boolean overBar = mx >= barX && mx < barX + barW && my >= BAR_HIT_TOP && my < BAR_HIT_BOTTOM;
+		if(wheel != 0 && overBar) {
+			replayPaused = true;
+			seekReplay(gameManager.engine[0].replayTimer + wheel);
+		}
+
+		// Drag-to-scrub: a press inside the hit zone grabs the handle and the
+		// game live-seeks to the pointer every frame it moves, so the board
+		// plays/rewinds under the drag. A plain click is a one-frame drag, so
+		// click-to-jump falls out of the same path.
+		if(clicked && overBar) {
 			scrubbing = true;
 		}
 		if(scrubbing) {
 			// getMouseX() reports -1 outside the logical viewport; keep the
-			// last in-window preview instead of snapping to frame 0.
+			// last in-window position instead of snapping to frame 0.
 			if(mx >= 0) scrubTarget = scrubFrameForX(mx, barX, barW, total);
+			// ponytail: backward drags reset+re-simulate per changed target;
+			// fine at ~40k-frame replays, add engine snapshots if it ever lags.
+			if(scrubTarget != gameManager.engine[0].replayTimer) {
+				seekReplay(scrubTarget);
+			}
 			if(!MouseInputSDL.mouseInput.isMousePressed()) {
 				scrubbing = false;
-				seekReplay(scrubTarget);
 			}
 		}
 	}
