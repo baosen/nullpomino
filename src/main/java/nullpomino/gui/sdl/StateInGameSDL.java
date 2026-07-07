@@ -89,10 +89,10 @@ public class StateInGameSDL extends BaseStateSDL {
 	/** Timeline bar geometry, recomputed each frame from the field position. */
 	private int barX, barW;
 	/**
-	 * One bottom row: transport buttons on the left (at the field's X, below
+	 * One bottom row: transport buttons hugging the left screen edge (below
 	 * the mode's feedback text like "DOUBLE") and the bar filling the rest of
 	 * the row to near the right screen edge. The current frame number (the
-	 * mode already shows the clock as TIME in the score area) is overlaid on
+	 * mode already shows the clock as TIME in the score area) sits just above
 	 * the bar's right end, right-aligned so growing digits extend leftward
 	 * and never run off screen. Bar is vertically centered on the buttons.
 	 */
@@ -894,12 +894,11 @@ public class StateInGameSDL extends BaseStateSDL {
 	}
 
 	/**
-	 * Position the bottom row: buttons start at the field's X, the bar fills
-	 * the space between the buttons and the right-edge timestamp.
+	 * Position the bottom row: buttons hug the left screen edge, the bar
+	 * fills the rest of the row to near the right edge.
 	 */
 	private void layoutReplayTimeline() {
-		GameEngine eng = gameManager.engine[0];
-		stepBackBtn.x = gameManager.receiver.getFieldDisplayPositionX(eng, 0) + 4;
+		stepBackBtn.x = 4;
 		playPauseBtn.x = stepBackBtn.x + BTN_W + BTN_GAP;
 		stepFwdBtn.x = playPauseBtn.x + BTN_W + BTN_GAP;
 		barX = stepFwdBtn.x + BTN_W + 12;
