@@ -54,14 +54,14 @@ public abstract class WidgetSDL {
 
 	// --- Drawing helpers shared by concrete widgets ---
 
-	protected static void fillRect(int x, int y, int w, int h, int r, int g, int b, int a) {
+	public static void fillRect(int x, int y, int w, int h, int r, int g, int b, int a) {
 		SdlRenderer rnd = NullpoMinoSDL.renderer;
 		SDL3.INSTANCE.SDL_SetRenderDrawBlendMode(rnd, SDLConstants.SDL_BLENDMODE_BLEND);
 		SDL3.setDrawColor(rnd, r, g, b, a);
 		SDL3.INSTANCE.SDL_RenderFillRect(rnd, new SDLStructs.SDL_FRect(x, y, w, h));
 	}
 
-	protected static void drawRect(int x, int y, int w, int h, int r, int g, int b, int a) {
+	public static void drawRect(int x, int y, int w, int h, int r, int g, int b, int a) {
 		SdlRenderer rnd = NullpoMinoSDL.renderer;
 		SDL3.INSTANCE.SDL_SetRenderDrawBlendMode(rnd, SDLConstants.SDL_BLENDMODE_BLEND);
 		SDL3.setDrawColor(rnd, r, g, b, a);

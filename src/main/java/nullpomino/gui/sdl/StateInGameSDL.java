@@ -15,6 +15,7 @@ import nullpomino.game.wallkick.Wallkick;
 import nullpomino.gui.sdl.binding.SDL3;
 import nullpomino.gui.sdl.binding.SDLConstants;
 import nullpomino.gui.sdl.widget.ButtonSDL;
+import nullpomino.gui.sdl.widget.WidgetSDL;
 import nullpomino.util.CustomProperties;
 import nullpomino.util.GeneralUtil;
 import nullpomino.game.randomizer.Randomizer;
@@ -64,6 +65,34 @@ public class StateInGameSDL extends BaseStateSDL {
 	 */
 	private ButtonSDL closeBtn;
 
+	/**
+	 * Replay playback frozen by the timeline's pause button. Separate from
+	 * {@link #pause}: this one halts updateAll() without opening the pause
+	 * menu, so the board stays fully visible while scrubbing.
+	 */
+	protected boolean replayPaused = false;
+
+	/** True while the timeline handle is being dragged. */
+	private boolean scrubbing = false;
+
+	/** Preview frame while dragging; committed via seekReplay() on release. */
+	private int scrubTarget = 0;
+
+	/**
+	 * Replay transport buttons: step-back, play/pause, step-forward. Labels
+	 * stay empty — the icons are drawn as overlays in render() because
+	 * ButtonSDL's label path runs safeString, which would mangle the atlas's
+	 * arrow glyph 'b'.
+	 */
+	private ButtonSDL stepBackBtn, playPauseBtn, stepFwdBtn;
+
+	/** Timeline bar geometry, recomputed each frame from the field position. */
+	private int barX, barW;
+	private static final int BAR_Y = 444, BAR_H = 8;
+	/** Taller hit zone than the 8px track so the bar is easy to grab. */
+	private static final int BAR_HIT_TOP = 440, BAR_HIT_BOTTOM = 456;
+	private static final int BTN_W = 28, BTN_H = 20, BTN_GAP = 8, BTN_Y = 458;
+
 	/*
 	 * Called when entering this state
 	 */
@@ -76,6 +105,11 @@ public class StateInGameSDL extends BaseStateSDL {
 		cursor = 0;
 		prevInGameFlag = false;
 		closeBtn = ButtonSDL.newCloseButton(null);
+		replayPaused = false;
+		scrubbing = false;
+		stepBackBtn = new ButtonSDL(0, BTN_Y, BTN_W, BTN_H, "");
+		playPauseBtn = new ButtonSDL(0, BTN_Y, BTN_W, BTN_H, "");
+		stepFwdBtn = new ButtonSDL(0, BTN_Y, BTN_W, BTN_H, "");
 	}
 
 	/**
@@ -181,6 +215,8 @@ public class StateInGameSDL extends BaseStateSDL {
 		gameManager.replayMode = true;
 		gameManager.replayProp = prop;
 		pause = false;
+		replayPaused = false;
+		scrubbing = false;
 
 		gameManager.receiver.setGraphics(NullpoMinoSDL.renderer);
 
@@ -303,6 +339,10 @@ public class StateInGameSDL extends BaseStateSDL {
 				if(gameManager.engine[0].stat == GameEngine.Status.SETTING
 						|| shouldPollReplayBack(gameManager, pause)) {
 					closeBtn.render();
+				}
+
+				if(shouldPollReplayBack(gameManager, pause) && replayTotalFrames() > 0) {
+					renderReplayTimeline();
 				}
 			}
 		}
@@ -456,6 +496,7 @@ public class StateInGameSDL extends BaseStateSDL {
 					// Retry
 					ResourceHolderSDL.bgmStop();
 					pause = false;
+					replayPaused = false;
 					gameManager.reset();
 				} else if(cursor == 2) {
 					// End — walk back through the menus that launched the
@@ -563,7 +604,7 @@ public class StateInGameSDL extends BaseStateSDL {
 		}
 
 		// Execute game loops
-		if(!pause || (GameKeySDL.gamekey[0].isPushKey(GameKeySDL.BUTTON_FRAMESTEP) && enableframestep)) {
+		if((!pause && !replayPaused) || (GameKeySDL.gamekey[0].isPushKey(GameKeySDL.BUTTON_FRAMESTEP) && enableframestep)) {
 			if(gameManager != null) {
 				for(int i = 0; i < Math.min(gameManager.getPlayers(), 2); i++) {
 					if(!gameManager.replayMode || gameManager.replayRerecord || !gameManager.engine[i].gameActive) {
@@ -614,6 +655,7 @@ public class StateInGameSDL extends BaseStateSDL {
 					MouseInputSDL.mouseInput.getMouseY(),
 					MouseInputSDL.mouseInput.isMouseClicked());
 			replayMouseBack = closeClicked || MouseInputSDL.mouseInput.isMouseBackClicked();
+			updateReplayTimeline();
 		}
 
 		if(gameManager != null) {
@@ -621,6 +663,7 @@ public class StateInGameSDL extends BaseStateSDL {
 			if(GameKeySDL.gamekey[0].isPushKey(GameKeySDL.BUTTON_RETRY) || GameKeySDL.gamekey[1].isPushKey(GameKeySDL.BUTTON_RETRY)) {
 				ResourceHolderSDL.bgmStop();
 				pause = false;
+				replayPaused = false;
 				gameManager.reset();
 			}
 
@@ -799,8 +842,153 @@ public class StateInGameSDL extends BaseStateSDL {
 		if(MouseInputSDL.mouseInput.isMouseClicked()) {
 			engine.statc[0] = hovered;
 			ResourceHolderSDL.soundManager.play("decide");
-			if(hovered == 0) gameManager.reset();
+			if(hovered == 0) { replayPaused = false; gameManager.reset(); }
 			else engine.quitflag = true;
+		}
+	}
+
+	/**
+	 * Total recorded frames of the replay being watched, i.e. the highest
+	 * value {@code engine[0].replayTimer} will reach. 0 when unavailable.
+	 */
+	private int replayTotalFrames() {
+		GameEngine eng = gameManager.engine[0];
+		if(eng == null || eng.replayData == null || eng.replayData.inputDataArray == null) return 0;
+		return eng.replayData.inputDataArray.size();
+	}
+
+	/**
+	 * Position the timeline bar under the playboard (x from the field, y
+	 * anchored to the bottom of the 640x480 logical screen) and center the
+	 * three transport buttons below it.
+	 */
+	private void layoutReplayTimeline() {
+		GameEngine eng = gameManager.engine[0];
+		barX = gameManager.receiver.getFieldDisplayPositionX(eng, 0) + 4;
+		barW = eng.fieldWidth * gameManager.receiver.getBlockGraphicsHeight(eng, 0);
+		int rowW = BTN_W * 3 + BTN_GAP * 2;
+		stepBackBtn.x = barX + (barW - rowW) / 2;
+		playPauseBtn.x = stepBackBtn.x + BTN_W + BTN_GAP;
+		stepFwdBtn.x = playPauseBtn.x + BTN_W + BTN_GAP;
+	}
+
+	/** Draw the timeline track, progress fill, drag handle, and transport buttons. */
+	private void renderReplayTimeline() {
+		layoutReplayTimeline();
+		int total = replayTotalFrames();
+		int cur = scrubbing ? scrubTarget : gameManager.engine[0].replayTimer;
+		if(cur > total) cur = total;
+		int fillW = (barW > 0) ? (int)((long)barW * cur / total) : 0;
+
+		WidgetSDL.fillRect(barX, BAR_Y, barW, BAR_H, 0, 0, 0, 192);
+		WidgetSDL.fillRect(barX, BAR_Y, fillW, BAR_H, 0, 128, 255, 255);
+		WidgetSDL.drawRect(barX, BAR_Y, barW, BAR_H, 180, 180, 180, 255);
+		int handleX = barX + Math.max(0, Math.min(fillW - 2, barW - 4));
+		WidgetSDL.fillRect(handleX, BAR_Y - 2, 4, BAR_H + 4, 255, 255, 255, 255);
+
+		stepBackBtn.render();
+		playPauseBtn.render();
+		stepFwdBtn.render();
+
+		// Icon overlays. The atlas has only a right-pointing arrow ('b'); the
+		// left arrow is its mirror, and the pause/step bars are plain rects.
+		int gy = BTN_Y + (BTN_H - 16) / 2;
+		int gxOff = (BTN_W - 16) / 2;
+		NormalFontSDL.printFontFlippedH(stepBackBtn.x + gxOff, gy, 'b', NormalFontSDL.COLOR_WHITE);
+		WidgetSDL.fillRect(stepBackBtn.x + 4, gy + 2, 3, 12, 255, 255, 255, 255);
+		if(replayPaused) {
+			NormalFontSDL.printFont(playPauseBtn.x + gxOff, gy, "b", NormalFontSDL.COLOR_WHITE);
+		} else {
+			WidgetSDL.fillRect(playPauseBtn.x + BTN_W / 2 - 6, gy + 2, 4, 12, 255, 255, 255, 255);
+			WidgetSDL.fillRect(playPauseBtn.x + BTN_W / 2 + 2, gy + 2, 4, 12, 255, 255, 255, 255);
+		}
+		NormalFontSDL.printFont(stepFwdBtn.x + gxOff, gy, "b", NormalFontSDL.COLOR_WHITE);
+		WidgetSDL.fillRect(stepFwdBtn.x + BTN_W - 7, gy + 2, 3, 12, 255, 255, 255, 255);
+	}
+
+	/**
+	 * Poll the timeline bar and transport buttons. Assumes
+	 * {@code MouseInputSDL.mouseInput.update()} was already called this frame
+	 * (the surrounding shouldPollReplayBack block does it).
+	 */
+	private void updateReplayTimeline() {
+		int total = replayTotalFrames();
+		if(total <= 0) return;
+		layoutReplayTimeline();
+
+		int mx = MouseInputSDL.mouseInput.getMouseX();
+		int my = MouseInputSDL.mouseInput.getMouseY();
+		boolean clicked = MouseInputSDL.mouseInput.isMouseClicked();
+
+		if(stepBackBtn.update(mx, my, clicked)) {
+			replayPaused = true;
+			seekReplay(gameManager.engine[0].replayTimer - 1);
+		}
+		if(playPauseBtn.update(mx, my, clicked)) {
+			replayPaused = !replayPaused;
+		}
+		if(stepFwdBtn.update(mx, my, clicked)) {
+			replayPaused = true;
+			gameManager.updateAll();
+		}
+
+		// Drag-to-scrub: a press inside the hit zone grabs the handle, the
+		// preview follows the pointer while held, and the seek commits on
+		// release. A plain click is a one-frame drag, so click-to-jump falls
+		// out of the same path.
+		if(clicked && mx >= barX && mx < barX + barW && my >= BAR_HIT_TOP && my < BAR_HIT_BOTTOM) {
+			scrubbing = true;
+		}
+		if(scrubbing) {
+			// getMouseX() reports -1 outside the logical viewport; keep the
+			// last in-window preview instead of snapping to frame 0.
+			if(mx >= 0) scrubTarget = scrubFrameForX(mx, barX, barW, total);
+			if(!MouseInputSDL.mouseInput.isMousePressed()) {
+				scrubbing = false;
+				seekReplay(scrubTarget);
+			}
+		}
+	}
+
+	/**
+	 * Pure px-&gt;frame mapping for the scrub bar, clamped to [0, total-1].
+	 * Static for unit testing (same pattern as {@link #settingHoverItem}).
+	 */
+	static int scrubFrameForX(int mx, int barX, int barW, int total) {
+		if(total <= 0 || barW <= 0) return 0;
+		long frame = (long)(mx - barX) * total / barW;
+		if(frame < 0) return 0;
+		if(frame > total - 1) return total - 1;
+		return (int)frame;
+	}
+
+	/**
+	 * Seek replay playback to the given frame. The engine has no state
+	 * snapshots, so a backward seek resets the manager (which re-reads the
+	 * replay in engine.init()) and re-simulates forward; a forward seek just
+	 * runs extra frames. SEs are muted during the catch-up; the BGM sync in
+	 * update() restores the right track afterwards. Always simulates at least
+	 * until gameActive so a seek can't strand the paused engine on the
+	 * auto-advancing SETTING/READY screens.
+	 */
+	private void seekReplay(int target) {
+		GameEngine eng = gameManager.engine[0];
+		if(target < 0) target = 0;
+		if(target < eng.replayTimer) gameManager.reset();
+		ResourceHolderSDL.soundManager.mute = true;
+		try {
+			// ponytail: synchronous re-sim; ~36k frames (a 10min replay) is
+			// headless engine ticks only. Make it async if it ever stutters.
+			// +600 slack covers SETTING/READY frames that don't advance
+			// replayTimer.
+			for(int guard = target + 600;
+				guard > 0 && (eng.replayTimer < target || !eng.gameActive)
+					&& eng.stat != GameEngine.Status.RESULT && !gameManager.getQuitFlag();
+				guard--) {
+				gameManager.updateAll();
+			}
+		} finally {
+			ResourceHolderSDL.soundManager.mute = false;
 		}
 	}
 }

@@ -38,6 +38,9 @@ public class SoundManagerSDL {
 	/** Upper bound so startup never stalls too long if metadata is wrong. */
 	private static final long WARMUP_MAX_WAIT_MS = 2000L;
 
+	/** Drop all SE while true. Used to silence the replay-seek re-simulation. */
+	public boolean mute = false;
+
 	/** WAVE file data (Name -> audio handle) */
 	protected HashMap<String, MixAudio> clipMap;
 	/** Approximate clip length in milliseconds (Name -> duration). */
@@ -178,6 +181,7 @@ public class SoundManagerSDL {
 	 * @param name Registered name
 	 */
 	public void play(String name) {
+		if(mute) return;
 		SDL3Mixer lib = NullpoMinoSDL.mixerLib;
 		if(lib == null) return;
 
