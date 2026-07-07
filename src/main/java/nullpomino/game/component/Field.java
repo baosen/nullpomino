@@ -95,9 +95,6 @@ public class Field implements Serializable {
 	/** List of colors of lines cleared in most recent line color clear */
 	public ArrayList<Integer> lineColorsCleared;
 
-	/** List of last rows cleared in most recent horizontal line clear. */
-	public ArrayList<Block[]> lastLinesCleared;
-
 	/**
 	 * With parametersConstructor
 	 * @param w fieldThe width of the
@@ -154,7 +151,6 @@ public class Field implements Serializable {
 		colorsCleared = 0;
 		gemsCleared = 0;
 		lineColorsCleared = null;
-		lastLinesCleared = null;
 		garbageCleared = 0;
 
 		for(int i = 0; i < width; i++) {
@@ -187,7 +183,6 @@ public class Field implements Serializable {
 		colorsCleared = f.colorsCleared;
 		gemsCleared = f.gemsCleared;
 		lineColorsCleared = f.lineColorsCleared;
-		lastLinesCleared = f.lastLinesCleared;
 		garbageCleared = f.garbageCleared;
 
 		for(int i = 0; i < width; i++) {
@@ -544,15 +539,12 @@ public class Field implements Serializable {
 	public int checkLine() {
 		int lines = 0;
 
-		resetLastLinesCleared();
-
 		for(int i = firstFieldRow(); i < getHeightWithoutHurryupFloor(); i++) {
 			boolean flag = isCompleteLine(i);
 			setLineFlag(i, flag);
 
 			if(flag) {
 				lines++;
-				rememberClearedLine(i);
 				markLineForErase(i);
 			}
 		}
@@ -576,13 +568,6 @@ public class Field implements Serializable {
 		return lines;
 	}
 
-	private void resetLastLinesCleared() {
-		if(lastLinesCleared == null) {
-			lastLinesCleared = new ArrayList<Block[]>();
-		}
-		lastLinesCleared.clear();
-	}
-
 	private boolean isCompleteLine(int y) {
 		for(int x = 0; x < width; x++) {
 			Block block = getBlock(x, y);
@@ -591,14 +576,6 @@ public class Field implements Serializable {
 			}
 		}
 		return true;
-	}
-
-	private void rememberClearedLine(int y) {
-		Block[] row = new Block[width];
-		for(int x = 0; x < width; x++) {
-			row[x] = new Block(getBlock(x, y));
-		}
-		lastLinesCleared.add(row);
 	}
 
 	private void markLineForErase(int y) {
@@ -976,31 +953,6 @@ public class Field implements Serializable {
 		}
 	}
 
-
-	/**
-	 * @return an ArrayList of rows representing the TGM attack of the last line clear action
-	 * The TGM attack is the lines of the last line clear flipped vertically and without the blocks that caused it.
-	 */
-	public ArrayList<Block[]> getLastLinesAsTGMAttack(){
-		ArrayList<Block[]> attack = new ArrayList<Block[]>();
-
-		for(Block[] row : lastLinesCleared){
-			Block[] row2 = new Block[getWidth()];
-			for(int i = 0; i < getWidth(); i++){
-				Block b = row[i];
-				//Put an empty block if the original block was in the last commit to the field.
-				if(b.getAttribute(Block.BLOCK_ATTRIBUTE_LAST_COMMIT)){
-					row2[i] = new Block();
-				}
-				else{
-					row2[i] = row[i];
-				}
-			}
-			attack.add(0, row2);
-		}
-
-		return attack;
-	}
 
 	/**
 	 * Holes1I only place opengarbage blockAdded to the bottom of the

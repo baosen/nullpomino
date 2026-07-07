@@ -13,7 +13,7 @@ import org.junit.jupiter.api.Test;
 /**
  * Tests for Field manipulation methods: cutLine, pushUp, pushDown,
  * setAllAttribute, setAllSkin, getHowManyGems, getHowManyGemClears,
- * getItemClears, getLastLinesAsTGMAttack, getSecretGrade,
+ * getItemClears, getSecretGrade,
  * checkForSquares, getHowManySquareClears, and shuffleColors.
  */
 class FieldManipulationTest {
@@ -394,55 +394,6 @@ class FieldManipulationTest {
 
 		boolean[] result = f.getItemClears();
 		assertEquals(Block.MAX_ITEM + 1, result.length);
-	}
-
-	// ---------------------------------------------------------------
-	// getLastLinesAsTGMAttack
-	// ---------------------------------------------------------------
-
-	@Test
-	void getLastLinesAsTGMAttackReturnsReversedRowsWithLastCommitRemoved() {
-		Field f = newField();
-		// Fill two complete lines at rows 18 and 19
-		for (int x = 0; x < 10; x++) {
-			f.setBlockColor(x, 18, Block.BLOCK_COLOR_BLUE);
-			f.setBlockColor(x, 19, Block.BLOCK_COLOR_RED);
-		}
-		// Mark some blocks on row 19 as LAST_COMMIT
-		f.getBlock(3, 19).setAttribute(Block.BLOCK_ATTRIBUTE_LAST_COMMIT, true);
-		f.getBlock(4, 19).setAttribute(Block.BLOCK_ATTRIBUTE_LAST_COMMIT, true);
-		f.getBlock(5, 19).setAttribute(Block.BLOCK_ATTRIBUTE_LAST_COMMIT, true);
-
-		f.checkLine(); // populates lastLinesCleared
-
-		ArrayList<Block[]> attack = f.getLastLinesAsTGMAttack();
-
-		assertEquals(2, attack.size(), "should have 2 rows for the 2 cleared lines");
-		// getLastLinesAsTGMAttack reverses order: the LAST cleared row comes FIRST
-		assertEquals(Block.BLOCK_COLOR_RED, attack.get(0)[0].color,
-				"first row in attack should be the last cleared row (row 19)");
-		assertEquals(Block.BLOCK_COLOR_BLUE, attack.get(1)[0].color,
-				"second row in attack should be the first cleared row (row 18)");
-
-		// In row 19 (attack index 0), LAST_COMMIT blocks should be replaced with empty
-		assertEquals(Block.BLOCK_COLOR_NONE, attack.get(0)[3].color,
-				"LAST_COMMIT block at col 3 should become empty");
-		assertEquals(Block.BLOCK_COLOR_NONE, attack.get(0)[4].color,
-				"LAST_COMMIT block at col 4 should become empty");
-		assertEquals(Block.BLOCK_COLOR_NONE, attack.get(0)[5].color,
-				"LAST_COMMIT block at col 5 should become empty");
-		assertEquals(Block.BLOCK_COLOR_RED, attack.get(0)[7].color,
-				"non-LAST_COMMIT block at col 7 should retain its color");
-	}
-
-	@Test
-	void getLastLinesAsTGMAttackReturnsEmptyListWhenNoLinesCleared() {
-		Field f = newField();
-
-		f.checkLine(); // no complete lines
-
-		ArrayList<Block[]> attack = f.getLastLinesAsTGMAttack();
-		assertTrue(attack.isEmpty());
 	}
 
 	// ---------------------------------------------------------------

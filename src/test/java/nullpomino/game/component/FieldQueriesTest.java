@@ -435,26 +435,6 @@ class FieldQueriesTest {
 	}
 
 	@Test
-	void getLastLinesAsTGMAttackReplacesLastCommitWithEmptyBlocks() {
-		Field f = newField();
-		f.lastLinesCleared = new ArrayList<Block[]>();
-		Block[] row = new Block[f.getWidth()];
-		for (int i = 0; i < row.length; i++) {
-			Block b = new Block(Block.BLOCK_COLOR_RED);
-			if (i == 0) b.setAttribute(Block.BLOCK_ATTRIBUTE_LAST_COMMIT, true);
-			row[i] = b;
-		}
-		f.lastLinesCleared.add(row);
-
-		ArrayList<Block[]> attack = f.getLastLinesAsTGMAttack();
-
-		assertEquals(1, attack.size());
-		assertTrue(attack.get(0)[0].isEmpty(),
-				"LAST_COMMIT cells become empty in TGM attack form");
-		assertEquals(Block.BLOCK_COLOR_RED, attack.get(0)[1].color);
-	}
-
-	@Test
 	void getSecretGradeCountsRowsThatMatchMirroredHolePattern() {
 		// height=20 → at i=19, holeLoc = -|19-10| + 10 - 1 = 0
 		// row 19 needs (0,19) empty, (0,18) filled, every other column in row 19 filled
