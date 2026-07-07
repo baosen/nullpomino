@@ -135,6 +135,13 @@ final class TeaVMSDL3 implements SDL3 {
 		return 1;
 	}
 
+	@Override public byte SDL_RenderTextureFlipped(SdlRenderer r, SdlTexture texture,
+			SDLStructs.SDL_FRect srcrect, SDLStructs.SDL_FRect dstrect, int flip) {
+		// Only SDL_FLIP_HORIZONTAL is used (left-arrow glyph mirror).
+		((CanvasRenderer) r).renderTextureFlippedH((TeaVMTexture) texture, srcrect, dstrect);
+		return 1;
+	}
+
 	@Override public void SDL_DestroySurface(SdlSurface surface) {}
 
 	@Override public byte SDL_SaveBMP(SdlSurface surface, String file) {

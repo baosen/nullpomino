@@ -52,6 +52,11 @@ public interface SDL3 {
 	byte SDL_GetTextureSize(SdlTexture texture, FloatRef w, FloatRef h);
 	byte SDL_RenderTexture(SdlRenderer renderer, SdlTexture texture,
 		SDLStructs.SDL_FRect srcrect, SDLStructs.SDL_FRect dstrect);
+	/** Like {@link #SDL_RenderTexture} but flips the texture. {@code flip} is an
+	 *  SDL_FlipMode ({@link SDLConstants#SDL_FLIP_HORIZONTAL} etc.). Used to draw
+	 *  a left-pointing arrow from the atlas's only (right-pointing) arrow glyph. */
+	byte SDL_RenderTextureFlipped(SdlRenderer renderer, SdlTexture texture,
+		SDLStructs.SDL_FRect srcrect, SDLStructs.SDL_FRect dstrect, int flip);
 
 	// --- Surface ---
 	void SDL_DestroySurface(SdlSurface surface);

@@ -47,6 +47,9 @@ interface RawSDL3 extends Library {
 	byte SDL_GetTextureSize(Pointer texture, FloatByReference w, FloatByReference h);
 	byte SDL_RenderTexture(Pointer renderer, Pointer texture,
 		JnaStructs.SDL_FRect srcrect, JnaStructs.SDL_FRect dstrect);
+	byte SDL_RenderTextureRotated(Pointer renderer, Pointer texture,
+		JnaStructs.SDL_FRect srcrect, JnaStructs.SDL_FRect dstrect,
+		double angle, Pointer center, int flip);
 
 	// --- Surface ---
 	void SDL_DestroySurface(Pointer surface);

@@ -124,6 +124,34 @@ final class CanvasRenderer implements SdlRenderer {
 		if (alpha != 255) ctx.setGlobalAlpha(1.0);
 	}
 
+	/** Same as {@link #renderTexture} but mirrored on the X axis (SDL_FLIP_HORIZONTAL). */
+	void renderTextureFlippedH(TeaVMTexture texture, SDLStructs.SDL_FRect src, SDLStructs.SDL_FRect dst) {
+		if (texture == null) return;
+
+		double sx, sy, sw, sh;
+		if (src == null) {
+			sx = 0; sy = 0; sw = texture.width; sh = texture.height;
+		} else {
+			sx = src.x; sy = src.y; sw = src.w; sh = src.h;
+		}
+
+		double dx, dy, dw, dh;
+		if (dst == null) {
+			dx = 0; dy = 0; dw = logicalW; dh = logicalH;
+		} else {
+			dx = dst.x; dy = dst.y; dw = dst.w; dh = dst.h;
+		}
+
+		int alpha = texture.alphaMod & 0xFF;
+		if (alpha != 255) ctx.setGlobalAlpha(alpha / 255.0);
+		ctx.save();
+		ctx.translate(dx + dw, dy);
+		ctx.scale(-1, 1);
+		ctx.drawImage(texture.image, sx, sy, sw, sh, 0, 0, dw, dh);
+		ctx.restore();
+		if (alpha != 255) ctx.setGlobalAlpha(1.0);
+	}
+
 	void present() {
 		CanvasRenderingContext2D display = window.displayContext();
 		int pw = window.panelWidth();

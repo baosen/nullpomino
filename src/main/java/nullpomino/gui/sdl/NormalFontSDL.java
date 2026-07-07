@@ -188,6 +188,20 @@ public class NormalFontSDL {
 		printFont(fontX, fontY, fontStr, COLOR_WHITE);
 	}
 
+	/**
+	 * Draw a single 16px bitmap glyph mirrored horizontally. Bypasses
+	 * {@link #safeString} (so the raw glyph char survives) and blits via the
+	 * flip-capable renderer path. The atlas has only a right-pointing arrow
+	 * ('b'); mirroring it yields the left-pointing arrow we lack.
+	 */
+	public static void printFontFlippedH(int fontX, int fontY, char glyph, int fontColor) {
+		int sx = ((glyph - 32) % 32) * 16;
+		int sy = ((glyph - 32) / 32) * 16 + fontColor * 48;
+		setFontRects(sx, sy, fontX, fontY, 16);
+		SDL3.INSTANCE.SDL_RenderTextureFlipped(NullpoMinoSDL.renderer, ResourceHolderSDL.imgFont,
+			fontRectSrc, fontRectDst, SDLConstants.SDL_FLIP_HORIZONTAL);
+	}
+
 	public static void printFont(int fontX, int fontY, String fontStr, boolean flag, int fontColorFalse, int fontColorTrue) {
 		if(!flag)
 			printFont(fontX, fontY, fontStr, fontColorFalse);

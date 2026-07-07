@@ -25,6 +25,11 @@ public final class SDLConstants {
 	public static final int SDL_BLENDMODE_NONE  = 0x00000000;
 	public static final int SDL_BLENDMODE_BLEND = 0x00000001;
 
+	// SDL_FlipMode
+	public static final int SDL_FLIP_NONE       = 0;
+	public static final int SDL_FLIP_HORIZONTAL = 1;
+	public static final int SDL_FLIP_VERTICAL   = 2;
+
 	// SDL_EventType
 	public static final int SDL_EVENT_QUIT                  = 0x100;
 	public static final int SDL_EVENT_WINDOW_SHOWN          = 0x202;

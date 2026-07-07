@@ -118,6 +118,11 @@ final class JnaSDL3 implements SDL3 {
 		return raw.SDL_RenderTexture(Ptr.p(renderer), Ptr.p(texture),
 			JnaStructs.frect(srcrect), JnaStructs.frect(dstrect));
 	}
+	@Override public byte SDL_RenderTextureFlipped(SdlRenderer renderer, SdlTexture texture,
+			SDLStructs.SDL_FRect srcrect, SDLStructs.SDL_FRect dstrect, int flip) {
+		return raw.SDL_RenderTextureRotated(Ptr.p(renderer), Ptr.p(texture),
+			JnaStructs.frect(srcrect), JnaStructs.frect(dstrect), 0.0, null, flip);
+	}
 
 	@Override public void SDL_DestroySurface(SdlSurface surface) { raw.SDL_DestroySurface(Ptr.p(surface)); }
 	@Override public byte SDL_SaveBMP(SdlSurface surface, String file) {
