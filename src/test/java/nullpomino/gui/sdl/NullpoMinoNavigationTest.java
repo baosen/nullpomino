@@ -1,6 +1,7 @@
 package nullpomino.gui.sdl;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.lang.reflect.Field;
@@ -27,6 +28,7 @@ class NullpoMinoNavigationTest {
 	private BaseStateSDL[] originalStates;
 	private int originalCurrent;
 	private boolean originalQuit;
+	private boolean originalWebMode;
 	private Deque<Integer> originalBack;
 	private Deque<Integer> originalForward;
 
@@ -35,6 +37,7 @@ class NullpoMinoNavigationTest {
 		originalStates = NullpoMinoSDL.gameStates;
 		originalCurrent = NullpoMinoSDL.currentState;
 		originalQuit = NullpoMinoSDL.quit;
+		originalWebMode = NullpoMinoSDL.webMode;
 		originalBack = snapshot("backStack");
 		originalForward = snapshot("forwardStack");
 
@@ -43,6 +46,7 @@ class NullpoMinoNavigationTest {
 		NullpoMinoSDL.gameStates = stubs;
 		NullpoMinoSDL.currentState = NullpoMinoSDL.STATE_TITLE;
 		NullpoMinoSDL.quit = false;
+		NullpoMinoSDL.webMode = false;
 		stack("backStack").clear();
 		stack("forwardStack").clear();
 	}
@@ -52,6 +56,7 @@ class NullpoMinoNavigationTest {
 		NullpoMinoSDL.gameStates = originalStates;
 		NullpoMinoSDL.currentState = originalCurrent;
 		NullpoMinoSDL.quit = originalQuit;
+		NullpoMinoSDL.webMode = originalWebMode;
 		restore("backStack", originalBack);
 		restore("forwardStack", originalForward);
 	}
@@ -161,6 +166,30 @@ class NullpoMinoNavigationTest {
 		NullpoMinoSDL.goBack();
 
 		assertTrue(NullpoMinoSDL.quit, "empty back stack must quit");
+	}
+
+	@Test
+	void goBackOnEmptyStackDoesNotQuitInWebMode() throws Exception {
+		// Escape at the title screen (root) lands here. In a browser tab there
+		// is no process to quit, so breaking the loop would freeze the canvas
+		// and the game would appear to hang. The request must be a no-op.
+		NullpoMinoSDL.webMode = true;
+
+		NullpoMinoSDL.goBack();
+
+		assertFalse(NullpoMinoSDL.quit, "web build must not quit on empty back stack");
+		assertEquals(NullpoMinoSDL.STATE_TITLE, NullpoMinoSDL.currentState);
+	}
+
+	@Test
+	void enterStateMinusOneDoesNotQuitInWebMode() throws Exception {
+		// The BUTTON_QUIT special key routes through enterState(-1); same rule.
+		NullpoMinoSDL.webMode = true;
+
+		NullpoMinoSDL.enterState(-1);
+
+		assertFalse(NullpoMinoSDL.quit, "web build must not quit on enterState(-1)");
+		assertEquals(NullpoMinoSDL.STATE_TITLE, NullpoMinoSDL.currentState);
 	}
 
 	@Test

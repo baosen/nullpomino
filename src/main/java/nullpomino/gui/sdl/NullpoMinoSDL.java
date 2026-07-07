@@ -891,13 +891,26 @@ public class NullpoMinoSDL {
 	}
 
 	/**
+	 * Request that the main loop exit. A no-op on the web build: a browser tab
+	 * has no process to terminate, so letting {@link #run()} fall out of its
+	 * loop would just freeze the canvas on its last frame — the game would
+	 * appear to hang (e.g. pressing Escape at the title, whose cancel path
+	 * lands on the empty back stack). The desktop build sets the flag, breaks
+	 * the loop, and proceeds to {@link #shutdown()} / {@code System.exit}.
+	 */
+	private static void requestQuit() {
+		if(webMode) return;
+		quit = true;
+	}
+
+	/**
 	 * Switch state, pushing the outgoing state onto the back stack so
 	 * {@link #goBack()} can return here later.
-	 * @param id Destination state ID (-1 to end the program)
+	 * @param id Destination state ID (-1 to end the program; ignored on web)
 	 */
 	public static void enterState(int id) {
 		if(id == -1) {
-			quit = true;
+			requestQuit();
 			return;
 		}
 		pushCurrent(backStack);
@@ -908,12 +921,13 @@ public class NullpoMinoSDL {
 	/**
 	 * Pop the back stack and transition to the revealed state, or quit the
 	 * program if the stack is empty (the title screen's cancel path lands
-	 * here). Pushes the outgoing state onto {@link #forwardStack} when it's
-	 * safely re-enterable so {@link #goForward()} can replay this hop.
+	 * here; a no-op on web — see {@link #requestQuit()}). Pushes the outgoing
+	 * state onto {@link #forwardStack} when it's safely re-enterable so
+	 * {@link #goForward()} can replay this hop.
 	 */
 	public static void goBack() {
 		if(backStack.isEmpty()) {
-			quit = true;
+			requestQuit();
 			return;
 		}
 		if(hasCurrentState() && isForwardSafe(currentState)) {
@@ -981,7 +995,7 @@ public class NullpoMinoSDL {
 
 	private static BaseStateSDL stateForTransition(int id) {
 		if(id < 0) {
-			quit = true;
+			requestQuit();
 			return null;
 		}
 		if(isStateId(id) && (gameStates[id] != null)) return gameStates[id];
