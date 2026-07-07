@@ -63,10 +63,27 @@ final class CanvasWindow implements SdlWindow {
 		else exitFullscreen();
 	}
 
-	// requestFullscreen() needs a live user activation; it runs ~1 frame after the
-	// F11 keydown (well within the browser's transient-activation window). Vendor
-	// prefixed fallback + swallow the rejected promise to avoid console noise if the
-	// request is denied. Idempotent via fullscreenElement.
+	// Toggle real browser fullscreen based on the actual browser state, reading it
+	// atomically so we always pick the right direction. Called SYNCHRONOUSLY from
+	// the F11 keydown handler: the browser requires a live user activation to
+	// *re-enter* fullscreen for a short time after an exit, and a request deferred
+	// to the game loop (even ~1 frame later) no longer counts as one — that is why
+	// the second time you went fullscreen the flag flipped but the canvas never
+	// changed. Vendor-prefixed fallbacks; the rejected promise is swallowed to
+	// avoid console noise if a request is denied anyway.
+	@JSBody(params = {"el"}, script =
+		"if (document.fullscreenElement || document.webkitFullscreenElement) {" +
+		"  var ex = document.exitFullscreen || document.webkitExitFullscreen;" +
+		"  if (ex) ex.call(document);" +
+		"} else {" +
+		"  var req = el.requestFullscreen || el.webkitRequestFullscreen;" +
+		"  if (req) { var p = req.call(el); if (p && p.catch) p.catch(function(){}); }" +
+		"}")
+	static native void toggleFullscreen(HTMLCanvasElement el);
+
+	// Directional enter/leave, driven through the SDL seam (SDL_SetWindowFullscreen)
+	// by the config screen's fullscreen option — F11 uses toggleFullscreen() above.
+	// Vendor-prefixed fallback + swallowed rejection. Idempotent via fullscreenElement.
 	@JSBody(params = {"el"}, script =
 		"if (document.fullscreenElement || document.webkitFullscreenElement) return;" +
 		"var req = el.requestFullscreen || el.webkitRequestFullscreen;" +

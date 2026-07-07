@@ -578,13 +578,17 @@ public class NullpoMinoSDL {
 	}
 
 	/**
-	 * Resync the fullscreen flag and config to a state the OS/browser reported
-	 * outside our control (e.g. the user pressing Escape to leave browser
-	 * fullscreen). Guarded so it is a no-op when the flag already matches — which
-	 * is the case for the game's own {@link #toggleFullscreen()} (it sets the flag
-	 * before SDL emits the enter/leave event) and on the desktop path. Returns
-	 * true when the flag actually changed, so the caller persists only genuine
-	 * external changes (and a duplicate browser event is a harmless no-op).
+	 * Resync the fullscreen flag and config to a state the browser/OS reported.
+	 * On the web build this is the primary path for the F11 toggle: the DOM event
+	 * bridge drives the browser Fullscreen API directly (within the user gesture,
+	 * which the browser requires to re-enter fullscreen) and the resulting
+	 * fullscreenchange feeds the real state back here. It also catches changes
+	 * made outside our control, e.g. the user pressing Escape to leave browser
+	 * fullscreen. Guarded so it is a no-op when the flag already matches — the
+	 * case for the config screen's own {@link #toggleFullscreen()} (which sets the
+	 * flag before SDL emits the enter/leave event), the desktop path, and the
+	 * duplicate fullscreenchange Chrome fires. Returns true when the flag actually
+	 * changed, so the caller persists only genuine changes.
 	 */
 	static boolean syncFullscreenFlag(boolean nowFullscreen) {
 		if(fullscreen == nowFullscreen) return false;

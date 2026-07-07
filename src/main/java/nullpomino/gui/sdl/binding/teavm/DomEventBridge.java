@@ -26,10 +26,14 @@ import nullpomino.gui.sdl.binding.SDLStructs;
  */
 final class DomEventBridge {
 
-	/** DOM codes whose browser default (scroll, tab-move, back-nav, devtools) must be suppressed. */
+	/**
+	 * DOM codes whose browser default (scroll, tab-move, back-nav, devtools) must be
+	 * suppressed on the generic queue-to-game-loop path. F11 is not here: it is
+	 * handled synchronously (see keydown) and prevents its own default.
+	 */
 	private static final Set<String> PREVENT_DEFAULT = Set.of(
 			"ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight", "Space", "Tab", "Backspace",
-			"F1", "F2", "F3", "F4", "F5", "F6", "F7", "F8", "F9", "F10", "F11", "F12");
+			"F1", "F2", "F3", "F4", "F5", "F6", "F7", "F8", "F9", "F10", "F12");
 
 	final Deque<SDLStructs.SDL_Event> queue = new ArrayDeque<>();
 
@@ -44,6 +48,20 @@ final class DomEventBridge {
 		HTMLDocument document = Window.current().getDocument();
 
 		EventListener<KeyboardEvent> keyDown = e -> {
+			// F11 toggles real browser fullscreen. This MUST run synchronously inside
+			// the keydown dispatch: the browser requires a live user activation to
+			// re-enter fullscreen after an exit, and a request deferred to the game
+			// loop no longer qualifies (the flag flips but the canvas never goes
+			// fullscreen). Handle it here and DON'T forward F11 to the game loop, so
+			// its shared F11 toggle can't also fire and fight the resync below. The
+			// game's fullscreen flag/config stay in sync via the fullscreenchange
+			// listener. Repeats (held key) must not re-toggle, matching the game
+			// loop's rising-edge detection.
+			if ("F11".equals(e.getCode())) {
+				e.preventDefault();
+				if (!e.isRepeat()) CanvasWindow.toggleFullscreen(canvas);
+				return;
+			}
 			int scancode = DomScancodeMap.map(e.getCode());
 			if (PREVENT_DEFAULT.contains(e.getCode())) e.preventDefault();
 			if (scancode >= 0) {
