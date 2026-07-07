@@ -54,11 +54,13 @@ public class StateInGameSDL extends BaseStateSDL {
 	protected String modeName;
 
 	/**
-	 * Top-right "back" close button, shown only on the pre-game SETTING screen
+	 * Top-right "back" close button, shown on the pre-game SETTING screen
 	 * (mode.onSetting()/renderSetting() - e.g. PRACTICE MODE SETTINGS) and
-	 * hidden during actual gameplay. No inline action - folded into the
+	 * while watching a replay (shouldPollReplayBack), but hidden during
+	 * normal gameplay. No inline action: on SETTING it folds into the
 	 * synthetic BUTTON_B press in injectSettingMouseInput() so it goes
-	 * through the same per-mode cancel/quitflag logic as Escape.
+	 * through the same per-mode cancel/quitflag logic as Escape; during
+	 * replay playback its click feeds replayMouseBack -> goBack().
 	 */
 	private ButtonSDL closeBtn;
 
@@ -298,7 +300,8 @@ public class StateInGameSDL extends BaseStateSDL {
 				if(gameManager.replayShowInvisible)
 					NormalFontSDL.printFont(offsetX, offsetY + 392, "SHOW INVIS", NormalFontSDL.COLOR_ORANGE);
 
-				if(gameManager.engine[0].stat == GameEngine.Status.SETTING) {
+				if(gameManager.engine[0].stat == GameEngine.Status.SETTING
+						|| shouldPollReplayBack(gameManager, pause)) {
 					closeBtn.render();
 				}
 			}
@@ -598,15 +601,19 @@ public class StateInGameSDL extends BaseStateSDL {
 			}
 		}
 
-		// Mouse back button while a replay is playing acts like Escape /
-		// BUTTON_GIVEUP — return to the previous screen. Skipped when an
-		// engine is in SETTING or RESULT or the game is paused, since those
-		// branches above already consume the click for their own cancel
-		// handling.
+		// Clicking the top-right BACK button (closeBtn) or the mouse back
+		// button while a replay is playing acts like Escape / BUTTON_GIVEUP —
+		// return to the previous screen. Skipped when an engine is in SETTING
+		// or RESULT or the game is paused, since those branches above already
+		// consume the click for their own cancel handling.
 		boolean replayMouseBack = false;
 		if(shouldPollReplayBack(gameManager, pause)) {
 			MouseInputSDL.mouseInput.update();
-			replayMouseBack = MouseInputSDL.mouseInput.isMouseBackClicked();
+			boolean closeClicked = closeBtn.update(
+					MouseInputSDL.mouseInput.getMouseX(),
+					MouseInputSDL.mouseInput.getMouseY(),
+					MouseInputSDL.mouseInput.isMouseClicked());
+			replayMouseBack = closeClicked || MouseInputSDL.mouseInput.isMouseBackClicked();
 		}
 
 		if(gameManager != null) {
