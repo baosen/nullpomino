@@ -60,7 +60,7 @@ public class StateConfigAISelectSDL extends BaseStateSDL {
 	/** Cursor position */
 	protected int cursor = 0;
 
-	/** Top-right "X" close button. */
+	/** Top-right "back" close button. */
 	private ButtonSDL closeBtn;
 
 	/**
@@ -96,7 +96,7 @@ public class StateConfigAISelectSDL extends BaseStateSDL {
 			if(currentAINormalized.equals(LegacyClassNames.translate(aiPathList[i]))) aiID = i;
 		}
 
-		closeBtn = new ButtonSDL(604, 4, 28, 24, "X", new Runnable() { public void run() { NullpoMinoSDL.goBack(); } });
+		closeBtn = ButtonSDL.newCloseButton(new Runnable() { public void run() { NullpoMinoSDL.goBack(); } });
 	}
 
 	/**

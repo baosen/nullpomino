@@ -20,7 +20,7 @@ public abstract class DummyMenuChooseStateSDL extends BaseStateSDL {
 	/** Set to false to ignore mouse input */
 	protected boolean mouseEnabled;
 
-	/** Top-right "X" close button. Null unless a subclass builds one via {@link #newCloseButton()}. */
+	/** Top-right "back" close button. Null unless a subclass builds one via {@link #newCloseButton()}. */
 	protected ButtonSDL closeBtn;
 
 	/**
@@ -47,8 +47,8 @@ public abstract class DummyMenuChooseStateSDL extends BaseStateSDL {
 	}
 
 	/**
-	 * Standard top-right "X" close button for cursor-list menu screens,
-	 * styled after the netplay Lounge's corner X but wired to the ordinary
+	 * Standard top-right "back" close button for cursor-list menu screens,
+	 * styled after the netplay Lounge's corner button but wired to the ordinary
 	 * back-navigation every ESC/cancel already performs here (not a hard
 	 * teardown). Subclasses that want one call this from {@code enter()} and
 	 * assign the result to {@link #closeBtn}; update/render wiring then
@@ -56,7 +56,7 @@ public abstract class DummyMenuChooseStateSDL extends BaseStateSDL {
 	 * Lounge's X, it is not part of any keyboard focus cycle.
 	 */
 	protected ButtonSDL newCloseButton() {
-		return new ButtonSDL(604, 4, 28, 24, "X", new Runnable() {
+		return ButtonSDL.newCloseButton(new Runnable() {
 			public void run() { NullpoMinoSDL.goBack(); }
 		});
 	}
@@ -69,7 +69,7 @@ public abstract class DummyMenuChooseStateSDL extends BaseStateSDL {
 		if (mouseEnabled) {
 			mouseConfirm = updateMouseInput();
 
-			// Top-right "X" close button (see newCloseButton()). Short-circuits
+			// Top-right "back" close button (see newCloseButton()). Short-circuits
 			// like the onDecide()/onCancel() checks below so we don't keep
 			// running this frame's input against a state we just navigated away from.
 			if (closeBtn != null && closeBtn.update(MouseInputSDL.mouseInput.getMouseX(),
@@ -169,7 +169,7 @@ public abstract class DummyMenuChooseStateSDL extends BaseStateSDL {
 	}
 
 	/**
-	 * Draws the top-right "X" close button, if this screen built one.
+	 * Draws the top-right "back" close button, if this screen built one.
 	 * {@link DummyMenuScrollStateSDL#render()} always forwards here via
 	 * super.render(), as do the direct subclasses that already call
 	 * super.render(); the rest need one explicit super.render() call.

@@ -16,7 +16,7 @@ public class StateConfigJoystickTestSDL extends BaseStateSDL {
 	/** Player number */
 	public int player;
 
-	/** Top-right "X" close button. */
+	/** Top-right "back" close button. */
 	private ButtonSDL closeBtn;
 
 	/** UseJoystick Of number */
@@ -151,7 +151,7 @@ public class StateConfigJoystickTestSDL extends BaseStateSDL {
 	@Override
 	public void enter() {
 		reset();
-		closeBtn = new ButtonSDL(604, 4, 28, 24, "X", new Runnable() { public void run() { NullpoMinoSDL.goBack(); } });
+		closeBtn = ButtonSDL.newCloseButton(new Runnable() { public void run() { NullpoMinoSDL.goBack(); } });
 		NullpoMinoSDL.enableSpecialKeys = false;
 	}
 

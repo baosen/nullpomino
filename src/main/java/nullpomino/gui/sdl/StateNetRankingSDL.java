@@ -45,7 +45,7 @@ public class StateNetRankingSDL extends BaseStateSDL {
 		backBtn = new ButtonSDL(508, 424, 124, 32, "BACK",
 				new Runnable() { public void run() { NullpoMinoSDL.goBack(); } });
 		backBtn.primary = true;
-		closeBtn = new ButtonSDL(604, 4, 28, 24, "X", new Runnable() { public void run() { NullpoMinoSDL.goBack(); } });
+		closeBtn = ButtonSDL.newCloseButton(new Runnable() { public void run() { NullpoMinoSDL.goBack(); } });
 
 		setFocus(rankingTable);
 		requestStyle(tabStrip.getActiveTab());

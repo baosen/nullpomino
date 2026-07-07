@@ -19,6 +19,9 @@ public class ButtonSDL extends WidgetSDL {
 	public static final int THEME_VIOLET  = 3;   // violet — "info / secondary"
 
 	public String label;
+	/** When true, {@link #render()} draws a left-pointing arrow glyph before the
+	 *  label. Used by the standard top-right "back" button (see {@link #newCloseButton}). */
+	public boolean iconLeftArrow = false;
 	/** Shortcut for {@link #theme} = {@link #THEME_BLUE}; preserved for legacy callers. */
 	public boolean primary = false;
 	/** Colour theme — picks the background/tint colours in {@link #render()}. */
@@ -39,6 +42,22 @@ public class ButtonSDL extends WidgetSDL {
 	public ButtonSDL(int x, int y, int w, int h, String label, Runnable action) {
 		this(x, y, w, h, label);
 		this.action = action;
+	}
+
+	/** Standard geometry for the top-right "back" button. Width holds "◀ BACK";
+	 *  the right edge stays at 632 (an 8px margin on the 640-wide screen). */
+	public static final int CLOSE_W = 92, CLOSE_H = 24;
+
+	/**
+	 * The standard top-right corner "back" button shared by menu/config/netplay
+	 * screens: a left-pointing arrow + "BACK", wired to {@code action} (may be
+	 * null for screens that hit-test the button manually). Centralizes the
+	 * geometry, label, and arrow so every screen's close button stays identical.
+	 */
+	public static ButtonSDL newCloseButton(Runnable action) {
+		ButtonSDL b = new ButtonSDL(632 - CLOSE_W, 4, CLOSE_W, CLOSE_H, "BACK", action);
+		b.iconLeftArrow = true;
+		return b;
 	}
 
 	@Override
@@ -113,17 +132,24 @@ public class ButtonSDL extends WidgetSDL {
 		if(focused && enabled) drawRect(x + 1, y + 1, w - 2, h - 2, 255, 255, 0, 255);
 
 		if(label != null && label.length() > 0) {
-			String safe = NormalFontSDL.safeString(label);
-			int maxChars = Math.max(1, (w - 4) / 16);
-			if(safe.length() > maxChars) safe = safe.substring(0, maxChars);
-			int textW = safe.length() * 16;
-			int tx = x + (w - textW) / 2;
-			int ty = y + (h - 16) / 2;
 			boolean themed = effectiveTheme != THEME_DEFAULT;
 			int color = enabled
 					? (highlight || themed ? NormalFontSDL.COLOR_YELLOW : NormalFontSDL.COLOR_WHITE)
 					: NormalFontSDL.COLOR_DARKBLUE;
-			NormalFontSDL.printFont(tx, ty, safe, color);
+			int ty = y + (h - 16) / 2;
+			// Optional left-arrow icon reserves a 16px glyph + 4px gap before the label.
+			int iconW = iconLeftArrow ? 20 : 0;
+			String safe = NormalFontSDL.safeString(label);
+			int maxChars = Math.max(1, (w - 4 - iconW) / 16);
+			if(safe.length() > maxChars) safe = safe.substring(0, maxChars);
+			int textW = safe.length() * 16;
+			int gx = x + (w - iconW - textW) / 2;
+			if(iconLeftArrow) {
+				// 'b' is the atlas's right-pointing arrow; mirrored → left arrow.
+				NormalFontSDL.printFontFlippedH(gx, ty, 'b', color);
+				gx += iconW;
+			}
+			NormalFontSDL.printFont(gx, ty, safe, color);
 		}
 	}
 }

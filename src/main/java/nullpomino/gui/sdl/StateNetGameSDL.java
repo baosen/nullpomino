@@ -55,7 +55,7 @@ public class StateNetGameSDL extends BaseStateSDL implements NetLobbyListener {
 	 */
 	public NetLobbyFrame netLobby;
 
-	/** Top-right "X" close button. No inline action - folded into the leaveRoom flag in update() so it goes through the same safe room-teardown path as ESC/mouse-back. */
+	/** Top-right "back" close button. No inline action - folded into the leaveRoom flag in update() so it goes through the same safe room-teardown path as ESC/mouse-back. */
 	private ButtonSDL closeBtn;
 
 	@Override
@@ -66,7 +66,7 @@ public class StateNetGameSDL extends BaseStateSDL implements NetLobbyListener {
 		NullpoMinoSDL.maxFPS = 60;
 		NullpoMinoSDL.allowQuit = false;
 		instance = this;
-		closeBtn = new ButtonSDL(604, 4, 28, 24, "X");
+		closeBtn = ButtonSDL.newCloseButton(null);
 
 		netLobby = NullpoMinoSDL.netLobby;
 		if(netLobby == null) {

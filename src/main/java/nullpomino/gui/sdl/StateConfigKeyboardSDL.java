@@ -44,7 +44,7 @@ public class StateConfigKeyboardSDL extends BaseStateSDL {
 	/** Previous key input state */
 	protected boolean[] previousKeyPressedState;
 
-	/** Top-right "X" close button. */
+	/** Top-right "back" close button. */
 	private ButtonSDL closeBtn;
 
 	/**
@@ -288,7 +288,7 @@ public class StateConfigKeyboardSDL extends BaseStateSDL {
 	@Override
 	public void enter() {
 		reset();
-		closeBtn = new ButtonSDL(604, 4, 28, 24, "X", new Runnable() { public void run() { NullpoMinoSDL.goBack(); } });
+		closeBtn = ButtonSDL.newCloseButton(new Runnable() { public void run() { NullpoMinoSDL.goBack(); } });
 		NullpoMinoSDL.enableSpecialKeys = false;
 		SDL3.INSTANCE.SDL_SetWindowTitle(NullpoMinoSDL.window, NullpoMinoSDL.GAME_NAME);
 	}

@@ -54,7 +54,7 @@ public class StateInGameSDL extends BaseStateSDL {
 	protected String modeName;
 
 	/**
-	 * Top-right "X" close button, shown only on the pre-game SETTING screen
+	 * Top-right "back" close button, shown only on the pre-game SETTING screen
 	 * (mode.onSetting()/renderSetting() - e.g. PRACTICE MODE SETTINGS) and
 	 * hidden during actual gameplay. No inline action - folded into the
 	 * synthetic BUTTON_B press in injectSettingMouseInput() so it goes
@@ -73,7 +73,7 @@ public class StateInGameSDL extends BaseStateSDL {
 		fastforward = 0;
 		cursor = 0;
 		prevInGameFlag = false;
-		closeBtn = new ButtonSDL(604, 4, 28, 24, "X");
+		closeBtn = ButtonSDL.newCloseButton(null);
 	}
 
 	/**

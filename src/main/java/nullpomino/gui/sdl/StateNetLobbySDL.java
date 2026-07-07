@@ -146,7 +146,7 @@ public class StateNetLobbySDL extends BaseStateSDL {
 		rankingBtn.theme = ButtonSDL.THEME_VIOLET;
 
 		// Top-right corner: the hard quit (tears down everything netplay)
-		disconnectBtn = new ButtonSDL(604, 4, 28, 24, "X", new Runnable() { public void run() { NullpoMinoSDL.endNetplay(); } });
+		disconnectBtn = ButtonSDL.newCloseButton(new Runnable() { public void run() { NullpoMinoSDL.endNetplay(); } });
 
 		// Listen for room beacons + lounge chat. Best-effort: if the lounge
 		// can't open (UDP port busy / broker unreachable), CREATE and /join

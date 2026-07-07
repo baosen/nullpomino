@@ -122,7 +122,7 @@ public class StateNetCreateRoomSDL extends BaseStateSDL {
 	private ButtonSDL joinBtn;
 	private ButtonSDL watchBtn;
 	private ButtonSDL cancelBtn;
-	/** Top-right "X" close button. */
+	/** Top-right "back" close button. */
 	private ButtonSDL closeBtn;
 
 	/** Label to the left of the widget; optional unit annotation drawn to its right. */
@@ -363,7 +363,7 @@ public class StateNetCreateRoomSDL extends BaseStateSDL {
 		joinBtn.primary = true;
 		watchBtn  = new ButtonSDL(272, btnY, 124, 32, "WATCH",  new Runnable() { public void run() { submit(true,  true); } });
 		cancelBtn = new ButtonSDL(508, btnY, 124, 32, "CANCEL", new Runnable() { public void run() { cancel(); } });
-		closeBtn = new ButtonSDL(604, 4, 28, 24, "X", new Runnable() { public void run() { NullpoMinoSDL.goBack(); } });
+		closeBtn = ButtonSDL.newCloseButton(new Runnable() { public void run() { NullpoMinoSDL.goBack(); } });
 
 		// Build the per-tab widget arrays in the order they appear on screen.
 		tabFields = new Field[][] {

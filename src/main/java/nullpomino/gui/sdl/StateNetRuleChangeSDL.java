@@ -72,7 +72,7 @@ public class StateNetRuleChangeSDL extends BaseStateSDL {
 				new Runnable() { public void run() { openTuning(); } });
 		cancelBtn = new ButtonSDL(508, 424, 124, 32, "CANCEL",
 				new Runnable() { public void run() { NullpoMinoSDL.goBack(); } });
-		closeBtn = new ButtonSDL(604, 4, 28, 24, "X", new Runnable() { public void run() { NullpoMinoSDL.goBack(); } });
+		closeBtn = ButtonSDL.newCloseButton(new Runnable() { public void run() { NullpoMinoSDL.goBack(); } });
 
 		selectedIndex = new int[GameEngine.MAX_GAMESTYLE];
 		for(int i = 0; i < selectedIndex.length; i++) selectedIndex[i] = findCurrentRuleIndex(nl, i);
