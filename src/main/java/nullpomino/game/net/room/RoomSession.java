@@ -314,8 +314,13 @@ public class RoomSession implements RoomEndpoint, RoomEventSink {
 	private void dispatchEvent(RoomEvent event) {
 		switch(event.type) {
 		case LINK_ACCEPTED:
+			// The reader thread can post the peer's hello before the accept
+			// thread posts LINK_ACCEPTED, so this event may arrive after the
+			// handshake already bound the link (uid >= 0) into the roster.
+			// Re-adding a bound link to pendingLinks would make its later
+			// close look like an unbound-link death, skipping the logout.
 			synchronized(pendingLinks) {
-				pendingLinks.add(event.link);
+				if(event.link.uid < 0) pendingLinks.add(event.link);
 			}
 			break;
 		case LINE:
