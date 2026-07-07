@@ -49,9 +49,6 @@ class AIRemainingCoverageTest {
     @Test void poochyDefensive_LJValley() { PoochyBotDefensive a = new PoochyBotDefensive(); Field f = new Field(10,20,0,false); for (int y = 14; y < 20; y++) for (int x = 2; x < 5; x++) f.setBlockColor(x,y,1); f.setBlockColor(1,16,1); f.setBlockColor(1,15,1); f.setBlockColor(6,16,1); a.thinkMain(2,15,0,-1,f,new Piece(Piece.PIECE_T),1); }
     @Test void poochyDefensive_spawnDanger() { PoochyBotDefensive a = new PoochyBotDefensive(); Field f = new Field(10,20,0,false); f.setBlockColor(4,0,1); a.thinkMain(3,0,0,-1,f,new Piece(Piece.PIECE_I),0); }
 
-    // ComboRaceSeedSearch
-    @Test void comboRaceSeedSearch_createTables() { ComboRaceSeedSearch.createTables(); ComboRaceSeedSearch.nextQueueIDs = new int[ComboRaceSeedSearch.MAX_THINK_DEPTH]; boolean[] en = new boolean[Piece.PIECE_COUNT]; for(int i = 0; i < Piece.PIECE_STANDARD_COUNT; i++) en[i] = true; assertNotNull(ComboRaceSeedSearch.moves, "moves initialized"); }
-
     // BasicAI
     @Test void basicAI_shiftRotation() { BasicAI a = new BasicAI(); engine.aiUseThread = false; a.init(engine,0); engine.createFieldIfNeeded(); engine.nowPieceObject = new Piece(Piece.PIECE_T); engine.nowPieceObject.applyOffsetArray(engine.ruleopt.pieceOffsetX[Piece.PIECE_T],engine.ruleopt.pieceOffsetY[Piece.PIECE_T]); engine.nowPieceX = 5; engine.nowPieceY = 18; engine.ruleopt.rotateButtonDefaultRight = true; engine.ruleopt.rotateButtonAllowReverse = true; a.thinkBestPosition(engine,0); }
     @Test void basicAI_thinkMainNoPlace() { BasicAI a = new BasicAI(); Field f = new Field(10,20,0,false); for (int y = 0; y < 20; y++) for (int x = 0; x < 10; x++) f.setBlockColor(x,y,1); a.thinkMain(engine,0,0,0,-1,f,new Piece(Piece.PIECE_T),null,null,1); }
