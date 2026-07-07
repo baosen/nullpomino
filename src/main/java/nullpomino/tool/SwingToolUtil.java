@@ -2,9 +2,6 @@
 // SPDX-License-Identifier: BSD-3-Clause
 package nullpomino.tool;
 
-import java.io.File;
-import java.net.MalformedURLException;
-import java.net.URL;
 import java.util.List;
 import java.util.Vector;
 
@@ -13,10 +10,6 @@ import java.util.Vector;
  */
 public final class SwingToolUtil {
 	private SwingToolUtil() {
-	}
-
-	public static void ignoreInvalidTextField(Exception e) {
-		// Legacy text-field readers fall back to zero on malformed input.
 	}
 
 	/**
@@ -43,12 +36,5 @@ public final class SwingToolUtil {
 			return name.substring(last + 1);
 		}
 		return name;
-	}
-
-	/**
-	 * Convert a local path to the file URL shape used by the Swing tools.
-	 */
-	public static URL fileUrl(String path) throws MalformedURLException {
-		return new File(path).toURI().toURL();
 	}
 }

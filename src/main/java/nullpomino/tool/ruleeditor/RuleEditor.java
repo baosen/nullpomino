@@ -1332,7 +1332,7 @@ public class RuleEditor extends JFrame implements ActionListener {
 	 */
 	public URL getURL(String str) {
 		try {
-			return SwingToolUtil.fileUrl(str);
+			return new File(str).toURI().toURL();
 		} catch(MalformedURLException e) {
 			log.warn("Invalid URL:{}", str, e);
 			return null;
@@ -1632,7 +1632,7 @@ public class RuleEditor extends JFrame implements ActionListener {
 		try {
 			v = Integer.parseInt(txtfld.getText());
 		} catch(Exception e) {
-			SwingToolUtil.ignoreInvalidTextField(e);
+			// Legacy text-field readers fall back to zero on malformed input.
 		}
 
 		return v;
@@ -1649,7 +1649,7 @@ public class RuleEditor extends JFrame implements ActionListener {
 		try {
 			v = Float.parseFloat(txtfld.getText());
 		} catch (Exception e) {
-			SwingToolUtil.ignoreInvalidTextField(e);
+			// Legacy text-field readers fall back to zero on malformed input.
 		}
 
 		return v;

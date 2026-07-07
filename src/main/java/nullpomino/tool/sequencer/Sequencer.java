@@ -319,7 +319,7 @@ public class Sequencer extends JFrame implements ActionListener {
 		try {
 			v = Integer.parseInt(txtfld.getText());
 		} catch(Exception e) {
-			SwingToolUtil.ignoreInvalidTextField(e);
+			// Legacy text-field readers fall back to zero on malformed input.
 		}
 
 		return v;
@@ -336,7 +336,7 @@ public class Sequencer extends JFrame implements ActionListener {
 		try {
 			v = Long.parseLong(txtfld.getText());
 		} catch(Exception e) {
-			SwingToolUtil.ignoreInvalidTextField(e);
+			// Legacy text-field readers fall back to zero on malformed input.
 		}
 
 		return v;
