@@ -10,7 +10,6 @@ import java.awt.event.ActionListener;
 import java.io.File;
 import java.io.IOException;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.Locale;
 
 import javax.swing.AbstractAction;
@@ -26,6 +25,7 @@ import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 import javax.swing.JTextField;
 import javax.swing.UIManager;
+import javax.swing.filechooser.FileNameExtensionFilter;
 
 import nullpomino.game.component.BGMStatus;
 import nullpomino.util.CustomProperties;
@@ -65,8 +65,8 @@ public class MusicListEditor extends JFrame implements ActionListener {
 	/** File selection dialog */
 	private JFileChooser fileChooser;
 
-	/** File filterHashMap */
-	private HashMap<String, SimpleFileFilter> hashmapFileFilters;
+	/** File filters by extension (with leading dot) */
+	private HashMap<String, FileNameExtensionFilter> hashmapFileFilters;
 
 	/**
 	 * Constructor
@@ -188,20 +188,17 @@ public class MusicListEditor extends JFrame implements ActionListener {
 		pButtons.add(btnCancel);
 
 		// File Filter
-		hashmapFileFilters = new HashMap<String, SimpleFileFilter>();
-		hashmapFileFilters.put(".wav", new SimpleFileFilter(".wav", getUIText("FileChooser_wav")));
-		hashmapFileFilters.put(".xm", new SimpleFileFilter(".xm", getUIText("FileChooser_xm")));
-		hashmapFileFilters.put(".mod", new SimpleFileFilter(".mod", getUIText("FileChooser_mod")));
-		hashmapFileFilters.put(".aif", new SimpleFileFilter(".aif", getUIText("FileChooser_aif")));
-		hashmapFileFilters.put(".aiff", new SimpleFileFilter(".aif", getUIText("FileChooser_aiff")));
-		hashmapFileFilters.put(".ogg", new SimpleFileFilter(".ogg", getUIText("FileChooser_ogg")));
+		hashmapFileFilters = new HashMap<String, FileNameExtensionFilter>();
+		hashmapFileFilters.put(".wav", new FileNameExtensionFilter(getUIText("FileChooser_wav"), "wav"));
+		hashmapFileFilters.put(".xm", new FileNameExtensionFilter(getUIText("FileChooser_xm"), "xm"));
+		hashmapFileFilters.put(".mod", new FileNameExtensionFilter(getUIText("FileChooser_mod"), "mod"));
+		hashmapFileFilters.put(".aif", new FileNameExtensionFilter(getUIText("FileChooser_aif"), "aif"));
+		hashmapFileFilters.put(".aiff", new FileNameExtensionFilter(getUIText("FileChooser_aiff"), "aif"));
+		hashmapFileFilters.put(".ogg", new FileNameExtensionFilter(getUIText("FileChooser_ogg"), "ogg"));
 
 		// File selection dialog
 		fileChooser = new JFileChooser();
-
-		Iterator<SimpleFileFilter> it = hashmapFileFilters.values().iterator();
-		while(it.hasNext()) {
-			SimpleFileFilter filter = it.next();
+		for(FileNameExtensionFilter filter : hashmapFileFilters.values()) {
 			fileChooser.addChoosableFileFilter(filter);
 		}
 	}
