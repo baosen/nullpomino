@@ -109,6 +109,8 @@ public class NormalFontSDL {
 		FloatRef height = new FloatRef();
 		SDL3.INSTANCE.SDL_GetTextureSize(texture, width, height);
 		SDL3.INSTANCE.SDL_SetTextureBlendMode(texture, SDLConstants.SDL_BLENDMODE_BLEND);
+		// Nearest-neighbor scaling so TTF text stays crisp under the logical->window upscale, like the bitmap fonts (ResourceHolderSDL.loadImage)
+		SDL3.INSTANCE.SDL_SetTextureScaleMode(texture, SDLConstants.SDL_SCALEMODE_NEAREST);
 		SDLStructs.SDL_FRect dst = new SDLStructs.SDL_FRect(x, y, width.getValue(), height.getValue());
 		SDL3.INSTANCE.SDL_RenderTexture(NullpoMinoSDL.renderer, texture, null, dst);
 		SDL3.INSTANCE.SDL_DestroyTexture(texture);
