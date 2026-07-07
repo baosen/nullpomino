@@ -3,7 +3,6 @@
 package nullpomino.game.net;
 
 import java.io.Serializable;
-import java.nio.channels.SocketChannel;
 import java.util.Arrays;
 
 import nullpomino.game.component.RuleOptions;
@@ -84,9 +83,6 @@ public class NetPlayerInfo implements Serializable {
 	/** Real IP (for internal use) */
 	public String strRealIP = "";
 
-	/** SocketChannel of this player (for internal use) */
-	public SocketChannel channel = null;
-
 	/**
 	 * Constructor
 	 */
@@ -151,7 +147,6 @@ public class NetPlayerInfo implements Serializable {
 		connected = n.connected;
 		strRealHost = n.strRealHost;
 		strRealIP = n.strRealIP;
-		channel = n.channel;
 	}
 
 	/**

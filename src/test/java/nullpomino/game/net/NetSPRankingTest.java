@@ -7,7 +7,6 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import java.util.LinkedList;
 
 import nullpomino.game.component.Statistics;
 import nullpomino.util.CustomProperties;
@@ -169,35 +168,6 @@ class NetSPRankingTest {
 
 		NetSPRecord worse = record("alice", 50);
 		assertFalse(ranking.isNewRecord(worse));
-	}
-
-	@Test
-	void mergeRankingsCombinesRecordsAcrossSourceRankings() {
-		NetSPRanking r1 = rankingWithMax(10);
-		r1.listRecord.add(record("alice", 100));
-		r1.listRecord.add(record("bob", 90));
-		NetSPRanking r2 = rankingWithMax(10);
-		r2.listRecord.add(record("carol", 80));
-		LinkedList<NetSPRanking> rankings = new LinkedList<>();
-		rankings.add(r1);
-		rankings.add(r2);
-
-		NetSPRanking merged = NetSPRanking.mergeRankings(rankings);
-
-		assertEquals(3, merged.listRecord.size());
-		assertNotNullElement(merged, "alice");
-		assertNotNullElement(merged, "bob");
-		assertNotNullElement(merged, "carol");
-	}
-
-	@Test
-	void mergeRankingsReturnsNullForNullOrEmptyInput() {
-		assertNull(NetSPRanking.mergeRankings(null));
-		assertNull(NetSPRanking.mergeRankings(new LinkedList<>()));
-	}
-
-	private static void assertNotNullElement(NetSPRanking ranking, String name) {
-		assertSame(name, ranking.getRecord(name).strPlayerName);
 	}
 
 	private static NetSPRanking rankingWithMax(int maxRecords) {

@@ -65,7 +65,6 @@ public final class RoomProtocol {
 	public static final String DENY_DIFFERENT_VERSION = "DIFFERENT_VERSION";
 	public static final String DENY_DIFFERENT_BUILD = "DIFFERENT_BUILD";
 	public static final String DENY_BAD_TOKEN = "BAD_TOKEN";
-	public static final String DENY_DUPLICATE = "DUPLICATE";
 	public static final String DENY_SHUTDOWN = "SHUTDOWN";
 
 	private RoomProtocol() {}
@@ -397,10 +396,6 @@ public final class RoomProtocol {
 	}
 
 	// ------------------------------------------------------------------ rule cache / liveness / failure
-
-	public static String buildRuleCache(int uid, String checksum, String compressedData) {
-		return "room\trule\t" + uid + "\t" + checksum + "\t" + compressedData;
-	}
 
 	public static String buildPeerDown(int uid) {
 		return "room\tpeerdown\t" + uid;

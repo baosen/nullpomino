@@ -6,7 +6,6 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.net.URLDecoder;
 import java.net.URLEncoder;
-import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 import java.util.zip.DataFormatException;
@@ -18,7 +17,6 @@ import java.util.zip.Inflater;
  * Network utils
  */
 public class NetUtil {
-	private static final Charset SHIFT_JIS = Charset.forName("Shift_JIS");
 	private static final int ZIP_BUFFER_SIZE = 1024;
 
 	public interface PacketHandler {
@@ -59,24 +57,6 @@ public class NetUtil {
 	 */
 	public static String urlDecode(String str) {
 		return URLDecoder.decode(str, StandardCharsets.UTF_8);
-	}
-
-	/**
-	 * Convert String to byte[] with Shift_JIS encoding
-	 * @param s UTF-8 String
-	 * @return Shift_JIS encoded byte array (byte[])
-	 */
-	public static byte[] stringToShiftJIS(String s) {
-		return s.getBytes(SHIFT_JIS);
-	}
-
-	/**
-	 * Convert Shift_JIS byte array (byte[]) to String
-	 * @param b Shift_JIS encoded byte array (byte[])
-	 * @return UTF-8 String
-	 */
-	public static String shiftJIStoString(byte[] b) {
-		return new String(b, SHIFT_JIS);
 	}
 
 	public static StringBuilder processPacketBuffer(StringBuilder partialPacket,

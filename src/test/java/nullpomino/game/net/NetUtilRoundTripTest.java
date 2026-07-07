@@ -5,7 +5,6 @@ import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
-import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -34,13 +33,6 @@ class NetUtilRoundTripTest {
 		String encoded = NetUtil.urlEncode(payload);
 		assertEquals("room%3DAlpha+Beta%26message%3Da%2Bb%3Dc%3F", encoded);
 		assertEquals(payload, NetUtil.urlDecode(encoded));
-	}
-
-	@Test
-	void shiftJisHelpersUseShiftJisBytes() {
-		String payload = "テスト";
-		assertArrayEquals(payload.getBytes(Charset.forName("Shift_JIS")), NetUtil.stringToShiftJIS(payload));
-		assertEquals(payload, NetUtil.shiftJIStoString(NetUtil.stringToShiftJIS(payload)));
 	}
 
 	@Test
