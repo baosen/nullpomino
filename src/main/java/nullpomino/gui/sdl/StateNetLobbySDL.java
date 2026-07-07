@@ -101,12 +101,12 @@ public class StateNetLobbySDL extends BaseStateSDL {
 		}
 
 		// Header strip y=4..28: NAME + TEAM inputs replace the old LOBBY header
-		nameInput = new TextInputSDL(76, 4, 232, 24);
+		nameInput = new TextInputSDL(76, 4, 188, 24);
 		nameInput.maxChars = 32;
 		nameInput.placeholder = "Player name";
 		nameInput.setText(nl.propConfig.getProperty("serverselect.txtfldPlayerName.text", ""));
 
-		teamInput = new TextInputSDL(388, 4, 180, 24);
+		teamInput = new TextInputSDL(344, 4, 188, 24);
 		teamInput.maxChars = 24;
 		teamInput.setText(nl.propConfig.getProperty("serverselect.txtfldPlayerTeam.text", ""));
 
@@ -665,10 +665,10 @@ public class StateNetLobbySDL extends BaseStateSDL {
 		// own field chrome).
 		SDL3.INSTANCE.SDL_RenderTexture(NullpoMinoSDL.renderer, ResourceHolderSDL.imgMenu, null, null);
 
-		// Header strip: NAME / TEAM inputs + the X button
+		// Header strip: NAME / TEAM inputs + the back button
 		NormalFontSDL.printFont(8, 8, "NAME", NormalFontSDL.COLOR_WHITE);
 		nameInput.render();
-		NormalFontSDL.printFont(320, 8, "TEAM", NormalFontSDL.COLOR_WHITE);
+		NormalFontSDL.printFont(276, 8, "TEAM", NormalFontSDL.COLOR_WHITE);
 		teamInput.render();
 		disconnectBtn.render();
 
