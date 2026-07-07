@@ -18,22 +18,11 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  test:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v7
-
-      - name: Cache Bazel
-        uses: actions/cache@v6
-        with:
-          path: ~/.cache/bazel
-          key: bazel-test-${{ hashFiles('MODULE.bazel', 'maven_install.json', '.bazelversion') }}
-          restore-keys: bazel-test-
-
-      - name: Run tests
-        run: bazel test //src/test/java/... --test_output=errors
-
-  build:
+  # Tests and the web build share one job so they also share one Bazel cache:
+  # both compile src/main/java under the same (default, Java 17) config, so the
+  # web build reuses the classes the test build already compiled — no duplicate
+  # compilation, one cache instead of two.
+  build-and-test:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
@@ -43,14 +32,25 @@ jobs:
         with:
           enablement: true
 
-      - name: Cache Bazel
-        uses: actions/cache@v6
+      # The run-id suffix makes every run save a fresh cache: a static key is
+      # always a cache hit, so actions/cache would never save an update and the
+      # cache freezes. The prefix restore-keys pull the most recent cache. Split
+      # restore/save (instead of the combined action) so the cache is still
+      # written when tests fail — the combined action's post-if: success() drops
+      # it on a red run, throwing away that run's compilation.
+      - name: Restore Bazel cache
+        uses: actions/cache/restore@v6
         with:
           path: ~/.cache/bazel
-          key: bazel-web-${{ hashFiles('MODULE.bazel', 'maven_install.json', '.bazelversion') }}
-          restore-keys: bazel-web-
+          key: bazel-${{ hashFiles('MODULE.bazel', 'maven_install.json', '.bazelversion') }}-${{ github.run_id }}
+          restore-keys: |
+            bazel-${{ hashFiles('MODULE.bazel', 'maven_install.json', '.bazelversion') }}-
+            bazel-
 
       # Ubuntu runners ship bazelisk as `bazel`; .bazelversion pins the version.
+      - name: Run tests
+        run: bazel test //src/test/java/... --test_output=errors
+
       - name: Build site
         run: sh web/build-site.sh
 
@@ -58,8 +58,15 @@ jobs:
         with:
           path: web/dist
 
+      - name: Save Bazel cache
+        if: always()
+        uses: actions/cache/save@v6
+        with:
+          path: ~/.cache/bazel
+          key: bazel-${{ hashFiles('MODULE.bazel', 'maven_install.json', '.bazelversion') }}-${{ github.run_id }}
+
   deploy:
-    needs: [build, test]
+    needs: [build-and-test]
     runs-on: ubuntu-latest
     environment:
       name: github-pages
