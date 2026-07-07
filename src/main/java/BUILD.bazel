@@ -84,27 +84,23 @@ java_library(
     ],
 )
 
-# Browser (TeaVM) variant of :core — the same engine/GUI cluster, but with the
-# socket-based NetBaseClient swapped for a socket-free stub. The netplay states
-# aren't reachable from the web entry point, but every mode's netplay lifecycle
-# hooks statically reach NetBaseClient.send -> java.net.Socket, which TeaVM's
-# classlib lacks; the stub keeps the reachable graph java.net-free. Logback
-# stays on the compile classpath (LogConfig references it) but is excluded from
-# the deploy jar (see //:web_deploy_env), and is never reached at runtime.
+# Browser (TeaVM) variant of :core — the same engine/GUI cluster. NetBaseClient
+# is transport-free (the room path supplies WebRTC/TCP transports behind the
+# RoomNet seam), so no source overrides are needed to keep the reachable graph
+# java.net-free. Logback stays on the compile classpath (LogConfig references
+# it) but is excluded from the deploy jar (see //:web_deploy_env), and is never
+# reached at runtime.
 java_library(
     name = "core_web",
-    srcs = glob(
-        [
-            "nullpomino/util/*.java",
-            "nullpomino/game/**/*.java",
-            "nullpomino/gui/*.java",
-            "nullpomino/gui/net/*.java",
-            "nullpomino/gui/sdl/*.java",
-            "nullpomino/gui/sdl/widget/*.java",
-            "nullpomino/tool/airankstool/*.java",
-        ],
-        exclude = ["nullpomino/game/net/NetBaseClient.java"],
-    ) + ["//src/main/java-webstub:netbaseclient_webstub"],
+    srcs = glob([
+        "nullpomino/util/*.java",
+        "nullpomino/game/**/*.java",
+        "nullpomino/gui/*.java",
+        "nullpomino/gui/net/*.java",
+        "nullpomino/gui/sdl/*.java",
+        "nullpomino/gui/sdl/widget/*.java",
+        "nullpomino/tool/airankstool/*.java",
+    ]),
     javacopts = JAVACOPTS,
     visibility = ["//visibility:public"],
     deps = [

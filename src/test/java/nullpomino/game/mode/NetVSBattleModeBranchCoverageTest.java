@@ -399,7 +399,7 @@ class NetVSBattleModeBranchCoverageTest {
 		// Set netPlayerClient to avoid NPE
 		java.lang.reflect.Field netPlayerClientField = nullpomino.gui.net.NetLobbyFrame.class.getDeclaredField("netPlayerClient");
 		netPlayerClientField.setAccessible(true);
-		netPlayerClientField.set(readField(mode, "netLobby"), new nullpomino.game.net.NetPlayerClient("", 0) {
+		netPlayerClientField.set(readField(mode, "netLobby"), new nullpomino.game.net.NetPlayerClient() {
 			@Override
 			public boolean send(String msg) { return true; }
 			@Override
@@ -672,7 +672,7 @@ class NetVSBattleModeBranchCoverageTest {
 		setField(mode, "netLobby", new nullpomino.gui.net.NetLobbyFrame());
 		java.lang.reflect.Field netPlayerClientField = nullpomino.gui.net.NetLobbyFrame.class.getDeclaredField("netPlayerClient");
 		netPlayerClientField.setAccessible(true);
-		netPlayerClientField.set(readField(mode, "netLobby"), new nullpomino.game.net.NetPlayerClient("", 0) {
+		netPlayerClientField.set(readField(mode, "netLobby"), new nullpomino.game.net.NetPlayerClient() {
 			@Override
 			public boolean send(String msg) { return true; }
 			@Override
@@ -712,7 +712,7 @@ class NetVSBattleModeBranchCoverageTest {
 		setField(mode, "netLobby", new nullpomino.gui.net.NetLobbyFrame());
 		java.lang.reflect.Field netPlayerClientField = nullpomino.gui.net.NetLobbyFrame.class.getDeclaredField("netPlayerClient");
 		netPlayerClientField.setAccessible(true);
-		netPlayerClientField.set(readField(mode, "netLobby"), new nullpomino.game.net.NetPlayerClient("", 0) {
+		netPlayerClientField.set(readField(mode, "netLobby"), new nullpomino.game.net.NetPlayerClient() {
 			@Override
 			public boolean send(String msg) { return true; }
 			@Override

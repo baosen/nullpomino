@@ -126,11 +126,4 @@ class NetRoomPlayerClientTest {
         assertFalse(client.isConnected());
     }
 
-    @Test
-    void threadEntryPointsAreInert() {
-        client.connect();
-        ((Runnable) client).run();  // deliberately synchronous: must not open sockets or throw
-        client.startPingTask(123);  // the room core owns keepalive: no timer, no ping lines
-        assertTrue(endpoint.sent.isEmpty());
-    }
 }

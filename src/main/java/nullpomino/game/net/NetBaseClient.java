@@ -3,42 +3,23 @@
 package nullpomino.game.net;
 
 import java.io.IOException;
-import java.net.Socket;
-import java.nio.charset.StandardCharsets;
 import java.util.LinkedList;
-import java.util.Timer;
-import java.util.TimerTask;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Client(Basic part)
+ * Netplay client base: the listener registry and the tab-delimited message
+ * dispatch shared by every client. Carries no transport of its own —
+ * {@link NetRoomPlayerClient} routes lines through the P2P room session and
+ * overrides {@link #send} / {@link #isConnected}.
  */
-public class NetBaseClient extends Thread {
+public class NetBaseClient {
 	/** Log */
 	static final Logger log = LoggerFactory.getLogger(NetBaseClient.class);
 
-	/**  default Port of number */
-	public static final int DEFAULT_PORT = 9200;
-
-	/** The size of the read buffer */
-	public static final int BUF_SIZE = 2048;
-
-	/** Default ping interval (1000=1s) */
-	public static final int PING_INTERVAL = 5 * 1000;
-
-	/** This countOnlypingIf there is no reaction even hit the automatic disconnection */
-	public static final int PING_AUTO_DISCONNECT_COUNT = 6;
-
-	/** trueThread moves between */
-	public volatile boolean threadRunning;
-
 	/** Regular always While you are connectedtrue */
 	public volatile boolean connectedFlag;
-
-	/** Socket for connection */
-	protected Socket socket;
 
 	/** Destination host */
 	protected String host;
@@ -49,99 +30,8 @@ public class NetBaseClient extends Thread {
 	/** IP address */
 	protected String ip;
 
-	/** Previous incomplete packet */
-	protected StringBuilder notCompletePacketBuffer;
-
 	/** Interface receiving messages */
 	protected LinkedList<NetMessageListener> listeners = new LinkedList<NetMessageListener>();
-
-	/** pingHit count(From serverpongReset When a message is received) */
-	protected int pingCount;
-
-	/** Ping task */
-	protected TimerTask taskPing;
-
-	/** AutomaticpingHitTimer */
-	protected Timer timerPing;
-
-	/**
-	 * Default constructor
-	 */
-	public NetBaseClient() {
-		super();
-		this.host = null;
-		this.port = DEFAULT_PORT;
-	}
-
-	/**
-	 * Constructor
-	 * @param host Destination host
-	 */
-	public NetBaseClient(String host) {
-		super("NET_"+host);
-		this.host = host;
-		this.port = DEFAULT_PORT;
-	}
-
-	/**
-	 * Constructor
-	 * @param host Destination host
-	 * @param port Destination port number
-	 */
-	public NetBaseClient(String host, int port) {
-		super("NET_"+host+":"+port);
-		this.host = host;
-		this.port = port;
-	}
-
-	/*
-	 * Processing of the thread
-	 */
-	@Override
-	public void run() {
-		threadRunning = true;
-		connectedFlag = false;
-		log.info("Connecting to {}:{}", host, port);
-
-		Throwable exDisconnectReason = null;
-
-		try {
-			// Connection
-			socket = new Socket(host, port);
-			connectedFlag = true;
-			ip = socket.getInetAddress().getHostAddress();
-
-			// pingHitTimerPreparation
-			startPingTask();
-
-			// Message reception
-			byte[] buf = new byte[BUF_SIZE];
-			int size;
-
-			while( (threadRunning) && ((size = socket.getInputStream().read(buf)) > 0) ) {
-				String message = new String(buf, 0, size, StandardCharsets.UTF_8);
-
-				notCompletePacketBuffer = NetUtil.processPacketBuffer(
-						notCompletePacketBuffer, message, this::processPacket);
-			}
-		} catch (Exception e) {
-			log.info("Socket disconnected", e);
-			exDisconnectReason = e;
-		}
-
-		if(timerPing != null) timerPing.cancel();
-		connectedFlag = false;
-		threadRunning = false;
-
-		// Listener
-		for(int i = 0; i < listeners.size(); i++) {
-			try {
-				listeners.get(i).netOnDisconnect(this, exDisconnectReason);
-			} catch (Exception e2) {
-				log.debug("Uncaught Exception on NetMessageListener #{} (disconnect event)", i, e2);
-			}
-		}
-	}
 
 	/**
 	 * The various processing depending on the received message
@@ -150,14 +40,6 @@ public class NetBaseClient extends Thread {
 	 */
 	protected void processPacket(String fullMessage) throws IOException {
 		String[] message = fullMessage.split("\t");	// Tab delimited
-
-		// pingReply
-		if(message[0].equals("pong")) {
-			if(pingCount >= (PING_AUTO_DISCONNECT_COUNT / 2)) {
-				log.debug("pong {}", pingCount);
-			}
-			pingCount = 0;
-		}
 
 		// ListenerCall
 		for(int i = 0; i < listeners.size(); i++) {
@@ -170,40 +52,28 @@ public class NetBaseClient extends Thread {
 	}
 
 	/**
-	 * Send a message to the server
+	 * Send a message (the base class has no transport; subclasses override)
 	 * @param bytes Message to be sent
 	 * @return true if successful
 	 */
 	public boolean send(byte[] bytes) {
-		try {
-			socket.getOutputStream().write(bytes);
-		} catch (Exception e) {
-			log.error("Failed to send message", e);
-			return false;
-		}
-		return true;
+		return false;
 	}
 
 	/**
-	 * Send a message to the server
+	 * Send a message (the base class has no transport; subclasses override)
 	 * @param msg Message to be sent
 	 * @return true if successful
 	 */
 	public boolean send(String msg) {
-		try {
-			socket.getOutputStream().write(NetUtil.stringToBytes(msg));
-		} catch (Exception e) {
-			log.error("Failed to send message ({})", msg, e);
-			return false;
-		}
-		return true;
+		return false;
 	}
 
 	/**
 	 * @return Regular always And are connectedtrue
 	 */
 	public boolean isConnected() {
-		return (socket == null) ? false : (socket.isConnected() && connectedFlag);
+		return false;
 	}
 
 	/**
@@ -242,58 +112,5 @@ public class NetBaseClient extends Thread {
 	 */
 	public boolean removeListener(NetMessageListener l) {
 		return listeners.remove(l);
-	}
-
-	/**
-	 * Start Ping timer task
-	 */
-	public void startPingTask() {
-		startPingTask(PING_INTERVAL);
-	}
-
-	/**
-	 * Start Ping timer task
-	 * @param interval Interval
-	 */
-	public void startPingTask(long interval) {
-		log.debug("Ping interval:{}", interval);
-		if(timerPing != null) timerPing.cancel();
-		if(interval <= 0) return;
-		pingCount = 0;
-		taskPing = new PingTask();
-		timerPing = new Timer(true);
-		timerPing.schedule(taskPing, interval, interval);
-	}
-
-	/**
-	 * Ping task
-	 */
-	protected class PingTask extends TimerTask {
-		@Override
-		public void run() {
-			try {
-				if(isConnected()) {
-					if(pingCount >= PING_AUTO_DISCONNECT_COUNT) {
-						log.error("Ping timeout");
-						threadRunning = false;
-						connectedFlag = false;
-						if(timerPing != null) timerPing.cancel();
-					} else {
-						send("ping\n");
-						pingCount++;
-
-						if(pingCount >= (PING_AUTO_DISCONNECT_COUNT / 2)) {
-							log.debug("Ping {}/{}", pingCount, PING_AUTO_DISCONNECT_COUNT);
-						}
-					}
-				} else {
-					log.info("Ping Timer Cancelled");
-					if(timerPing != null) timerPing.cancel();
-				}
-			} catch (Exception e) {
-				log.error("Exception in Ping Timer. Stopping the task.", e);
-				if(timerPing != null) timerPing.cancel();
-			}
-		}
 	}
 }

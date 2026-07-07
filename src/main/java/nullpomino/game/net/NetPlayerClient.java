@@ -52,23 +52,6 @@ public class NetPlayerClient extends NetBaseClient {
 	/**
 	 * Constructor
 	 * @param host Destination host
-	 */
-	public NetPlayerClient(String host) {
-		super(host);
-	}
-
-	/**
-	 * Constructor
-	 * @param host Destination host
-	 * @param port Destination port number
-	 */
-	public NetPlayerClient(String host, int port) {
-		super(host, port);
-	}
-
-	/**
-	 * Constructor
-	 * @param host Destination host
 	 * @param port Destination port number
 	 * @param name PlayerOfName
 	 */
@@ -107,11 +90,6 @@ public class NetPlayerClient extends NetBaseClient {
 			//welcome\t[VERSION]\t[PLAYERS]\t[OBSERVERS]\t[VERSION MINOR]\t[VERSION STRING]\t[PING INTERVAL]\t[DEV BUILD]
 			playerCount = Integer.parseInt(message[2]);
 			observerCount = Integer.parseInt(message[3]);
-
-			long pingInterval = (message.length > 6) ? Long.parseLong(message[6]) : PING_INTERVAL;
-			if(pingInterval != PING_INTERVAL) {
-				startPingTask(pingInterval);
-			}
 
 			send("login\t" + GameManager.getVersionMajor() + "\t" + NetUtil.urlEncode(playerName) + "\t" + Locale.getDefault().getCountry() + "\t" +
 				 NetUtil.urlEncode(playerTeam) + "\t" + GameManager.getVersionMinor() + "\t" + GameManager.isDevBuild() + "\n");

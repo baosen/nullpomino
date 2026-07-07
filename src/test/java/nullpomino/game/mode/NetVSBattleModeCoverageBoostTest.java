@@ -85,7 +85,7 @@ class NetVSBattleModeCoverageBoostTest {
 	/** Attach a disconnected lobby + a no-op send client so send() is safe. */
 	private static void attachLobby(NetVSBattleMode mode) throws Exception {
 		NetLobbyFrame lobby = new NetLobbyFrame();
-		NetPlayerClient client = new NetPlayerClient("", 0) {
+		NetPlayerClient client = new NetPlayerClient() {
 			@Override
 			public boolean send(String msg) { return true; }
 			@Override

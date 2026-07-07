@@ -54,8 +54,8 @@ import nullpomino.game.mode.VSLineRaceMode;
  * instantiation rather than reflectively (TeaVM cannot resolve
  * {@code Class.forName}). Includes the netplay modes: they are web-safe,
  * since the netplay client stack reaches sockets only through the
- * RoomNet/RoomTransport seam (WebRTC on the web) and the legacy
- * {@code NetBaseClient} base class is the socket-free webstub.
+ * RoomNet/RoomTransport seam (WebRTC on the web); the {@code NetBaseClient}
+ * base class carries no transport of its own.
  * The desktop build keeps using {@link ModeRegistry#all()} unchanged.
  */
 public final class StandaloneModeRegistry {

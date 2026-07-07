@@ -402,7 +402,7 @@ public class NullpoMinoSDL {
 	 * Instantiate every SDL state, including the netplay states, for both the
 	 * desktop and the browser (TeaVM) entry points. Netplay is safe on the web
 	 * build: it runs the room engine over WebRTC DataChannels behind the
-	 * RoomNet seam, and the java-webstub source override keeps {@code java.net}
+	 * RoomNet seam, and the transport-free NetBaseClient keeps {@code java.net}
 	 * socket code out of the TeaVM-compiled call graph.
 	 */
 	public static void registerAllStates() {

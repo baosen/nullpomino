@@ -16,27 +16,11 @@ class NetPlayerClientTest {
 		NetPlayerClient client = new NetPlayerClient();
 
 		assertNull(client.getHost());
-		assertEquals(NetBaseClient.DEFAULT_PORT, client.getPort());
+		assertEquals(0, client.getPort());
 		assertNull(client.getPlayerName());
 		assertEquals(0, client.getPlayerUID());
 		assertEquals(-1, client.getPlayerCount());
 		assertEquals(-1, client.getObserverCount());
-	}
-
-	@Test
-	void hostConstructorSetsHostAndDefaultPort() {
-		NetPlayerClient client = new NetPlayerClient("example.invalid");
-
-		assertEquals("example.invalid", client.getHost());
-		assertEquals(NetBaseClient.DEFAULT_PORT, client.getPort());
-	}
-
-	@Test
-	void hostAndPortConstructorSetsBoth() {
-		NetPlayerClient client = new NetPlayerClient("example.invalid", 5000);
-
-		assertEquals("example.invalid", client.getHost());
-		assertEquals(5000, client.getPort());
 	}
 
 	@Test
@@ -60,34 +44,13 @@ class NetPlayerClientTest {
 	}
 
 	@Test
-	void welcomePacketUpdatesPlayerAndObserverCountsAndDoesNotStartPingTimerForDefault()
-			throws IOException {
+	void welcomePacketUpdatesPlayerAndObserverCounts() throws IOException {
 		NetPlayerClient client = new NetPlayerClient("example.invalid", 5000, "Nullpo");
 
-		client.processPacket(
-				"welcome\t1.0\t11\t4\t0\t1.0a\t" + NetBaseClient.PING_INTERVAL);
+		client.processPacket("welcome\t1.0\t11\t4\t0\t1.0a\t5000");
 
 		assertEquals(11, client.getPlayerCount());
 		assertEquals(4, client.getObserverCount());
-		assertNull(client.timerPing);
-	}
-
-	@Test
-	void welcomePacketWithCustomPingIntervalStartsPingTask() throws IOException {
-		NetPlayerClient client = new NetPlayerClient("example.invalid", 5000, "Nullpo");
-
-		try {
-			client.processPacket(
-					"welcome\t1.0\t11\t4\t0\t1.0a\t" + (NetBaseClient.PING_INTERVAL * 2));
-
-			assertEquals(11, client.getPlayerCount());
-			assertEquals(4, client.getObserverCount());
-			assertNotNull(client.timerPing);
-		} finally {
-			if (client.timerPing != null) {
-				client.timerPing.cancel();
-			}
-		}
 	}
 
 	@Test

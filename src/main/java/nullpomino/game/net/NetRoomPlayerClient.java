@@ -13,9 +13,8 @@ import org.slf4j.LoggerFactory;
 /**
  * {@link NetPlayerClient} over a P2P room session instead of a server
  * socket. Synthesized lines from the room session enter the inherited
- * {@link #processPacket} (mirrors update, listeners fan out - exactly the
- * socket reader path), and outbound {@link #send} routes into the room session.
- * Never {@code start()}ed as a Thread; there is no socket.
+ * {@link #processPacket} (mirrors update, listeners fan out), and outbound
+ * {@link #send} routes into the room session.
  */
 public class NetRoomPlayerClient extends NetPlayerClient {
 	/** Log */
@@ -83,18 +82,4 @@ public class NetRoomPlayerClient extends NetPlayerClient {
 		return connectedFlag && room.isOpen();
 	}
 
-	@Override
-	public void startPingTask() {
-		// The room core owns keepalive
-	}
-
-	@Override
-	public void startPingTask(long interval) {
-		// The room core owns keepalive
-	}
-
-	@Override
-	public void run() {
-		log.warn("NetRoomPlayerClient is not a thread; use connect()");
-	}
 }

@@ -12,15 +12,13 @@ import org.junit.jupiter.api.Test;
  * Covers the remaining branches in NetPlayerClient.processPacket /
  * getPlayerInfoByUID:
  * <ul>
- *   <li>L110 welcome {@code (message.length > 6)} ternary true outcome (a
- *       welcome packet carrying a ping-interval field);</li>
  *   <li>L215 changestatus {@code joinseat} else-if true outcome;</li>
  *   <li>L250 getPlayerInfoByUID {@code pInfo.uid == uid} false outcome (the loop
  *       skips a non-matching player before finding/missing the target).</li>
  * </ul>
  *
- * NetPlayerClient is driven without a live socket: send() swallows the
- * resulting NPE, so processPacket completes for parsing-only paths.
+ * NetPlayerClient is driven without a transport: the base send() is a
+ * no-op, so processPacket completes for parsing-only paths.
  */
 class NetPlayerClientBranchCoverageTest {
 
@@ -29,25 +27,6 @@ class NetPlayerClientBranchCoverageTest {
 		p.uid = uid;
 		p.strName = name;
 		return p.exportString();
-	}
-
-	@Test
-	void welcomeWithPingIntervalFieldTakesLengthGreaterThanSixBranch() throws IOException {
-		NetPlayerClient client = new NetPlayerClient("example.invalid", 5000, "Nullpo");
-		try {
-			// 7 tab fields → message.length == 7 > 6 → ternary true arm; the
-			// interval differs from PING_INTERVAL so a ping task is scheduled.
-			client.processPacket(
-					"welcome\t1.0\t8\t2\t0\t1.0a\t" + (NetBaseClient.PING_INTERVAL * 3));
-
-			assertEquals(8, client.getPlayerCount());
-			assertEquals(2, client.getObserverCount());
-			assertNotNull(client.timerPing);
-		} finally {
-			if (client.timerPing != null) {
-				client.timerPing.cancel();
-			}
-		}
 	}
 
 	@Test

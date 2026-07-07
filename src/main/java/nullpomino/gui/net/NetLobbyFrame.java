@@ -46,7 +46,7 @@ import org.slf4j.LoggerFactory;
  * its public fields and helper methods.
  *
  * Threading model:
- *   {@link #netOnMessage} runs on the reader thread inside {@link NetBaseClient};
+ *   {@link #netOnMessage} runs on the room session's dispatch thread;
  *   it queues the raw message.  The SDL game thread calls {@link #pump()} once per
  *   frame which drains the queue and runs {@link #dispatchMessage} + any
  *   {@link NetLobbyListener} callbacks on a single thread.  This removes the latent
@@ -206,8 +206,6 @@ public class NetLobbyFrame implements NetMessageListener {
 
 		if(netPlayerClient != null) {
 			if(netPlayerClient.isConnected()) netPlayerClient.send("disconnect\n");
-			netPlayerClient.threadRunning = false;
-			netPlayerClient.interrupt();
 			netPlayerClient = null;
 		}
 
