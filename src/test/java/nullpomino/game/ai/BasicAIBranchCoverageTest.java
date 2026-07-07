@@ -291,8 +291,11 @@ class BasicAIBranchCoverageTest {
 
     @Test
     void setControlUnreachableTriggersRethink() {
-        engine.aiUseThread = true;
+        // init() before enabling aiUseThread so no real AI thread spawns: a
+        // live thread would race this test and consume thinkRequest before
+        // the assert. The thread-gate fields are forced by hand below.
         ai.init(engine, 0);
+        engine.aiUseThread = true;
         engine.createFieldIfNeeded();
         engine.nowPieceObject = new Piece(Piece.PIECE_T);
         engine.nowPieceObject.applyOffsetArray(
