@@ -354,14 +354,8 @@ class FieldQueryMethodsTest {
 	}
 
 	// ================================================================
-	// getHeightWithoutHurryupFloor() / getHurryupFloorLines()
+	// getHeightWithoutHurryupFloor()
 	// ================================================================
-
-	@Test
-	void getHurryupFloorLinesStartsAtZero() {
-		Field f = newField();
-		assertEquals(0, f.getHurryupFloorLines());
-	}
 
 	@Test
 	void getHeightWithoutHurryupFloorEqualsHeightInitially() {
@@ -373,7 +367,6 @@ class FieldQueryMethodsTest {
 	void hurryUpFloorLinesAccountedInHeightWithoutHurryupFloor() {
 		Field f = newField();
 		f.addHurryupFloor(3, 0);
-		assertEquals(3, f.getHurryupFloorLines());
 		assertEquals(f.getHeight() - 3, f.getHeightWithoutHurryupFloor());
 	}
 

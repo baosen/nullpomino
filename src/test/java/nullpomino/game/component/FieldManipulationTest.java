@@ -13,7 +13,7 @@ import org.junit.jupiter.api.Test;
 /**
  * Tests for Field manipulation methods: cutLine, pushUp, pushDown,
  * setAllAttribute, setAllSkin, getHowManyGems, getHowManyGemClears,
- * getItemClears, getSecretGrade,
+ * getSecretGrade,
  * checkForSquares, getHowManySquareClears, and shuffleColors.
  */
 class FieldManipulationTest {
@@ -360,40 +360,6 @@ class FieldManipulationTest {
 		f.setLineFlag(19, true);
 
 		assertEquals(2, f.getHowManyGemClears());
-	}
-
-	// ---------------------------------------------------------------
-	// getItemClears
-	// ---------------------------------------------------------------
-
-	@Test
-	void getItemClearsReturnsAllFalseWhenNoLinesAreFlagged() {
-		Field f = newField();
-		f.getBlock(0, 19).item = 1;
-
-		boolean[] result = f.getItemClears();
-		assertFalse(result[0]);
-		assertFalse(result[1]);
-	}
-
-	@Test
-	void getItemClearsDetectsItemsInFlaggedLines() {
-		Field f = newField();
-		f.getBlock(0, 19).item = 1;
-		f.setLineFlag(19, true);
-
-		boolean[] result = f.getItemClears();
-		assertFalse(result[0], "item 0 (BLOCK_ITEM_NONE) should not be set");
-		assertTrue(result[1], "item 1 (BLOCK_ITEM_RANDOM) should be detected");
-	}
-
-	@Test
-	void getItemClearsReturnsArrayOfLengthMaxItemPlusOne() {
-		Field f = newField();
-		f.setLineFlag(19, true);
-
-		boolean[] result = f.getItemClears();
-		assertEquals(Block.MAX_ITEM + 1, result.length);
 	}
 
 	// ---------------------------------------------------------------

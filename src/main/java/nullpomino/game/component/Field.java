@@ -1147,29 +1147,6 @@ public class Field implements Serializable {
 	}
 
 	/**
-	 * Checks for item blocks cleared
-	 * @return A boolean array with true at each index for which an item block
-	 *         of the corresponding ID number was cleared
-	 */
-	public boolean[] getItemClears() {
-		boolean[] result = new boolean[Block.MAX_ITEM+1];
-
-		for(int i = (hidden_height * -1); i < getHeightWithoutHurryupFloor(); i++) {
-			if(getLineFlag(i)) {
-				for(int j = 0; j < width; j++) {
-					Block blk = getBlock(j, i);
-
-					if((blk != null) && (blk.item > 0) && blk.item <= Block.MAX_ITEM) {
-						result[blk.item] = true;
-					}
-				}
-			}
-		}
-
-		return result;
-	}
-
-	/**
 	 * Checks for 4x4 square formations and converts blocks to square blocks if needed.
 	 * @return Number of square formations (index 0 is gold, index 1 is silver)
 	 */
@@ -1414,14 +1391,6 @@ public class Field implements Serializable {
 
 			hurryupFloorLines++;
 		}
-	}
-
-	/**
-	 * HURRY UPWhat is the ground ofLinesI will see if there
-	 * @return HURRY UPGroundLinesOfcount
-	 */
-	public int getHurryupFloorLines() {
-		return hurryupFloorLines;
 	}
 
 	/**

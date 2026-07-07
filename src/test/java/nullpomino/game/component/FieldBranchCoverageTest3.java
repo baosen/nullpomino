@@ -85,27 +85,6 @@ class FieldBranchCoverageTest3 {
 	}
 
 	// ══════════════════════════════════════════════════════════════════════
-	// getItemClears — L1412: cover blk.item <= MAX_ITEM being FALSE
-	// (an item id greater than MAX_ITEM is ignored on a cleared line).
-	// ══════════════════════════════════════════════════════════════════════
-
-	@Test
-	void getItemClearsIgnoresItemIdsAboveMax() {
-		Field f = new Field(4, 6, 0, false);
-		put(f, 0, 5, Block.BLOCK_COLOR_RED);
-		put(f, 1, 5, Block.BLOCK_COLOR_RED);
-		// A valid item (1) and an out-of-range item id (MAX_ITEM + 1).
-		f.getBlock(0, 5).item = Block.MAX_ITEM;          // counted
-		f.getBlock(1, 5).item = Block.MAX_ITEM + 1;      // rejected by <= MAX_ITEM
-		f.setLineFlag(5, true);
-
-		boolean[] result = f.getItemClears();
-		assertTrue(result[Block.MAX_ITEM], "in-range item id recorded");
-		assertEquals(Block.MAX_ITEM + 1, result.length,
-				"result array sized to MAX_ITEM + 1; id above max cannot be indexed");
-	}
-
-	// ══════════════════════════════════════════════════════════════════════
 	// checkLineColor — L1666: cover lineColorsCleared != null (the FALSE arm).
 	// Calling twice with flag=true means the second call finds it non-null.
 	// ══════════════════════════════════════════════════════════════════════

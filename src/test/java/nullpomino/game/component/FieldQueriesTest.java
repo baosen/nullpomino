@@ -255,7 +255,7 @@ class FieldQueriesTest {
 
 		f.addHurryupFloor(2, 0);
 
-		assertEquals(2, f.getHurryupFloorLines());
+		assertEquals(2, f.hurryupFloorLines);
 		assertEquals(beforeHeight - 2, f.getHeightWithoutHurryupFloor());
 
 		Block b = f.getBlock(0, 19);
@@ -307,23 +307,6 @@ class FieldQueriesTest {
 		f.setLineFlag(19, true);
 
 		assertEquals(1, f.getHowManyGemClears());
-	}
-
-	@Test
-	void getItemClearsRecordsItemsOnlyOnFlaggedRows() {
-		Field f = newField();
-		Block b = new Block(Block.BLOCK_COLOR_RED);
-		b.item = Block.BLOCK_ITEM_RANDOM;
-		f.setBlock(2, 19, b);
-
-		boolean[] notFlagged = f.getItemClears();
-		assertFalse(notFlagged[Block.BLOCK_ITEM_RANDOM],
-				"items must not register until the row is flagged");
-
-		f.setLineFlag(19, true);
-		boolean[] flagged = f.getItemClears();
-		assertTrue(flagged[Block.BLOCK_ITEM_RANDOM]);
-		assertFalse(flagged[Block.BLOCK_ITEM_NONE]);
 	}
 
 	@Test

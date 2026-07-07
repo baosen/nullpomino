@@ -307,20 +307,6 @@ class FieldBranchCoverageTest {
 	}
 
 	// ══════════════════════════════════════════════════════════════════════
-	// getItemClears — line 1412 (null block)
-	// ══════════════════════════════════════════════════════════════════════
-
-	@Test
-	void getItemClearsSkipsNullBlock() throws Exception {
-		Field f = newField();
-		f.getBlock(0, 19).item = 1;
-		f.setLineFlag(19, true);
-		nullOutFieldBlock(f, 5, 19);
-		boolean[] result = f.getItemClears();
-		assertTrue(result[1]);
-	}
-
-	// ══════════════════════════════════════════════════════════════════════
 	// checkForSquares (gold) — lines 1441, 1446, 1458-1464
 	// ══════════════════════════════════════════════════════════════════════
 

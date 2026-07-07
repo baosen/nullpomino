@@ -116,12 +116,10 @@ class PieceTest {
 				Block.BLOCK_COLOR_YELLOW
 		});
 
-		assertArrayEquals(new int[] {
-				Block.BLOCK_COLOR_RED,
-				Block.BLOCK_COLOR_BLUE,
-				Block.BLOCK_COLOR_GREEN,
-				Block.BLOCK_COLOR_YELLOW
-		}, p.getColors());
+		assertEquals(Block.BLOCK_COLOR_RED, p.block[0].color);
+		assertEquals(Block.BLOCK_COLOR_BLUE, p.block[1].color);
+		assertEquals(Block.BLOCK_COLOR_GREEN, p.block[2].color);
+		assertEquals(Block.BLOCK_COLOR_YELLOW, p.block[3].color);
 	}
 
 	@Test
@@ -131,11 +129,10 @@ class PieceTest {
 
 		p.setColor(new int[] { Block.BLOCK_COLOR_RED, Block.BLOCK_COLOR_BLUE });
 
-		int[] colors = p.getColors();
-		assertEquals(Block.BLOCK_COLOR_RED, colors[0]);
-		assertEquals(Block.BLOCK_COLOR_BLUE, colors[1]);
-		assertEquals(Block.BLOCK_COLOR_GRAY, colors[2]);
-		assertEquals(Block.BLOCK_COLOR_GRAY, colors[3]);
+		assertEquals(Block.BLOCK_COLOR_RED, p.block[0].color);
+		assertEquals(Block.BLOCK_COLOR_BLUE, p.block[1].color);
+		assertEquals(Block.BLOCK_COLOR_GRAY, p.block[2].color);
+		assertEquals(Block.BLOCK_COLOR_GRAY, p.block[3].color);
 	}
 
 	@Test
