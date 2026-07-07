@@ -26,11 +26,8 @@ class ModeRegistryTest {
 		ModeManager mm = new ModeManager();
 		mm.loadGameModes(ModeRegistry.all());
 
-		assertEquals(ModeRegistry.all().size(), mm.getSize(),
-				"every registry entry must instantiate");
-
 		Set<String> seen = new HashSet<>();
-		for (int i = 0; i < mm.getSize(); i++) {
+		for (int i = 0; i < ModeRegistry.all().size(); i++) {
 			GameMode mode = mm.getMode(i);
 			assertNotNull(mode, "mode[" + i + "] must not be null");
 			String name = mode.getName();

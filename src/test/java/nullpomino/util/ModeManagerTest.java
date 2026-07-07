@@ -24,10 +24,6 @@ class ModeManagerTest {
 		manager.addMode(null);
 		manager.addMode(net);
 
-		assertEquals(3, manager.getSize());
-		assertEquals("*INVALID MODE*", manager.getName(-1));
-		assertEquals("*INVALID MODE*", manager.getName(1));
-		assertEquals("*INVALID MODE*", manager.getName(99));
 		assertNull(manager.getMode(-1));
 		assertNull(manager.getMode(1));
 		assertNull(manager.getMode("missing"));
@@ -43,11 +39,8 @@ class ModeManagerTest {
 		manager.addMode(new TestMode("net-a", true));
 		manager.addMode(new TestMode("normal-b", false));
 
-		assertEquals(2, manager.getNumberOfModes(false));
-		assertEquals(1, manager.getNumberOfModes(true));
 		assertArrayEquals(new String[] {"normal-a", "normal-b"}, manager.getModeNames(false));
 		assertArrayEquals(new String[] {"net-a"}, manager.getModeNames(true));
-		assertArrayEquals(new String[] {"normal-a", "net-a", "normal-b"}, manager.getAllModeNames());
 	}
 
 	@Test
@@ -57,22 +50,8 @@ class ModeManagerTest {
 		manager.addMode(new TestMode("normal", false));
 		manager.addMode(new TestMode("net", true));
 
-		assertEquals(1, manager.getNumberOfModes(false));
-		assertEquals(1, manager.getNumberOfModes(true));
 		assertArrayEquals(new String[] {"normal"}, manager.getModeNames(false));
 		assertArrayEquals(new String[] {"net"}, manager.getModeNames(true));
-	}
-
-	@Test
-	void copyConstructorSharesLoadedModeReferences() {
-		ModeManager manager = new ModeManager();
-		TestMode mode = new TestMode("normal", false);
-		manager.addMode(mode);
-
-		ModeManager copy = new ModeManager(manager);
-
-		assertSame(mode, copy.getMode(0));
-		assertEquals(1, copy.getSize());
 	}
 
 	@Test
@@ -81,9 +60,7 @@ class ModeManagerTest {
 
 		manager.loadGameModes(List.of(LoadableMode.class, LoadableMode.class));
 
-		assertEquals(2, manager.getSize());
-		assertEquals("loadable", manager.getName(0));
-		assertEquals("loadable", manager.getName(1));
+		assertArrayEquals(new String[] {"loadable", "loadable"}, manager.getModeNames(false));
 	}
 
 	@Test
@@ -92,9 +69,7 @@ class ModeManagerTest {
 
 		manager.loadGameModes(List.of(LoadableMode.class, FailingMode.class, LoadableMode.class));
 
-		assertEquals(2, manager.getSize());
-		assertEquals("loadable", manager.getName(0));
-		assertEquals("loadable", manager.getName(1));
+		assertArrayEquals(new String[] {"loadable", "loadable"}, manager.getModeNames(false));
 	}
 
 	static final class TestMode implements GameMode {

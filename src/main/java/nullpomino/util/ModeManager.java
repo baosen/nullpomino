@@ -27,41 +27,6 @@ public class ModeManager {
 	}
 
 	/**
-	 * Copy constructor
-	 * @param m Copy source
-	 */
-	public ModeManager(ModeManager m) {
-		modes.addAll(m.modes);
-	}
-
-	/**
-	 * Mode OfcountGet the(Usually+All net play)
-	 * @return ModeOfcount(Usually+All net play)
-	 */
-	public int getSize() {
-		return modes.size();
-	}
-
-	/**
-	 * Mode OfcountGet the
-	 * @param netplay falseIf normalMode Only, When true,For net playMode OnlycountObtained
-	 * @return ModeOfcount
-	 */
-	public int getNumberOfModes(boolean netplay) {
-		return (int)modesMatching(netplay).count();
-	}
-
-	/**
-	 * All that has been readMode nameGet the
-	 * @return Mode nameAn array of
-	 */
-	public String[] getAllModeNames() {
-		return modes.stream()
-				.map(mode -> (mode == null) ? "*INVALID MODE*" : mode.getName())
-				.toArray(String[]::new);
-	}
-
-	/**
 	 * Are loadedMode nameGet the
 	 * @param netplay falseIf normalMode Only, When true,For net playMode Only obtained
 	 * @return Mode nameAn array of
@@ -70,16 +35,6 @@ public class ModeManager {
 		return modesMatching(netplay)
 				.map(GameMode::getName)
 				.toArray(String[]::new);
-	}
-
-	/**
-	 * Mode  nameGet the
-	 * @param id ModeID
-	 * @return Mode name (idIf the incorrect &quot;*INVALID MODE*&quot;)
-	 */
-	public String getName(int id) {
-		GameMode mode = getMode(id);
-		return (mode == null) ? "*INVALID MODE*" : mode.getName();
 	}
 
 	/**
