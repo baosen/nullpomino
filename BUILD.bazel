@@ -6,6 +6,20 @@ filegroup(
     visibility = ["//visibility:public"],
 )
 
+# Test-data view of config/: excludes the gitignored per-user state in
+# config/setting (play settings, saved rankings) so tests behave like a clean
+# checkout and cannot read — or clobber, via the runfiles symlinks — the
+# user's real settings. .gitkeep keeps the directory present so tests can
+# write transient settings inside their own sandbox.
+filegroup(
+    name = "test_config_files",
+    srcs = glob(
+        ["config/**/*"],
+        exclude = ["config/setting/**"],
+    ) + ["config/setting/.gitkeep"],
+    visibility = ["//src/test/java:__pkg__"],
+)
+
 # Manifest of all default config files, served next to the site so the web
 # bootstrap can fetch and seed them into the in-memory filesystem on first run.
 genrule(

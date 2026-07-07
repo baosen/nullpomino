@@ -1,4 +1,5 @@
 load("@rules_java//java:defs.bzl", "java_binary", "java_library", "java_test")
+load(":test_map.bzl", "EXTRA_SRCS", "SELECT_CLASSES")
 
 java_library(
     name = "testutil",
@@ -8,21 +9,62 @@ java_library(
     deps = ["//src/main/java:nullpomino"],
 )
 
-java_test(
-    name = "AllTests",
-    srcs = glob(
-        ["**/*.java"],
-        exclude = ["nullpomino/testutil/*.java"],
-    ),
-    args = [
-        "execute",
-        "--select-package=nullpomino",
+# Default deps: the :core cluster plus :sdl_binding, which some tests use
+# directly (strict deps demands it as a direct dep; :core already depends on
+# it, so this costs no cache granularity).
+DEFAULT_DEPS = [
+    "//src/main/java:core",
+    "//src/main/java:sdl_binding",
+]
+
+# package dir -> main-code deps; anything not listed needs the :core cluster.
+PKG_DEPS = {
+    "nullpomino/gui/sdl/binding": ["//src/main/java:sdl_binding"],
+    "nullpomino/gui/sdl/binding/jna": [
+        "//src/main/java:sdl_binding",
+        "//src/main/java:sdl_binding_jna",
+        "@maven//:net_java_dev_jna_jna",
+    ],
+    "nullpomino/tool": ["//src/main/java:swing_tool_util"],
+    "nullpomino/tool/musiclisteditor": DEFAULT_DEPS + ["//src/main/java:tool_musiclisteditor"],
+    "nullpomino/tool/ruleeditor": DEFAULT_DEPS + [
+        "//src/main/java:swing_tool_util",
+        "//src/main/java:tool_ruleeditor",
+    ],
+    "nullpomino/tool/sequencer": DEFAULT_DEPS + [
+        "//src/main/java:swing_tool_util",
+        "//src/main/java:tool_sequencer",
+    ],
+}
+
+FILE_DEPS = {
+    "nullpomino/game/mode/ModeReplayCharacterisationTest.java": [":testutil"],
+    # Reaches NullpoMinoSDL.toggleFullscreen, whose SDL3.INSTANCE static init
+    # resolves the JNA backend by reflection.
+    "nullpomino/gui/sdl/StateConfigGeneralSDLLogicTest.java": [
+        "//src/main/java:sdl_binding_jna",
+        "@maven//:net_java_dev_jna_jna",
+    ],
+}
+
+# One java_test per test file: parallel, individually runnable, and cached at
+# file granularity. Cross-file references between test sources are compiled in
+# via EXTRA_SRCS (see gen_test_map.py); only the file's own classes are
+# selected, so no test runs twice.
+[java_test(
+    name = f[len("nullpomino/"):-len(".java")].replace("/", "_"),
+    size = "small",
+    srcs = [f] + EXTRA_SRCS.get(f, []),
+    args = ["execute"] + [
+        "--select-class=" + c
+        for c in SELECT_CLASSES.get(f, [f[:-len(".java")].replace("/", ".")])
+    ] + [
         "--include-classname=.*",
         "--disable-banner",
         "--fail-if-no-tests",
     ],
     data = [
-        "//:config_files",
+        "//:test_config_files",
         "//src/test/resources:test_resources",
     ],
     javacopts = ["-encoding", "UTF-8"],
@@ -30,17 +72,22 @@ java_test(
     resource_strip_prefix = "src/test/resources",
     resources = ["//src/test/resources:logback-test.xml"],
     use_testrunner = False,
-    deps = [
-        ":testutil",
-        "//src/main/java:nullpomino",
+    deps = PKG_DEPS.get(f.rsplit("/", 1)[0], DEFAULT_DEPS) + FILE_DEPS.get(f, []) + [
         "@maven//:org_junit_jupiter_junit_jupiter_api",
-        "@maven//:net_java_dev_jna_jna",
     ],
     runtime_deps = [
         "@maven//:org_junit_jupiter_junit_jupiter_engine",
         "@maven//:org_junit_platform_junit_platform_console",
     ],
-)
+) for f in glob(
+    ["**/*.java"],
+    exclude = [
+        "nullpomino/testutil/*.java",
+        # Documentation-only class with zero tests (records a dead-code
+        # analysis); --fail-if-no-tests would reject a target for it.
+        "nullpomino/game/mode/RetroMarathonModeBranchCoverageTest4.java",
+    ],
+)]
 
 java_binary(
     name = "BaselineRecorder",
