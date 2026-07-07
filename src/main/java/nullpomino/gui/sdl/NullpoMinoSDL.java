@@ -278,7 +278,7 @@ public class NullpoMinoSDL {
 		bootstrap(args);
 		NetPlatform.install(new LanRoomNet(), new LanLoungeService());
 		modeManager.loadGameModes(ModeRegistry.all());
-		registerDesktopStates();
+		registerAllStates();
 
 		// SDL init
 		try {
@@ -399,43 +399,13 @@ public class NullpoMinoSDL {
 	}
 
 	/**
-	 * Instantiate every SDL state, including the netplay states. Desktop only:
-	 * the netplay states pull in {@code java.net} socket code that cannot be
-	 * compiled for the browser target, so the web entry point registers its
-	 * own (netplay-free) subset instead.
+	 * Instantiate every SDL state, including the netplay states, for both the
+	 * desktop and the browser (TeaVM) entry points. Netplay is safe on the web
+	 * build: it runs the room engine over WebRTC DataChannels behind the
+	 * RoomNet seam, and the java-webstub source override keeps {@code java.net}
+	 * socket code out of the TeaVM-compiled call graph.
 	 */
-	private static void registerDesktopStates() {
-		gameStates[STATE_TITLE] = new StateTitleSDL();
-		gameStates[STATE_CONFIG_MAINMENU] = new StateConfigMainMenuSDL();
-		gameStates[STATE_CONFIG_RULESELECT] = new StateConfigRuleSelectSDL();
-		gameStates[STATE_CONFIG_GENERAL] = new StateConfigGeneralSDL();
-		gameStates[STATE_CONFIG_KEYBOARD] = new StateConfigKeyboardSDL();
-		gameStates[STATE_CONFIG_JOYSTICK_BUTTON] = new StateConfigJoystickButtonSDL();
-		gameStates[STATE_SELECTMODE] = new StateSelectModeSDL();
-		gameStates[STATE_INGAME] = new StateInGameSDL();
-		gameStates[STATE_REPLAYSELECT] = new StateReplaySelectSDL();
-		gameStates[STATE_CONFIG_AISELECT] = new StateConfigAISelectSDL();
-		gameStates[STATE_NETGAME] = new StateNetGameSDL();
-		gameStates[STATE_CONFIG_JOYSTICK_MAIN] = new StateConfigJoystickMainSDL();
-		gameStates[STATE_CONFIG_JOYSTICK_TEST] = new StateConfigJoystickTestSDL();
-		gameStates[STATE_CONFIG_GAMETUNING] = new StateConfigGameTuningSDL();
-		gameStates[STATE_CONFIG_RULESTYLESELECT] = new StateConfigRuleStyleSelectSDL();
-		gameStates[STATE_CONFIG_KEYBOARD_NAVI] = new StateConfigKeyboardNaviSDL();
-		gameStates[STATE_CONFIG_KEYBOARD_RESET] = new StateConfigKeyboardResetSDL();
-		gameStates[STATE_SELECTRULEFROMLIST] = new StateSelectRuleFromListSDL();
-		gameStates[STATE_NET_LOBBY] = new StateNetLobbySDL();
-		gameStates[STATE_NET_CREATEROOM] = new StateNetCreateRoomSDL();
-		gameStates[STATE_NET_RANKING] = new StateNetRankingSDL();
-		gameStates[STATE_NET_RULECHANGE] = new StateNetRuleChangeSDL();
-	}
-
-	/**
-	 * Instantiate every SDL state for the browser (TeaVM) entry point.
-	 * Netplay states are included: browser netplay runs the room engine over
-	 * WebRTC DataChannels behind the RoomNet seam, so no {@code java.net}
-	 * socket code enters the reachable (and thus TeaVM-compiled) call graph.
-	 */
-	public static void registerWebStates() {
+	public static void registerAllStates() {
 		gameStates[STATE_TITLE] = new StateTitleSDL();
 		gameStates[STATE_CONFIG_MAINMENU] = new StateConfigMainMenuSDL();
 		gameStates[STATE_CONFIG_RULESELECT] = new StateConfigRuleSelectSDL();

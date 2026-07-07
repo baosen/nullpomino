@@ -62,7 +62,7 @@ public final class NullpoMinoTeaVM {
 		for (Supplier<? extends GameMode> supplier : StandaloneModeRegistry.suppliers()) {
 			NullpoMinoSDL.modeManager.addMode(supplier.get());
 		}
-		NullpoMinoSDL.registerWebStates();
+		NullpoMinoSDL.registerAllStates();
 
 		try {
 			NullpoMinoSDL.init();
