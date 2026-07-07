@@ -90,18 +90,16 @@ public class StateInGameSDL extends BaseStateSDL {
 	private int barX, barW;
 	/**
 	 * One bottom row: transport buttons on the left (at the field's X, below
-	 * the mode's feedback text like "DOUBLE"), the bar to their right, and
-	 * the current frame number at the far right (the mode already shows the
-	 * clock as TIME in the score area). Bar is vertically centered on the
-	 * buttons.
+	 * the mode's feedback text like "DOUBLE") and the bar filling the rest of
+	 * the row to near the right screen edge. The current frame number (the
+	 * mode already shows the clock as TIME in the score area) is overlaid on
+	 * the bar's right end, right-aligned so growing digits extend leftward
+	 * and never run off screen. Bar is vertically centered on the buttons.
 	 */
 	private static final int BTN_W = 28, BTN_H = 20, BTN_GAP = 8, BTN_Y = 458;
 	private static final int BAR_Y = BTN_Y + (BTN_H - 8) / 2, BAR_H = 8;
 	/** Taller hit zone than the 8px track so the bar is easy to grab. */
 	private static final int BAR_HIT_TOP = BTN_Y - 2, BAR_HIT_BOTTOM = BTN_Y + BTN_H + 2;
-	/** Frame-count readout: 8 bitmap digits of 16px covers any replay length. */
-	private static final int READOUT_W = 8 * 16;
-	private static final int READOUT_X = NullpoMinoSDL.LOGICAL_WIDTH - READOUT_W - 4;
 
 	/*
 	 * Called when entering this state
@@ -905,7 +903,7 @@ public class StateInGameSDL extends BaseStateSDL {
 		playPauseBtn.x = stepBackBtn.x + BTN_W + BTN_GAP;
 		stepFwdBtn.x = playPauseBtn.x + BTN_W + BTN_GAP;
 		barX = stepFwdBtn.x + BTN_W + 12;
-		barW = READOUT_X - 8 - barX;
+		barW = NullpoMinoSDL.LOGICAL_WIDTH - 8 - barX;
 	}
 
 	/** Draw the timeline track, progress fill, drag handle, and transport buttons. */
@@ -922,9 +920,11 @@ public class StateInGameSDL extends BaseStateSDL {
 		int handleX = barX + Math.max(0, Math.min(fillW - 2, barW - 4));
 		WidgetSDL.fillRect(handleX, BAR_Y - 2, 4, BAR_H + 4, 255, 255, 255, 255);
 
-		// Playback position as a raw frame count at the far right of the row.
+		// Playback position as a raw frame count just above the bar's right
+		// end. Right-aligned: new digits grow leftward, staying on screen.
 		// Follows the drag position while scrubbing, like the fill does.
-		NormalFontSDL.printFont(READOUT_X, BAR_Y - 4, String.valueOf(cur), NormalFontSDL.COLOR_WHITE);
+		String frames = String.valueOf(cur);
+		NormalFontSDL.printFont(barX + barW - frames.length() * 16, BAR_Y - 18, frames, NormalFontSDL.COLOR_WHITE);
 
 		stepBackBtn.render();
 		playPauseBtn.render();
