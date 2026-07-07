@@ -7,7 +7,6 @@ import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
-import java.util.Arrays;
 import java.util.Calendar;
 import java.util.TimeZone;
 
@@ -248,20 +247,6 @@ public class GeneralUtil {
 		}
 	}
 	
-	/**
-	 * Combine array of strings
-	 * @param strings Array of strings
-	 * @param separator Separator used for combine
-	 * @param startIndex First element which will be combined
-	 * @return Combined string
-	 */
-	public static String StringCombine(String[] strings, String separator,
-			int startIndex)
-	{
-		if(startIndex >= strings.length) return "";
-		return String.join(separator, Arrays.copyOfRange(strings, startIndex, strings.length));
-	}
-
 	private static boolean isSZOPiece(int pieceID) {
 		return (pieceID == Piece.PIECE_S) || (pieceID == Piece.PIECE_Z) || (pieceID == Piece.PIECE_O);
 	}

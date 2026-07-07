@@ -102,13 +102,6 @@ class GeneralUtilApiTest {
 	}
 
 	@Test
-	void stringCombineJoinsFromStartIndex() {
-		assertEquals("user for reason", GeneralUtil.StringCombine(
-				new String[] {"ban", "user", "for", "reason"}, " ", 1));
-		assertEquals("", GeneralUtil.StringCombine(new String[] {"only"}, " ", 1));
-	}
-
-	@Test
 	void pluginLoadersCreateExpectedTypes() {
 		assertTrue(GeneralUtil.loadRandomizer(
 				"net.omegaboshi.nullpomino.game.subsystem.randomizer.MemorylessRandomizer")
