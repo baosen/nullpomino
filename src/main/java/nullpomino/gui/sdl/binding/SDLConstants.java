@@ -7,32 +7,23 @@ public final class SDLConstants {
 	private SDLConstants() {}
 
 	// SDL_MessageBoxFlags
-	public static final int SDL_MESSAGEBOX_ERROR       = 0x00000010;
-	public static final int SDL_MESSAGEBOX_WARNING     = 0x00000020;
-	public static final int SDL_MESSAGEBOX_INFORMATION = 0x00000040;
+	public static final int SDL_MESSAGEBOX_ERROR = 0x00000010;
 
 	// SDL_Init flags
 	public static final int SDL_INIT_AUDIO = 0x00000010;
 	public static final int SDL_INIT_VIDEO = 0x00000020;
 	public static final int SDL_INIT_JOYSTICK = 0x00000200;
-	public static final int SDL_INIT_GAMEPAD = 0x00002000;
 
 	// SDL_WindowFlags
 	public static final long SDL_WINDOW_FULLSCREEN = 0x0000000000000001L;
 	public static final long SDL_WINDOW_RESIZABLE  = 0x0000000000000020L;
 
 	// SDL_RendererLogicalPresentation
-	public static final int SDL_LOGICAL_PRESENTATION_DISABLED      = 0;
-	public static final int SDL_LOGICAL_PRESENTATION_STRETCH       = 1;
-	public static final int SDL_LOGICAL_PRESENTATION_LETTERBOX     = 2;
-	public static final int SDL_LOGICAL_PRESENTATION_OVERSCAN      = 3;
-	public static final int SDL_LOGICAL_PRESENTATION_INTEGER_SCALE = 4;
+	public static final int SDL_LOGICAL_PRESENTATION_LETTERBOX = 2;
 
 	// SDL_BlendMode
 	public static final int SDL_BLENDMODE_NONE  = 0x00000000;
 	public static final int SDL_BLENDMODE_BLEND = 0x00000001;
-	public static final int SDL_BLENDMODE_ADD   = 0x00000002;
-	public static final int SDL_BLENDMODE_MOD   = 0x00000004;
 
 	// SDL_EventType
 	public static final int SDL_EVENT_QUIT                  = 0x100;
@@ -49,11 +40,6 @@ public final class SDLConstants {
 	public static final int SDL_EVENT_MOUSE_BUTTON_DOWN     = 0x401;
 	public static final int SDL_EVENT_MOUSE_BUTTON_UP       = 0x402;
 	public static final int SDL_EVENT_MOUSE_WHEEL           = 0x403;
-	public static final int SDL_EVENT_GAMEPAD_AXIS_MOTION   = 0x650;
-	public static final int SDL_EVENT_GAMEPAD_BUTTON_DOWN   = 0x651;
-	public static final int SDL_EVENT_GAMEPAD_BUTTON_UP     = 0x652;
-	public static final int SDL_EVENT_GAMEPAD_ADDED         = 0x653;
-	public static final int SDL_EVENT_GAMEPAD_REMOVED       = 0x654;
 
 	// SDL_Keymod bitmask (Uint16 in SDL_KeyboardEvent.mod)
 	public static final int SDL_KMOD_NONE   = 0x0000;
@@ -64,13 +50,9 @@ public final class SDLConstants {
 	public static final int SDL_KMOD_LALT   = 0x0100;
 	public static final int SDL_KMOD_RALT   = 0x0200;
 	public static final int SDL_KMOD_LGUI   = 0x0400;
-	public static final int SDL_KMOD_RGUI   = 0x0800;
-	public static final int SDL_KMOD_NUM    = 0x1000;
-	public static final int SDL_KMOD_CAPS   = 0x2000;
 	public static final int SDL_KMOD_CTRL   = SDL_KMOD_LCTRL  | SDL_KMOD_RCTRL;
 	public static final int SDL_KMOD_SHIFT  = SDL_KMOD_LSHIFT | SDL_KMOD_RSHIFT;
 	public static final int SDL_KMOD_ALT    = SDL_KMOD_LALT   | SDL_KMOD_RALT;
-	public static final int SDL_KMOD_GUI    = SDL_KMOD_LGUI   | SDL_KMOD_RGUI;
 
 	// SDL_Scancode values (from SDL_scancode.h)
 	public static final int SDL_SCANCODE_A = 4;
@@ -186,30 +168,6 @@ public final class SDLConstants {
 
 	// SDL_ScaleMode
 	public static final int SDL_SCALEMODE_NEAREST = 0;
-	public static final int SDL_SCALEMODE_LINEAR  = 1;
-
-	// SDL_GamepadButton
-	public static final int SDL_GAMEPAD_BUTTON_SOUTH = 0;
-	public static final int SDL_GAMEPAD_BUTTON_EAST = 1;
-	public static final int SDL_GAMEPAD_BUTTON_WEST = 2;
-	public static final int SDL_GAMEPAD_BUTTON_NORTH = 3;
-	public static final int SDL_GAMEPAD_BUTTON_BACK = 4;
-	public static final int SDL_GAMEPAD_BUTTON_START = 6;
-	public static final int SDL_GAMEPAD_BUTTON_LEFT_STICK = 7;
-	public static final int SDL_GAMEPAD_BUTTON_RIGHT_STICK = 8;
-	public static final int SDL_GAMEPAD_BUTTON_LEFT_SHOULDER = 9;
-	public static final int SDL_GAMEPAD_BUTTON_RIGHT_SHOULDER = 10;
-	public static final int SDL_GAMEPAD_BUTTON_DPAD_UP = 11;
-	public static final int SDL_GAMEPAD_BUTTON_DPAD_DOWN = 12;
-	public static final int SDL_GAMEPAD_BUTTON_DPAD_LEFT = 13;
-	public static final int SDL_GAMEPAD_BUTTON_DPAD_RIGHT = 14;
-	public static final int SDL_GAMEPAD_BUTTON_COUNT = 21;
-
-	// SDL_GamepadAxis
-	public static final int SDL_GAMEPAD_AXIS_LEFTX = 0;
-	public static final int SDL_GAMEPAD_AXIS_LEFTY = 1;
-	public static final int SDL_GAMEPAD_AXIS_RIGHTX = 2;
-	public static final int SDL_GAMEPAD_AXIS_RIGHTY = 3;
 
 	/** Scancode name table for display in config screens. */
 	public static final String[] SCANCODE_NAMES = buildScancodeNames();

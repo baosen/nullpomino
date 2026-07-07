@@ -27,9 +27,6 @@ class SDLConstantsTest {
 		assertEquals(
 				SDLConstants.SDL_KMOD_LALT | SDLConstants.SDL_KMOD_RALT,
 				SDLConstants.SDL_KMOD_ALT);
-		assertEquals(
-				SDLConstants.SDL_KMOD_LGUI | SDLConstants.SDL_KMOD_RGUI,
-				SDLConstants.SDL_KMOD_GUI);
 	}
 
 	@Test
@@ -95,44 +92,24 @@ class SDLConstantsTest {
 	}
 
 	@Test
-	void messageBoxFlagsAreOrthogonalSeverityValues() {
-		assertNotEquals(SDLConstants.SDL_MESSAGEBOX_ERROR, SDLConstants.SDL_MESSAGEBOX_WARNING);
-		assertNotEquals(SDLConstants.SDL_MESSAGEBOX_WARNING, SDLConstants.SDL_MESSAGEBOX_INFORMATION);
-		assertNotEquals(SDLConstants.SDL_MESSAGEBOX_ERROR, SDLConstants.SDL_MESSAGEBOX_INFORMATION);
-	}
-
-	@Test
 	void initFlagsAreDistinctNonZeroBits() {
 		assertNotEquals(0, SDLConstants.SDL_INIT_AUDIO);
 		assertNotEquals(0, SDLConstants.SDL_INIT_VIDEO);
 		assertNotEquals(0, SDLConstants.SDL_INIT_JOYSTICK);
-		assertNotEquals(0, SDLConstants.SDL_INIT_GAMEPAD);
 		assertEquals(0, SDLConstants.SDL_INIT_AUDIO & SDLConstants.SDL_INIT_VIDEO);
 		assertEquals(0, SDLConstants.SDL_INIT_VIDEO & SDLConstants.SDL_INIT_JOYSTICK);
-		assertEquals(0, SDLConstants.SDL_INIT_JOYSTICK & SDLConstants.SDL_INIT_GAMEPAD);
 	}
 
 	@Test
-	void blendModesIncludeNoneBlendAddMod() {
+	void blendModesIncludeNoneAndBlend() {
 		assertEquals(0, SDLConstants.SDL_BLENDMODE_NONE);
 		assertEquals(1, SDLConstants.SDL_BLENDMODE_BLEND);
-		assertEquals(2, SDLConstants.SDL_BLENDMODE_ADD);
-		assertEquals(4, SDLConstants.SDL_BLENDMODE_MOD);
 	}
 
 	@Test
-	void scaleModesAreNearestThenLinear() {
+	void renderingModeValuesMatchSdl3Headers() {
 		assertEquals(0, SDLConstants.SDL_SCALEMODE_NEAREST);
-		assertEquals(1, SDLConstants.SDL_SCALEMODE_LINEAR);
-	}
-
-	@Test
-	void logicalPresentationValuesProgressFromZeroToFour() {
-		assertEquals(0, SDLConstants.SDL_LOGICAL_PRESENTATION_DISABLED);
-		assertEquals(1, SDLConstants.SDL_LOGICAL_PRESENTATION_STRETCH);
 		assertEquals(2, SDLConstants.SDL_LOGICAL_PRESENTATION_LETTERBOX);
-		assertEquals(3, SDLConstants.SDL_LOGICAL_PRESENTATION_OVERSCAN);
-		assertEquals(4, SDLConstants.SDL_LOGICAL_PRESENTATION_INTEGER_SCALE);
 	}
 
 	@Test
