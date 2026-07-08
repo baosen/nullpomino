@@ -96,6 +96,8 @@ public class StateInGameSDL extends BaseStateSDL {
 	 * and never run off screen. Bar is vertically centered on the button.
 	 */
 	private static final int BTN_W = 28, BTN_H = 20, BTN_Y = 458;
+	/** Gap on each side of the bar: button->bar (left) and bar->screen edge (right). */
+	private static final int BAR_MARGIN = 8;
 	private static final int BAR_Y = BTN_Y + (BTN_H - 8) / 2, BAR_H = 8;
 	/** Taller hit zone than the 8px track so the bar is easy to grab. */
 	private static final int BAR_HIT_TOP = BTN_Y - 2, BAR_HIT_BOTTOM = BTN_Y + BTN_H + 2;
@@ -892,8 +894,9 @@ public class StateInGameSDL extends BaseStateSDL {
 	 */
 	private void layoutReplayTimeline() {
 		playPauseBtn.x = 4;
-		barX = playPauseBtn.x + BTN_W + 12;
-		barW = NullpoMinoSDL.LOGICAL_WIDTH - 8 - barX;
+		// Equal gap on both sides of the bar: button->bar == bar->right edge.
+		barX = playPauseBtn.x + BTN_W + BAR_MARGIN;
+		barW = NullpoMinoSDL.LOGICAL_WIDTH - BAR_MARGIN - barX;
 	}
 
 	/** Applies one LEFT/RIGHT-key-equivalent step to the replay speed, clamped to [0, 98]. */
