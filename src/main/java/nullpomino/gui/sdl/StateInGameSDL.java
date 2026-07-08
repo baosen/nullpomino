@@ -85,6 +85,8 @@ public class StateInGameSDL extends BaseStateSDL {
 	 * arrow glyph 'b'.
 	 */
 	private ButtonSDL stepBackBtn, playPauseBtn, stepFwdBtn;
+	/** Flank the step buttons; click applies the same delta as one LEFT/RIGHT key press. */
+	private ButtonSDL speedDownBtn, speedUpBtn;
 
 	/** Timeline bar geometry, recomputed each frame from the field position. */
 	private int barX, barW;
@@ -118,6 +120,8 @@ public class StateInGameSDL extends BaseStateSDL {
 		stepBackBtn = new ButtonSDL(0, BTN_Y, BTN_W, BTN_H, "");
 		playPauseBtn = new ButtonSDL(0, BTN_Y, BTN_W, BTN_H, "");
 		stepFwdBtn = new ButtonSDL(0, BTN_Y, BTN_W, BTN_H, "");
+		speedDownBtn = new ButtonSDL(0, BTN_Y, BTN_W, BTN_H, "-");
+		speedUpBtn = new ButtonSDL(0, BTN_Y, BTN_W, BTN_H, "+");
 	}
 
 	/**
@@ -539,14 +543,10 @@ public class StateInGameSDL extends BaseStateSDL {
 		if(gameManager.replayMode && !gameManager.replayRerecord && gameManager.engine[0].gameActive) {
 			// Replay speed
 			if(GameKeySDL.gamekey[0].isMenuRepeatKey(GameKeySDL.BUTTON_LEFT)) {
-				if(fastforward > 0) {
-					fastforward--;
-				}
+				adjustFastforward(-1);
 			}
 			if(GameKeySDL.gamekey[0].isMenuRepeatKey(GameKeySDL.BUTTON_RIGHT)) {
-				if(fastforward < 98) {
-					fastforward++;
-				}
+				adjustFastforward(1);
 			}
 
 			// Replay re-record
@@ -898,11 +898,18 @@ public class StateInGameSDL extends BaseStateSDL {
 	 * fills the rest of the row to near the right edge.
 	 */
 	private void layoutReplayTimeline() {
-		stepBackBtn.x = 4;
+		speedDownBtn.x = 4;
+		stepBackBtn.x = speedDownBtn.x + BTN_W + BTN_GAP;
 		playPauseBtn.x = stepBackBtn.x + BTN_W + BTN_GAP;
 		stepFwdBtn.x = playPauseBtn.x + BTN_W + BTN_GAP;
-		barX = stepFwdBtn.x + BTN_W + 12;
+		speedUpBtn.x = stepFwdBtn.x + BTN_W + BTN_GAP;
+		barX = speedUpBtn.x + BTN_W + 12;
 		barW = NullpoMinoSDL.LOGICAL_WIDTH - 8 - barX;
+	}
+
+	/** Applies one LEFT/RIGHT-key-equivalent step to the replay speed, clamped to [0, 98]. */
+	private void adjustFastforward(int delta) {
+		fastforward = Math.max(0, Math.min(98, fastforward + delta));
 	}
 
 	/** Draw the timeline track, progress fill, drag handle, and transport buttons. */
@@ -925,9 +932,11 @@ public class StateInGameSDL extends BaseStateSDL {
 		String frames = String.valueOf(cur);
 		NormalFontSDL.printFont(barX + barW - frames.length() * 16, BAR_Y - 18, frames, NormalFontSDL.COLOR_WHITE);
 
+		speedDownBtn.render();
 		stepBackBtn.render();
 		playPauseBtn.render();
 		stepFwdBtn.render();
+		speedUpBtn.render();
 
 		// Icon overlays. The atlas has only a right-pointing arrow ('b'); the
 		// left arrow is its mirror, and the pause/step bars are plain rects.
@@ -959,6 +968,9 @@ public class StateInGameSDL extends BaseStateSDL {
 		int my = MouseInputSDL.mouseInput.getMouseY();
 		boolean clicked = MouseInputSDL.mouseInput.isMouseClicked();
 
+		if(speedDownBtn.update(mx, my, clicked)) {
+			adjustFastforward(-1);
+		}
 		if(stepBackBtn.update(mx, my, clicked)) {
 			replayPaused = true;
 			seekReplay(gameManager.engine[0].replayTimer - 1);
@@ -970,6 +982,9 @@ public class StateInGameSDL extends BaseStateSDL {
 			replayPaused = true;
 			gameManager.updateAll();
 		}
+		if(speedUpBtn.update(mx, my, clicked)) {
+			adjustFastforward(1);
+		}
 
 		// Wheel over the bar steps the paused playback one frame per tick
 		// (up = forward). Dragging is too coarse for single frames on long
@@ -978,13 +993,13 @@ public class StateInGameSDL extends BaseStateSDL {
 		// mirroring the LEFT/RIGHT arrow keys' fastforward control (0..98).
 		int wheel = (int) NullpoMinoSDL.mouseWheelDelta;
 		boolean overBar = mx >= barX && mx < barX + barW && my >= BAR_HIT_TOP && my < BAR_HIT_BOTTOM;
-		boolean overButtons = mx >= stepBackBtn.x && mx < stepFwdBtn.x + BTN_W
+		boolean overButtons = mx >= speedDownBtn.x && mx < speedUpBtn.x + BTN_W
 				&& my >= BAR_HIT_TOP && my < BAR_HIT_BOTTOM;
 		if(wheel != 0 && overBar) {
 			replayPaused = true;
 			seekReplay(gameManager.engine[0].replayTimer + wheel);
 		} else if(wheel != 0 && overButtons) {
-			fastforward = Math.max(0, Math.min(98, fastforward + wheel));
+			adjustFastforward(wheel);
 		}
 
 		// Drag-to-scrub: a press inside the hit zone grabs the handle and the
