@@ -79,26 +79,23 @@ public class StateInGameSDL extends BaseStateSDL {
 	private int scrubTarget = 0;
 
 	/**
-	 * Replay transport buttons: step-back, play/pause, step-forward. Labels
-	 * stay empty — the icons are drawn as overlays in render() because
-	 * ButtonSDL's label path runs safeString, which would mangle the atlas's
-	 * arrow glyph 'b'.
+	 * Replay play/pause button. Label stays empty — the icon is drawn as an
+	 * overlay in render() because ButtonSDL's label path runs safeString, which
+	 * would mangle the atlas's arrow glyph 'b'.
 	 */
-	private ButtonSDL stepBackBtn, playPauseBtn, stepFwdBtn;
-	/** Flank the step buttons; click applies the same delta as one LEFT/RIGHT key press. */
-	private ButtonSDL speedDownBtn, speedUpBtn;
+	private ButtonSDL playPauseBtn;
 
 	/** Timeline bar geometry, recomputed each frame from the field position. */
 	private int barX, barW;
 	/**
-	 * One bottom row: transport buttons hugging the left screen edge (below
+	 * One bottom row: the play/pause button hugging the left screen edge (below
 	 * the mode's feedback text like "DOUBLE") and the bar filling the rest of
 	 * the row to near the right screen edge. The current frame number (the
 	 * mode already shows the clock as TIME in the score area) sits just above
 	 * the bar's right end, right-aligned so growing digits extend leftward
-	 * and never run off screen. Bar is vertically centered on the buttons.
+	 * and never run off screen. Bar is vertically centered on the button.
 	 */
-	private static final int BTN_W = 28, BTN_H = 20, BTN_GAP = 8, BTN_Y = 458;
+	private static final int BTN_W = 28, BTN_H = 20, BTN_Y = 458;
 	private static final int BAR_Y = BTN_Y + (BTN_H - 8) / 2, BAR_H = 8;
 	/** Taller hit zone than the 8px track so the bar is easy to grab. */
 	private static final int BAR_HIT_TOP = BTN_Y - 2, BAR_HIT_BOTTOM = BTN_Y + BTN_H + 2;
@@ -117,11 +114,7 @@ public class StateInGameSDL extends BaseStateSDL {
 		closeBtn = ButtonSDL.newCloseButton(null);
 		replayPaused = false;
 		scrubbing = false;
-		stepBackBtn = new ButtonSDL(0, BTN_Y, BTN_W, BTN_H, "");
 		playPauseBtn = new ButtonSDL(0, BTN_Y, BTN_W, BTN_H, "");
-		stepFwdBtn = new ButtonSDL(0, BTN_Y, BTN_W, BTN_H, "");
-		speedDownBtn = new ButtonSDL(0, BTN_Y, BTN_W, BTN_H, "-");
-		speedUpBtn = new ButtonSDL(0, BTN_Y, BTN_W, BTN_H, "+");
 	}
 
 	/**
@@ -898,12 +891,8 @@ public class StateInGameSDL extends BaseStateSDL {
 	 * fills the rest of the row to near the right edge.
 	 */
 	private void layoutReplayTimeline() {
-		speedDownBtn.x = 4;
-		stepBackBtn.x = speedDownBtn.x + BTN_W + BTN_GAP;
-		playPauseBtn.x = stepBackBtn.x + BTN_W + BTN_GAP;
-		stepFwdBtn.x = playPauseBtn.x + BTN_W + BTN_GAP;
-		speedUpBtn.x = stepFwdBtn.x + BTN_W + BTN_GAP;
-		barX = speedUpBtn.x + BTN_W + 12;
+		playPauseBtn.x = 4;
+		barX = playPauseBtn.x + BTN_W + 12;
 		barW = NullpoMinoSDL.LOGICAL_WIDTH - 8 - barX;
 	}
 
@@ -932,26 +921,18 @@ public class StateInGameSDL extends BaseStateSDL {
 		String frames = String.valueOf(cur);
 		NormalFontSDL.printFont(barX + barW - frames.length() * 16, BAR_Y - 18, frames, NormalFontSDL.COLOR_WHITE);
 
-		speedDownBtn.render();
-		stepBackBtn.render();
 		playPauseBtn.render();
-		stepFwdBtn.render();
-		speedUpBtn.render();
 
-		// Icon overlays. The atlas has only a right-pointing arrow ('b'); the
-		// left arrow is its mirror, and the pause/step bars are plain rects.
+		// Icon overlay. The atlas has only a right-pointing arrow ('b'); the
+		// pause bars are plain rects.
 		int gy = BTN_Y + (BTN_H - 16) / 2;
 		int gxOff = (BTN_W - 16) / 2;
-		NormalFontSDL.printFontFlippedH(stepBackBtn.x + gxOff, gy, 'b', NormalFontSDL.COLOR_WHITE);
-		WidgetSDL.fillRect(stepBackBtn.x + 4, gy + 2, 3, 12, 255, 255, 255, 255);
 		if(replayPaused) {
 			NormalFontSDL.printFont(playPauseBtn.x + gxOff, gy, "b", NormalFontSDL.COLOR_WHITE);
 		} else {
 			WidgetSDL.fillRect(playPauseBtn.x + BTN_W / 2 - 6, gy + 2, 4, 12, 255, 255, 255, 255);
 			WidgetSDL.fillRect(playPauseBtn.x + BTN_W / 2 + 2, gy + 2, 4, 12, 255, 255, 255, 255);
 		}
-		NormalFontSDL.printFont(stepFwdBtn.x + gxOff, gy, "b", NormalFontSDL.COLOR_WHITE);
-		WidgetSDL.fillRect(stepFwdBtn.x + BTN_W - 7, gy + 2, 3, 12, 255, 255, 255, 255);
 	}
 
 	/**
@@ -968,22 +949,8 @@ public class StateInGameSDL extends BaseStateSDL {
 		int my = MouseInputSDL.mouseInput.getMouseY();
 		boolean clicked = MouseInputSDL.mouseInput.isMouseClicked();
 
-		if(speedDownBtn.update(mx, my, clicked)) {
-			adjustFastforward(-1);
-		}
-		if(stepBackBtn.update(mx, my, clicked)) {
-			replayPaused = true;
-			seekReplay(gameManager.engine[0].replayTimer - 1);
-		}
 		if(playPauseBtn.update(mx, my, clicked)) {
 			replayPaused = !replayPaused;
-		}
-		if(stepFwdBtn.update(mx, my, clicked)) {
-			replayPaused = true;
-			gameManager.updateAll();
-		}
-		if(speedUpBtn.update(mx, my, clicked)) {
-			adjustFastforward(1);
 		}
 
 		// Wheel over the bar steps the paused playback one frame per tick
@@ -993,7 +960,7 @@ public class StateInGameSDL extends BaseStateSDL {
 		// mirroring the LEFT/RIGHT arrow keys' fastforward control (0..98).
 		int wheel = (int) NullpoMinoSDL.mouseWheelDelta;
 		boolean overBar = mx >= barX && mx < barX + barW && my >= BAR_HIT_TOP && my < BAR_HIT_BOTTOM;
-		boolean overButtons = mx >= speedDownBtn.x && mx < speedUpBtn.x + BTN_W
+		boolean overButtons = mx >= playPauseBtn.x && mx < playPauseBtn.x + BTN_W
 				&& my >= BAR_HIT_TOP && my < BAR_HIT_BOTTOM;
 		if(wheel != 0 && overBar) {
 			replayPaused = true;
