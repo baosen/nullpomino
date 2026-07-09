@@ -112,3 +112,4025 @@ SELECT_CLASSES = {
     ],
 }
 
+TEST_DEPS = {
+    "nullpomino/game/ai/AINamesTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:game_ai_impls",
+    ],
+    "nullpomino/game/ai/AIRegistryTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:game_ai_impls",
+    ],
+    "nullpomino/game/ai/AIRemainingCoverageTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:game_ai_impls",
+        "//src/main/java:game_component_data",
+    ],
+    "nullpomino/game/ai/BasicAIBranchCoverageTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:game_ai_impls",
+        "//src/main/java:game_component_data",
+    ],
+    "nullpomino/game/ai/BasicAICoverageBoostTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:game_ai_impls",
+        "//src/main/java:game_component_data",
+        "//src/main/java:game_wallkick_impls",
+    ],
+    "nullpomino/game/ai/BasicAIDeepBranchCoverageTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:core_ui_modes",
+        "//src/main/java:game_ai_impls",
+        "//src/main/java:game_component_data",
+        "//src/main/java:game_wallkick_impls",
+    ],
+    "nullpomino/game/ai/BasicAIDeepCoverageTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:game_ai_impls",
+        "//src/main/java:game_component_data",
+    ],
+    "nullpomino/game/ai/BasicAIExtendedTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:game_ai_impls",
+        "//src/main/java:game_component_data",
+    ],
+    "nullpomino/game/ai/BasicAIExtraTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:game_ai_impls",
+        "//src/main/java:game_component_data",
+    ],
+    "nullpomino/game/ai/BasicAIExtraTest2.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:game_ai_impls",
+        "//src/main/java:game_component_data",
+    ],
+    "nullpomino/game/ai/BasicAIExtraTest3.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:game_ai_impls",
+        "//src/main/java:game_component_data",
+    ],
+    "nullpomino/game/ai/BasicAIExtraTest4.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:game_ai_impls",
+        "//src/main/java:game_component_data",
+    ],
+    "nullpomino/game/ai/BasicAIExtraTest5.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:game_ai_impls",
+        "//src/main/java:game_component_data",
+    ],
+    "nullpomino/game/ai/BasicAIFinalCoverageTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:game_ai_impls",
+        "//src/main/java:game_component_data",
+    ],
+    "nullpomino/game/ai/BasicAIRemainingCoverageTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:game_ai_impls",
+        "//src/main/java:game_component_data",
+    ],
+    "nullpomino/game/ai/BasicAITest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:game_ai_impls",
+        "//src/main/java:game_component_data",
+    ],
+    "nullpomino/game/ai/ComboRaceBotCoverageBoostTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:game_ai_impls",
+        "//src/main/java:game_component_data",
+        "//src/main/java:game_wallkick_impls",
+    ],
+    "nullpomino/game/ai/ComboRaceBotDeepBranchCoverageTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:core_ui_modes",
+        "//src/main/java:game_ai_impls",
+        "//src/main/java:game_component_data",
+        "//src/main/java:game_wallkick_impls",
+    ],
+    "nullpomino/game/ai/ComboRaceBotExtendedTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:game_ai_impls",
+        "//src/main/java:game_component_data",
+    ],
+    "nullpomino/game/ai/ComboRaceBotExtraTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:game_ai_impls",
+        "//src/main/java:game_component_data",
+    ],
+    "nullpomino/game/ai/ComboRaceBotExtraTest2.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:game_ai_impls",
+        "//src/main/java:game_component_data",
+    ],
+    "nullpomino/game/ai/ComboRaceBotExtraTest3.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:game_ai_impls",
+        "//src/main/java:game_component_data",
+    ],
+    "nullpomino/game/ai/ComboRaceBotExtraTest4.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:game_ai_impls",
+        "//src/main/java:game_component_data",
+    ],
+    "nullpomino/game/ai/ComboRaceBotFinalCoverageTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:game_ai_impls",
+        "//src/main/java:game_component_data",
+    ],
+    "nullpomino/game/ai/ComboRaceBotRemainingCoverageTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:game_ai_impls",
+        "//src/main/java:game_component_data",
+    ],
+    "nullpomino/game/ai/ComboRaceBotResidualBranchCoverageTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:core_ui_modes",
+        "//src/main/java:game_ai_impls",
+        "//src/main/java:game_component_data",
+        "//src/main/java:game_wallkick_impls",
+    ],
+    "nullpomino/game/ai/ComboRaceBotStaticHelpersTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:game_ai_impls",
+    ],
+    "nullpomino/game/ai/ComboRaceBotTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:game_ai_impls",
+        "//src/main/java:game_component_data",
+    ],
+    "nullpomino/game/ai/DummyAITest.java": [
+        "//src/main/java:core_engine",
+    ],
+    "nullpomino/game/ai/NohohoBranchCoverageTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:game_ai_impls",
+        "//src/main/java:game_component_data",
+    ],
+    "nullpomino/game/ai/NohohoCoverageBoostTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:game_ai_impls",
+        "//src/main/java:game_component_data",
+    ],
+    "nullpomino/game/ai/NohohoDeepBranchCoverageTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:core_ui_modes",
+        "//src/main/java:game_ai_impls",
+        "//src/main/java:game_component_data",
+        "//src/main/java:game_wallkick_impls",
+    ],
+    "nullpomino/game/ai/NohohoExtendedTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:game_ai_impls",
+        "//src/main/java:game_component_data",
+    ],
+    "nullpomino/game/ai/NohohoExtraTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:game_ai_impls",
+        "//src/main/java:game_component_data",
+    ],
+    "nullpomino/game/ai/NohohoExtraTest2.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:game_ai_impls",
+        "//src/main/java:game_component_data",
+    ],
+    "nullpomino/game/ai/NohohoExtraTest3.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:game_ai_impls",
+        "//src/main/java:game_component_data",
+    ],
+    "nullpomino/game/ai/NohohoExtraTest4.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:game_ai_impls",
+        "//src/main/java:game_component_data",
+    ],
+    "nullpomino/game/ai/NohohoExtraTest5.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:game_ai_impls",
+        "//src/main/java:game_component_data",
+    ],
+    "nullpomino/game/ai/NohohoFinalCoverageTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:game_ai_impls",
+        "//src/main/java:game_component_data",
+    ],
+    "nullpomino/game/ai/NohohoRemainingCoverageTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:game_ai_impls",
+        "//src/main/java:game_component_data",
+    ],
+    "nullpomino/game/ai/NohohoStaticHelpersTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:game_ai_impls",
+    ],
+    "nullpomino/game/ai/NohohoTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:game_ai_impls",
+        "//src/main/java:game_component_data",
+    ],
+    "nullpomino/game/ai/NohohooLastCoverageTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:game_ai_impls",
+        "//src/main/java:game_component_data",
+    ],
+    "nullpomino/game/ai/PoochyBotCoverageBoostTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:game_ai_impls",
+        "//src/main/java:game_component_data",
+    ],
+    "nullpomino/game/ai/PoochyBotDeepBranchCoverageTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:core_ui_modes",
+        "//src/main/java:game_ai_impls",
+        "//src/main/java:game_component_data",
+        "//src/main/java:game_wallkick_impls",
+    ],
+    "nullpomino/game/ai/PoochyBotDefensiveBranchCoverageTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:game_ai_impls",
+    ],
+    "nullpomino/game/ai/PoochyBotDefensiveCoverageBoostTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:game_ai_impls",
+    ],
+    "nullpomino/game/ai/PoochyBotDefensiveDeepBranchCoverageTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:game_ai_impls",
+    ],
+    "nullpomino/game/ai/PoochyBotDefensiveExtraTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:game_ai_impls",
+    ],
+    "nullpomino/game/ai/PoochyBotDefensiveExtraTest2.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:game_ai_impls",
+    ],
+    "nullpomino/game/ai/PoochyBotDefensiveExtraTest3.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:game_ai_impls",
+    ],
+    "nullpomino/game/ai/PoochyBotDefensiveExtraTest4.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:game_ai_impls",
+    ],
+    "nullpomino/game/ai/PoochyBotDefensiveExtraTest5.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:game_ai_impls",
+    ],
+    "nullpomino/game/ai/PoochyBotDefensiveFinalCoverageTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:game_ai_impls",
+    ],
+    "nullpomino/game/ai/PoochyBotDefensiveLastCoverageTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:game_ai_impls",
+    ],
+    "nullpomino/game/ai/PoochyBotDefensiveRemainingCoverageTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:game_ai_impls",
+    ],
+    "nullpomino/game/ai/PoochyBotDefensiveTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:game_ai_impls",
+    ],
+    "nullpomino/game/ai/PoochyBotExtendedTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:game_ai_impls",
+        "//src/main/java:game_component_data",
+    ],
+    "nullpomino/game/ai/PoochyBotExtraCoverageTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:game_ai_impls",
+        "//src/main/java:game_component_data",
+    ],
+    "nullpomino/game/ai/PoochyBotExtraTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:game_ai_impls",
+        "//src/main/java:game_component_data",
+    ],
+    "nullpomino/game/ai/PoochyBotExtraTest2.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:game_ai_impls",
+        "//src/main/java:game_component_data",
+    ],
+    "nullpomino/game/ai/PoochyBotExtraTest3.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:game_ai_impls",
+        "//src/main/java:game_component_data",
+    ],
+    "nullpomino/game/ai/PoochyBotExtraTest4.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:game_ai_impls",
+        "//src/main/java:game_component_data",
+    ],
+    "nullpomino/game/ai/PoochyBotFinalCoverageTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:game_ai_impls",
+        "//src/main/java:game_component_data",
+    ],
+    "nullpomino/game/ai/PoochyBotGameSimTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:core_ui_modes",
+        "//src/main/java:game_ai_impls",
+        "//src/main/java:game_wallkick_impls",
+    ],
+    "nullpomino/game/ai/PoochyBotMostMovableXTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:game_ai_impls",
+    ],
+    "nullpomino/game/ai/PoochyBotOnFirstTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:game_ai_impls",
+    ],
+    "nullpomino/game/ai/PoochyBotRemainderCoverageTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:game_ai_impls",
+        "//src/main/java:game_component_data",
+        "//src/main/java:game_wallkick_impls",
+    ],
+    "nullpomino/game/ai/PoochyBotRemainingCoverageTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:game_ai_impls",
+        "//src/main/java:game_component_data",
+    ],
+    "nullpomino/game/ai/PoochyBotResidualBranchCoverageTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:core_ui_modes",
+        "//src/main/java:game_ai_impls",
+        "//src/main/java:game_component_data",
+        "//src/main/java:game_wallkick_impls",
+    ],
+    "nullpomino/game/ai/PoochyBotSearchBranchCoverageTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:game_ai_impls",
+    ],
+    "nullpomino/game/ai/PoochyBotSetControlFinesseTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:game_ai_impls",
+        "//src/main/java:game_component_data",
+    ],
+    "nullpomino/game/ai/PoochyBotSetControlLJTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:game_ai_impls",
+        "//src/main/java:game_component_data",
+    ],
+    "nullpomino/game/ai/PoochyBotStaticHelpersTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:game_ai_impls",
+    ],
+    "nullpomino/game/ai/PoochyBotTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:game_ai_impls",
+        "//src/main/java:game_component_data",
+    ],
+    "nullpomino/game/ai/PoochyBotThinkBranchCoverageTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:game_ai_impls",
+    ],
+    "nullpomino/game/ai/PoochyBotThinkScoringTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:game_ai_impls",
+    ],
+    "nullpomino/game/ai/RanksAIBranchCoverageTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:game_ai_impls",
+        "//src/main/java:game_component_data",
+        "//src/main/java:tool_airankstool",
+    ],
+    "nullpomino/game/ai/RanksAICoverageBoostTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:game_ai_impls",
+        "//src/main/java:tool_airankstool",
+    ],
+    "nullpomino/game/ai/RanksAIDeepBranchCoverageTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:core_ui_modes",
+        "//src/main/java:game_ai_impls",
+        "//src/main/java:game_component_data",
+        "//src/main/java:game_wallkick_impls",
+        "//src/main/java:tool_airankstool",
+    ],
+    "nullpomino/game/ai/RanksAIExtraTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:game_ai_impls",
+        "//src/main/java:game_component_data",
+        "//src/main/java:tool_airankstool",
+    ],
+    "nullpomino/game/ai/RanksAIExtraTest2.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:game_ai_impls",
+        "//src/main/java:game_component_data",
+        "//src/main/java:tool_airankstool",
+    ],
+    "nullpomino/game/ai/RanksAIExtraTest3.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:game_ai_impls",
+        "//src/main/java:game_component_data",
+        "//src/main/java:tool_airankstool",
+    ],
+    "nullpomino/game/ai/RanksAIExtraTest4.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:game_ai_impls",
+        "//src/main/java:game_component_data",
+        "//src/main/java:tool_airankstool",
+    ],
+    "nullpomino/game/ai/RanksAIExtraTest5.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:game_ai_impls",
+        "//src/main/java:game_component_data",
+        "//src/main/java:tool_airankstool",
+    ],
+    "nullpomino/game/ai/RanksAIFinalCoverageTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:game_ai_impls",
+    ],
+    "nullpomino/game/ai/RanksAILastCoverageTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:game_ai_impls",
+    ],
+    "nullpomino/game/ai/RanksAIRemainingCoverageTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:game_ai_impls",
+        "//src/main/java:game_component_data",
+    ],
+    "nullpomino/game/ai/RanksAIStaticHelpersTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:game_ai_impls",
+        "//src/main/java:tool_airankstool",
+    ],
+    "nullpomino/game/ai/RanksAITest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:game_ai_impls",
+        "//src/main/java:game_component_data",
+        "//src/main/java:tool_airankstool",
+    ],
+    "nullpomino/game/ai/TSpinAIBranchCoverageTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:game_ai_impls",
+    ],
+    "nullpomino/game/ai/TSpinAIBranchCoverageTest3.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:game_ai_impls",
+    ],
+    "nullpomino/game/ai/TSpinAICoverageBoostTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:game_ai_impls",
+    ],
+    "nullpomino/game/ai/TSpinAIDeepBranchCoverageTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:core_ui_modes",
+        "//src/main/java:game_ai_impls",
+        "//src/main/java:game_wallkick_impls",
+    ],
+    "nullpomino/game/ai/TSpinAIExtraTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:game_ai_impls",
+    ],
+    "nullpomino/game/ai/TSpinAIExtraTest2.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:game_ai_impls",
+    ],
+    "nullpomino/game/ai/TSpinAIExtraTest3.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:game_ai_impls",
+    ],
+    "nullpomino/game/ai/TSpinAIExtraTest4.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:game_ai_impls",
+    ],
+    "nullpomino/game/ai/TSpinAIFinalCoverageTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:game_ai_impls",
+    ],
+    "nullpomino/game/ai/TSpinAILastCoverageTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:game_ai_impls",
+    ],
+    "nullpomino/game/ai/TSpinAIMissingCoverageTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:game_ai_impls",
+    ],
+    "nullpomino/game/ai/TSpinAIRemainingCoverageTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:game_ai_impls",
+    ],
+    "nullpomino/game/ai/TSpinAITest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:game_ai_impls",
+    ],
+    "nullpomino/game/component/BGMStatusTest.java": [
+        "//src/main/java:game_component_data",
+    ],
+    "nullpomino/game/component/BackgroundStatusTest.java": [
+        "//src/main/java:game_component_data",
+    ],
+    "nullpomino/game/component/BlockTest.java": [
+        "//src/main/java:core_engine",
+    ],
+    "nullpomino/game/component/ControllerTest.java": [
+        "//src/main/java:game_component_data",
+    ],
+    "nullpomino/game/component/FieldAdvancedOperationsTest.java": [
+        "//src/main/java:core_engine",
+    ],
+    "nullpomino/game/component/FieldBranchCoverageTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:util_base",
+    ],
+    "nullpomino/game/component/FieldBranchCoverageTest3.java": [
+        "//src/main/java:core_engine",
+    ],
+    "nullpomino/game/component/FieldCascadeBranchGapTest.java": [
+        "//src/main/java:core_engine",
+    ],
+    "nullpomino/game/component/FieldCharacterisationTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:util_base",
+    ],
+    "nullpomino/game/component/FieldClearAndCascadeTest.java": [
+        "//src/main/java:core_engine",
+    ],
+    "nullpomino/game/component/FieldColorClearBranchGapTest.java": [
+        "//src/main/java:core_engine",
+    ],
+    "nullpomino/game/component/FieldColorClearTest.java": [
+        "//src/main/java:core_engine",
+    ],
+    "nullpomino/game/component/FieldDataTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:util_base",
+    ],
+    "nullpomino/game/component/FieldDeepBranchCoverageTest.java": [
+        "//src/main/java:core_engine",
+    ],
+    "nullpomino/game/component/FieldEdgeCoverageTest.java": [
+        "//src/main/java:core_engine",
+    ],
+    "nullpomino/game/component/FieldFloodFillBranchGapTest.java": [
+        "//src/main/java:core_engine",
+    ],
+    "nullpomino/game/component/FieldGarbageBranchGapTest.java": [
+        "//src/main/java:core_engine",
+    ],
+    "nullpomino/game/component/FieldLineCascadeTest.java": [
+        "//src/main/java:core_engine",
+    ],
+    "nullpomino/game/component/FieldManipulationTest.java": [
+        "//src/main/java:core_engine",
+    ],
+    "nullpomino/game/component/FieldQueriesTest.java": [
+        "//src/main/java:core_engine",
+    ],
+    "nullpomino/game/component/FieldQueryMethodsTest.java": [
+        "//src/main/java:core_engine",
+    ],
+    "nullpomino/game/component/FieldSerializerBranchGapTest.java": [
+        "//src/main/java:core_engine",
+    ],
+    "nullpomino/game/component/FieldStringSerializationTest.java": [
+        "//src/main/java:core_engine",
+    ],
+    "nullpomino/game/component/FieldTSpinDetectionTest.java": [
+        "//src/main/java:core_engine",
+    ],
+    "nullpomino/game/component/PieceOffsetArrayTest.java": [
+        "//src/main/java:core_engine",
+    ],
+    "nullpomino/game/component/PieceTest.java": [
+        "//src/main/java:core_engine",
+    ],
+    "nullpomino/game/component/ReplayDataBranchTest.java": [
+        "//src/main/java:game_component_data",
+        "//src/main/java:util_base",
+    ],
+    "nullpomino/game/component/ReplayDataTest.java": [
+        "//src/main/java:game_component_data",
+        "//src/main/java:util_base",
+    ],
+    "nullpomino/game/component/RuleOptionsTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:util_base",
+    ],
+    "nullpomino/game/component/SpeedParamTest.java": [
+        "//src/main/java:game_component_data",
+    ],
+    "nullpomino/game/component/StatisticsRoundTripTest.java": [
+        "//src/main/java:game_component_data",
+    ],
+    "nullpomino/game/component/StatisticsTest.java": [
+        "//src/main/java:game_component_data",
+        "//src/main/java:util_base",
+    ],
+    "nullpomino/game/component/StatusFadeTest.java": [
+        "//src/main/java:game_component_data",
+    ],
+    "nullpomino/game/component/WallkickResultTest.java": [
+        "//src/main/java:game_component_data",
+    ],
+    "nullpomino/game/event/EventReceiverBranchCoverageTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:util_base",
+    ],
+    "nullpomino/game/event/EventReceiverDelegationTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:core_ui_modes",
+        "//src/main/java:util_base",
+    ],
+    "nullpomino/game/event/EventReceiverDisplayTest.java": [
+        "//src/main/java:core_engine",
+    ],
+    "nullpomino/game/event/EventReceiverIOExceptionTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:util_base",
+    ],
+    "nullpomino/game/event/EventReceiverIOTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:util_base",
+    ],
+    "nullpomino/game/menu/BooleanMenuItemBranchTest.java": [
+        "//src/main/java:game_menu",
+        "//src/main/java:util_base",
+    ],
+    "nullpomino/game/menu/MenuItemPersistenceTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:game_menu",
+        "//src/main/java:util_base",
+    ],
+    "nullpomino/game/menu/MenuItemValueStringTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:game_menu",
+    ],
+    "nullpomino/game/mode/AbstractGradeModeTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:game_mode_impls",
+    ],
+    "nullpomino/game/mode/AbstractManiaModeBranchGapTest.java": [
+        "//src/main/java:game_mode_impls",
+    ],
+    "nullpomino/game/mode/AbstractMarathonModeTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:core_ui_modes",
+        "//src/main/java:util_base",
+    ],
+    "nullpomino/game/mode/AbstractModeBasicsTest.java": [
+        "//src/main/java:core_engine",
+    ],
+    "nullpomino/game/mode/AbstractModeBranchGapTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:game_component_data",
+        "//src/main/java:game_menu",
+    ],
+    "nullpomino/game/mode/AbstractModeEdgeTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:game_component_data",
+    ],
+    "nullpomino/game/mode/AbstractModeGameLogicTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:util_base",
+    ],
+    "nullpomino/game/mode/AbstractModeRenderTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:game_menu",
+        "//src/main/java:util_base",
+    ],
+    "nullpomino/game/mode/AbstractModeUpdateCursorTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:game_component_data",
+    ],
+    "nullpomino/game/mode/Avalanche1PDummyModeBranchGapTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:game_mode_impls",
+    ],
+    "nullpomino/game/mode/Avalanche1PDummyModeBranchTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:game_mode_impls",
+    ],
+    "nullpomino/game/mode/Avalanche1PDummyModeCalculationTest.java": [
+        "//src/main/java:game_mode_impls",
+    ],
+    "nullpomino/game/mode/Avalanche1PDummyModeConstantsTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:game_mode_impls",
+    ],
+    "nullpomino/game/mode/Avalanche1PDummyModeEdgeTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:game_mode_impls",
+    ],
+    "nullpomino/game/mode/Avalanche1PDummyModeExtraCoverageTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:game_mode_impls",
+    ],
+    "nullpomino/game/mode/Avalanche1PDummyModeGameLogicTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:game_mode_impls",
+        "//src/main/java:util_base",
+    ],
+    "nullpomino/game/mode/Avalanche1PDummyModeSetSpeedTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:game_mode_impls",
+    ],
+    "nullpomino/game/mode/Avalanche1PDummyModeTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:game_mode_impls",
+        "//src/main/java:util_base",
+    ],
+    "nullpomino/game/mode/AvalancheFeverModeBranchCoverageTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:game_component_data",
+        "//src/main/java:game_mode_impls",
+        "//src/main/java:util_base",
+    ],
+    "nullpomino/game/mode/AvalancheFeverModeCoverageBoostTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:game_component_data",
+        "//src/main/java:game_mode_impls",
+        "//src/main/java:util_base",
+    ],
+    "nullpomino/game/mode/AvalancheFeverModeDeepCoverage.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:game_mode_impls",
+        "//src/main/java:util_base",
+    ],
+    "nullpomino/game/mode/AvalancheFeverModeGameLogicTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:game_mode_impls",
+        "//src/main/java:util_base",
+    ],
+    "nullpomino/game/mode/AvalancheFeverModeRankingTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:game_mode_impls",
+    ],
+    "nullpomino/game/mode/AvalancheFeverModeSettingWraparoundTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:game_component_data",
+        "//src/main/java:game_mode_impls",
+    ],
+    "nullpomino/game/mode/AvalancheFeverModeTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:game_mode_impls",
+        "//src/main/java:util_base",
+    ],
+    "nullpomino/game/mode/AvalancheModeBranchCoverageTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:game_mode_impls",
+        "//src/main/java:util_base",
+    ],
+    "nullpomino/game/mode/AvalancheModeBranchCoverageTest2.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:game_mode_impls",
+        "//src/main/java:util_base",
+    ],
+    "nullpomino/game/mode/AvalancheModeDeepCoverage.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:game_mode_impls",
+        "//src/main/java:util_base",
+    ],
+    "nullpomino/game/mode/AvalancheModeGameLogicTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:game_mode_impls",
+        "//src/main/java:util_base",
+    ],
+    "nullpomino/game/mode/AvalancheModeLineClearEndTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:game_mode_impls",
+    ],
+    "nullpomino/game/mode/AvalancheModeRankingTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:game_mode_impls",
+        "//src/main/java:util_base",
+    ],
+    "nullpomino/game/mode/AvalancheModeRemainingCoverageTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:game_component_data",
+        "//src/main/java:game_mode_impls",
+        "//src/main/java:util_base",
+    ],
+    "nullpomino/game/mode/AvalancheModeReplayMenuTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:game_mode_impls",
+    ],
+    "nullpomino/game/mode/AvalancheModeSetSpeedTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:game_mode_impls",
+    ],
+    "nullpomino/game/mode/AvalancheModeSettingWraparoundTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:game_component_data",
+        "//src/main/java:game_mode_impls",
+    ],
+    "nullpomino/game/mode/AvalancheModeTailCoverageTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:game_component_data",
+        "//src/main/java:game_mode_impls",
+    ],
+    "nullpomino/game/mode/AvalancheModeTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:game_mode_impls",
+        "//src/main/java:util_base",
+    ],
+    "nullpomino/game/mode/AvalancheVSBombBattleLastCoverageTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:game_component_data",
+        "//src/main/java:game_mode_impls",
+        "//src/main/java:util_base",
+    ],
+    "nullpomino/game/mode/AvalancheVSBombBattleModeBranchCoverageTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:game_mode_impls",
+        "//src/main/java:util_base",
+    ],
+    "nullpomino/game/mode/AvalancheVSBombBattleModeExtendedGameLogicTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:game_mode_impls",
+        "//src/main/java:util_base",
+    ],
+    "nullpomino/game/mode/AvalancheVSBombBattleModeExtendedTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:game_mode_impls",
+        "//src/main/java:util_base",
+    ],
+    "nullpomino/game/mode/AvalancheVSBombBattleModeGameLogicTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:game_mode_impls",
+        "//src/main/java:util_base",
+    ],
+    "nullpomino/game/mode/AvalancheVSBombBattleModeModeInitTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:game_mode_impls",
+    ],
+    "nullpomino/game/mode/AvalancheVSBombBattleModeOtherSettingTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:game_mode_impls",
+        "//src/main/java:util_base",
+    ],
+    "nullpomino/game/mode/AvalancheVSBombBattleModeSettingMenuTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:game_component_data",
+        "//src/main/java:game_mode_impls",
+        "//src/main/java:util_base",
+    ],
+    "nullpomino/game/mode/AvalancheVSBombBattleModeSettingWraparoundTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:game_component_data",
+        "//src/main/java:game_mode_impls",
+    ],
+    "nullpomino/game/mode/AvalancheVSBombBattleModeTailCoverageTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:game_component_data",
+        "//src/main/java:game_mode_impls",
+        "//src/main/java:util_base",
+    ],
+    "nullpomino/game/mode/AvalancheVSBombBattleModeTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:game_mode_impls",
+    ],
+    "nullpomino/game/mode/AvalancheVSChainCalculationTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:game_mode_impls",
+    ],
+    "nullpomino/game/mode/AvalancheVSDigRaceModeBranchCoverageTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:game_mode_impls",
+        "//src/main/java:util_base",
+    ],
+    "nullpomino/game/mode/AvalancheVSDigRaceModeCoverageBoostTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:game_component_data",
+        "//src/main/java:game_mode_impls",
+        "//src/main/java:util_base",
+    ],
+    "nullpomino/game/mode/AvalancheVSDigRaceModeExtendedGameLogicTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:game_mode_impls",
+        "//src/main/java:util_base",
+    ],
+    "nullpomino/game/mode/AvalancheVSDigRaceModeGameLogicTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:game_mode_impls",
+        "//src/main/java:util_base",
+    ],
+    "nullpomino/game/mode/AvalancheVSDigRaceModeModeInitTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:game_mode_impls",
+    ],
+    "nullpomino/game/mode/AvalancheVSDigRaceModeOtherSettingTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:game_mode_impls",
+        "//src/main/java:util_base",
+    ],
+    "nullpomino/game/mode/AvalancheVSDigRaceModeSettingWraparoundTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:game_component_data",
+        "//src/main/java:game_mode_impls",
+    ],
+    "nullpomino/game/mode/AvalancheVSDigRaceModeTailCoverage2Test.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:game_mode_impls",
+        "//src/main/java:util_base",
+    ],
+    "nullpomino/game/mode/AvalancheVSDigRaceModeTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:game_mode_impls",
+        "//src/main/java:util_base",
+    ],
+    "nullpomino/game/mode/AvalancheVSDummyModeBranchCoverageTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:game_mode_impls",
+        "//src/main/java:util_base",
+    ],
+    "nullpomino/game/mode/AvalancheVSDummyModeConstantsTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:game_mode_impls",
+    ],
+    "nullpomino/game/mode/AvalancheVSDummyModeDeepCoverage.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:game_mode_impls",
+    ],
+    "nullpomino/game/mode/AvalancheVSDummyModeGameLogicTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:game_mode_impls",
+        "//src/main/java:util_base",
+    ],
+    "nullpomino/game/mode/AvalancheVSDummyModeLoadOtherSettingTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:game_mode_impls",
+        "//src/main/java:util_base",
+    ],
+    "nullpomino/game/mode/AvalancheVSDummyModeOtherSettingTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:game_mode_impls",
+        "//src/main/java:util_base",
+    ],
+    "nullpomino/game/mode/AvalancheVSDummyModePresetTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:game_mode_impls",
+        "//src/main/java:util_base",
+    ],
+    "nullpomino/game/mode/AvalancheVSDummyModeRemainingCoverageTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:game_component_data",
+        "//src/main/java:game_mode_impls",
+        "//src/main/java:util_base",
+    ],
+    "nullpomino/game/mode/AvalancheVSDummyModeTailCoverage2Test.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:game_mode_impls",
+        "//src/main/java:util_base",
+    ],
+    "nullpomino/game/mode/AvalancheVSDummyModeTailCoverageTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:game_mode_impls",
+        "//src/main/java:util_base",
+    ],
+    "nullpomino/game/mode/AvalancheVSDummyModeTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:game_mode_impls",
+        "//src/main/java:util_base",
+    ],
+    "nullpomino/game/mode/AvalancheVSFeverModeBranchCoverageTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:game_mode_impls",
+        "//src/main/java:util_base",
+    ],
+    "nullpomino/game/mode/AvalancheVSFeverModeCalculationTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:game_mode_impls",
+    ],
+    "nullpomino/game/mode/AvalancheVSFeverModeCoverageBoostTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:game_component_data",
+        "//src/main/java:game_mode_impls",
+        "//src/main/java:util_base",
+    ],
+    "nullpomino/game/mode/AvalancheVSFeverModeGameLogicTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:game_mode_impls",
+        "//src/main/java:util_base",
+    ],
+    "nullpomino/game/mode/AvalancheVSFeverModeModeInitTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:game_mode_impls",
+    ],
+    "nullpomino/game/mode/AvalancheVSFeverModeOtherSettingTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:game_mode_impls",
+        "//src/main/java:util_base",
+    ],
+    "nullpomino/game/mode/AvalancheVSFeverModeSettingWraparoundTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:game_component_data",
+        "//src/main/java:game_mode_impls",
+    ],
+    "nullpomino/game/mode/AvalancheVSFeverModeTailCoverage2Test.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:game_component_data",
+        "//src/main/java:game_mode_impls",
+        "//src/main/java:util_base",
+    ],
+    "nullpomino/game/mode/AvalancheVSFeverModeTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:game_mode_impls",
+        "//src/main/java:util_base",
+    ],
+    "nullpomino/game/mode/AvalancheVSModeBranchCoverageTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:game_component_data",
+        "//src/main/java:game_mode_impls",
+        "//src/main/java:util_base",
+    ],
+    "nullpomino/game/mode/AvalancheVSModeCalculationTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:game_mode_impls",
+    ],
+    "nullpomino/game/mode/AvalancheVSModeCoverageBoostTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:game_component_data",
+        "//src/main/java:game_mode_impls",
+        "//src/main/java:util_base",
+    ],
+    "nullpomino/game/mode/AvalancheVSModeExtendedTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:game_mode_impls",
+        "//src/main/java:util_base",
+    ],
+    "nullpomino/game/mode/AvalancheVSModeGameLogicTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:game_mode_impls",
+        "//src/main/java:util_base",
+    ],
+    "nullpomino/game/mode/AvalancheVSModeOtherSettingTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:game_mode_impls",
+        "//src/main/java:util_base",
+    ],
+    "nullpomino/game/mode/AvalancheVSModeRemainingCoverageTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:game_component_data",
+        "//src/main/java:game_mode_impls",
+        "//src/main/java:util_base",
+    ],
+    "nullpomino/game/mode/AvalancheVSModeScoringTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:game_mode_impls",
+        "//src/main/java:util_base",
+    ],
+    "nullpomino/game/mode/AvalancheVSModeSettingMenuTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:game_component_data",
+        "//src/main/java:game_mode_impls",
+        "//src/main/java:util_base",
+    ],
+    "nullpomino/game/mode/AvalancheVSModeTailCoverage2Test.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:game_component_data",
+        "//src/main/java:game_mode_impls",
+        "//src/main/java:util_base",
+    ],
+    "nullpomino/game/mode/AvalancheVSModeTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:game_mode_impls",
+        "//src/main/java:util_base",
+    ],
+    "nullpomino/game/mode/AvalancheVSSPFModeBranchCoverageTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:game_component_data",
+        "//src/main/java:game_mode_impls",
+        "//src/main/java:util_base",
+    ],
+    "nullpomino/game/mode/AvalancheVSSPFModeBranchCoverageTest2.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:game_component_data",
+        "//src/main/java:game_mode_impls",
+    ],
+    "nullpomino/game/mode/AvalancheVSSPFModeExtendedGameLogicTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:game_mode_impls",
+        "//src/main/java:util_base",
+    ],
+    "nullpomino/game/mode/AvalancheVSSPFModeModeInitTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:game_mode_impls",
+    ],
+    "nullpomino/game/mode/AvalancheVSSPFModeMultiplierTest.java": [
+        "//src/main/java:game_mode_impls",
+    ],
+    "nullpomino/game/mode/AvalancheVSSPFModeOtherSettingTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:game_mode_impls",
+        "//src/main/java:util_base",
+    ],
+    "nullpomino/game/mode/AvalancheVSSPFModeRemainingCoverageTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:game_component_data",
+        "//src/main/java:game_mode_impls",
+        "//src/main/java:util_base",
+    ],
+    "nullpomino/game/mode/AvalancheVSSPFModeRenderColorTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:game_mode_impls",
+    ],
+    "nullpomino/game/mode/AvalancheVSSPFModeSettingMenuTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:game_component_data",
+        "//src/main/java:game_mode_impls",
+        "//src/main/java:util_base",
+    ],
+    "nullpomino/game/mode/AvalancheVSSPFModeTailCoverageTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:game_component_data",
+        "//src/main/java:game_mode_impls",
+        "//src/main/java:util_base",
+    ],
+    "nullpomino/game/mode/AvalancheVSSPFModeTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:game_mode_impls",
+        "//src/main/java:util_base",
+    ],
+    "nullpomino/game/mode/AvalancheVSSiblingsTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:game_mode_impls",
+        "//src/main/java:util_base",
+    ],
+    "nullpomino/game/mode/Batch1SimpleModesCoverageTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:game_component_data",
+        "//src/main/java:game_mode_impls",
+        "//src/main/java:util_base",
+    ],
+    "nullpomino/game/mode/Batch2NetModesCoverageTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:core_ui_modes",
+        "//src/main/java:game_component_data",
+        "//src/main/java:util_base",
+    ],
+    "nullpomino/game/mode/BatchRemainingModesCoveragePart1.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:core_ui_modes",
+        "//src/main/java:game_component_data",
+        "//src/main/java:game_menu",
+        "//src/main/java:game_mode_impls",
+        "//src/main/java:util_base",
+    ],
+    "nullpomino/game/mode/BatchRemainingModesCoveragePart2.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:core_ui_modes",
+        "//src/main/java:util_base",
+    ],
+    "nullpomino/game/mode/BatchRemainingModesCoveragePart3.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:core_ui_modes",
+        "//src/main/java:game_mode_impls",
+        "//src/main/java:util_base",
+    ],
+    "nullpomino/game/mode/BatchRemainingModesDeepCoverageTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:core_ui_modes",
+        "//src/main/java:game_component_data",
+        "//src/main/java:game_menu",
+        "//src/main/java:game_mode_impls",
+        "//src/main/java:util_base",
+    ],
+    "nullpomino/game/mode/BatchSimpleModesDeepCoverageTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:core_ui_modes",
+        "//src/main/java:game_component_data",
+        "//src/main/java:game_menu",
+        "//src/main/java:game_mode_impls",
+        "//src/main/java:util_base",
+    ],
+    "nullpomino/game/mode/ComboRaceModeBranchCoverageTest2.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:core_ui_modes",
+        "//src/main/java:game_component_data",
+        "//src/main/java:game_net_client",
+        "//src/main/java:game_net_misc",
+        "//src/main/java:util_base",
+    ],
+    "nullpomino/game/mode/ComboRaceModeBranchCoverageTest3.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:core_ui_modes",
+        "//src/main/java:game_ai_impls",
+        "//src/main/java:game_component_data",
+        "//src/main/java:game_net_client",
+        "//src/main/java:game_net_misc",
+        "//src/main/java:util_base",
+    ],
+    "nullpomino/game/mode/ComboRaceModeCoverageBoostTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:core_ui_modes",
+        "//src/main/java:game_component_data",
+        "//src/main/java:game_net_client",
+        "//src/main/java:util_base",
+    ],
+    "nullpomino/game/mode/ComboRaceModeGameLogicTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:core_ui_modes",
+        "//src/main/java:util_base",
+    ],
+    "nullpomino/game/mode/ComboRaceModeRankingTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:core_ui_modes",
+    ],
+    "nullpomino/game/mode/ComboRaceModeSettingWraparoundTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:core_ui_modes",
+        "//src/main/java:game_component_data",
+        "//src/main/java:game_net_client",
+        "//src/main/java:util_base",
+    ],
+    "nullpomino/game/mode/ComboRaceModeTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:core_ui_modes",
+        "//src/main/java:util_base",
+    ],
+    "nullpomino/game/mode/DigChallengeModeBranchCoverageTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:core_ui_modes",
+        "//src/main/java:game_component_data",
+        "//src/main/java:util_base",
+    ],
+    "nullpomino/game/mode/DigChallengeModeCoverageBoostTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:core_ui_modes",
+        "//src/main/java:game_component_data",
+        "//src/main/java:game_net_client",
+        "//src/main/java:game_net_misc",
+        "//src/main/java:util_base",
+    ],
+    "nullpomino/game/mode/DigChallengeModeGameLogicTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:core_ui_modes",
+        "//src/main/java:util_base",
+    ],
+    "nullpomino/game/mode/DigChallengeModeRankingTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:core_ui_modes",
+    ],
+    "nullpomino/game/mode/DigChallengeModeSettingMenuTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:core_ui_modes",
+        "//src/main/java:game_component_data",
+        "//src/main/java:util_base",
+    ],
+    "nullpomino/game/mode/DigChallengeModeSettingWraparoundTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:core_ui_modes",
+        "//src/main/java:game_component_data",
+        "//src/main/java:util_base",
+    ],
+    "nullpomino/game/mode/DigChallengeModeTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:core_ui_modes",
+        "//src/main/java:util_base",
+    ],
+    "nullpomino/game/mode/DigRaceModeBranchCoverageTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:core_ui_modes",
+        "//src/main/java:game_component_data",
+        "//src/main/java:game_net_client",
+        "//src/main/java:game_net_misc",
+    ],
+    "nullpomino/game/mode/DigRaceModeDeepCoverage.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:core_ui_modes",
+        "//src/main/java:game_component_data",
+        "//src/main/java:util_base",
+    ],
+    "nullpomino/game/mode/DigRaceModeExtendedLogicTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:core_ui_modes",
+        "//src/main/java:util_base",
+    ],
+    "nullpomino/game/mode/DigRaceModeGameLogicTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:core_ui_modes",
+        "//src/main/java:util_base",
+    ],
+    "nullpomino/game/mode/DigRaceModeRankingTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:core_ui_modes",
+    ],
+    "nullpomino/game/mode/DigRaceModeRemainingCoverageTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:core_ui_modes",
+        "//src/main/java:game_component_data",
+        "//src/main/java:game_net_client",
+        "//src/main/java:util_base",
+    ],
+    "nullpomino/game/mode/DigRaceModeSettingWraparoundTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:core_ui_modes",
+        "//src/main/java:game_component_data",
+    ],
+    "nullpomino/game/mode/DigRaceModeTailCoverageTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:core_ui_modes",
+        "//src/main/java:game_component_data",
+        "//src/main/java:game_net_client",
+        "//src/main/java:game_net_misc",
+    ],
+    "nullpomino/game/mode/DigRaceModeTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:core_ui_modes",
+        "//src/main/java:util_base",
+    ],
+    "nullpomino/game/mode/ExtremeModeAdvancedTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:core_ui_modes",
+        "//src/main/java:util_base",
+    ],
+    "nullpomino/game/mode/ExtremeModeBranchCoverageTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:core_ui_modes",
+        "//src/main/java:util_base",
+    ],
+    "nullpomino/game/mode/ExtremeModeBranchCoverageTest2.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:core_ui_modes",
+        "//src/main/java:game_component_data",
+        "//src/main/java:game_net_client",
+        "//src/main/java:game_net_misc",
+        "//src/main/java:util_base",
+    ],
+    "nullpomino/game/mode/ExtremeModeBranchCoverageTest3.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:core_ui_modes",
+        "//src/main/java:util_base",
+    ],
+    "nullpomino/game/mode/ExtremeModeCoverageBoostTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:core_ui_modes",
+        "//src/main/java:game_component_data",
+        "//src/main/java:game_net_client",
+    ],
+    "nullpomino/game/mode/ExtremeModeExtendedTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:core_ui_modes",
+        "//src/main/java:util_base",
+    ],
+    "nullpomino/game/mode/ExtremeModeGameLogicTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:core_ui_modes",
+        "//src/main/java:util_base",
+    ],
+    "nullpomino/game/mode/ExtremeModeSetSpeedTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:core_ui_modes",
+    ],
+    "nullpomino/game/mode/ExtremeModeSettingWraparoundTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:core_ui_modes",
+        "//src/main/java:game_component_data",
+        "//src/main/java:game_net_client",
+        "//src/main/java:game_net_misc",
+    ],
+    "nullpomino/game/mode/ExtremeModeTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:core_ui_modes",
+        "//src/main/java:util_base",
+    ],
+    "nullpomino/game/mode/FinalModeBranchCoverageTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:game_component_data",
+        "//src/main/java:game_mode_impls",
+        "//src/main/java:util_base",
+    ],
+    "nullpomino/game/mode/FinalModeComboMedalBranchTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:game_mode_impls",
+    ],
+    "nullpomino/game/mode/FinalModeDeepCoverageTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:game_component_data",
+        "//src/main/java:game_mode_impls",
+        "//src/main/java:util_base",
+    ],
+    "nullpomino/game/mode/FinalModeGameLogicTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:game_mode_impls",
+        "//src/main/java:util_base",
+    ],
+    "nullpomino/game/mode/FinalModeHelpersTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:game_mode_impls",
+    ],
+    "nullpomino/game/mode/FinalModeRankingTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:game_mode_impls",
+    ],
+    "nullpomino/game/mode/FinalModeRemainingCoverageTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:game_component_data",
+        "//src/main/java:game_mode_impls",
+        "//src/main/java:util_base",
+    ],
+    "nullpomino/game/mode/FinalModeSetSpeedTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:game_mode_impls",
+    ],
+    "nullpomino/game/mode/FinalModeSettingWraparoundTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:game_component_data",
+        "//src/main/java:game_mode_impls",
+        "//src/main/java:util_base",
+    ],
+    "nullpomino/game/mode/FinalModeTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:game_mode_impls",
+        "//src/main/java:util_base",
+    ],
+    "nullpomino/game/mode/GameModeBranchGapTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:game_menu",
+    ],
+    "nullpomino/game/mode/GameModeDefaultsTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:util_base",
+    ],
+    "nullpomino/game/mode/GarbageManiaModeBranchCoverageTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:game_component_data",
+        "//src/main/java:game_mode_impls",
+        "//src/main/java:util_base",
+    ],
+    "nullpomino/game/mode/GarbageManiaModeDeepCoverageTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:game_component_data",
+        "//src/main/java:game_mode_impls",
+        "//src/main/java:util_base",
+    ],
+    "nullpomino/game/mode/GarbageManiaModeGameLogicTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:game_mode_impls",
+        "//src/main/java:util_base",
+    ],
+    "nullpomino/game/mode/GarbageManiaModeHelpersTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:game_mode_impls",
+    ],
+    "nullpomino/game/mode/GarbageManiaModeLastCoverageTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:game_component_data",
+        "//src/main/java:game_mode_impls",
+        "//src/main/java:util_base",
+    ],
+    "nullpomino/game/mode/GarbageManiaModeRankingTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:game_mode_impls",
+    ],
+    "nullpomino/game/mode/GarbageManiaModeSetSpeedTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:game_mode_impls",
+    ],
+    "nullpomino/game/mode/GarbageManiaModeSetStartBgmlvTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:game_mode_impls",
+    ],
+    "nullpomino/game/mode/GarbageManiaModeSettingWraparoundTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:game_component_data",
+        "//src/main/java:game_mode_impls",
+    ],
+    "nullpomino/game/mode/GarbageManiaModeTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:game_mode_impls",
+        "//src/main/java:util_base",
+    ],
+    "nullpomino/game/mode/GemManiaModeBranchCoverageTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:game_component_data",
+        "//src/main/java:game_mode_impls",
+        "//src/main/java:util_base",
+    ],
+    "nullpomino/game/mode/GemManiaModeBranchCoverageTest2.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:game_mode_impls",
+    ],
+    "nullpomino/game/mode/GemManiaModeBranchGapRenderTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:game_mode_impls",
+        "//src/main/java:util_base",
+    ],
+    "nullpomino/game/mode/GemManiaModeBranchGapTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:game_component_data",
+        "//src/main/java:game_mode_impls",
+        "//src/main/java:util_base",
+    ],
+    "nullpomino/game/mode/GemManiaModeCoverageBoostTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:game_component_data",
+        "//src/main/java:game_mode_impls",
+        "//src/main/java:util_base",
+    ],
+    "nullpomino/game/mode/GemManiaModeGameLogicTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:game_mode_impls",
+        "//src/main/java:util_base",
+    ],
+    "nullpomino/game/mode/GemManiaModeHelpersTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:game_component_data",
+        "//src/main/java:game_mode_impls",
+        "//src/main/java:util_base",
+    ],
+    "nullpomino/game/mode/GemManiaModeRankingTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:game_mode_impls",
+    ],
+    "nullpomino/game/mode/GemManiaModeSetSpeedTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:game_mode_impls",
+    ],
+    "nullpomino/game/mode/GemManiaModeSettingMenuTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:game_component_data",
+        "//src/main/java:game_mode_impls",
+        "//src/main/java:util_base",
+    ],
+    "nullpomino/game/mode/GemManiaModeSettingWraparoundTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:game_component_data",
+        "//src/main/java:game_mode_impls",
+    ],
+    "nullpomino/game/mode/GemManiaModeTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:game_mode_impls",
+        "//src/main/java:util_base",
+    ],
+    "nullpomino/game/mode/GradeMania2ModeBranchCoverageTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:game_component_data",
+        "//src/main/java:game_menu",
+        "//src/main/java:game_mode_impls",
+    ],
+    "nullpomino/game/mode/GradeMania2ModeDeepCoverageTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:game_component_data",
+        "//src/main/java:game_menu",
+        "//src/main/java:game_mode_impls",
+        "//src/main/java:util_base",
+    ],
+    "nullpomino/game/mode/GradeMania2ModeGameLogicTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:game_menu",
+        "//src/main/java:game_mode_impls",
+        "//src/main/java:util_base",
+    ],
+    "nullpomino/game/mode/GradeMania2ModeHelpersTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:game_menu",
+        "//src/main/java:game_mode_impls",
+    ],
+    "nullpomino/game/mode/GradeMania2ModeRankingTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:game_mode_impls",
+    ],
+    "nullpomino/game/mode/GradeMania2ModeRemainingCoverageTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:game_component_data",
+        "//src/main/java:game_menu",
+        "//src/main/java:game_mode_impls",
+        "//src/main/java:util_base",
+    ],
+    "nullpomino/game/mode/GradeMania2ModeSetSpeedTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:game_menu",
+        "//src/main/java:game_mode_impls",
+    ],
+    "nullpomino/game/mode/GradeMania2ModeTailCoverageTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:game_menu",
+        "//src/main/java:game_mode_impls",
+    ],
+    "nullpomino/game/mode/GradeMania2ModeTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:game_mode_impls",
+        "//src/main/java:util_base",
+    ],
+    "nullpomino/game/mode/GradeMania3ModeBgmSectionTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:game_mode_impls",
+    ],
+    "nullpomino/game/mode/GradeMania3ModeBranchCoverageTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:game_mode_impls",
+        "//src/main/java:util_base",
+    ],
+    "nullpomino/game/mode/GradeMania3ModeBranchGap2Test.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:game_mode_impls",
+        "//src/main/java:util_base",
+    ],
+    "nullpomino/game/mode/GradeMania3ModeBranchGapTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:game_component_data",
+        "//src/main/java:game_mode_impls",
+        "//src/main/java:util_base",
+    ],
+    "nullpomino/game/mode/GradeMania3ModeCoverageBoostTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:game_component_data",
+        "//src/main/java:game_mode_impls",
+        "//src/main/java:util_base",
+    ],
+    "nullpomino/game/mode/GradeMania3ModeGameLogicTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:game_mode_impls",
+        "//src/main/java:util_base",
+    ],
+    "nullpomino/game/mode/GradeMania3ModeHelpersTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:game_mode_impls",
+        "//src/main/java:util_base",
+    ],
+    "nullpomino/game/mode/GradeMania3ModeRankingTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:game_mode_impls",
+    ],
+    "nullpomino/game/mode/GradeMania3ModeSetSpeedTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:game_mode_impls",
+    ],
+    "nullpomino/game/mode/GradeMania3ModeSetStartBgmlvTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:game_mode_impls",
+    ],
+    "nullpomino/game/mode/GradeMania3ModeSettingMenuTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:game_component_data",
+        "//src/main/java:game_mode_impls",
+        "//src/main/java:util_base",
+    ],
+    "nullpomino/game/mode/GradeMania3ModeSettingWraparoundTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:game_component_data",
+        "//src/main/java:game_mode_impls",
+        "//src/main/java:util_base",
+    ],
+    "nullpomino/game/mode/GradeMania3ModeTailCoverageTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:game_component_data",
+        "//src/main/java:game_mode_impls",
+    ],
+    "nullpomino/game/mode/GradeMania3ModeTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:game_mode_impls",
+        "//src/main/java:util_base",
+    ],
+    "nullpomino/game/mode/GradeManiaModeBranchCoverageTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:game_component_data",
+        "//src/main/java:game_menu",
+        "//src/main/java:game_mode_impls",
+        "//src/main/java:util_base",
+    ],
+    "nullpomino/game/mode/GradeManiaModeDeepCoverage.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:game_mode_impls",
+        "//src/main/java:util_base",
+    ],
+    "nullpomino/game/mode/GradeManiaModeGameLogicTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:game_menu",
+        "//src/main/java:game_mode_impls",
+        "//src/main/java:util_base",
+    ],
+    "nullpomino/game/mode/GradeManiaModeHelpersTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:game_menu",
+        "//src/main/java:game_mode_impls",
+    ],
+    "nullpomino/game/mode/GradeManiaModeRankingTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:game_mode_impls",
+    ],
+    "nullpomino/game/mode/GradeManiaModeRemainingCoverageTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:game_component_data",
+        "//src/main/java:game_menu",
+        "//src/main/java:game_mode_impls",
+        "//src/main/java:util_base",
+    ],
+    "nullpomino/game/mode/GradeManiaModeSetAverageSectionTimeTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:game_menu",
+        "//src/main/java:game_mode_impls",
+    ],
+    "nullpomino/game/mode/GradeManiaModeSetSpeedTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:game_menu",
+        "//src/main/java:game_mode_impls",
+    ],
+    "nullpomino/game/mode/GradeManiaModeSettingWraparoundTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:game_component_data",
+        "//src/main/java:game_mode_impls",
+        "//src/main/java:util_base",
+    ],
+    "nullpomino/game/mode/GradeManiaModeStNewRecordCheckTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:game_mode_impls",
+    ],
+    "nullpomino/game/mode/GradeManiaModeTailCoverageTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:game_component_data",
+        "//src/main/java:game_menu",
+        "//src/main/java:game_mode_impls",
+    ],
+    "nullpomino/game/mode/GradeManiaModeTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:game_mode_impls",
+        "//src/main/java:util_base",
+    ],
+    "nullpomino/game/mode/LineRaceModeBranchCoverageTest2.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:core_ui_modes",
+        "//src/main/java:game_component_data",
+        "//src/main/java:game_net_client",
+        "//src/main/java:game_net_misc",
+        "//src/main/java:util_base",
+    ],
+    "nullpomino/game/mode/LineRaceModeCoverageTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:core_ui_modes",
+        "//src/main/java:game_component_data",
+        "//src/main/java:util_base",
+    ],
+    "nullpomino/game/mode/LineRaceModeDeepCoverage.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:core_ui_modes",
+        "//src/main/java:game_component_data",
+    ],
+    "nullpomino/game/mode/LineRaceModeExtendedLogicTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:core_ui_modes",
+        "//src/main/java:util_base",
+    ],
+    "nullpomino/game/mode/LineRaceModeGameLogicTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:core_ui_modes",
+        "//src/main/java:util_base",
+    ],
+    "nullpomino/game/mode/LineRaceModeRankingTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:core_ui_modes",
+    ],
+    "nullpomino/game/mode/LineRaceModeRemainingCoverageTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:core_ui_modes",
+        "//src/main/java:game_component_data",
+        "//src/main/java:game_net_client",
+        "//src/main/java:util_base",
+    ],
+    "nullpomino/game/mode/LineRaceModeSettingWraparoundTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:core_ui_modes",
+        "//src/main/java:game_component_data",
+    ],
+    "nullpomino/game/mode/LineRaceModeTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:core_ui_modes",
+        "//src/main/java:util_base",
+    ],
+    "nullpomino/game/mode/MarathonModeBranchCoverageTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:core_ui_modes",
+        "//src/main/java:util_base",
+    ],
+    "nullpomino/game/mode/MarathonModeExtendedLogicTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:core_ui_modes",
+        "//src/main/java:game_component_data",
+        "//src/main/java:util_base",
+    ],
+    "nullpomino/game/mode/MarathonModeGameLogicTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:core_ui_modes",
+        "//src/main/java:util_base",
+    ],
+    "nullpomino/game/mode/MarathonModeRemainderCoverageTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:core_ui_modes",
+        "//src/main/java:game_component_data",
+        "//src/main/java:game_net_client",
+        "//src/main/java:game_net_misc",
+        "//src/main/java:util_base",
+    ],
+    "nullpomino/game/mode/MarathonModeSetSpeedTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:core_ui_modes",
+    ],
+    "nullpomino/game/mode/MarathonModeSettingBranchTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:core_ui_modes",
+        "//src/main/java:game_component_data",
+        "//src/main/java:game_net_client",
+        "//src/main/java:util_base",
+    ],
+    "nullpomino/game/mode/MarathonModeTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:core_ui_modes",
+        "//src/main/java:util_base",
+    ],
+    "nullpomino/game/mode/MarathonPlusModeBranchCoverageTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:core_ui_modes",
+        "//src/main/java:game_component_data",
+        "//src/main/java:game_net_client",
+        "//src/main/java:game_net_misc",
+        "//src/main/java:util_base",
+    ],
+    "nullpomino/game/mode/MarathonPlusModeBranchCoverageTest2.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:core_ui_modes",
+    ],
+    "nullpomino/game/mode/MarathonPlusModeCoverageBoostTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:core_ui_modes",
+        "//src/main/java:game_component_data",
+        "//src/main/java:game_net_client",
+        "//src/main/java:game_net_misc",
+        "//src/main/java:util_base",
+    ],
+    "nullpomino/game/mode/MarathonPlusModeExtendedLogicTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:core_ui_modes",
+        "//src/main/java:util_base",
+    ],
+    "nullpomino/game/mode/MarathonPlusModeGameLogicTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:core_ui_modes",
+        "//src/main/java:util_base",
+    ],
+    "nullpomino/game/mode/MarathonPlusModeRemainingCoverageTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:core_ui_modes",
+        "//src/main/java:game_component_data",
+        "//src/main/java:game_net_misc",
+        "//src/main/java:util_base",
+    ],
+    "nullpomino/game/mode/MarathonPlusModeSetSpeedTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:core_ui_modes",
+    ],
+    "nullpomino/game/mode/MarathonPlusModeSetStartBgmlvTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:core_ui_modes",
+    ],
+    "nullpomino/game/mode/MarathonPlusModeSettingMenuTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:core_ui_modes",
+        "//src/main/java:game_component_data",
+        "//src/main/java:util_base",
+    ],
+    "nullpomino/game/mode/MarathonPlusModeSettingWraparoundTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:core_ui_modes",
+        "//src/main/java:game_component_data",
+        "//src/main/java:util_base",
+    ],
+    "nullpomino/game/mode/MarathonPlusModeTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:core_ui_modes",
+        "//src/main/java:util_base",
+    ],
+    "nullpomino/game/mode/MenuStateResetTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:core_ui_modes",
+        "//src/main/java:game_mode_impls",
+    ],
+    "nullpomino/game/mode/ModeLifecycleSmokeTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:core_ui_modes",
+        "//src/main/java:game_net_misc",
+        "//src/main/java:util_base",
+    ],
+    "nullpomino/game/mode/ModeMenuItemCharacterisationTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:game_menu",
+        "//src/main/java:game_mode_impls",
+    ],
+    "nullpomino/game/mode/ModeReplayCharacterisationTest.java": [
+        "//src/main/java:core_ui_modes",
+        "//src/main/java:util_mode_manager",
+    ],
+    "nullpomino/game/mode/ModeResultStateTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:core_ui_modes",
+        "//src/main/java:game_component_data",
+    ],
+    "nullpomino/game/mode/ModeSettingStateTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:core_ui_modes",
+        "//src/main/java:game_component_data",
+    ],
+    "nullpomino/game/mode/ModeSettingsRoundTripTest.java": [
+        "//src/main/java:core_ui_modes",
+        "//src/main/java:util_base",
+    ],
+    "nullpomino/game/mode/NetDummyModeBranchCoverageTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:core_ui_modes",
+        "//src/main/java:game_component_data",
+        "//src/main/java:game_net_client",
+        "//src/main/java:game_net_misc",
+    ],
+    "nullpomino/game/mode/NetDummyModeCoverageTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:core_ui_modes",
+    ],
+    "nullpomino/game/mode/NetDummyModeDeepCoverageTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:core_ui_modes",
+        "//src/main/java:game_component_data",
+        "//src/main/java:game_net_client",
+        "//src/main/java:game_net_misc",
+    ],
+    "nullpomino/game/mode/NetDummyModeExtendedGameLogicTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:core_ui_modes",
+        "//src/main/java:util_base",
+    ],
+    "nullpomino/game/mode/NetDummyModeExtendedTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:core_ui_modes",
+        "//src/main/java:util_base",
+    ],
+    "nullpomino/game/mode/NetDummyModeFinalCoverageTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:core_ui_modes",
+        "//src/main/java:game_component_data",
+        "//src/main/java:game_net_client",
+        "//src/main/java:game_net_misc",
+        "//src/main/java:util_base",
+    ],
+    "nullpomino/game/mode/NetDummyModeGameLogicTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:core_ui_modes",
+        "//src/main/java:game_component_data",
+        "//src/main/java:util_base",
+    ],
+    "nullpomino/game/mode/NetDummyModeTailCoverageTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:core_ui_modes",
+        "//src/main/java:game_net_client",
+        "//src/main/java:game_net_misc",
+        "//src/main/java:util_base",
+    ],
+    "nullpomino/game/mode/NetDummyModeTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:core_ui_modes",
+    ],
+    "nullpomino/game/mode/NetDummyVSModeBranchCoverageTest2.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:core_ui_modes",
+        "//src/main/java:game_net_client",
+        "//src/main/java:game_net_misc",
+    ],
+    "nullpomino/game/mode/NetDummyVSModeBranchCoverageTest3.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:core_ui_modes",
+        "//src/main/java:game_component_data",
+        "//src/main/java:game_net_client",
+        "//src/main/java:game_net_misc",
+    ],
+    "nullpomino/game/mode/NetDummyVSModeCoverageBoostTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:core_ui_modes",
+        "//src/main/java:game_component_data",
+        "//src/main/java:game_net_client",
+        "//src/main/java:game_net_misc",
+    ],
+    "nullpomino/game/mode/NetDummyVSModeDeepCoverageTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:core_ui_modes",
+        "//src/main/java:game_component_data",
+        "//src/main/java:game_net_client",
+        "//src/main/java:game_net_misc",
+    ],
+    "nullpomino/game/mode/NetDummyVSModeExtendedGameLogicTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:core_ui_modes",
+    ],
+    "nullpomino/game/mode/NetDummyVSModeExtendedTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:core_ui_modes",
+        "//src/main/java:game_component_data",
+    ],
+    "nullpomino/game/mode/NetDummyVSModeGameLogicTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:core_ui_modes",
+        "//src/main/java:game_component_data",
+        "//src/main/java:game_net_misc",
+        "//src/main/java:util_base",
+    ],
+    "nullpomino/game/mode/NetDummyVSModeLogicTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:core_ui_modes",
+        "//src/main/java:game_net_client",
+        "//src/main/java:game_net_misc",
+    ],
+    "nullpomino/game/mode/NetDummyVSModeRemainingCoverageTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:core_ui_modes",
+        "//src/main/java:game_component_data",
+        "//src/main/java:game_net_client",
+        "//src/main/java:game_net_misc",
+        "//src/main/java:util_base",
+    ],
+    "nullpomino/game/mode/NetDummyVSModeTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:core_ui_modes",
+    ],
+    "nullpomino/game/mode/NetModeBranchesTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:core_ui_modes",
+        "//src/main/java:game_component_data",
+        "//src/main/java:util_base",
+    ],
+    "nullpomino/game/mode/NetVSBattleModeBranchCoverageTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:core_ui_modes",
+        "//src/main/java:game_net_client",
+        "//src/main/java:game_net_misc",
+        "//src/main/java:util_base",
+    ],
+    "nullpomino/game/mode/NetVSBattleModeBranchCoverageTest2.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:core_ui_modes",
+        "//src/main/java:game_net_client",
+        "//src/main/java:game_net_misc",
+    ],
+    "nullpomino/game/mode/NetVSBattleModeBranchCoverageTest3.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:core_ui_modes",
+        "//src/main/java:game_net_client",
+        "//src/main/java:game_net_misc",
+    ],
+    "nullpomino/game/mode/NetVSBattleModeConstantsTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:core_ui_modes",
+    ],
+    "nullpomino/game/mode/NetVSBattleModeCoverageBoostTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:core_ui_modes",
+        "//src/main/java:game_net_client",
+        "//src/main/java:game_net_misc",
+    ],
+    "nullpomino/game/mode/NetVSBattleModeExtendedGameLogicTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:core_ui_modes",
+        "//src/main/java:game_net_misc",
+        "//src/main/java:util_base",
+    ],
+    "nullpomino/game/mode/NetVSBattleModeGameLogicTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:core_ui_modes",
+        "//src/main/java:game_net_misc",
+        "//src/main/java:util_base",
+    ],
+    "nullpomino/game/mode/NetVSBattleModeTailCoverageTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:core_ui_modes",
+        "//src/main/java:game_net_client",
+        "//src/main/java:game_net_misc",
+    ],
+    "nullpomino/game/mode/NetVSBattleModeTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:core_ui_modes",
+        "//src/main/java:util_base",
+    ],
+    "nullpomino/game/mode/NetVSConcreteModesExtraTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:core_ui_modes",
+        "//src/main/java:game_component_data",
+        "//src/main/java:game_net_misc",
+    ],
+    "nullpomino/game/mode/NetVSDigRaceModeBranchCoverageTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:core_ui_modes",
+        "//src/main/java:game_net_client",
+        "//src/main/java:game_net_misc",
+    ],
+    "nullpomino/game/mode/NetVSDigRaceModeDeepCoverage.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:core_ui_modes",
+        "//src/main/java:game_net_misc",
+    ],
+    "nullpomino/game/mode/NetVSDigRaceModeExtendedGameLogicTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:core_ui_modes",
+        "//src/main/java:game_net_misc",
+    ],
+    "nullpomino/game/mode/NetVSDigRaceModeFinalCoverageTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:core_ui_modes",
+        "//src/main/java:game_net_client",
+        "//src/main/java:game_net_misc",
+    ],
+    "nullpomino/game/mode/NetVSDigRaceModeLogicTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:core_ui_modes",
+        "//src/main/java:game_net_misc",
+    ],
+    "nullpomino/game/mode/NetVSDigRaceModeModeInitTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:core_ui_modes",
+    ],
+    "nullpomino/game/mode/NetVSDigRaceModeTailCoverageTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:core_ui_modes",
+        "//src/main/java:game_net_client",
+        "//src/main/java:game_net_misc",
+    ],
+    "nullpomino/game/mode/NetVSDigRaceModeTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:core_ui_modes",
+        "//src/main/java:util_base",
+    ],
+    "nullpomino/game/mode/NetVSLineRaceAndBattleModeInitTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:core_ui_modes",
+    ],
+    "nullpomino/game/mode/NetVSLineRaceModeBranchCoverageTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:core_ui_modes",
+        "//src/main/java:game_net_client",
+        "//src/main/java:game_net_misc",
+    ],
+    "nullpomino/game/mode/NetVSLineRaceModeCoverageTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:core_ui_modes",
+        "//src/main/java:game_net_misc",
+    ],
+    "nullpomino/game/mode/NetVSLineRaceModeDeepCoverage.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:core_ui_modes",
+    ],
+    "nullpomino/game/mode/NetVSLineRaceModeFinalCoverageTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:core_ui_modes",
+        "//src/main/java:game_net_client",
+    ],
+    "nullpomino/game/mode/NetVSLineRaceModeGameLogicTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:core_ui_modes",
+        "//src/main/java:util_base",
+    ],
+    "nullpomino/game/mode/NetVSLineRaceModeLogicTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:core_ui_modes",
+    ],
+    "nullpomino/game/mode/NetVSLineRaceModeTailCoverageTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:core_ui_modes",
+    ],
+    "nullpomino/game/mode/NetVSLineRaceModeTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:core_ui_modes",
+    ],
+    "nullpomino/game/mode/NetVSModesTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:core_ui_modes",
+    ],
+    "nullpomino/game/mode/PhantomManiaModeBranchCoverageTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:game_component_data",
+        "//src/main/java:game_mode_impls",
+        "//src/main/java:util_base",
+    ],
+    "nullpomino/game/mode/PhantomManiaModeCoverageBoostTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:game_component_data",
+        "//src/main/java:game_menu",
+        "//src/main/java:game_mode_impls",
+        "//src/main/java:util_base",
+    ],
+    "nullpomino/game/mode/PhantomManiaModeGameLogicTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:game_menu",
+        "//src/main/java:game_mode_impls",
+        "//src/main/java:util_base",
+    ],
+    "nullpomino/game/mode/PhantomManiaModeHelpersTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:game_menu",
+        "//src/main/java:game_mode_impls",
+    ],
+    "nullpomino/game/mode/PhantomManiaModeRankingTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:game_mode_impls",
+    ],
+    "nullpomino/game/mode/PhantomManiaModeSetSpeedTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:game_mode_impls",
+    ],
+    "nullpomino/game/mode/PhantomManiaModeSettingWraparoundTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:game_component_data",
+        "//src/main/java:game_menu",
+        "//src/main/java:game_mode_impls",
+    ],
+    "nullpomino/game/mode/PhantomManiaModeTailCoverageTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:game_menu",
+        "//src/main/java:game_mode_impls",
+    ],
+    "nullpomino/game/mode/PhantomManiaModeTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:game_mode_impls",
+        "//src/main/java:util_base",
+    ],
+    "nullpomino/game/mode/PhysicianModeBranchCoverageTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:game_component_data",
+        "//src/main/java:game_mode_impls",
+    ],
+    "nullpomino/game/mode/PhysicianModeEdgeTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:game_mode_impls",
+        "//src/main/java:util_base",
+    ],
+    "nullpomino/game/mode/PhysicianModeFinalCoverageTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:game_mode_impls",
+    ],
+    "nullpomino/game/mode/PhysicianModeGameLogicTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:game_mode_impls",
+        "//src/main/java:util_base",
+    ],
+    "nullpomino/game/mode/PhysicianModeRankingTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:game_mode_impls",
+    ],
+    "nullpomino/game/mode/PhysicianModeRemainingCoverageTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:game_component_data",
+        "//src/main/java:game_mode_impls",
+        "//src/main/java:util_base",
+    ],
+    "nullpomino/game/mode/PhysicianModeSetSpeedTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:game_mode_impls",
+    ],
+    "nullpomino/game/mode/PhysicianModeSettingBranchTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:game_component_data",
+        "//src/main/java:game_mode_impls",
+    ],
+    "nullpomino/game/mode/PhysicianModeTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:game_mode_impls",
+        "//src/main/java:util_base",
+    ],
+    "nullpomino/game/mode/PhysicianVSModeBranchCoverageTest2.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:game_mode_impls",
+        "//src/main/java:util_base",
+    ],
+    "nullpomino/game/mode/PhysicianVSModeCoverageBoostTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:game_component_data",
+        "//src/main/java:game_mode_impls",
+        "//src/main/java:util_base",
+    ],
+    "nullpomino/game/mode/PhysicianVSModeGameLogicTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:game_mode_impls",
+        "//src/main/java:util_base",
+    ],
+    "nullpomino/game/mode/PhysicianVSModeMapPersistenceTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:game_mode_impls",
+        "//src/main/java:util_base",
+    ],
+    "nullpomino/game/mode/PhysicianVSModeOtherSettingTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:game_mode_impls",
+        "//src/main/java:util_base",
+    ],
+    "nullpomino/game/mode/PhysicianVSModeSettingWraparoundTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:game_component_data",
+        "//src/main/java:game_mode_impls",
+    ],
+    "nullpomino/game/mode/PhysicianVSModeTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:game_mode_impls",
+        "//src/main/java:util_base",
+    ],
+    "nullpomino/game/mode/PracticeModeBranchCoverageTest2.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:game_component_data",
+        "//src/main/java:util_base",
+    ],
+    "nullpomino/game/mode/PracticeModeBranchCoverageTest3.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:game_component_data",
+        "//src/main/java:util_base",
+    ],
+    "nullpomino/game/mode/PracticeModeBranchGapTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:game_component_data",
+        "//src/main/java:util_base",
+    ],
+    "nullpomino/game/mode/PracticeModeCoverageBoostTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:game_component_data",
+        "//src/main/java:util_base",
+    ],
+    "nullpomino/game/mode/PracticeModeGameLogicTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:util_base",
+    ],
+    "nullpomino/game/mode/PracticeModeMapPersistenceTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:util_base",
+    ],
+    "nullpomino/game/mode/PracticeModeSetHeboHiddenTest.java": [
+        "//src/main/java:core_engine",
+    ],
+    "nullpomino/game/mode/PracticeModeSettingMenuTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:game_component_data",
+        "//src/main/java:util_base",
+    ],
+    "nullpomino/game/mode/PracticeModeSettingWraparoundTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:game_component_data",
+        "//src/main/java:util_base",
+    ],
+    "nullpomino/game/mode/PracticeModeTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:util_base",
+    ],
+    "nullpomino/game/mode/PreviewModeGameLogicTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:game_mode_impls",
+    ],
+    "nullpomino/game/mode/PreviewModeTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:game_mode_impls",
+    ],
+    "nullpomino/game/mode/RankingHelperTest.java": [
+        "//src/main/java:game_mode_impls",
+    ],
+    "nullpomino/game/mode/RetroManiaModeBranchCoverageTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:game_component_data",
+        "//src/main/java:game_mode_impls",
+    ],
+    "nullpomino/game/mode/RetroManiaModeBranchCoverageTest3.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:game_component_data",
+        "//src/main/java:game_mode_impls",
+        "//src/main/java:util_base",
+    ],
+    "nullpomino/game/mode/RetroManiaModeBranchCoverageTest4.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:game_component_data",
+        "//src/main/java:game_mode_impls",
+    ],
+    "nullpomino/game/mode/RetroManiaModeEdgeTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:game_mode_impls",
+        "//src/main/java:util_base",
+    ],
+    "nullpomino/game/mode/RetroManiaModeFinalCoverageTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:game_mode_impls",
+    ],
+    "nullpomino/game/mode/RetroManiaModeGameLogicTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:game_mode_impls",
+        "//src/main/java:util_base",
+    ],
+    "nullpomino/game/mode/RetroManiaModeRankingTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:game_mode_impls",
+    ],
+    "nullpomino/game/mode/RetroManiaModeSetSpeedTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:game_mode_impls",
+    ],
+    "nullpomino/game/mode/RetroManiaModeTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:game_mode_impls",
+        "//src/main/java:util_base",
+    ],
+    "nullpomino/game/mode/RetroMarathonModeBranchCoverageTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:game_component_data",
+        "//src/main/java:game_mode_impls",
+        "//src/main/java:util_base",
+    ],
+    "nullpomino/game/mode/RetroMarathonModeBranchCoverageTest2.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:game_component_data",
+        "//src/main/java:game_mode_impls",
+        "//src/main/java:util_base",
+    ],
+    "nullpomino/game/mode/RetroMarathonModeBranchCoverageTest3.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:game_component_data",
+        "//src/main/java:game_mode_impls",
+        "//src/main/java:util_base",
+    ],
+    "nullpomino/game/mode/RetroMarathonModeBranchCoverageTest4.java": [
+        "//src/main/java:game_mode_impls",
+    ],
+    "nullpomino/game/mode/RetroMarathonModeBranchCoverageTest5.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:game_component_data",
+        "//src/main/java:game_mode_impls",
+    ],
+    "nullpomino/game/mode/RetroMarathonModeDefaultCaseTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:game_component_data",
+        "//src/main/java:game_mode_impls",
+    ],
+    "nullpomino/game/mode/RetroMarathonModeEdgeTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:game_mode_impls",
+    ],
+    "nullpomino/game/mode/RetroMarathonModeFinalCoverageTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:game_component_data",
+        "//src/main/java:game_mode_impls",
+        "//src/main/java:util_base",
+    ],
+    "nullpomino/game/mode/RetroMarathonModeGameLogicTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:game_mode_impls",
+        "//src/main/java:util_base",
+    ],
+    "nullpomino/game/mode/RetroMarathonModeLastCoverageTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:game_mode_impls",
+    ],
+    "nullpomino/game/mode/RetroMarathonModeRankingTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:game_mode_impls",
+    ],
+    "nullpomino/game/mode/RetroMarathonModeSetSpeedTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:game_mode_impls",
+    ],
+    "nullpomino/game/mode/RetroMarathonModeTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:game_mode_impls",
+        "//src/main/java:util_base",
+    ],
+    "nullpomino/game/mode/RetroMasteryModeBranchCoverageTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:game_component_data",
+        "//src/main/java:game_mode_impls",
+        "//src/main/java:util_base",
+    ],
+    "nullpomino/game/mode/RetroMasteryModeBranchCoverageTest2.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:game_component_data",
+        "//src/main/java:game_mode_impls",
+        "//src/main/java:util_base",
+    ],
+    "nullpomino/game/mode/RetroMasteryModeBranchCoverageTest3.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:game_component_data",
+        "//src/main/java:game_mode_impls",
+    ],
+    "nullpomino/game/mode/RetroMasteryModeBranchCoverageTest4.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:game_component_data",
+        "//src/main/java:game_mode_impls",
+    ],
+    "nullpomino/game/mode/RetroMasteryModeEdgeTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:game_mode_impls",
+    ],
+    "nullpomino/game/mode/RetroMasteryModeFinalCoverageTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:game_mode_impls",
+    ],
+    "nullpomino/game/mode/RetroMasteryModeGameLogicTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:game_mode_impls",
+        "//src/main/java:util_base",
+    ],
+    "nullpomino/game/mode/RetroMasteryModeRankingTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:game_mode_impls",
+    ],
+    "nullpomino/game/mode/RetroMasteryModeSetSpeedTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:game_mode_impls",
+    ],
+    "nullpomino/game/mode/RetroMasteryModeTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:game_mode_impls",
+        "//src/main/java:util_base",
+    ],
+    "nullpomino/game/mode/SPFAttackDefendMultipliersTest.java": [
+        "//src/main/java:game_mode_impls",
+    ],
+    "nullpomino/game/mode/SPFDropDataBranchGapTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:game_mode_impls",
+    ],
+    "nullpomino/game/mode/SPFModeBranchCoverageTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:game_component_data",
+        "//src/main/java:game_mode_impls",
+        "//src/main/java:util_base",
+    ],
+    "nullpomino/game/mode/SPFModeCheckSquaresBranchTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:game_mode_impls",
+    ],
+    "nullpomino/game/mode/SPFModeCoverageBoostTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:game_component_data",
+        "//src/main/java:game_mode_impls",
+        "//src/main/java:util_base",
+    ],
+    "nullpomino/game/mode/SPFModeGameLogicTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:game_mode_impls",
+        "//src/main/java:util_base",
+    ],
+    "nullpomino/game/mode/SPFModeHelpersTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:game_mode_impls",
+        "//src/main/java:util_base",
+    ],
+    "nullpomino/game/mode/SPFModeOtherSettingTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:game_mode_impls",
+        "//src/main/java:util_base",
+    ],
+    "nullpomino/game/mode/SPFModeRemainderCoverageTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:game_component_data",
+        "//src/main/java:game_mode_impls",
+        "//src/main/java:util_base",
+    ],
+    "nullpomino/game/mode/SPFModeSettingMenuTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:game_component_data",
+        "//src/main/java:game_mode_impls",
+        "//src/main/java:util_base",
+    ],
+    "nullpomino/game/mode/SPFModeTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:game_mode_impls",
+        "//src/main/java:util_base",
+    ],
+    "nullpomino/game/mode/ScoreAttackModeBranchCoverageTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:game_component_data",
+        "//src/main/java:game_mode_impls",
+        "//src/main/java:util_base",
+    ],
+    "nullpomino/game/mode/ScoreAttackModeDeepCoverage.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:game_mode_impls",
+        "//src/main/java:util_base",
+    ],
+    "nullpomino/game/mode/ScoreAttackModeExtendedLogicTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:game_mode_impls",
+        "//src/main/java:util_base",
+    ],
+    "nullpomino/game/mode/ScoreAttackModeFinalCoverageTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:game_component_data",
+        "//src/main/java:game_mode_impls",
+        "//src/main/java:util_base",
+    ],
+    "nullpomino/game/mode/ScoreAttackModeGameLogicTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:game_mode_impls",
+        "//src/main/java:util_base",
+    ],
+    "nullpomino/game/mode/ScoreAttackModeHelpersTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:game_mode_impls",
+    ],
+    "nullpomino/game/mode/ScoreAttackModeRankingTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:game_mode_impls",
+    ],
+    "nullpomino/game/mode/ScoreAttackModeSetSpeedTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:game_mode_impls",
+    ],
+    "nullpomino/game/mode/ScoreAttackModeSettingWraparoundTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:game_component_data",
+        "//src/main/java:game_mode_impls",
+    ],
+    "nullpomino/game/mode/ScoreAttackModeTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:game_mode_impls",
+        "//src/main/java:util_base",
+    ],
+    "nullpomino/game/mode/ScoreRaceModeCoverageBoostTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:core_ui_modes",
+        "//src/main/java:game_component_data",
+        "//src/main/java:game_net_client",
+        "//src/main/java:game_net_misc",
+        "//src/main/java:util_base",
+    ],
+    "nullpomino/game/mode/ScoreRaceModeCoverageTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:core_ui_modes",
+        "//src/main/java:game_component_data",
+    ],
+    "nullpomino/game/mode/ScoreRaceModeExtendedLogicTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:core_ui_modes",
+        "//src/main/java:util_base",
+    ],
+    "nullpomino/game/mode/ScoreRaceModeGameLogicTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:core_ui_modes",
+        "//src/main/java:util_base",
+    ],
+    "nullpomino/game/mode/ScoreRaceModeRankingTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:core_ui_modes",
+    ],
+    "nullpomino/game/mode/ScoreRaceModeSettingMenuTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:core_ui_modes",
+        "//src/main/java:game_component_data",
+        "//src/main/java:util_base",
+    ],
+    "nullpomino/game/mode/ScoreRaceModeSettingWraparoundTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:core_ui_modes",
+        "//src/main/java:game_component_data",
+    ],
+    "nullpomino/game/mode/ScoreRaceModeTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:core_ui_modes",
+        "//src/main/java:util_base",
+    ],
+    "nullpomino/game/mode/SpeedMania2ModeBranchCoverageTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:game_component_data",
+        "//src/main/java:game_mode_impls",
+    ],
+    "nullpomino/game/mode/SpeedMania2ModeCoverageBoostTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:game_component_data",
+        "//src/main/java:game_mode_impls",
+    ],
+    "nullpomino/game/mode/SpeedMania2ModeGameLogicTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:game_mode_impls",
+        "//src/main/java:util_base",
+    ],
+    "nullpomino/game/mode/SpeedMania2ModeHelpersTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:game_mode_impls",
+    ],
+    "nullpomino/game/mode/SpeedMania2ModeRankingTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:game_mode_impls",
+    ],
+    "nullpomino/game/mode/SpeedMania2ModeSetSpeedTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:game_mode_impls",
+    ],
+    "nullpomino/game/mode/SpeedMania2ModeSetStartBgmlvTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:game_mode_impls",
+    ],
+    "nullpomino/game/mode/SpeedMania2ModeSettingTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:game_mode_impls",
+        "//src/main/java:util_base",
+    ],
+    "nullpomino/game/mode/SpeedMania2ModeSettingWraparoundTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:game_component_data",
+        "//src/main/java:game_mode_impls",
+    ],
+    "nullpomino/game/mode/SpeedMania2ModeTailCoverageTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:game_mode_impls",
+    ],
+    "nullpomino/game/mode/SpeedMania2ModeTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:game_mode_impls",
+        "//src/main/java:util_base",
+    ],
+    "nullpomino/game/mode/SpeedManiaModeBranchCoverageTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:game_component_data",
+        "//src/main/java:game_menu",
+        "//src/main/java:game_mode_impls",
+        "//src/main/java:util_base",
+    ],
+    "nullpomino/game/mode/SpeedManiaModeCoverageBoostTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:game_component_data",
+        "//src/main/java:game_menu",
+        "//src/main/java:game_mode_impls",
+    ],
+    "nullpomino/game/mode/SpeedManiaModeGameLogicTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:game_menu",
+        "//src/main/java:game_mode_impls",
+        "//src/main/java:util_base",
+    ],
+    "nullpomino/game/mode/SpeedManiaModeHelpersTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:game_menu",
+        "//src/main/java:game_mode_impls",
+    ],
+    "nullpomino/game/mode/SpeedManiaModeRankingTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:game_mode_impls",
+    ],
+    "nullpomino/game/mode/SpeedManiaModeSetSpeedTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:game_mode_impls",
+    ],
+    "nullpomino/game/mode/SpeedManiaModeSetStartBgmlvTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:game_mode_impls",
+    ],
+    "nullpomino/game/mode/SpeedManiaModeSettingWraparoundTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:game_component_data",
+        "//src/main/java:game_menu",
+        "//src/main/java:game_mode_impls",
+    ],
+    "nullpomino/game/mode/SpeedManiaModeTailCoverageTest2.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:game_component_data",
+        "//src/main/java:game_menu",
+        "//src/main/java:game_mode_impls",
+    ],
+    "nullpomino/game/mode/SpeedManiaModeTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:game_mode_impls",
+        "//src/main/java:util_base",
+    ],
+    "nullpomino/game/mode/SquareModeBranchCoverageTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:game_mode_impls",
+    ],
+    "nullpomino/game/mode/SquareModeBranchCoverageTest2.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:game_component_data",
+        "//src/main/java:game_mode_impls",
+    ],
+    "nullpomino/game/mode/SquareModeDeepCoverage.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:game_mode_impls",
+        "//src/main/java:util_base",
+    ],
+    "nullpomino/game/mode/SquareModeGameLogicTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:game_mode_impls",
+        "//src/main/java:util_base",
+    ],
+    "nullpomino/game/mode/SquareModeGrayoutBrokenBlocksTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:game_mode_impls",
+    ],
+    "nullpomino/game/mode/SquareModeLastCoverageTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:game_component_data",
+        "//src/main/java:game_mode_impls",
+        "//src/main/java:util_base",
+    ],
+    "nullpomino/game/mode/SquareModeLineClearEndTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:game_mode_impls",
+    ],
+    "nullpomino/game/mode/SquareModeRankingTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:game_mode_impls",
+    ],
+    "nullpomino/game/mode/SquareModeSetSpeedTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:game_mode_impls",
+    ],
+    "nullpomino/game/mode/SquareModeSettingWraparoundTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:game_component_data",
+        "//src/main/java:game_mode_impls",
+    ],
+    "nullpomino/game/mode/SquareModeTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:game_mode_impls",
+        "//src/main/java:util_base",
+    ],
+    "nullpomino/game/mode/TechnicianModeAdvancedTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:core_ui_modes",
+        "//src/main/java:util_base",
+    ],
+    "nullpomino/game/mode/TechnicianModeBranchCoverageTest2.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:core_ui_modes",
+        "//src/main/java:game_component_data",
+        "//src/main/java:game_net_client",
+        "//src/main/java:game_net_misc",
+        "//src/main/java:util_base",
+    ],
+    "nullpomino/game/mode/TechnicianModeBranchCoverageTest3.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:core_ui_modes",
+        "//src/main/java:game_component_data",
+        "//src/main/java:game_net_client",
+        "//src/main/java:util_base",
+    ],
+    "nullpomino/game/mode/TechnicianModeCoverageBoostTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:core_ui_modes",
+        "//src/main/java:game_component_data",
+        "//src/main/java:game_net_client",
+        "//src/main/java:game_net_misc",
+        "//src/main/java:util_base",
+    ],
+    "nullpomino/game/mode/TechnicianModeExtendedTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:core_ui_modes",
+        "//src/main/java:util_base",
+    ],
+    "nullpomino/game/mode/TechnicianModeGameLogicTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:core_ui_modes",
+        "//src/main/java:util_base",
+    ],
+    "nullpomino/game/mode/TechnicianModeSetSpeedTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:core_ui_modes",
+    ],
+    "nullpomino/game/mode/TechnicianModeSetStartBgmlvTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:core_ui_modes",
+    ],
+    "nullpomino/game/mode/TechnicianModeSettingMenuTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:core_ui_modes",
+        "//src/main/java:game_component_data",
+        "//src/main/java:util_base",
+    ],
+    "nullpomino/game/mode/TechnicianModeSettingWraparoundTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:core_ui_modes",
+        "//src/main/java:game_component_data",
+        "//src/main/java:util_base",
+    ],
+    "nullpomino/game/mode/TechnicianModeTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:core_ui_modes",
+        "//src/main/java:util_base",
+    ],
+    "nullpomino/game/mode/TimeAttackModeBranchCoverageTest2.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:core_ui_modes",
+    ],
+    "nullpomino/game/mode/TimeAttackModeCoverageBoostTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:core_ui_modes",
+        "//src/main/java:game_component_data",
+        "//src/main/java:game_net_client",
+        "//src/main/java:game_net_misc",
+        "//src/main/java:util_base",
+    ],
+    "nullpomino/game/mode/TimeAttackModeCoverageTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:core_ui_modes",
+        "//src/main/java:game_component_data",
+        "//src/main/java:game_net_client",
+        "//src/main/java:game_net_misc",
+    ],
+    "nullpomino/game/mode/TimeAttackModeExtendedLogicTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:core_ui_modes",
+        "//src/main/java:util_base",
+    ],
+    "nullpomino/game/mode/TimeAttackModeGameLogicTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:core_ui_modes",
+        "//src/main/java:util_base",
+    ],
+    "nullpomino/game/mode/TimeAttackModeHelpersTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:core_ui_modes",
+    ],
+    "nullpomino/game/mode/TimeAttackModeSetSpeedTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:core_ui_modes",
+    ],
+    "nullpomino/game/mode/TimeAttackModeSetStartBgmlvTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:core_ui_modes",
+    ],
+    "nullpomino/game/mode/TimeAttackModeSettingWraparoundTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:core_ui_modes",
+        "//src/main/java:game_component_data",
+    ],
+    "nullpomino/game/mode/TimeAttackModeTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:core_ui_modes",
+        "//src/main/java:util_base",
+    ],
+    "nullpomino/game/mode/ToolVSMapEditModeCoverageTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:game_component_data",
+        "//src/main/java:game_mode_impls",
+        "//src/main/java:util_base",
+    ],
+    "nullpomino/game/mode/ToolVSMapEditModeEdgeTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:game_component_data",
+        "//src/main/java:game_mode_impls",
+    ],
+    "nullpomino/game/mode/ToolVSMapEditModeFinalCoverageTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:game_component_data",
+        "//src/main/java:game_mode_impls",
+    ],
+    "nullpomino/game/mode/ToolVSMapEditModeGameLogicTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:game_mode_impls",
+    ],
+    "nullpomino/game/mode/ToolVSMapEditModeSettingBranchTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:game_component_data",
+        "//src/main/java:game_mode_impls",
+        "//src/main/java:util_base",
+    ],
+    "nullpomino/game/mode/ToolVSMapEditModeTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:game_mode_impls",
+        "//src/main/java:util_base",
+    ],
+    "nullpomino/game/mode/UltraModeBranchCoverageTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:core_ui_modes",
+        "//src/main/java:game_component_data",
+        "//src/main/java:game_net_client",
+        "//src/main/java:util_base",
+    ],
+    "nullpomino/game/mode/UltraModeCoverageBoostTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:core_ui_modes",
+        "//src/main/java:game_component_data",
+        "//src/main/java:game_net_client",
+        "//src/main/java:game_net_misc",
+        "//src/main/java:util_base",
+    ],
+    "nullpomino/game/mode/UltraModeGameLogicTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:core_ui_modes",
+        "//src/main/java:util_base",
+    ],
+    "nullpomino/game/mode/UltraModeRankingTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:core_ui_modes",
+    ],
+    "nullpomino/game/mode/UltraModeSettingMenuTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:core_ui_modes",
+        "//src/main/java:game_component_data",
+        "//src/main/java:util_base",
+    ],
+    "nullpomino/game/mode/UltraModeSettingWraparoundTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:core_ui_modes",
+        "//src/main/java:game_component_data",
+        "//src/main/java:util_base",
+    ],
+    "nullpomino/game/mode/UltraModeTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:core_ui_modes",
+        "//src/main/java:util_base",
+    ],
+    "nullpomino/game/mode/VSBattleModeBranchCoverageTest2.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:game_mode_impls",
+    ],
+    "nullpomino/game/mode/VSBattleModeBranchCoverageTest3.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:game_component_data",
+        "//src/main/java:game_mode_impls",
+    ],
+    "nullpomino/game/mode/VSBattleModeCoverageBoostTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:game_component_data",
+        "//src/main/java:game_mode_impls",
+        "//src/main/java:util_base",
+    ],
+    "nullpomino/game/mode/VSBattleModeGameLogicTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:game_mode_impls",
+        "//src/main/java:util_base",
+    ],
+    "nullpomino/game/mode/VSBattleModeSettingMenuTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:game_component_data",
+        "//src/main/java:game_mode_impls",
+        "//src/main/java:util_base",
+    ],
+    "nullpomino/game/mode/VSBattleModeTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:game_mode_impls",
+        "//src/main/java:util_base",
+    ],
+    "nullpomino/game/mode/VSDigRaceModeBranchCoverageTest2.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:game_mode_impls",
+    ],
+    "nullpomino/game/mode/VSDigRaceModeCoverageTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:game_component_data",
+        "//src/main/java:game_mode_impls",
+        "//src/main/java:util_base",
+    ],
+    "nullpomino/game/mode/VSDigRaceModeExtendedLogicTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:game_mode_impls",
+        "//src/main/java:util_base",
+    ],
+    "nullpomino/game/mode/VSDigRaceModeFinalCoverageTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:game_component_data",
+        "//src/main/java:game_mode_impls",
+        "//src/main/java:util_base",
+    ],
+    "nullpomino/game/mode/VSDigRaceModeGameLogicTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:game_mode_impls",
+        "//src/main/java:util_base",
+    ],
+    "nullpomino/game/mode/VSDigRaceModeSettingWraparoundTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:game_component_data",
+        "//src/main/java:game_mode_impls",
+    ],
+    "nullpomino/game/mode/VSDigRaceModeTailCoverageTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:game_component_data",
+        "//src/main/java:game_mode_impls",
+    ],
+    "nullpomino/game/mode/VSDigRaceModeTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:game_mode_impls",
+        "//src/main/java:util_base",
+    ],
+    "nullpomino/game/mode/VSLineRaceModeBranchCoverageTest2.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:game_mode_impls",
+    ],
+    "nullpomino/game/mode/VSLineRaceModeCoverageTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:game_component_data",
+        "//src/main/java:game_mode_impls",
+        "//src/main/java:util_base",
+    ],
+    "nullpomino/game/mode/VSLineRaceModeExtendedLogicTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:game_mode_impls",
+        "//src/main/java:util_base",
+    ],
+    "nullpomino/game/mode/VSLineRaceModeGameLogicTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:game_mode_impls",
+        "//src/main/java:util_base",
+    ],
+    "nullpomino/game/mode/VSLineRaceModeLastCoverageTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:game_component_data",
+        "//src/main/java:game_mode_impls",
+    ],
+    "nullpomino/game/mode/VSLineRaceModeSettingWraparoundTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:game_component_data",
+        "//src/main/java:game_mode_impls",
+    ],
+    "nullpomino/game/mode/VSLineRaceModeTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:game_mode_impls",
+        "//src/main/java:util_base",
+    ],
+    "nullpomino/game/net/LanLoungeServiceTest.java": [
+        "//src/main/java:game_net_misc",
+    ],
+    "nullpomino/game/net/NetChatMessageRoundTripTest.java": [
+        "//src/main/java:game_net_misc",
+    ],
+    "nullpomino/game/net/NetLanDiscoveryBranchGapTest.java": [
+        "//src/main/java:game_net_misc",
+    ],
+    "nullpomino/game/net/NetLanDiscoveryRoomTest.java": [
+        "//src/main/java:game_net_misc",
+    ],
+    "nullpomino/game/net/NetLanDiscoveryTest.java": [
+        "//src/main/java:game_net_misc",
+    ],
+    "nullpomino/game/net/NetMPModeRegistryBranchTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:game_net_misc",
+    ],
+    "nullpomino/game/net/NetMPModeRegistryTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:core_ui_modes",
+        "//src/main/java:game_net_misc",
+        "//src/main/java:util_mode_manager",
+    ],
+    "nullpomino/game/net/NetPlatformBranchGapTest.java": [
+        "//src/main/java:game_net_misc",
+        "//src/main/java:game_net_platform",
+        "//src/main/java:game_net_room_core",
+        "//src/main/java:game_net_room_transport",
+    ],
+    "nullpomino/game/net/NetPlayerClientBranchCoverageTest.java": [
+        "//src/main/java:game_net_client",
+        "//src/main/java:game_net_misc",
+    ],
+    "nullpomino/game/net/NetPlayerClientBranchGapTest.java": [
+        "//src/main/java:game_net_client",
+        "//src/main/java:game_net_misc",
+    ],
+    "nullpomino/game/net/NetPlayerClientTest.java": [
+        "//src/main/java:game_net_client",
+        "//src/main/java:game_net_misc",
+    ],
+    "nullpomino/game/net/NetPlayerInfoResetTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:game_net_misc",
+    ],
+    "nullpomino/game/net/NetPlayerInfoRoundTripTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:game_net_misc",
+    ],
+    "nullpomino/game/net/NetRoomInfoGameStateTest.java": [
+        "//src/main/java:game_net_misc",
+    ],
+    "nullpomino/game/net/NetRoomInfoTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:game_net_misc",
+    ],
+    "nullpomino/game/net/NetRoomInfoWinnerAndTeamTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:game_net_misc",
+    ],
+    "nullpomino/game/net/NetRoomInfoWinnerTeamBranchCoverageTest.java": [
+        "//src/main/java:game_net_misc",
+    ],
+    "nullpomino/game/net/NetRoomPlayerClientBranchGapTest.java": [
+        "//src/main/java:game_net_client",
+        "//src/main/java:game_net_room_misc",
+    ],
+    "nullpomino/game/net/NetRoomPlayerClientTest.java": [
+        "//src/main/java:game_net_client",
+        "//src/main/java:game_net_misc",
+        "//src/main/java:game_net_room_misc",
+    ],
+    "nullpomino/game/net/NetSPModeRegistryBranchTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:game_net_misc",
+    ],
+    "nullpomino/game/net/NetSPModeRegistryTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:core_ui_modes",
+        "//src/main/java:game_net_misc",
+        "//src/main/java:util_mode_manager",
+    ],
+    "nullpomino/game/net/NetSPPersonalBestExportListRecordTest.java": [
+        "//src/main/java:game_component_data",
+        "//src/main/java:game_net_misc",
+    ],
+    "nullpomino/game/net/NetSPPersonalBestTest.java": [
+        "//src/main/java:game_component_data",
+        "//src/main/java:game_net_misc",
+        "//src/main/java:util_base",
+    ],
+    "nullpomino/game/net/NetSPRankingPropertyEdgeCasesTest.java": [
+        "//src/main/java:game_component_data",
+        "//src/main/java:game_net_misc",
+        "//src/main/java:util_base",
+    ],
+    "nullpomino/game/net/NetSPRankingTest.java": [
+        "//src/main/java:game_component_data",
+        "//src/main/java:game_net_misc",
+        "//src/main/java:util_base",
+    ],
+    "nullpomino/game/net/NetSPRecordBranchGapTest.java": [
+        "//src/main/java:game_net_misc",
+    ],
+    "nullpomino/game/net/NetSPRecordCompareTest.java": [
+        "//src/main/java:game_component_data",
+        "//src/main/java:game_net_misc",
+    ],
+    "nullpomino/game/net/NetSPRecordComparisonTest.java": [
+        "//src/main/java:game_component_data",
+        "//src/main/java:game_net_misc",
+    ],
+    "nullpomino/game/net/NetSPRecordListTest.java": [
+        "//src/main/java:game_component_data",
+        "//src/main/java:game_net_misc",
+        "//src/main/java:util_base",
+    ],
+    "nullpomino/game/net/NetSPRecordResetCopyTest.java": [
+        "//src/main/java:game_component_data",
+        "//src/main/java:game_net_misc",
+    ],
+    "nullpomino/game/net/NetSPRecordTest.java": [
+        "//src/main/java:game_component_data",
+        "//src/main/java:game_net_misc",
+        "//src/main/java:util_base",
+    ],
+    "nullpomino/game/net/NetStringArrayTest.java": [
+        "//src/main/java:game_net_misc",
+    ],
+    "nullpomino/game/net/NetUtilBranchGapTest.java": [
+        "//src/main/java:game_net_misc",
+    ],
+    "nullpomino/game/net/NetUtilCompressionLevelTest.java": [
+        "//src/main/java:game_net_misc",
+    ],
+    "nullpomino/game/net/NetUtilConstructorTest.java": [
+        "//src/main/java:game_net_misc",
+    ],
+    "nullpomino/game/net/NetUtilProcessPacketBufferEdgeCasesTest.java": [
+        "//src/main/java:game_net_misc",
+    ],
+    "nullpomino/game/net/NetUtilRoundTripTest.java": [
+        "//src/main/java:game_net_misc",
+    ],
+    "nullpomino/game/net/mqtt/MqttCodecBranchGapTest.java": [
+        "//src/main/java:game_net_misc",
+    ],
+    "nullpomino/game/net/mqtt/MqttCodecTest.java": [
+        "//src/main/java:game_net_misc",
+    ],
+    "nullpomino/game/net/room/LanRoomBeaconBranchGapTest.java": [
+        "//src/main/java:game_net_misc",
+        "//src/main/java:game_net_room_core",
+    ],
+    "nullpomino/game/net/room/RoomAuthorityBranchGapTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:game_net_misc",
+        "//src/main/java:game_net_room_misc",
+        "//src/main/java:util_base",
+    ],
+    "nullpomino/game/net/room/RoomAuthorityFinishRatingBranchTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:game_net_misc",
+        "//src/main/java:game_net_room_misc",
+    ],
+    "nullpomino/game/net/room/RoomAuthorityGameFlowBranchTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:game_net_misc",
+        "//src/main/java:game_net_room_misc",
+    ],
+    "nullpomino/game/net/room/RoomAuthorityTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:game_net_misc",
+        "//src/main/java:game_net_room_misc",
+        "//src/main/java:game_net_room_transport",
+    ],
+    "nullpomino/game/net/room/RoomClientIntegrationTest.java": [
+        "//src/main/java:core_ui_modes",
+        "//src/main/java:game_net_client",
+        "//src/main/java:game_net_misc",
+        "//src/main/java:game_net_room_core",
+        "//src/main/java:game_net_room_misc",
+    ],
+    "nullpomino/game/net/room/RoomLocalRecordsBranchGapTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:game_component_data",
+        "//src/main/java:game_net_misc",
+        "//src/main/java:game_net_room_misc",
+        "//src/main/java:util_base",
+    ],
+    "nullpomino/game/net/room/RoomLocalRecordsTest.java": [
+        "//src/main/java:game_component_data",
+        "//src/main/java:game_net_misc",
+        "//src/main/java:game_net_room_misc",
+    ],
+    "nullpomino/game/net/room/RoomMigrationTest.java": [
+        "//src/main/java:game_net_misc",
+        "//src/main/java:game_net_room_core",
+        "//src/main/java:game_net_room_misc",
+    ],
+    "nullpomino/game/net/room/RoomMirrorBranchGapTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:game_net_misc",
+        "//src/main/java:game_net_room_misc",
+        "//src/main/java:game_net_room_transport",
+        "//src/main/java:util_base",
+    ],
+    "nullpomino/game/net/room/RoomMirrorTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:game_net_misc",
+        "//src/main/java:game_net_room_misc",
+        "//src/main/java:game_net_room_transport",
+    ],
+    "nullpomino/game/net/room/RoomProtocolBranchGapTest.java": [
+        "//src/main/java:game_net_room_transport",
+    ],
+    "nullpomino/game/net/room/RoomProtocolTest.java": [
+        "//src/main/java:game_net_room_transport",
+    ],
+    "nullpomino/game/net/room/RoomSessionBranchGapTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:game_net_misc",
+        "//src/main/java:game_net_room_core",
+        "//src/main/java:game_net_room_misc",
+        "//src/main/java:game_net_room_transport",
+    ],
+    "nullpomino/game/net/room/RoomSessionTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:game_net_misc",
+        "//src/main/java:game_net_room_core",
+        "//src/main/java:game_net_room_misc",
+        "//src/main/java:util_base",
+    ],
+    "nullpomino/game/net/room/RoomTransportBranchGapTest.java": [
+        "//src/main/java:game_net_room_transport",
+    ],
+    "nullpomino/game/net/room/RoomTransportTest.java": [
+        "//src/main/java:game_net_room_transport",
+    ],
+    "nullpomino/game/net/web/WebSignalingTest.java": [
+        "//src/main/java:game_net_misc",
+    ],
+    "nullpomino/game/play/GameEngineBranchCoverageTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:game_component_data",
+    ],
+    "nullpomino/game/play/GameEngineBranchEdgeTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:game_component_data",
+        "//src/main/java:util_base",
+    ],
+    "nullpomino/game/play/GameEngineConstructorTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:game_wallkick_impls",
+    ],
+    "nullpomino/game/play/GameEngineDeepBranchCoverageTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:game_component_data",
+    ],
+    "nullpomino/game/play/GameEngineEdgeCoverageTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:game_component_data",
+        "//src/main/java:game_wallkick_impls",
+    ],
+    "nullpomino/game/play/GameEngineFieldUpdateTest.java": [
+        "//src/main/java:core_engine",
+    ],
+    "nullpomino/game/play/GameEngineFinalCoverageTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:game_component_data",
+    ],
+    "nullpomino/game/play/GameEngineGettersTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:game_component_data",
+    ],
+    "nullpomino/game/play/GameEngineInitialRotateTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:game_component_data",
+    ],
+    "nullpomino/game/play/GameEngineInputFlagsTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:game_component_data",
+    ],
+    "nullpomino/game/play/GameEngineInterruptItemTest.java": [
+        "//src/main/java:core_engine",
+    ],
+    "nullpomino/game/play/GameEngineLifecycleTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:game_component_data",
+    ],
+    "nullpomino/game/play/GameEngineMiscHelpersTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:game_component_data",
+    ],
+    "nullpomino/game/play/GameEngineRemainingCoverageTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:game_component_data",
+        "//src/main/java:game_wallkick_impls",
+    ],
+    "nullpomino/game/play/GameEngineRenderDispatchTest.java": [
+        "//src/main/java:core_engine",
+    ],
+    "nullpomino/game/play/GameEngineSaveReplayTest.java": [
+        "//src/main/java:core_engine",
+    ],
+    "nullpomino/game/play/GameEngineSetAllSpinTest.java": [
+        "//src/main/java:core_engine",
+    ],
+    "nullpomino/game/play/GameEngineSetTSpinTest.java": [
+        "//src/main/java:core_engine",
+    ],
+    "nullpomino/game/play/GameEngineStatAreTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:game_component_data",
+    ],
+    "nullpomino/game/play/GameEngineStatEndingStartTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:game_component_data",
+    ],
+    "nullpomino/game/play/GameEngineStatExcellentTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:game_component_data",
+    ],
+    "nullpomino/game/play/GameEngineStatFieldEditTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:game_component_data",
+    ],
+    "nullpomino/game/play/GameEngineStatGameOverTest.java": [
+        "//src/main/java:core_engine",
+    ],
+    "nullpomino/game/play/GameEngineStatHooksTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:game_component_data",
+    ],
+    "nullpomino/game/play/GameEngineStatLockFlashTest.java": [
+        "//src/main/java:core_engine",
+    ],
+    "nullpomino/game/play/GameEngineStatReadyTest.java": [
+        "//src/main/java:core_engine",
+    ],
+    "nullpomino/game/play/GameEngineUncoveredTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:game_component_data",
+        "//src/main/java:game_wallkick_impls",
+        "//src/main/java:util_base",
+    ],
+    "nullpomino/game/play/GameEngineUpdateDispatchTest.java": [
+        "//src/main/java:core_engine",
+    ],
+    "nullpomino/game/play/GameManagerCommitHashEdgeTest.java": [
+        "//src/main/java:core_engine",
+    ],
+    "nullpomino/game/play/GameManagerCommitHashTest.java": [
+        "//src/main/java:core_engine",
+    ],
+    "nullpomino/game/play/GameManagerExtraTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:util_base",
+    ],
+    "nullpomino/game/play/GameManagerTest.java": [
+        "//src/main/java:core_engine",
+    ],
+    "nullpomino/game/randomizer/BagRandomizerTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:game_randomizer_impls",
+        "//src/main/java:util_randomizer_registry",
+    ],
+    "nullpomino/game/randomizer/DistanceWeightRandomizerBranchGapTest.java": [
+        "//src/main/java:game_randomizer_impls",
+    ],
+    "nullpomino/game/randomizer/ExpDistWeightRandomizerTest.java": [
+        "//src/main/java:game_randomizer_impls",
+    ],
+    "nullpomino/game/randomizer/FixedSequenceRandomizerTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:game_randomizer_impls",
+    ],
+    "nullpomino/game/randomizer/RandomizerBranchCoverageSweepTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:game_randomizer_impls",
+    ],
+    "nullpomino/game/randomizer/RandomizerBranchTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:game_randomizer_impls",
+    ],
+    "nullpomino/game/wallkick/AvalancheClassicWallkickTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:game_component_data",
+        "//src/main/java:game_wallkick_impls",
+    ],
+    "nullpomino/game/wallkick/AvalancheWallkickTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:game_component_data",
+        "//src/main/java:game_wallkick_impls",
+    ],
+    "nullpomino/game/wallkick/BaseStandardWallkickTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:game_component_data",
+        "//src/main/java:game_wallkick_impls",
+    ],
+    "nullpomino/game/wallkick/ClassicPlusWallkickTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:game_component_data",
+        "//src/main/java:game_wallkick_impls",
+    ],
+    "nullpomino/game/wallkick/ClassicVanishBranchCoverageTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:game_component_data",
+        "//src/main/java:game_wallkick_impls",
+    ],
+    "nullpomino/game/wallkick/ClassicWallkickTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:game_component_data",
+        "//src/main/java:game_wallkick_impls",
+    ],
+    "nullpomino/game/wallkick/DTETWallkickTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:game_component_data",
+        "//src/main/java:game_wallkick_impls",
+    ],
+    "nullpomino/game/wallkick/GBCWallkickBranchTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:game_component_data",
+        "//src/main/java:game_wallkick_impls",
+    ],
+    "nullpomino/game/wallkick/GBCWallkickTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:game_component_data",
+        "//src/main/java:game_wallkick_impls",
+    ],
+    "nullpomino/game/wallkick/PhysicianWallkickTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:game_component_data",
+        "//src/main/java:game_wallkick_impls",
+    ],
+    "nullpomino/game/wallkick/StandardGbcGuardBranchCoverageTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:game_component_data",
+        "//src/main/java:game_wallkick_impls",
+    ],
+    "nullpomino/game/wallkick/StandardMild180WallkickTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:game_component_data",
+        "//src/main/java:game_wallkick_impls",
+    ],
+    "nullpomino/game/wallkick/StandardSymmetricMild180WallkickTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:game_component_data",
+        "//src/main/java:game_wallkick_impls",
+    ],
+    "nullpomino/game/wallkick/StandardSymmetricWallkickTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:game_component_data",
+        "//src/main/java:game_wallkick_impls",
+    ],
+    "nullpomino/game/wallkick/StandardWallkickTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:game_component_data",
+        "//src/main/java:game_wallkick_impls",
+    ],
+    "nullpomino/game/wallkick/WallOnlyWallkickTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:game_component_data",
+        "//src/main/java:game_wallkick_impls",
+    ],
+    "nullpomino/game/wallkick/WallkickBranchTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:game_component_data",
+        "//src/main/java:game_wallkick_impls",
+    ],
+    "nullpomino/game/wallkick/WallkickSwitchDefaultBranchGapTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:game_wallkick_impls",
+    ],
+    "nullpomino/gui/EffectObjectTest.java": [
+        "//src/main/java:gui_base",
+    ],
+    "nullpomino/gui/GameKeyDummyTest.java": [
+        "//src/main/java:game_component_data",
+        "//src/main/java:gui_base",
+        "//src/main/java:util_base",
+    ],
+    "nullpomino/gui/MouseInputDummyTest.java": [
+        "//src/main/java:gui_base",
+    ],
+    "nullpomino/gui/MouseInputForwardTest.java": [
+        "//src/main/java:gui_base",
+    ],
+    "nullpomino/gui/net/NetLobbyFrameRoomTest.java": [
+        "//src/main/java:core_ui_modes",
+        "//src/main/java:game_net_client",
+        "//src/main/java:game_net_misc",
+        "//src/main/java:game_net_room_misc",
+    ],
+    "nullpomino/gui/net/NetLobbyFrameTest.java": [
+        "//src/main/java:core_ui_modes",
+        "//src/main/java:game_net_misc",
+        "//src/main/java:util_base",
+    ],
+    "nullpomino/gui/sdl/BaseStateSDLTest.java": [
+        "//src/main/java:gui_base",
+    ],
+    "nullpomino/gui/sdl/DummyMenuChooseStateForwardTest.java": [
+        "//src/main/java:core_ui_modes",
+        "//src/main/java:gui_base",
+    ],
+    "nullpomino/gui/sdl/DummyMenuChooseStateJustEnteredTest.java": [
+        "//src/main/java:core_ui_modes",
+        "//src/main/java:gui_base",
+    ],
+    "nullpomino/gui/sdl/DummyMenuChooseStateSDLLogicTest.java": [
+        "//src/main/java:core_ui_modes",
+        "//src/main/java:gui_base",
+    ],
+    "nullpomino/gui/sdl/DummyMenuScrollStateSDLLogicTest.java": [
+        "//src/main/java:core_ui_modes",
+    ],
+    "nullpomino/gui/sdl/DummyMenuScrollStateSDLTest.java": [
+        "//src/main/java:core_ui_modes",
+    ],
+    "nullpomino/gui/sdl/GameKeySDLTest.java": [
+        "//src/main/java:gui_base",
+        "//src/main/java:sdl_binding",
+        "//src/main/java:util_base",
+    ],
+    "nullpomino/gui/sdl/MissingDirNullGuardTest.java": [
+        "//src/main/java:core_ui_modes",
+        "//src/main/java:util_base",
+    ],
+    "nullpomino/gui/sdl/NormalFontSDLStaticHelpersTest.java": [
+        "//src/main/java:core_ui_modes",
+    ],
+    "nullpomino/gui/sdl/NormalFontSDLTest.java": [
+        "//src/main/java:core_ui_modes",
+    ],
+    "nullpomino/gui/sdl/NullpoMinoNavigationTest.java": [
+        "//src/main/java:core_ui_modes",
+        "//src/main/java:gui_base",
+    ],
+    "nullpomino/gui/sdl/NullpoMinoSDLEventTest.java": [
+        "//src/main/java:core_ui_modes",
+        "//src/main/java:sdl_binding",
+    ],
+    "nullpomino/gui/sdl/NullpoMinoSDLHelpersTest.java": [
+        "//src/main/java:core_ui_modes",
+        "//src/main/java:sdl_binding",
+        "//src/main/java:util_base",
+    ],
+    "nullpomino/gui/sdl/NullpoMinoSDLLogicTest.java": [
+        "//src/main/java:core_ui_modes",
+        "//src/main/java:gui_base",
+        "//src/main/java:sdl_binding",
+        "//src/main/java:util_base",
+    ],
+    "nullpomino/gui/sdl/NullpoMinoSDLNavigationGuardsTest.java": [
+        "//src/main/java:core_ui_modes",
+    ],
+    "nullpomino/gui/sdl/PageNavigationSDLTest.java": [
+        "//src/main/java:core_ui_modes",
+        "//src/main/java:sdl_binding",
+    ],
+    "nullpomino/gui/sdl/RendererSDLColorTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:core_ui_modes",
+        "//src/main/java:gui_base",
+        "//src/main/java:sdl_binding",
+        "//src/main/java:util_base",
+    ],
+    "nullpomino/gui/sdl/RendererSDLLogicTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:core_ui_modes",
+        "//src/main/java:gui_base",
+        "//src/main/java:sdl_binding",
+        "//src/main/java:util_base",
+    ],
+    "nullpomino/gui/sdl/SoundManagerSDLLogicTest.java": [
+        "//src/main/java:core_ui_modes",
+    ],
+    "nullpomino/gui/sdl/SoundManagerSDLTest.java": [
+        "//src/main/java:core_ui_modes",
+    ],
+    "nullpomino/gui/sdl/StateConfigAISelectSDLLogicTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:core_ui_modes",
+        "//src/main/java:game_ai_impls",
+        "//src/main/java:util_base",
+    ],
+    "nullpomino/gui/sdl/StateConfigAISelectSDLTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:core_ui_modes",
+        "//src/main/java:util_base",
+    ],
+    "nullpomino/gui/sdl/StateConfigGameTuningSDLLogicTest.java": [
+        "//src/main/java:core_ui_modes",
+        "//src/main/java:util_base",
+    ],
+    "nullpomino/gui/sdl/StateConfigGameTuningSDLTest.java": [
+        "//src/main/java:core_ui_modes",
+        "//src/main/java:util_base",
+    ],
+    "nullpomino/gui/sdl/StateConfigGeneralSDLLogicTest.java": [
+        "//src/main/java:core_ui_modes",
+        "//src/main/java:sdl_binding",
+        "//src/main/java:util_base",
+    ],
+    "nullpomino/gui/sdl/StateConfigGeneralSDLTest.java": [
+        "//src/main/java:core_ui_modes",
+        "//src/main/java:util_base",
+    ],
+    "nullpomino/gui/sdl/StateConfigJoystickButtonSDLTest.java": [
+        "//src/main/java:core_ui_modes",
+        "//src/main/java:gui_base",
+        "//src/main/java:sdl_binding",
+        "//src/main/java:util_base",
+    ],
+    "nullpomino/gui/sdl/StateConfigJoystickMainSDLTest.java": [
+        "//src/main/java:core_ui_modes",
+        "//src/main/java:util_base",
+    ],
+    "nullpomino/gui/sdl/StateConfigJoystickTestSDLTest.java": [
+        "//src/main/java:core_ui_modes",
+        "//src/main/java:sdl_binding",
+    ],
+    "nullpomino/gui/sdl/StateConfigKeyboardNaviSDLTest.java": [
+        "//src/main/java:core_ui_modes",
+        "//src/main/java:gui_base",
+        "//src/main/java:sdl_binding",
+        "//src/main/java:util_base",
+    ],
+    "nullpomino/gui/sdl/StateConfigKeyboardResetSDLTest.java": [
+        "//src/main/java:core_ui_modes",
+        "//src/main/java:gui_base",
+        "//src/main/java:util_base",
+    ],
+    "nullpomino/gui/sdl/StateConfigKeyboardSDLTest.java": [
+        "//src/main/java:core_ui_modes",
+        "//src/main/java:gui_base",
+        "//src/main/java:sdl_binding",
+    ],
+    "nullpomino/gui/sdl/StateConfigMainMenuTest.java": [
+        "//src/main/java:core_ui_modes",
+        "//src/main/java:gui_base",
+    ],
+    "nullpomino/gui/sdl/StateConfigRuleSelectSDLTest.java": [
+        "//src/main/java:core_ui_modes",
+        "//src/main/java:gui_base",
+        "//src/main/java:util_base",
+    ],
+    "nullpomino/gui/sdl/StateConfigRuleStyleSelectSDLTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:core_ui_modes",
+        "//src/main/java:gui_base",
+    ],
+    "nullpomino/gui/sdl/StateInGameReplayBackTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:core_ui_modes",
+    ],
+    "nullpomino/gui/sdl/StateInGameResultPageInputTest.java": [
+        "//src/main/java:core_ui_modes",
+        "//src/main/java:game_component_data",
+    ],
+    "nullpomino/gui/sdl/StateInGameSDLLogicTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:core_ui_modes",
+        "//src/main/java:game_component_data",
+        "//src/main/java:util_base",
+    ],
+    "nullpomino/gui/sdl/StateInGameScrubBarTest.java": [
+        "//src/main/java:core_ui_modes",
+    ],
+    "nullpomino/gui/sdl/StateInGameSettingHoverTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:core_ui_modes",
+    ],
+    "nullpomino/gui/sdl/StateNetCreateRoomSDLDropdownSelectionTest.java": [
+        "//src/main/java:core_ui_modes",
+    ],
+    "nullpomino/gui/sdl/StateNetCreateRoomSDLTest.java": [
+        "//src/main/java:core_ui_modes",
+        "//src/main/java:game_net_misc",
+        "//src/main/java:util_base",
+    ],
+    "nullpomino/gui/sdl/StateReplaySelectSDLLogicTest.java": [
+        "//src/main/java:core_ui_modes",
+        "//src/main/java:game_component_data",
+        "//src/main/java:util_base",
+    ],
+    "nullpomino/gui/sdl/StateReplaySelectSDLTest.java": [
+        "//src/main/java:core_ui_modes",
+        "//src/main/java:game_component_data",
+        "//src/main/java:util_base",
+    ],
+    "nullpomino/gui/sdl/StateSelectModeSDLTest.java": [
+        "//src/main/java:core_ui_modes",
+        "//src/main/java:util_base",
+    ],
+    "nullpomino/gui/sdl/StateSelectRuleFromListSDLTest.java": [
+        "//src/main/java:core_ui_modes",
+        "//src/main/java:gui_base",
+        "//src/main/java:util_base",
+    ],
+    "nullpomino/gui/sdl/StateTitleChoicesTest.java": [
+        "//src/main/java:core_ui_modes",
+        "//src/main/java:gui_base",
+    ],
+    "nullpomino/gui/sdl/binding/SDLConstantsTest.java": [
+        "//src/main/java:sdl_binding",
+    ],
+    "nullpomino/gui/sdl/binding/SDLStructsTest.java": [
+        "//src/main/java:sdl_binding",
+    ],
+    "nullpomino/gui/sdl/binding/jna/JnaSDL3EventDecodeTest.java": [
+        "//src/main/java:sdl_binding",
+    ],
+    "nullpomino/gui/sdl/binding/jna/JnaStructsTest.java": [
+        "//src/main/java:sdl_binding",
+    ],
+    "nullpomino/gui/sdl/widget/ButtonSDLExtendedTest.java": [
+        "//src/main/java:core_ui_modes",
+        "//src/main/java:sdl_binding",
+    ],
+    "nullpomino/gui/sdl/widget/ButtonSDLTest.java": [
+        "//src/main/java:core_ui_modes",
+        "//src/main/java:sdl_binding",
+    ],
+    "nullpomino/gui/sdl/widget/ChatLogSDLExtendedTest.java": [
+        "//src/main/java:core_ui_modes",
+    ],
+    "nullpomino/gui/sdl/widget/ChatLogSDLTest.java": [
+        "//src/main/java:core_ui_modes",
+    ],
+    "nullpomino/gui/sdl/widget/CheckboxSDLExtendedTest.java": [
+        "//src/main/java:core_ui_modes",
+        "//src/main/java:sdl_binding",
+    ],
+    "nullpomino/gui/sdl/widget/CheckboxSDLTest.java": [
+        "//src/main/java:core_ui_modes",
+        "//src/main/java:sdl_binding",
+    ],
+    "nullpomino/gui/sdl/widget/DropdownSDLExtendedTest.java": [
+        "//src/main/java:core_ui_modes",
+        "//src/main/java:sdl_binding",
+    ],
+    "nullpomino/gui/sdl/widget/DropdownSDLLogicTest.java": [
+        "//src/main/java:core_ui_modes",
+    ],
+    "nullpomino/gui/sdl/widget/DropdownSDLTest.java": [
+        "//src/main/java:core_ui_modes",
+        "//src/main/java:sdl_binding",
+    ],
+    "nullpomino/gui/sdl/widget/SpinnerSDLExtendedTest.java": [
+        "//src/main/java:core_ui_modes",
+        "//src/main/java:sdl_binding",
+    ],
+    "nullpomino/gui/sdl/widget/SpinnerSDLLogicTest.java": [
+        "//src/main/java:core_ui_modes",
+    ],
+    "nullpomino/gui/sdl/widget/SpinnerSDLTest.java": [
+        "//src/main/java:core_ui_modes",
+        "//src/main/java:sdl_binding",
+    ],
+    "nullpomino/gui/sdl/widget/TabStripSDLExtendedTest.java": [
+        "//src/main/java:core_ui_modes",
+        "//src/main/java:sdl_binding",
+    ],
+    "nullpomino/gui/sdl/widget/TabStripSDLLogicTest.java": [
+        "//src/main/java:core_ui_modes",
+    ],
+    "nullpomino/gui/sdl/widget/TabStripSDLTest.java": [
+        "//src/main/java:core_ui_modes",
+    ],
+    "nullpomino/gui/sdl/widget/TableSDLExtendedTest.java": [
+        "//src/main/java:core_ui_modes",
+        "//src/main/java:sdl_binding",
+    ],
+    "nullpomino/gui/sdl/widget/TableSDLTest.java": [
+        "//src/main/java:core_ui_modes",
+        "//src/main/java:sdl_binding",
+    ],
+    "nullpomino/gui/sdl/widget/TextInputSDLExtendedTest.java": [
+        "//src/main/java:core_ui_modes",
+        "//src/main/java:sdl_binding",
+    ],
+    "nullpomino/gui/sdl/widget/TextInputSDLTest.java": [
+        "//src/main/java:core_ui_modes",
+        "//src/main/java:sdl_binding",
+    ],
+    "nullpomino/gui/sdl/widget/WidgetSDLExtendedTest.java": [
+        "//src/main/java:core_ui_modes",
+        "//src/main/java:sdl_binding",
+    ],
+    "nullpomino/gui/sdl/widget/WidgetSDLTest.java": [
+        "//src/main/java:core_ui_modes",
+        "//src/main/java:sdl_binding",
+    ],
+    "nullpomino/tool/airankstool/AIRanksToolTest.java": [
+        "//src/main/java:tool_airankstool",
+        "//src/main/java:util_base",
+    ],
+    "nullpomino/tool/airankstool/RanksIteratorPartTest.java": [
+        "//src/main/java:tool_airankstool",
+    ],
+    "nullpomino/tool/airankstool/RanksIteratorTest.java": [
+        "//src/main/java:tool_airankstool",
+    ],
+    "nullpomino/tool/airankstool/RanksProgressAndScalingTest.java": [
+        "//src/main/java:tool_airankstool",
+    ],
+    "nullpomino/tool/airankstool/RanksResultInnerClassTest.java": [
+        "//src/main/java:tool_airankstool",
+    ],
+    "nullpomino/tool/airankstool/RanksResultMirrorTest.java": [
+        "//src/main/java:tool_airankstool",
+    ],
+    "nullpomino/tool/airankstool/RanksSurfaceArithmeticTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:tool_airankstool",
+    ],
+    "nullpomino/tool/airankstool/RanksTest.java": [
+        "//src/main/java:tool_airankstool",
+    ],
+    "nullpomino/tool/airankstool/SurfaceComponentTest.java": [
+        "//src/main/java:tool_airankstool",
+    ],
+    "nullpomino/tool/musiclisteditor/MusicListEditorTest.java": [
+        "//src/main/java:util_base",
+    ],
+    "nullpomino/tool/ruleeditor/RuleEditorTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:util_base",
+    ],
+    "nullpomino/tool/sequencer/SequencerTest.java": [
+        "//src/main/java:util_base",
+    ],
+    "nullpomino/util/AIRegistryTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:util_ai_registry",
+    ],
+    "nullpomino/util/ClassFactoryTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:game_wallkick_impls",
+        "//src/main/java:util_base",
+    ],
+    "nullpomino/util/CustomPropertiesRoundTripTest.java": [
+        "//src/main/java:util_base",
+    ],
+    "nullpomino/util/CustomPropertiesStoreEscapeTest.java": [
+        "//src/main/java:util_base",
+    ],
+    "nullpomino/util/DataDirBranchTest.java": [
+        "//src/main/java:util_base",
+    ],
+    "nullpomino/util/FactoryDefaultsTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:core_ui_modes",
+        "//src/main/java:util_ai_registry",
+        "//src/main/java:util_base",
+        "//src/main/java:util_randomizer_registry",
+        "//src/main/java:util_standalone_mode_registry",
+        "//src/main/java:util_wallkick_registry",
+    ],
+    "nullpomino/util/GeneralUtilApiTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:game_wallkick_impls",
+    ],
+    "nullpomino/util/GeneralUtilFormatBranchTest.java": [
+        "//src/main/java:core_engine",
+    ],
+    "nullpomino/util/JdkRandomRejectionSamplingTest.java": [
+        "//src/main/java:util_base",
+    ],
+    "nullpomino/util/JdkRandomTest.java": [
+        "//src/main/java:util_base",
+    ],
+    "nullpomino/util/LegacyClassNamesTest.java": [
+        "//src/main/java:core_ui_modes",
+        "//src/main/java:game_ai_impls",
+        "//src/main/java:game_menu",
+        "//src/main/java:game_randomizer_impls",
+        "//src/main/java:game_wallkick_impls",
+        "//src/main/java:util_base",
+    ],
+    "nullpomino/util/LegacyClassNamesToLegacyGeneralFallbackTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:util_base",
+    ],
+    "nullpomino/util/LogConfigBranchTest.java": [
+        "//src/main/java:util_base",
+    ],
+    "nullpomino/util/ModeManagerTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:util_mode_manager",
+    ],
+    "nullpomino/util/ModeRegistryTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:core_ui_modes",
+        "//src/main/java:util_mode_manager",
+    ],
+    "nullpomino/util/RandomizerRegistryTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:util_randomizer_registry",
+    ],
+    "nullpomino/util/WallkickRegistryTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:util_wallkick_registry",
+    ],
+}
+

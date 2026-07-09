@@ -59,56 +59,565 @@ java_library(
     visibility = ["//visibility:public"],
 )
 
-# Cyclically-coupled engine + GUI cluster:
-# util <-> game <-> gui/net <-> gui/sdl, plus tool/airankstool which
-# is depended on by game/ai (RanksAI). Cannot be split further without source
-# refactors to break the cycles.
+# ---------------------------------------------------------------------------
+# The engine + GUI cluster, split into fine-grained targets along its actual
+# dependency structure so an edit to one leaf (a randomizer, a wallkick, a
+# net protocol class, ...) only invalidates the targets that really depend on
+# it instead of the whole cluster. Two clusters below (core_engine,
+# core_ui_modes) are genuinely cyclic at the file level (util <-> game <->
+# gui/net <-> gui/sdl) and can't be split further without source changes;
+# everything else here is a real DAG over them, verified by import-graph
+# analysis (see plan in git history / PR description), not guesswork.
+# ---------------------------------------------------------------------------
+
+# Layer 0: leaf data holders and pure utilities with no deps on the rest of
+# the cluster.
+
 java_library(
-    name = "core",
-    srcs = glob([
-        "nullpomino/util/*.java",
-        "nullpomino/game/**/*.java",
-        "nullpomino/gui/*.java",
-        "nullpomino/gui/net/*.java",
-        "nullpomino/gui/sdl/*.java",
-        "nullpomino/gui/sdl/widget/*.java",
-        "nullpomino/tool/airankstool/*.java",
-    ]),
+    name = "game_component_data",
+    srcs = glob(
+        ["nullpomino/game/component/*.java"],
+        exclude = [
+            "nullpomino/game/component/Block.java",
+            "nullpomino/game/component/Field.java",
+            "nullpomino/game/component/FieldAnalysis.java",
+            "nullpomino/game/component/FieldCascade.java",
+            "nullpomino/game/component/FieldColorClear.java",
+            "nullpomino/game/component/FieldGarbage.java",
+            "nullpomino/game/component/FieldSerializer.java",
+            "nullpomino/game/component/Piece.java",
+            "nullpomino/game/component/RuleOptions.java",
+        ],
+    ),
+    javacopts = JAVACOPTS,
+    visibility = ["//visibility:public"],
+    deps = [":util_base"],
+)
+
+java_library(
+    name = "util_base",
+    srcs = [
+        "nullpomino/util/ClassFactory.java",
+        "nullpomino/util/CustomProperties.java",
+        "nullpomino/util/DataDir.java",
+        "nullpomino/util/JdkRandom.java",
+        "nullpomino/util/LegacyClassNames.java",
+        "nullpomino/util/LogConfig.java",
+    ],
     javacopts = JAVACOPTS,
     visibility = ["//visibility:public"],
     deps = [
-        ":sdl_binding",
         LOGBACK,
         LOGBACK_CORE,
         SLF4J,
     ],
 )
 
-# Browser (TeaVM) variant of :core — the same engine/GUI cluster. NetBaseClient
-# is transport-free (the room path supplies WebRTC/TCP transports behind the
-# RoomNet seam), so no source overrides are needed to keep the reachable graph
-# java.net-free. Logback stays on the compile classpath (LogConfig references
-# it) but is excluded from the deploy jar (see //:web_deploy_env), and is never
-# reached at runtime.
+# Layer 1: the irreducible engine core (GameEngine/GameManager/Field/modes
+# base classes/...). Mutually recursive; this is the real cycle the old
+# monolithic :core comment was describing.
 java_library(
-    name = "core_web",
-    srcs = glob([
-        "nullpomino/util/*.java",
-        "nullpomino/game/**/*.java",
-        "nullpomino/gui/*.java",
-        "nullpomino/gui/net/*.java",
-        "nullpomino/gui/sdl/*.java",
-        "nullpomino/gui/sdl/widget/*.java",
-        "nullpomino/tool/airankstool/*.java",
-    ]),
+    name = "core_engine",
+    srcs = [
+        "nullpomino/game/ai/AIPlayer.java",
+        "nullpomino/game/ai/DummyAI.java",
+        "nullpomino/game/component/Block.java",
+        "nullpomino/game/component/Field.java",
+        "nullpomino/game/component/FieldAnalysis.java",
+        "nullpomino/game/component/FieldCascade.java",
+        "nullpomino/game/component/FieldColorClear.java",
+        "nullpomino/game/component/FieldGarbage.java",
+        "nullpomino/game/component/FieldSerializer.java",
+        "nullpomino/game/component/Piece.java",
+        "nullpomino/game/component/RuleOptions.java",
+        "nullpomino/game/event/EventReceiver.java",
+        "nullpomino/game/menu/AbstractMenuItem.java",
+        "nullpomino/game/mode/AbstractMode.java",
+        "nullpomino/game/mode/GameMode.java",
+        "nullpomino/game/mode/PracticeMode.java",
+        "nullpomino/game/play/GameEngine.java",
+        "nullpomino/game/play/GameManager.java",
+        "nullpomino/game/randomizer/MemorylessRandomizer.java",
+        "nullpomino/game/randomizer/Randomizer.java",
+        "nullpomino/game/wallkick/Wallkick.java",
+        "nullpomino/util/GeneralUtil.java",
+    ],
     javacopts = JAVACOPTS,
     visibility = ["//visibility:public"],
     deps = [
-        ":sdl_binding",
+        ":game_component_data",
+        ":util_base",
         LOGBACK,
         LOGBACK_CORE,
         SLF4J,
     ],
+)
+
+# Layer 2: leaf implementation clusters over core_engine. Each only pulls in
+# what it actually imports, so e.g. a single wallkick or randomizer variant
+# no longer drags in the whole engine+UI cluster's tests.
+
+java_library(
+    name = "game_wallkick_impls",
+    srcs = glob(
+        ["nullpomino/game/wallkick/*.java"],
+        exclude = ["nullpomino/game/wallkick/Wallkick.java"],
+    ),
+    javacopts = JAVACOPTS,
+    visibility = ["//visibility:public"],
+    deps = [
+        ":core_engine",
+        ":game_component_data",
+    ],
+)
+
+java_library(
+    name = "game_randomizer_impls",
+    srcs = glob(
+        ["nullpomino/game/randomizer/*.java"],
+        exclude = [
+            "nullpomino/game/randomizer/MemorylessRandomizer.java",
+            "nullpomino/game/randomizer/Randomizer.java",
+        ],
+    ),
+    javacopts = JAVACOPTS,
+    visibility = ["//visibility:public"],
+    deps = [":core_engine"],
+)
+
+java_library(
+    name = "game_menu",
+    srcs = glob(
+        ["nullpomino/game/menu/*.java"],
+        exclude = ["nullpomino/game/menu/AbstractMenuItem.java"],
+    ),
+    javacopts = JAVACOPTS,
+    visibility = ["//visibility:public"],
+    deps = [
+        ":core_engine",
+        ":util_base",
+    ],
+)
+
+java_library(
+    name = "tool_airankstool",
+    srcs = glob(["nullpomino/tool/airankstool/*.java"]),
+    javacopts = JAVACOPTS,
+    visibility = ["//visibility:public"],
+    deps = [
+        ":core_engine",
+        ":util_base",
+        SLF4J,
+    ],
+)
+
+java_library(
+    name = "game_ai_impls",
+    srcs = glob(
+        ["nullpomino/game/ai/*.java"],
+        exclude = [
+            "nullpomino/game/ai/AIPlayer.java",
+            "nullpomino/game/ai/DummyAI.java",
+        ],
+    ),
+    javacopts = JAVACOPTS,
+    visibility = ["//visibility:public"],
+    deps = [
+        ":core_engine",
+        ":game_component_data",
+        ":tool_airankstool",
+        ":util_base",
+        SLF4J,
+    ],
+)
+
+java_library(
+    name = "gui_base",
+    srcs = glob(["nullpomino/gui/*.java"]) + [
+        "nullpomino/gui/sdl/BaseStateSDL.java",
+        "nullpomino/gui/sdl/GameKeySDL.java",
+    ],
+    javacopts = JAVACOPTS,
+    visibility = ["//visibility:public"],
+    deps = [
+        ":game_component_data",
+        ":sdl_binding",
+        ":util_base",
+    ],
+)
+
+java_library(
+    name = "game_net_room_transport",
+    srcs = [
+        "nullpomino/game/net/room/RoomEvent.java",
+        "nullpomino/game/net/room/RoomEventSink.java",
+        "nullpomino/game/net/room/RoomLink.java",
+        "nullpomino/game/net/room/RoomPeerLink.java",
+        "nullpomino/game/net/room/RoomProtocol.java",
+        "nullpomino/game/net/room/RoomTransport.java",
+        "nullpomino/game/net/room/TcpRoomTransport.java",
+    ],
+    javacopts = JAVACOPTS,
+    visibility = ["//visibility:public"],
+    deps = [
+        ":game_net_misc",
+        LOGBACK,
+        LOGBACK_CORE,
+        SLF4J,
+    ],
+)
+
+# NetPlatform.java is the one file that points "up" into the room layer
+# (it needs RoomNet), while the rest of game/net's top-level files are
+# needed "below" it (by game_net_room_misc/game_net_room_core) -- bundling
+# it with them would create a target-level cycle, so it gets its own leaf.
+java_library(
+    name = "game_net_misc",
+    srcs = glob(
+        ["nullpomino/game/net/*.java"],
+        exclude = [
+            "nullpomino/game/net/NetBaseClient.java",
+            "nullpomino/game/net/NetMessageListener.java",
+            "nullpomino/game/net/NetPlatform.java",
+            "nullpomino/game/net/NetPlayerClient.java",
+            "nullpomino/game/net/NetRoomPlayerClient.java",
+        ],
+    ) + glob(["nullpomino/game/net/mqtt/*.java"]) + glob(["nullpomino/game/net/web/*.java"]),
+    javacopts = JAVACOPTS,
+    visibility = ["//visibility:public"],
+    deps = [
+        ":core_engine",
+        ":game_component_data",
+        ":util_base",
+        LOGBACK,
+        LOGBACK_CORE,
+        SLF4J,
+    ],
+)
+
+java_library(
+    name = "game_net_room_misc",
+    srcs = [
+        "nullpomino/game/net/room/RoomAuthority.java",
+        "nullpomino/game/net/room/RoomConfig.java",
+        "nullpomino/game/net/room/RoomEndpoint.java",
+        "nullpomino/game/net/room/RoomLocalRecords.java",
+        "nullpomino/game/net/room/RoomMirror.java",
+        "nullpomino/game/net/room/RoomRating.java",
+        "nullpomino/game/net/room/RoomRoster.java",
+    ],
+    javacopts = JAVACOPTS,
+    visibility = ["//visibility:public"],
+    deps = [
+        ":core_engine",
+        ":game_net_misc",
+        ":game_net_room_transport",
+        ":util_base",
+        LOGBACK,
+        LOGBACK_CORE,
+        SLF4J,
+    ],
+)
+
+java_library(
+    name = "game_net_room_core",
+    srcs = [
+        "nullpomino/game/net/room/LanRoomBeacon.java",
+        "nullpomino/game/net/room/LanRoomNet.java",
+        "nullpomino/game/net/room/RoomBeacon.java",
+        "nullpomino/game/net/room/RoomDispatcher.java",
+        "nullpomino/game/net/room/RoomNet.java",
+        "nullpomino/game/net/room/RoomSession.java",
+        "nullpomino/game/net/room/ThreadRoomDispatcher.java",
+    ],
+    javacopts = JAVACOPTS,
+    visibility = ["//visibility:public"],
+    deps = [
+        ":core_engine",
+        ":game_net_misc",
+        ":game_net_room_misc",
+        ":game_net_room_transport",
+        LOGBACK,
+        LOGBACK_CORE,
+        SLF4J,
+    ],
+)
+
+java_library(
+    name = "game_net_platform",
+    srcs = ["nullpomino/game/net/NetPlatform.java"],
+    javacopts = JAVACOPTS,
+    visibility = ["//visibility:public"],
+    deps = [
+        ":game_net_misc",
+        ":game_net_room_core",
+    ],
+)
+
+java_library(
+    name = "game_net_client",
+    srcs = [
+        "nullpomino/game/net/NetBaseClient.java",
+        "nullpomino/game/net/NetMessageListener.java",
+        "nullpomino/game/net/NetPlayerClient.java",
+        "nullpomino/game/net/NetRoomPlayerClient.java",
+    ],
+    javacopts = JAVACOPTS,
+    visibility = ["//visibility:public"],
+    deps = [
+        ":core_engine",
+        ":game_net_misc",
+        ":game_net_room_misc",
+        LOGBACK,
+        LOGBACK_CORE,
+        SLF4J,
+    ],
+)
+
+# Layer 3: registries over the layer-2 impl clusters.
+
+java_library(
+    name = "util_mode_manager",
+    srcs = ["nullpomino/util/ModeManager.java"],
+    javacopts = JAVACOPTS,
+    visibility = ["//visibility:public"],
+    deps = [
+        ":core_engine",
+        SLF4J,
+    ],
+)
+
+java_library(
+    name = "util_randomizer_registry",
+    srcs = ["nullpomino/util/RandomizerRegistry.java"],
+    javacopts = JAVACOPTS,
+    visibility = ["//visibility:public"],
+    deps = [
+        ":core_engine",
+        ":game_randomizer_impls",
+        ":util_base",
+    ],
+)
+
+java_library(
+    name = "util_wallkick_registry",
+    srcs = ["nullpomino/util/WallkickRegistry.java"],
+    javacopts = JAVACOPTS,
+    visibility = ["//visibility:public"],
+    deps = [
+        ":core_engine",
+        ":game_wallkick_impls",
+        ":util_base",
+    ],
+)
+
+java_library(
+    name = "util_ai_registry",
+    srcs = [
+        "nullpomino/util/AIRegistry.java",
+        "nullpomino/util/FactoryDefaults.java",
+    ],
+    javacopts = JAVACOPTS,
+    visibility = ["//visibility:public"],
+    deps = [
+        ":core_engine",
+        ":game_ai_impls",
+        ":util_base",
+        ":util_randomizer_registry",
+        ":util_wallkick_registry",
+    ],
+)
+
+# Layer 4: the irreducible SDL-UI + net-modes hub. Mutually recursive
+# (NullpoMinoSDL/State*SDL/widgets <-> ModeRegistry <-> the Marathon-family
+# and Net* modes <-> NetLobbyFrame), and depends on layer 0-3, but nothing
+# below depends back on it.
+java_library(
+    name = "core_ui_modes",
+    srcs = [
+        "nullpomino/game/mode/AbstractMarathonMode.java",
+        "nullpomino/game/mode/ComboRaceMode.java",
+        "nullpomino/game/mode/DigChallengeMode.java",
+        "nullpomino/game/mode/DigRaceMode.java",
+        "nullpomino/game/mode/ExtremeMode.java",
+        "nullpomino/game/mode/LineRaceMode.java",
+        "nullpomino/game/mode/MarathonMode.java",
+        "nullpomino/game/mode/MarathonPlusMode.java",
+        "nullpomino/game/mode/NetDummyMode.java",
+        "nullpomino/game/mode/NetDummyVSMode.java",
+        "nullpomino/game/mode/NetVSBattleMode.java",
+        "nullpomino/game/mode/NetVSDigRaceMode.java",
+        "nullpomino/game/mode/NetVSLineRaceMode.java",
+        "nullpomino/game/mode/ScoreRaceMode.java",
+        "nullpomino/game/mode/TechnicianMode.java",
+        "nullpomino/game/mode/TimeAttackMode.java",
+        "nullpomino/game/mode/UltraMode.java",
+        "nullpomino/gui/net/NetLobbyFrame.java",
+        "nullpomino/gui/net/NetLobbyListener.java",
+        "nullpomino/gui/sdl/DummyMenuChooseStateSDL.java",
+        "nullpomino/gui/sdl/DummyMenuScrollStateSDL.java",
+        "nullpomino/gui/sdl/MouseInputSDL.java",
+        "nullpomino/gui/sdl/NormalFontSDL.java",
+        "nullpomino/gui/sdl/NullpoMinoSDL.java",
+        "nullpomino/gui/sdl/PageNavigationSDL.java",
+        "nullpomino/gui/sdl/RendererSDL.java",
+        "nullpomino/gui/sdl/ResourceHolderSDL.java",
+        "nullpomino/gui/sdl/SoundManagerSDL.java",
+        "nullpomino/gui/sdl/StateConfigAISelectSDL.java",
+        "nullpomino/gui/sdl/StateConfigGameTuningSDL.java",
+        "nullpomino/gui/sdl/StateConfigGeneralSDL.java",
+        "nullpomino/gui/sdl/StateConfigJoystickButtonSDL.java",
+        "nullpomino/gui/sdl/StateConfigJoystickMainSDL.java",
+        "nullpomino/gui/sdl/StateConfigJoystickTestSDL.java",
+        "nullpomino/gui/sdl/StateConfigKeyboardNaviSDL.java",
+        "nullpomino/gui/sdl/StateConfigKeyboardResetSDL.java",
+        "nullpomino/gui/sdl/StateConfigKeyboardSDL.java",
+        "nullpomino/gui/sdl/StateConfigMainMenuSDL.java",
+        "nullpomino/gui/sdl/StateConfigRuleSelectSDL.java",
+        "nullpomino/gui/sdl/StateConfigRuleStyleSelectSDL.java",
+        "nullpomino/gui/sdl/StateInGameSDL.java",
+        "nullpomino/gui/sdl/StateNetCreateRoomSDL.java",
+        "nullpomino/gui/sdl/StateNetGameSDL.java",
+        "nullpomino/gui/sdl/StateNetLobbySDL.java",
+        "nullpomino/gui/sdl/StateNetRankingSDL.java",
+        "nullpomino/gui/sdl/StateNetRuleChangeSDL.java",
+        "nullpomino/gui/sdl/StateReplaySelectSDL.java",
+        "nullpomino/gui/sdl/StateSelectModeSDL.java",
+        "nullpomino/gui/sdl/StateSelectRuleFromListSDL.java",
+        "nullpomino/gui/sdl/StateTitleSDL.java",
+        "nullpomino/gui/sdl/widget/ButtonSDL.java",
+        "nullpomino/gui/sdl/widget/ChatLogSDL.java",
+        "nullpomino/gui/sdl/widget/CheckboxSDL.java",
+        "nullpomino/gui/sdl/widget/DropdownSDL.java",
+        "nullpomino/gui/sdl/widget/SpinnerSDL.java",
+        "nullpomino/gui/sdl/widget/TabStripSDL.java",
+        "nullpomino/gui/sdl/widget/TableSDL.java",
+        "nullpomino/gui/sdl/widget/TextInputSDL.java",
+        "nullpomino/gui/sdl/widget/WidgetSDL.java",
+        "nullpomino/util/ModeRegistry.java",
+    ],
+    javacopts = JAVACOPTS,
+    visibility = ["//visibility:public"],
+    deps = [
+        ":core_engine",
+        ":game_component_data",
+        ":game_mode_impls",
+        ":game_net_client",
+        ":game_net_misc",
+        ":game_net_platform",
+        ":game_net_room_core",
+        ":game_net_room_misc",
+        ":game_net_room_transport",
+        ":gui_base",
+        ":sdl_binding",
+        ":util_base",
+        ":util_mode_manager",
+        LOGBACK,
+        LOGBACK_CORE,
+        SLF4J,
+    ],
+)
+
+# Layer 2 (mode implementations that don't touch the UI/net-modes hub).
+java_library(
+    name = "game_mode_impls",
+    srcs = glob(
+        ["nullpomino/game/mode/*.java"],
+        exclude = [
+            # core_engine
+            "nullpomino/game/mode/AbstractMode.java",
+            "nullpomino/game/mode/GameMode.java",
+            "nullpomino/game/mode/PracticeMode.java",
+            # core_ui_modes
+            "nullpomino/game/mode/AbstractMarathonMode.java",
+            "nullpomino/game/mode/ComboRaceMode.java",
+            "nullpomino/game/mode/DigChallengeMode.java",
+            "nullpomino/game/mode/DigRaceMode.java",
+            "nullpomino/game/mode/ExtremeMode.java",
+            "nullpomino/game/mode/LineRaceMode.java",
+            "nullpomino/game/mode/MarathonMode.java",
+            "nullpomino/game/mode/MarathonPlusMode.java",
+            "nullpomino/game/mode/NetDummyMode.java",
+            "nullpomino/game/mode/NetDummyVSMode.java",
+            "nullpomino/game/mode/NetVSBattleMode.java",
+            "nullpomino/game/mode/NetVSDigRaceMode.java",
+            "nullpomino/game/mode/NetVSLineRaceMode.java",
+            "nullpomino/game/mode/ScoreRaceMode.java",
+            "nullpomino/game/mode/TechnicianMode.java",
+            "nullpomino/game/mode/TimeAttackMode.java",
+            "nullpomino/game/mode/UltraMode.java",
+        ],
+    ),
+    javacopts = JAVACOPTS,
+    visibility = ["//visibility:public"],
+    deps = [
+        ":core_engine",
+        ":game_component_data",
+        ":game_menu",
+        ":util_base",
+        SLF4J,
+    ],
+)
+
+# Layer 5: needs both the standalone mode impls and the UI/net-modes hub
+# (StandaloneModeRegistry references MarathonPlusMode/Net*Mode alongside the
+# ordinary standalone modes).
+java_library(
+    name = "util_standalone_mode_registry",
+    srcs = ["nullpomino/util/StandaloneModeRegistry.java"],
+    javacopts = JAVACOPTS,
+    visibility = ["//visibility:public"],
+    deps = [
+        ":core_engine",
+        ":core_ui_modes",
+        ":game_mode_impls",
+    ],
+)
+
+# Umbrella preserving the historical :core label so binaries and the test
+# BUILD's DEFAULT_DEPS fallback keep working unchanged.
+java_library(
+    name = "core",
+    visibility = ["//visibility:public"],
+    exports = [
+        ":core_engine",
+        ":core_ui_modes",
+        ":game_ai_impls",
+        ":game_component_data",
+        ":game_menu",
+        ":game_mode_impls",
+        ":game_net_client",
+        ":game_net_misc",
+        ":game_net_platform",
+        ":game_net_room_core",
+        ":game_net_room_misc",
+        ":game_net_room_transport",
+        ":game_randomizer_impls",
+        ":game_wallkick_impls",
+        ":gui_base",
+        ":sdl_binding",
+        ":tool_airankstool",
+        ":util_ai_registry",
+        ":util_base",
+        ":util_mode_manager",
+        ":util_randomizer_registry",
+        ":util_standalone_mode_registry",
+        ":util_wallkick_registry",
+    ],
+)
+
+# Browser (TeaVM) variant of :core — the exact same engine/GUI cluster, so it
+# reuses the same split targets rather than re-declaring (and recompiling)
+# every file a second time. NetBaseClient is transport-free (the room path
+# supplies WebRTC/TCP transports behind the RoomNet seam), so no source
+# overrides are needed to keep the reachable graph java.net-free. Logback
+# stays on the compile classpath (LogConfig references it) but is excluded
+# from the deploy jar (see //:web_deploy_env), and is never reached at
+# runtime.
+java_library(
+    name = "core_web",
+    visibility = ["//visibility:public"],
+    exports = [":core"],
 )
 
 # Browser entry point (TeaVM): selects the JSO backend, seeds the virtual

@@ -1,5 +1,5 @@
 load("@rules_java//java:defs.bzl", "java_binary", "java_library", "java_test")
-load(":test_map.bzl", "EXTRA_SRCS", "SELECT_CLASSES")
+load(":test_map.bzl", "EXTRA_SRCS", "SELECT_CLASSES", "TEST_DEPS")
 
 java_library(
     name = "testutil",
@@ -9,15 +9,17 @@ java_library(
     deps = ["//src/main/java:nullpomino"],
 )
 
-# Default deps: the :core cluster plus :sdl_binding, which some tests use
-# directly (strict deps demands it as a direct dep; :core already depends on
-# it, so this costs no cache granularity).
+# Fallback for files TEST_DEPS can't resolve (shouldn't normally be hit --
+# TEST_DEPS is generated from every nullpomino.* import/reference a test
+# makes, see gen_test_map.py).
 DEFAULT_DEPS = [
     "//src/main/java:core",
     "//src/main/java:sdl_binding",
 ]
 
-# package dir -> main-code deps; anything not listed needs the :core cluster.
+# package dir -> main-code deps, for the handful of dirs that need a target
+# TEST_DEPS doesn't know about (sdl_binding_jna, the Swing tool targets).
+# Takes priority over TEST_DEPS since it also carries those extra targets.
 PKG_DEPS = {
     "nullpomino/gui/sdl/binding": ["//src/main/java:sdl_binding"],
     "nullpomino/gui/sdl/binding/jna": [
@@ -66,7 +68,7 @@ FILE_DEPS = {
     resource_strip_prefix = "src/test/resources",
     resources = ["//src/test/resources:logback-test.xml"],
     use_testrunner = False,
-    deps = PKG_DEPS.get(f.rsplit("/", 1)[0], DEFAULT_DEPS) + FILE_DEPS.get(f, []) + [
+    deps = (PKG_DEPS.get(f.rsplit("/", 1)[0]) or TEST_DEPS.get(f, DEFAULT_DEPS)) + FILE_DEPS.get(f, []) + [
         "@maven//:org_junit_jupiter_junit_jupiter_api",
     ],
     runtime_deps = [
