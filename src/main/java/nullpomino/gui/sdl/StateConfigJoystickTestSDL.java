@@ -43,11 +43,11 @@ public class StateConfigJoystickTestSDL extends BaseStateSDL {
 	 */
 	protected void reset() {
 		joyNumber = NullpoMinoSDL.joyUseNumber[player];
-		// Configured device may not be connected (or gone after hotplug)
-		if(joyNumber >= NullpoMinoSDL.joyMaxButton.length) joyNumber = -1;
+		// Configured gamepad may not be connected (or gone after hotplug)
+		if(joyNumber >= NullpoMinoSDL.joystickMax) joyNumber = -1;
 		lastPressButton = -1;
 		frame = 0;
-		if(joyNumber >= 0) previousJoyPressedState = new boolean[NullpoMinoSDL.joyMaxButton[joyNumber]];
+		if(joyNumber >= 0) previousJoyPressedState = new boolean[SDLConstants.SDL_GAMEPAD_NUM_BUTTONS];
 		else previousJoyPressedState = null;
 	}
 
@@ -111,10 +111,9 @@ public class StateConfigJoystickTestSDL extends BaseStateSDL {
 	 */
 	@Override
 	public void update() {
-		// Hotplug may have re-enumerated devices since reset(); re-sync before
-		// indexing joyPressedState/joyMaxButton with stale sizes.
-		if(joyNumber >= 0 && (joyNumber >= NullpoMinoSDL.joyMaxButton.length
-				|| previousJoyPressedState.length != NullpoMinoSDL.joyMaxButton[joyNumber])) {
+		// Hotplug may have re-enumerated gamepads since reset(); re-sync before
+		// indexing joyPressedState with a stale device number.
+		if(joyNumber >= 0 && joyNumber >= NullpoMinoSDL.joystickMax) {
 			reset();
 		}
 

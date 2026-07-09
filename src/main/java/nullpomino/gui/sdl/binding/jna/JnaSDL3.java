@@ -9,7 +9,6 @@ import nullpomino.gui.sdl.binding.SDL3;
 import nullpomino.gui.sdl.binding.SDLConstants;
 import nullpomino.gui.sdl.binding.SDLStructs;
 import nullpomino.gui.sdl.binding.SdlHandles.SdlGamepad;
-import nullpomino.gui.sdl.binding.SdlHandles.SdlJoystick;
 import nullpomino.gui.sdl.binding.SdlHandles.SdlRenderer;
 import nullpomino.gui.sdl.binding.SdlHandles.SdlSurface;
 import nullpomino.gui.sdl.binding.SdlHandles.SdlTexture;
@@ -209,26 +208,6 @@ final class JnaSDL3 implements SDL3 {
 			raw.SDL_free(list);
 		}
 	}
-	@Override public SdlJoystick SDL_OpenJoystick(int instanceId) {
-		return Ptr.wrap(raw.SDL_OpenJoystick(instanceId));
-	}
-	@Override public void SDL_CloseJoystick(SdlJoystick joystick) { raw.SDL_CloseJoystick(Ptr.p(joystick)); }
-	@Override public short SDL_GetJoystickAxis(SdlJoystick joystick, int axis) {
-		return raw.SDL_GetJoystickAxis(Ptr.p(joystick), axis);
-	}
-	@Override public byte SDL_GetJoystickButton(SdlJoystick joystick, int button) {
-		return raw.SDL_GetJoystickButton(Ptr.p(joystick), button);
-	}
-	@Override public byte SDL_GetJoystickHat(SdlJoystick joystick, int hat) {
-		return raw.SDL_GetJoystickHat(Ptr.p(joystick), hat);
-	}
-	@Override public int SDL_GetNumJoystickButtons(SdlJoystick joystick) {
-		return raw.SDL_GetNumJoystickButtons(Ptr.p(joystick));
-	}
-	@Override public int SDL_GetNumJoystickHats(SdlJoystick joystick) {
-		return raw.SDL_GetNumJoystickHats(Ptr.p(joystick));
-	}
-
 	@Override public byte SDL_IsGamepad(int instanceId) { return raw.SDL_IsGamepad(instanceId); }
 	@Override public SdlGamepad SDL_OpenGamepad(int instanceId) {
 		return Ptr.wrap(raw.SDL_OpenGamepad(instanceId));

@@ -27,7 +27,6 @@ import nullpomino.gui.sdl.binding.SDLConstants;
 import nullpomino.gui.sdl.binding.SDLStructs;
 import nullpomino.gui.sdl.binding.SdlHandles.MixMixer;
 import nullpomino.gui.sdl.binding.SdlHandles.SdlGamepad;
-import nullpomino.gui.sdl.binding.SdlHandles.SdlJoystick;
 import nullpomino.gui.sdl.binding.SdlHandles.SdlRenderer;
 import nullpomino.gui.sdl.binding.SdlHandles.SdlSurface;
 import nullpomino.gui.sdl.binding.SdlHandles.SdlWindow;
@@ -174,37 +173,22 @@ public class NullpoMinoSDL {
 		}
 	}
 
-	/** Use joystick number */
+	/** Use gamepad number per player (-1 = none) */
 	public static int[] joyUseNumber;
 
-	/** Joystick ignore analog sticks */
-	public static boolean[] joyIgnoreAxis;
-
-	/** Joystick hat switch ignores */
-	public static boolean[] joyIgnorePOV;
-
-	/** Number of joysticks */
+	/** Number of connected gamepads */
 	public static int joystickMax;
 
-	/** Open joystick handles (null slot when the device is opened as a gamepad) */
-	public static SdlJoystick[] joystick;
-
-	/** Open gamepad handles (devices with a standard SDL gamepad mapping) */
+	/** Open gamepad handles (only devices with a standard SDL gamepad mapping) */
 	public static SdlGamepad[] gamepad;
 
-	/** Joystick direction key state */
+	/** Left stick state */
 	public static int[] joyAxisX, joyAxisY;
 
-	/** Joystick hat switch count */
-	public static int[] joyMaxHat;
-
-	/** Joystick hat switch state */
+	/** D-pad state (SDL hat bitmask) */
 	public static int[] joyHatState;
 
-	/** Joystick button count */
-	public static int[] joyMaxButton;
-
-	/** Joystick button pressed state */
+	/** Gamepad button pressed state, indexed by SDL_GAMEPAD_BUTTON_* ordinal */
 	public static boolean[][] joyPressedState;
 
 	/** State game */
@@ -492,83 +476,48 @@ public class NullpoMinoSDL {
 		// Event buffer
 		event = new SDLStructs.SDL_Event();
 
-		// Joystick setup
+		// Gamepad setup
 		initJoysticks();
 	}
 
 	/**
-	 * Enumerate and open all connected controllers. Devices with a standard
-	 * gamepad mapping are opened via the SDL gamepad API (standardized button
-	 * ordinals, SOUTH=0 etc.); everything else via the raw joystick API.
+	 * Enumerate and open all connected gamepads. Only devices with a standard
+	 * SDL gamepad mapping (standardized button ordinals, SOUTH=0 etc.) are
+	 * opened; other joystick-class devices are ignored.
 	 * Idempotent — also called on hotplug after {@link #closeJoysticks()}.
 	 */
 	protected static void initJoysticks() {
 		joyUseNumber = new int[2];
-		// Player 1 uses the first controller out of the box (everything is
+		// Player 1 uses the first gamepad out of the box (everything is
 		// guarded by joystickMax, so keyboard-only setups are unaffected).
 		joyUseNumber[0] = propConfig.getProperty("joyUseNumber.p0", 0);
 		joyUseNumber[1] = propConfig.getProperty("joyUseNumber.p1", -1);
-		joyIgnoreAxis = new boolean[2];
-		joyIgnoreAxis[0] = propConfig.getProperty("joyIgnoreAxis.p0", false);
-		joyIgnoreAxis[1] = propConfig.getProperty("joyIgnoreAxis.p1", false);
-		joyIgnorePOV = new boolean[2];
-		joyIgnorePOV[0] = propConfig.getProperty("joyIgnorePOV.p0", false);
-		joyIgnorePOV[1] = propConfig.getProperty("joyIgnorePOV.p1", false);
 
 		int[] joystickIds = SDL3.INSTANCE.SDL_GetJoysticks();
-		joystickMax = joystickIds.length;
-		log.info("Number of Joysticks:{}", joystickMax);
-
-		if(joystickMax > 0) {
-			joystick = new SdlJoystick[joystickMax];
-			gamepad = new SdlGamepad[joystickMax];
-			joyAxisX = new int[joystickMax];
-			joyAxisY = new int[joystickMax];
-			joyMaxHat = new int[joystickMax];
-			joyMaxButton = new int[joystickMax];
-			joyHatState = new int[joystickMax];
-
-			int max = 0;
-			for(int i = 0; i < joystickMax; i++) {
-				try {
-					if(SDL3.INSTANCE.SDL_IsGamepad(joystickIds[i]) != 0) {
-						gamepad[i] = SDL3.INSTANCE.SDL_OpenGamepad(joystickIds[i]);
-					}
-					if(gamepad[i] != null) {
-						joyMaxButton[i] = SDLConstants.SDL_GAMEPAD_NUM_BUTTONS;
-						joyMaxHat[i] = 1; // synthesized from the d-pad
-					} else {
-						joystick[i] = SDL3.INSTANCE.SDL_OpenJoystick(joystickIds[i]);
-						if(joystick[i] != null) {
-							joyMaxButton[i] = SDL3.INSTANCE.SDL_GetNumJoystickButtons(joystick[i]);
-							joyMaxHat[i] = SDL3.INSTANCE.SDL_GetNumJoystickHats(joystick[i]);
-						}
-					}
-					if(joyMaxButton[i] > max) max = joyMaxButton[i];
-				} catch (Throwable e) {
-					log.warn("Failed to open Joystick #{}", i, e);
+		SdlGamepad[] opened = new SdlGamepad[joystickIds.length];
+		int n = 0;
+		for(int id : joystickIds) {
+			try {
+				if(SDL3.INSTANCE.SDL_IsGamepad(id) != 0) {
+					SdlGamepad g = SDL3.INSTANCE.SDL_OpenGamepad(id);
+					if(g != null) opened[n++] = g; // compact: skip failed opens
 				}
+			} catch (Throwable e) {
+				log.warn("Failed to open gamepad id {}", id, e);
 			}
-			joyPressedState = new boolean[joystickMax][Math.max(max, 1)];
-		} else {
-			joystick = new SdlJoystick[0];
-			gamepad = new SdlGamepad[0];
-			joyAxisX = new int[0];
-			joyAxisY = new int[0];
-			joyMaxHat = new int[0];
-			joyMaxButton = new int[0];
-			joyHatState = new int[0];
-			joyPressedState = new boolean[0][0];
 		}
+		joystickMax = n;
+		gamepad = java.util.Arrays.copyOf(opened, n);
+		joyAxisX = new int[n];
+		joyAxisY = new int[n];
+		joyHatState = new int[n];
+		joyPressedState = new boolean[n][SDLConstants.SDL_GAMEPAD_NUM_BUTTONS];
+		log.info("Number of Gamepads:{}", joystickMax);
 	}
 
-	/** Close all open controller handles (inverse of {@link #initJoysticks()}). */
+	/** Close all open gamepad handles (inverse of {@link #initJoysticks()}). */
 	protected static void closeJoysticks() {
 		for(int i = 0; i < joystickMax; i++) {
-			if(joystick[i] != null) {
-				SDL3.INSTANCE.SDL_CloseJoystick(joystick[i]);
-				joystick[i] = null;
-			}
 			if(gamepad[i] != null) {
 				SDL3.INSTANCE.SDL_CloseGamepad(gamepad[i]);
 				gamepad[i] = null;
@@ -1228,55 +1177,23 @@ public class NullpoMinoSDL {
 	protected static void joyUpdate() {
 		try {
 			for(int i = 0; i < joystickMax; i++) {
-				if((joystick[i] == null) && (gamepad[i] == null)) continue;
+				if(gamepad[i] == null) continue;
 
-				// joyIgnoreAxis/joyIgnorePOV are per-player (size 2) but this loop
-				// runs per-device — indexing past them used to AIOOBE with a 3rd
-				// device and abort all joystick polling via the catch below.
-				boolean ignoreAxis = (i < joyIgnoreAxis.length) && joyIgnoreAxis[i];
-				boolean ignorePOV = (i < joyIgnorePOV.length) && joyIgnorePOV[i];
+				joyAxisX[i] = deadzone(SDL3.INSTANCE.SDL_GetGamepadAxis(gamepad[i], SDLConstants.SDL_GAMEPAD_AXIS_LEFTX));
+				joyAxisY[i] = deadzone(SDL3.INSTANCE.SDL_GetGamepadAxis(gamepad[i], SDLConstants.SDL_GAMEPAD_AXIS_LEFTY));
 
-				if(gamepad[i] != null) {
-					if(!ignoreAxis) {
-						joyAxisX[i] = deadzone(SDL3.INSTANCE.SDL_GetGamepadAxis(gamepad[i], SDLConstants.SDL_GAMEPAD_AXIS_LEFTX));
-						joyAxisY[i] = deadzone(SDL3.INSTANCE.SDL_GetGamepadAxis(gamepad[i], SDLConstants.SDL_GAMEPAD_AXIS_LEFTY));
-					} else {
-						joyAxisX[i] = 0;
-						joyAxisY[i] = 0;
-					}
-
-					for(int j = 0; j < joyMaxButton[i]; j++) {
-						joyPressedState[i][j] = SDL3.INSTANCE.SDL_GetGamepadButton(gamepad[i], j) != 0;
-					}
-
-					joyHatState[i] = ignorePOV ? 0 : hatFromDpad(
-						joyPressedState[i][SDLConstants.SDL_GAMEPAD_BUTTON_DPAD_UP],
-						joyPressedState[i][SDLConstants.SDL_GAMEPAD_BUTTON_DPAD_DOWN],
-						joyPressedState[i][SDLConstants.SDL_GAMEPAD_BUTTON_DPAD_LEFT],
-						joyPressedState[i][SDLConstants.SDL_GAMEPAD_BUTTON_DPAD_RIGHT]);
-					continue;
+				for(int j = 0; j < SDLConstants.SDL_GAMEPAD_NUM_BUTTONS; j++) {
+					joyPressedState[i][j] = SDL3.INSTANCE.SDL_GetGamepadButton(gamepad[i], j) != 0;
 				}
 
-				if(!ignoreAxis) {
-					joyAxisX[i] = SDL3.INSTANCE.SDL_GetJoystickAxis(joystick[i], 0);
-					joyAxisY[i] = SDL3.INSTANCE.SDL_GetJoystickAxis(joystick[i], 1);
-				} else {
-					joyAxisX[i] = 0;
-					joyAxisY[i] = 0;
-				}
-
-				for(int j = 0; j < joyMaxButton[i]; j++) {
-					joyPressedState[i][j] = SDL3.INSTANCE.SDL_GetJoystickButton(joystick[i], j) != 0;
-				}
-
-				if((joyMaxHat[i] > 0) && !ignorePOV) {
-					joyHatState[i] = SDL3.INSTANCE.SDL_GetJoystickHat(joystick[i], 0);
-				} else {
-					joyHatState[i] = 0;
-				}
+				joyHatState[i] = hatFromDpad(
+					joyPressedState[i][SDLConstants.SDL_GAMEPAD_BUTTON_DPAD_UP],
+					joyPressedState[i][SDLConstants.SDL_GAMEPAD_BUTTON_DPAD_DOWN],
+					joyPressedState[i][SDLConstants.SDL_GAMEPAD_BUTTON_DPAD_LEFT],
+					joyPressedState[i][SDLConstants.SDL_GAMEPAD_BUTTON_DPAD_RIGHT]);
 			}
 		} catch (Throwable e) {
-			log.warn("Joystick state update failed", e);
+			log.warn("Gamepad state update failed", e);
 		}
 	}
 

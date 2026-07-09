@@ -11,10 +11,12 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import nullpomino.gui.sdl.binding.SDLConstants;
+
 /**
  * Pins the headless slice of {@link StateConfigJoystickButtonSDL}: the
  * KEYACCEPTFRAME constant, reset() seeding from the player's GameKeySDL
- * buttonmap and from joyUseNumber / joyMaxButton, the no-joystick
+ * buttonmap and from joyUseNumber / joystickMax, the no-gamepad
  * branch that leaves previousJoyPressedState null, and
  * getPressedKeyNumber's first-difference scan.
  */
@@ -22,23 +24,23 @@ class StateConfigJoystickButtonSDLTest {
 
 	private GameKeySDL[] originalGameKey;
 	private int[] originalJoyUseNumber;
-	private int[] originalJoyMaxButton;
+	private int originalJoystickMax;
 
 	@BeforeEach
 	void setUp() {
 		originalGameKey = GameKeySDL.gamekey;
 		originalJoyUseNumber = NullpoMinoSDL.joyUseNumber;
-		originalJoyMaxButton = NullpoMinoSDL.joyMaxButton;
+		originalJoystickMax = NullpoMinoSDL.joystickMax;
 		GameKeySDL.initGlobalGameKeySDL();
 		NullpoMinoSDL.joyUseNumber = new int[] {-1, -1};
-		NullpoMinoSDL.joyMaxButton = new int[0];
+		NullpoMinoSDL.joystickMax = 0;
 	}
 
 	@AfterEach
 	void tearDown() {
 		GameKeySDL.gamekey = originalGameKey;
 		NullpoMinoSDL.joyUseNumber = originalJoyUseNumber;
-		NullpoMinoSDL.joyMaxButton = originalJoyMaxButton;
+		NullpoMinoSDL.joystickMax = originalJoystickMax;
 	}
 
 	@Test
@@ -61,9 +63,9 @@ class StateConfigJoystickButtonSDLTest {
 	}
 
 	@Test
-	void resetAllocatesPreviousJoyPressedStateAtJoystickButtonCount() throws Exception {
-		// Simulate joystick 0 with 8 buttons in slot 0; player 1 picks it.
-		NullpoMinoSDL.joyMaxButton = new int[] {8};
+	void resetAllocatesPreviousJoyPressedStateAtGamepadButtonCount() throws Exception {
+		// Simulate one connected gamepad; player 1 picks it.
+		NullpoMinoSDL.joystickMax = 1;
 		NullpoMinoSDL.joyUseNumber = new int[] {-1, 0};
 
 		StateConfigJoystickButtonSDL state = new StateConfigJoystickButtonSDL();
@@ -73,7 +75,8 @@ class StateConfigJoystickButtonSDLTest {
 
 		boolean[] previous = (boolean[]) readField(state, "previousJoyPressedState");
 		assertNotNull(previous);
-		assertEquals(8, previous.length, "buffer size matches joyMaxButton[joyNumber]");
+		assertEquals(SDLConstants.SDL_GAMEPAD_NUM_BUTTONS, previous.length,
+				"buffer covers all standardized gamepad button ordinals");
 		assertEquals(0, readInt(state, "joyNumber"));
 	}
 

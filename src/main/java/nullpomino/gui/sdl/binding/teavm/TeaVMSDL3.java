@@ -10,7 +10,6 @@ import nullpomino.gui.sdl.binding.Ref.FloatRef;
 import nullpomino.gui.sdl.binding.SDL3;
 import nullpomino.gui.sdl.binding.SDLStructs;
 import nullpomino.gui.sdl.binding.SdlHandles.SdlGamepad;
-import nullpomino.gui.sdl.binding.SdlHandles.SdlJoystick;
 import nullpomino.gui.sdl.binding.SdlHandles.SdlRenderer;
 import nullpomino.gui.sdl.binding.SdlHandles.SdlSurface;
 import nullpomino.gui.sdl.binding.SdlHandles.SdlTexture;
@@ -221,7 +220,7 @@ final class TeaVMSDL3 implements SDL3 {
 	 * per-frame snapshots; a disconnected pad simply reads as all-zero until the
 	 * gamepaddisconnected event makes the core re-enumerate.
 	 */
-	private static final class WebPad implements SdlJoystick, SdlGamepad {
+	private static final class WebPad implements SdlGamepad {
 		final int index;
 		WebPad(int index) { this.index = index; }
 	}
@@ -243,6 +242,8 @@ final class TeaVMSDL3 implements SDL3 {
 	}
 
 	@Override public int[] SDL_GetJoysticks() {
+		// Returns ALL pad slots, including non-"standard"-mapping ones — the core
+		// filters by SDL_IsGamepad, so non-standard web pads are simply invisible.
 		Gamepad[] pads = Navigator.getGamepads();
 		if (pads == null) return new int[0];
 		// Instance ids are the array slots; getGamepads() keeps null holes.
@@ -255,31 +256,6 @@ final class TeaVMSDL3 implements SDL3 {
 		}
 		return ids;
 	}
-
-	@Override public SdlJoystick SDL_OpenJoystick(int instanceId) {
-		return pad(instanceId) != null ? new WebPad(instanceId) : null;
-	}
-	@Override public void SDL_CloseJoystick(SdlJoystick joystick) {}
-	@Override public short SDL_GetJoystickAxis(SdlJoystick joystick, int axis) {
-		Gamepad p = pad(joystick);
-		if (p == null) return 0;
-		double[] axes = p.getAxes();
-		return axis >= 0 && axis < axes.length ? (short) (axes[axis] * 32767) : 0;
-	}
-	@Override public byte SDL_GetJoystickButton(SdlJoystick joystick, int button) {
-		Gamepad p = pad(joystick);
-		if (p == null) return 0;
-		GamepadButton[] buttons = p.getButtons();
-		return (byte) (button >= 0 && button < buttons.length && buttons[button].isPressed() ? 1 : 0);
-	}
-	// W3C gamepads have no hats outside the standard mapping (d-pads show up as
-	// extra buttons or axes on non-standard pads).
-	@Override public byte SDL_GetJoystickHat(SdlJoystick joystick, int hat) { return 0; }
-	@Override public int SDL_GetNumJoystickButtons(SdlJoystick joystick) {
-		Gamepad p = pad(joystick);
-		return p == null ? 0 : p.getButtons().length;
-	}
-	@Override public int SDL_GetNumJoystickHats(SdlJoystick joystick) { return 0; }
 
 	@Override public byte SDL_IsGamepad(int instanceId) {
 		Gamepad p = pad(instanceId);

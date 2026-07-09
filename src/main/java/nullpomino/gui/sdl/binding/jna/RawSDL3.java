@@ -71,17 +71,8 @@ interface RawSDL3 extends Library {
 	// --- Mouse ---
 	int SDL_GetMouseState(FloatByReference x, FloatByReference y);
 
-	// --- Joystick ---
-	Pointer SDL_GetJoysticks(int[] count);
-	Pointer SDL_OpenJoystick(int instance_id);
-	void SDL_CloseJoystick(Pointer joystick);
-	short SDL_GetJoystickAxis(Pointer joystick, int axis);
-	byte SDL_GetJoystickButton(Pointer joystick, int button);
-	byte SDL_GetJoystickHat(Pointer joystick, int hat);
-	int SDL_GetNumJoystickButtons(Pointer joystick);
-	int SDL_GetNumJoystickHats(Pointer joystick);
-
 	// --- Gamepad ---
+	Pointer SDL_GetJoysticks(int[] count);
 	byte SDL_IsGamepad(int instance_id);
 	Pointer SDL_OpenGamepad(int instance_id);
 	void SDL_CloseGamepad(Pointer gamepad);

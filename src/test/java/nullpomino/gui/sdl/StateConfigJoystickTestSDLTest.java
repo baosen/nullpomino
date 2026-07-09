@@ -14,16 +14,18 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import nullpomino.gui.sdl.binding.SDLConstants;
+
 class StateConfigJoystickTestSDLTest {
 
 	private int[] originalJoyUseNumber;
-	private int[] originalJoyMaxButton;
+	private int originalJoystickMax;
 	private boolean originalEnableSpecialKeys;
 
 	@BeforeEach
 	void snapshotStaticState() {
 		originalJoyUseNumber = NullpoMinoSDL.joyUseNumber;
-		originalJoyMaxButton = NullpoMinoSDL.joyMaxButton;
+		originalJoystickMax = NullpoMinoSDL.joystickMax;
 		originalEnableSpecialKeys = NullpoMinoSDL.enableSpecialKeys;
 		NullpoMinoSDL.enableSpecialKeys = true;
 	}
@@ -31,7 +33,7 @@ class StateConfigJoystickTestSDLTest {
 	@AfterEach
 	void restoreStaticState() {
 		NullpoMinoSDL.joyUseNumber = originalJoyUseNumber;
-		NullpoMinoSDL.joyMaxButton = originalJoyMaxButton;
+		NullpoMinoSDL.joystickMax = originalJoystickMax;
 		NullpoMinoSDL.enableSpecialKeys = originalEnableSpecialKeys;
 	}
 
@@ -48,9 +50,9 @@ class StateConfigJoystickTestSDLTest {
 	}
 
 	@Test
-	void resetWithoutAJoystickAssignedClearsTheKeyHistoryArray() throws Exception {
+	void resetWithoutAGamepadAssignedClearsTheKeyHistoryArray() throws Exception {
 		NullpoMinoSDL.joyUseNumber = new int[] {-1, -1};
-		NullpoMinoSDL.joyMaxButton = new int[] {0};
+		NullpoMinoSDL.joystickMax = 1;
 		StateConfigJoystickTestSDL state = new StateConfigJoystickTestSDL();
 		state.player = 0;
 
@@ -60,13 +62,13 @@ class StateConfigJoystickTestSDLTest {
 		assertEquals(-1, readInt(state, "lastPressButton"));
 		assertEquals(0, readInt(state, "frame"));
 		assertNull(readField(state, "previousJoyPressedState"),
-				"missing joystick must zero the history array, not allocate it");
+				"missing gamepad must zero the history array, not allocate it");
 	}
 
 	@Test
-	void resetAllocatesPreviousJoyPressedStateMatchingTheJoystickButtonCount() throws Exception {
+	void resetAllocatesPreviousJoyPressedStateMatchingTheGamepadButtonCount() throws Exception {
 		NullpoMinoSDL.joyUseNumber = new int[] {1, 0};
-		NullpoMinoSDL.joyMaxButton = new int[] {4, 12};
+		NullpoMinoSDL.joystickMax = 2;
 		StateConfigJoystickTestSDL state = new StateConfigJoystickTestSDL();
 		state.player = 0;
 
@@ -75,7 +77,7 @@ class StateConfigJoystickTestSDLTest {
 		assertEquals(1, readInt(state, "joyNumber"));
 		boolean[] history = (boolean[]) readField(state, "previousJoyPressedState");
 		assertNotNull(history);
-		assertEquals(NullpoMinoSDL.joyMaxButton[1], history.length);
+		assertEquals(SDLConstants.SDL_GAMEPAD_NUM_BUTTONS, history.length);
 	}
 
 	@Test
@@ -109,7 +111,7 @@ class StateConfigJoystickTestSDLTest {
 	@Test
 	void enterInvokesResetAndDisablesSpecialKeysSoTheirEventsDoNotEscape() throws Exception {
 		NullpoMinoSDL.joyUseNumber = new int[] {-1};
-		NullpoMinoSDL.joyMaxButton = new int[] {0};
+		NullpoMinoSDL.joystickMax = 0;
 		NullpoMinoSDL.enableSpecialKeys = true;
 
 		StateConfigJoystickTestSDL state = new StateConfigJoystickTestSDL();
@@ -127,7 +129,7 @@ class StateConfigJoystickTestSDLTest {
 	@Test
 	void leaveInvokesResetAndReenablesSpecialKeys() throws Exception {
 		NullpoMinoSDL.joyUseNumber = new int[] {-1};
-		NullpoMinoSDL.joyMaxButton = new int[] {0};
+		NullpoMinoSDL.joystickMax = 0;
 		NullpoMinoSDL.enableSpecialKeys = false;
 
 		StateConfigJoystickTestSDL state = new StateConfigJoystickTestSDL();
@@ -144,7 +146,7 @@ class StateConfigJoystickTestSDLTest {
 	@Test
 	void resetIsIdempotentForBackToBackEntries() throws Exception {
 		NullpoMinoSDL.joyUseNumber = new int[] {2};
-		NullpoMinoSDL.joyMaxButton = new int[] {0, 0, 6};
+		NullpoMinoSDL.joystickMax = 3;
 		StateConfigJoystickTestSDL state = new StateConfigJoystickTestSDL();
 		state.player = 0;
 
@@ -155,11 +157,11 @@ class StateConfigJoystickTestSDLTest {
 
 		// reset() reallocates each time so its zeroing semantics are obvious;
 		// pin both (a) it allocates a fresh array, (b) the array shape stays
-		// matched to joyMaxButton[joyNumber].
+		// the fixed gamepad button count.
 		assertNotNull(firstHistory);
 		assertNotNull(secondHistory);
-		assertEquals(NullpoMinoSDL.joyMaxButton[2], firstHistory.length);
-		assertArrayEquals(new boolean[NullpoMinoSDL.joyMaxButton[2]], secondHistory);
+		assertEquals(SDLConstants.SDL_GAMEPAD_NUM_BUTTONS, firstHistory.length);
+		assertArrayEquals(new boolean[SDLConstants.SDL_GAMEPAD_NUM_BUTTONS], secondHistory);
 	}
 
 	private static void invokeReset(StateConfigJoystickTestSDL state) throws Exception {

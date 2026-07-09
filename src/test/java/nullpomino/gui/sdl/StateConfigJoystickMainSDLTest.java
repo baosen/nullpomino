@@ -1,8 +1,6 @@
 package nullpomino.gui.sdl;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
@@ -39,15 +37,16 @@ class StateConfigJoystickMainSDLTest {
 	@Test
 	void loadConfigUsesPlayerSuffixedKeysAndAppliesDocumentedDefaultsWhenAbsent() throws Exception {
 		StateConfigJoystickMainSDL state = new StateConfigJoystickMainSDL();
-		state.player = 1;
 
-		// No keys set → defaults: joyUseNumber=-1, joyBorder=0, axis/POV=false.
+		// No keys set → player 1 defaults to the first gamepad, player 2 to none
+		// (must match NullpoMinoSDL.initJoysticks or OK would disable the pad).
+		state.player = 0;
 		invokeLoadConfig(state, NullpoMinoSDL.propConfig);
+		assertEquals(0, readInt(state, "joyUseNumber"));
 
+		state.player = 1;
+		invokeLoadConfig(state, NullpoMinoSDL.propConfig);
 		assertEquals(-1, readInt(state, "joyUseNumber"));
-		assertEquals(0, readInt(state, "joyBorder"));
-		assertFalse(readBoolean(state, "joyIgnoreAxis"));
-		assertFalse(readBoolean(state, "joyIgnorePOV"));
 	}
 
 	@Test
@@ -55,16 +54,10 @@ class StateConfigJoystickMainSDLTest {
 		StateConfigJoystickMainSDL state = new StateConfigJoystickMainSDL();
 		state.player = 0;
 		NullpoMinoSDL.propConfig.setProperty("joyUseNumber.p0", 2);
-		NullpoMinoSDL.propConfig.setProperty("joyBorder.p0", 16384);
-		NullpoMinoSDL.propConfig.setProperty("joyIgnoreAxis.p0", true);
-		NullpoMinoSDL.propConfig.setProperty("joyIgnorePOV.p0", true);
 
 		invokeLoadConfig(state, NullpoMinoSDL.propConfig);
 
 		assertEquals(2, readInt(state, "joyUseNumber"));
-		assertEquals(16384, readInt(state, "joyBorder"));
-		assertTrue(readBoolean(state, "joyIgnoreAxis"));
-		assertTrue(readBoolean(state, "joyIgnorePOV"));
 	}
 
 	@Test
@@ -72,28 +65,19 @@ class StateConfigJoystickMainSDLTest {
 		StateConfigJoystickMainSDL state = new StateConfigJoystickMainSDL();
 		state.player = 1;
 		setInt(state, "joyUseNumber", 3);
-		setInt(state, "joyBorder", 8192);
-		setBoolean(state, "joyIgnoreAxis", true);
-		setBoolean(state, "joyIgnorePOV", false);
 
 		CustomProperties prop = new CustomProperties();
 		invokeSaveConfig(state, prop);
 
 		assertEquals(3, prop.getProperty("joyUseNumber.p1", -999));
-		assertEquals(8192, prop.getProperty("joyBorder.p1", -999));
-		assertTrue(prop.getProperty("joyIgnoreAxis.p1", false));
-		assertFalse(prop.getProperty("joyIgnorePOV.p1", true));
 
 		// Round-trip: load into a fresh state instance and confirm the
-		// fields are observed back identically.
+		// field is observed back identically.
 		StateConfigJoystickMainSDL loaded = new StateConfigJoystickMainSDL();
 		loaded.player = 1;
 		invokeLoadConfig(loaded, prop);
 
 		assertEquals(3, readInt(loaded, "joyUseNumber"));
-		assertEquals(8192, readInt(loaded, "joyBorder"));
-		assertTrue(readBoolean(loaded, "joyIgnoreAxis"));
-		assertFalse(readBoolean(loaded, "joyIgnorePOV"));
 	}
 
 	@Test
@@ -118,16 +102,12 @@ class StateConfigJoystickMainSDLTest {
 	@Test
 	void enterPullsConfigFromTheGlobalNullpoMinoSDLPropConfig() throws Exception {
 		NullpoMinoSDL.propConfig.setProperty("joyUseNumber.p0", 4);
-		NullpoMinoSDL.propConfig.setProperty("joyBorder.p0", 1024);
-		NullpoMinoSDL.propConfig.setProperty("joyIgnoreAxis.p0", true);
 
 		StateConfigJoystickMainSDL state = new StateConfigJoystickMainSDL();
 		state.player = 0;
 		state.enter();
 
 		assertEquals(4, readInt(state, "joyUseNumber"));
-		assertEquals(1024, readInt(state, "joyBorder"));
-		assertTrue(readBoolean(state, "joyIgnoreAxis"));
 	}
 
 	private static void invokeLoadConfig(StateConfigJoystickMainSDL state, CustomProperties prop) throws Exception {
@@ -152,25 +132,9 @@ class StateConfigJoystickMainSDLTest {
 		}
 	}
 
-	private static boolean readBoolean(StateConfigJoystickMainSDL state, String name) {
-		try {
-			Field f = StateConfigJoystickMainSDL.class.getDeclaredField(name);
-			f.setAccessible(true);
-			return f.getBoolean(state);
-		} catch (ReflectiveOperationException e) {
-			throw new AssertionError(e);
-		}
-	}
-
 	private static void setInt(StateConfigJoystickMainSDL state, String name, int value) throws Exception {
 		Field f = StateConfigJoystickMainSDL.class.getDeclaredField(name);
 		f.setAccessible(true);
 		f.setInt(state, value);
-	}
-
-	private static void setBoolean(StateConfigJoystickMainSDL state, String name, boolean value) throws Exception {
-		Field f = StateConfigJoystickMainSDL.class.getDeclaredField(name);
-		f.setAccessible(true);
-		f.setBoolean(state, value);
 	}
 }

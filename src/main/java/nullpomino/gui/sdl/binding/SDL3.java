@@ -2,7 +2,6 @@ package nullpomino.gui.sdl.binding;
 
 import nullpomino.gui.sdl.binding.Ref.FloatRef;
 import nullpomino.gui.sdl.binding.SdlHandles.SdlGamepad;
-import nullpomino.gui.sdl.binding.SdlHandles.SdlJoystick;
 import nullpomino.gui.sdl.binding.SdlHandles.SdlRenderer;
 import nullpomino.gui.sdl.binding.SdlHandles.SdlSurface;
 import nullpomino.gui.sdl.binding.SdlHandles.SdlTexture;
@@ -81,18 +80,9 @@ public interface SDL3 {
 	// --- Mouse ---
 	int SDL_GetMouseState(FloatRef x, FloatRef y);
 
-	// --- Joystick ---
-	/** @return instance IDs of all connected joysticks (empty array if none) */
-	int[] SDL_GetJoysticks();
-	SdlJoystick SDL_OpenJoystick(int instance_id);
-	void SDL_CloseJoystick(SdlJoystick joystick);
-	short SDL_GetJoystickAxis(SdlJoystick joystick, int axis);
-	byte SDL_GetJoystickButton(SdlJoystick joystick, int button);
-	byte SDL_GetJoystickHat(SdlJoystick joystick, int hat);
-	int SDL_GetNumJoystickButtons(SdlJoystick joystick);
-	int SDL_GetNumJoystickHats(SdlJoystick joystick);
-
 	// --- Gamepad ---
+	/** @return instance IDs of all connected joystick-class devices (empty array if none) */
+	int[] SDL_GetJoysticks();
 	/** @return nonzero if the joystick instance id has a standard gamepad mapping */
 	byte SDL_IsGamepad(int instance_id);
 	SdlGamepad SDL_OpenGamepad(int instance_id);

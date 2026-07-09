@@ -17,7 +17,6 @@ public final class SdlHandles {
 	public interface SdlTexture {}
 	public interface SdlSurface {}
 	public interface SdlFont {}
-	public interface SdlJoystick {}
 	public interface SdlGamepad {}
 	public interface MixMixer {}
 	public interface MixAudio {}
