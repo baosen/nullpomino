@@ -291,6 +291,46 @@ class GradeMania2ModeGameLogicTest {
 	}
 
 	@Test
+	void calcScoreRoundsGradePointsBeforeLevelMultiplier() throws Exception {
+		GradeMania2Mode mode = new GradeMania2Mode();
+		GameEngine engine = freshEngine(mode);
+		mode.playerInit(engine, 0);
+		engine.createFieldIfNeeded();
+
+		setInt(mode, "gradeInternal", 10);
+		setInt(mode, "nextseclv", 400);
+		engine.statistics.level = 300;
+		engine.combo = 2;
+		engine.ending = 0;
+
+		mode.calcScore(engine, 0, 3);
+
+		// ceil(13 * 1.5) * (1 + 300 / 250) = 20 * 2.
+		assertEquals(40, readInt(mode, "gradePoint"));
+	}
+
+	@Test
+	void version2ReplayKeepsLegacyGradePointRounding() throws Exception {
+		GradeMania2Mode mode = new GradeMania2Mode();
+		GameEngine engine = freshEngine(mode);
+		engine.owner.replayMode = true;
+		engine.owner.replayProp.setProperty("grademania2.version", 2);
+		mode.playerInit(engine, 0);
+		engine.createFieldIfNeeded();
+
+		setInt(mode, "gradeInternal", 10);
+		setInt(mode, "nextseclv", 400);
+		engine.statistics.level = 300;
+		engine.combo = 2;
+		engine.ending = 0;
+
+		mode.calcScore(engine, 0, 3);
+
+		// Legacy law: (int)(13 * 1.5 * (1 + 300 / 250)) = (int)39.
+		assertEquals(39, readInt(mode, "gradePoint"));
+	}
+
+	@Test
 	void calcScoreBravoTriggersACMedal() throws Exception {
 		GradeMania2Mode mode = new GradeMania2Mode();
 		GameEngine engine = freshEngine(mode);

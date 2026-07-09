@@ -17,7 +17,10 @@ import nullpomino.util.GeneralUtil;
  */
 public class GradeMania2Mode extends AbstractGradeMode {
 	/** Current version */
-	private static final int CURRENT_VERSION = 2;
+	private static final int CURRENT_VERSION = 3;
+
+	/** Grade points are rounded up before applying the level multiplier from this version onward. */
+	private static final int GRADE_ROUNDING_VERSION = 3;
 
 	/** ARE table */
 	private static final int[] tableARE       = {23, 23, 23, 23, 23, 23, 23, 14, 10, 10};
@@ -729,8 +732,15 @@ public class GradeMania2Mode extends AbstractGradeMode {
 
 		int levelbonus = 1 + (engine.statistics.level / 250);
 
-		float point = (basepoint * combobonus) * levelbonus;
-		gradePoint += (int)point;
+		float baseComboPoint = basepoint * combobonus;
+		int point;
+		if(version >= GRADE_ROUNDING_VERSION) {
+			point = (int)Math.ceil(baseComboPoint) * levelbonus;
+		} else {
+			// Replays from versions 0-2 used truncation after the level multiplier.
+			point = (int)(baseComboPoint * levelbonus);
+		}
+		gradePoint += point;
 
 		// Dan rising internal
 		if(gradePoint >= 100) {

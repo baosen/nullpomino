@@ -234,7 +234,7 @@ class GradeMania2ModeDeepCoverageTest {
 		CustomProperties prop = new CustomProperties();
 		e.owner.replayProp = prop;
 		mode.saveReplay(e, 0, prop);
-		assertEquals(2, e.owner.replayProp.getProperty("grademania2.version", 0));
+		assertEquals(3, e.owner.replayProp.getProperty("grademania2.version", 0));
 	}
 
 	// ---- onResult ----
