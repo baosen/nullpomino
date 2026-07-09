@@ -26,6 +26,7 @@ import nullpomino.gui.sdl.binding.SDL3TTF;
 import nullpomino.gui.sdl.binding.SDLConstants;
 import nullpomino.gui.sdl.binding.SDLStructs;
 import nullpomino.gui.sdl.binding.SdlHandles.MixMixer;
+import nullpomino.gui.sdl.binding.SdlHandles.SdlGamepad;
 import nullpomino.gui.sdl.binding.SdlHandles.SdlJoystick;
 import nullpomino.gui.sdl.binding.SdlHandles.SdlRenderer;
 import nullpomino.gui.sdl.binding.SdlHandles.SdlSurface;
@@ -185,8 +186,11 @@ public class NullpoMinoSDL {
 	/** Number of joysticks */
 	public static int joystickMax;
 
-	/** Open joystick handles */
+	/** Open joystick handles (null slot when the device is opened as a gamepad) */
 	public static SdlJoystick[] joystick;
+
+	/** Open gamepad handles (devices with a standard SDL gamepad mapping) */
+	public static SdlGamepad[] gamepad;
 
 	/** Joystick direction key state */
 	public static int[] joyAxisX, joyAxisY;
@@ -436,7 +440,7 @@ public class NullpoMinoSDL {
 	public static void init() {
 		log.info("Now initializing SDL3...");
 
-		int initFlags = SDLConstants.SDL_INIT_VIDEO | SDLConstants.SDL_INIT_AUDIO | SDLConstants.SDL_INIT_JOYSTICK;
+		int initFlags = SDLConstants.SDL_INIT_VIDEO | SDLConstants.SDL_INIT_AUDIO | SDLConstants.SDL_INIT_GAMEPAD;
 		if(SDL3.INSTANCE.SDL_Init(initFlags) == 0) {
 			throw new RuntimeException("SDL_Init failed: " + SDL3.INSTANCE.SDL_GetError());
 		}
@@ -489,6 +493,16 @@ public class NullpoMinoSDL {
 		event = new SDLStructs.SDL_Event();
 
 		// Joystick setup
+		initJoysticks();
+	}
+
+	/**
+	 * Enumerate and open all connected controllers. Devices with a standard
+	 * gamepad mapping are opened via the SDL gamepad API (standardized button
+	 * ordinals, SOUTH=0 etc.); everything else via the raw joystick API.
+	 * Idempotent — also called on hotplug after {@link #closeJoysticks()}.
+	 */
+	protected static void initJoysticks() {
 		joyUseNumber = new int[2];
 		joyUseNumber[0] = propConfig.getProperty("joyUseNumber.p0", -1);
 		joyUseNumber[1] = propConfig.getProperty("joyUseNumber.p1", -1);
@@ -505,6 +519,7 @@ public class NullpoMinoSDL {
 
 		if(joystickMax > 0) {
 			joystick = new SdlJoystick[joystickMax];
+			gamepad = new SdlGamepad[joystickMax];
 			joyAxisX = new int[joystickMax];
 			joyAxisY = new int[joystickMax];
 			joyMaxHat = new int[joystickMax];
@@ -514,12 +529,20 @@ public class NullpoMinoSDL {
 			int max = 0;
 			for(int i = 0; i < joystickMax; i++) {
 				try {
-					joystick[i] = SDL3.INSTANCE.SDL_OpenJoystick(joystickIds[i]);
-					if(joystick[i] != null) {
-						joyMaxButton[i] = SDL3.INSTANCE.SDL_GetNumJoystickButtons(joystick[i]);
-						if(joyMaxButton[i] > max) max = joyMaxButton[i];
-						joyMaxHat[i] = SDL3.INSTANCE.SDL_GetNumJoystickHats(joystick[i]);
+					if(SDL3.INSTANCE.SDL_IsGamepad(joystickIds[i]) != 0) {
+						gamepad[i] = SDL3.INSTANCE.SDL_OpenGamepad(joystickIds[i]);
 					}
+					if(gamepad[i] != null) {
+						joyMaxButton[i] = SDLConstants.SDL_GAMEPAD_NUM_BUTTONS;
+						joyMaxHat[i] = 1; // synthesized from the d-pad
+					} else {
+						joystick[i] = SDL3.INSTANCE.SDL_OpenJoystick(joystickIds[i]);
+						if(joystick[i] != null) {
+							joyMaxButton[i] = SDL3.INSTANCE.SDL_GetNumJoystickButtons(joystick[i]);
+							joyMaxHat[i] = SDL3.INSTANCE.SDL_GetNumJoystickHats(joystick[i]);
+						}
+					}
+					if(joyMaxButton[i] > max) max = joyMaxButton[i];
 				} catch (Throwable e) {
 					log.warn("Failed to open Joystick #{}", i, e);
 				}
@@ -527,6 +550,7 @@ public class NullpoMinoSDL {
 			joyPressedState = new boolean[joystickMax][Math.max(max, 1)];
 		} else {
 			joystick = new SdlJoystick[0];
+			gamepad = new SdlGamepad[0];
 			joyAxisX = new int[0];
 			joyAxisY = new int[0];
 			joyMaxHat = new int[0];
@@ -534,6 +558,21 @@ public class NullpoMinoSDL {
 			joyHatState = new int[0];
 			joyPressedState = new boolean[0][0];
 		}
+	}
+
+	/** Close all open controller handles (inverse of {@link #initJoysticks()}). */
+	protected static void closeJoysticks() {
+		for(int i = 0; i < joystickMax; i++) {
+			if(joystick[i] != null) {
+				SDL3.INSTANCE.SDL_CloseJoystick(joystick[i]);
+				joystick[i] = null;
+			}
+			if(gamepad[i] != null) {
+				SDL3.INSTANCE.SDL_CloseGamepad(gamepad[i]);
+				gamepad[i] = null;
+			}
+		}
+		joystickMax = 0;
 	}
 
 	/**
@@ -782,11 +821,7 @@ public class NullpoMinoSDL {
 				netLobby = null;
 			}
 			stopRoomSession();
-			for(int i = 0; i < joystickMax; i++) {
-				if(joystick[i] != null) {
-					SDL3.INSTANCE.SDL_CloseJoystick(joystick[i]);
-				}
-			}
+			closeJoysticks();
 			ResourceHolderSDL.destroy();
 			if(renderer != null) {
 				SDL3.INSTANCE.SDL_DestroyRenderer(renderer);
@@ -1180,9 +1215,36 @@ public class NullpoMinoSDL {
 	protected static void joyUpdate() {
 		try {
 			for(int i = 0; i < joystickMax; i++) {
-				if(joystick[i] == null) continue;
+				if((joystick[i] == null) && (gamepad[i] == null)) continue;
 
-				if(joyIgnoreAxis[i] == false) {
+				// joyIgnoreAxis/joyIgnorePOV are per-player (size 2) but this loop
+				// runs per-device — indexing past them used to AIOOBE with a 3rd
+				// device and abort all joystick polling via the catch below.
+				boolean ignoreAxis = (i < joyIgnoreAxis.length) && joyIgnoreAxis[i];
+				boolean ignorePOV = (i < joyIgnorePOV.length) && joyIgnorePOV[i];
+
+				if(gamepad[i] != null) {
+					if(!ignoreAxis) {
+						joyAxisX[i] = deadzone(SDL3.INSTANCE.SDL_GetGamepadAxis(gamepad[i], SDLConstants.SDL_GAMEPAD_AXIS_LEFTX));
+						joyAxisY[i] = deadzone(SDL3.INSTANCE.SDL_GetGamepadAxis(gamepad[i], SDLConstants.SDL_GAMEPAD_AXIS_LEFTY));
+					} else {
+						joyAxisX[i] = 0;
+						joyAxisY[i] = 0;
+					}
+
+					for(int j = 0; j < joyMaxButton[i]; j++) {
+						joyPressedState[i][j] = SDL3.INSTANCE.SDL_GetGamepadButton(gamepad[i], j) != 0;
+					}
+
+					joyHatState[i] = ignorePOV ? 0 : hatFromDpad(
+						joyPressedState[i][SDLConstants.SDL_GAMEPAD_BUTTON_DPAD_UP],
+						joyPressedState[i][SDLConstants.SDL_GAMEPAD_BUTTON_DPAD_DOWN],
+						joyPressedState[i][SDLConstants.SDL_GAMEPAD_BUTTON_DPAD_LEFT],
+						joyPressedState[i][SDLConstants.SDL_GAMEPAD_BUTTON_DPAD_RIGHT]);
+					continue;
+				}
+
+				if(!ignoreAxis) {
 					joyAxisX[i] = SDL3.INSTANCE.SDL_GetJoystickAxis(joystick[i], 0);
 					joyAxisY[i] = SDL3.INSTANCE.SDL_GetJoystickAxis(joystick[i], 1);
 				} else {
@@ -1194,7 +1256,7 @@ public class NullpoMinoSDL {
 					joyPressedState[i][j] = SDL3.INSTANCE.SDL_GetJoystickButton(joystick[i], j) != 0;
 				}
 
-				if((joyMaxHat[i] > 0) && (joyIgnorePOV[i] == false)) {
+				if((joyMaxHat[i] > 0) && !ignorePOV) {
 					joyHatState[i] = SDL3.INSTANCE.SDL_GetJoystickHat(joystick[i], 0);
 				} else {
 					joyHatState[i] = 0;
@@ -1203,6 +1265,19 @@ public class NullpoMinoSDL {
 		} catch (Throwable e) {
 			log.warn("Joystick state update failed", e);
 		}
+	}
+
+	/** Fold d-pad buttons into the SDL hat bitmask GameKeySDL expects. */
+	static int hatFromDpad(boolean up, boolean down, boolean left, boolean right) {
+		return (up ? GameKeySDL.SDL_HAT_UP : 0) | (down ? GameKeySDL.SDL_HAT_DOWN : 0)
+			| (left ? GameKeySDL.SDL_HAT_LEFT : 0) | (right ? GameKeySDL.SDL_HAT_RIGHT : 0);
+	}
+
+	// ponytail: fixed deadzone floor because the default joyBorder is 0 and SDL
+	// documents sticks resting within ~8000 of center; the user's JOYSTICK
+	// BORDER setting still applies on top in GameKeySDL.
+	static int deadzone(short v) {
+		return Math.abs(v) < 8192 ? 0 : v;
 	}
 
 	/**

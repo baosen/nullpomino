@@ -385,6 +385,30 @@ class NullpoMinoSDLLogicTest {
 				"a guarded no-op must not touch the config");
 	}
 
+	/* ---------- gamepad helpers ---------- */
+
+	@Test
+	void hatFromDpadFoldsEachDirectionIntoTheSdlBitmask() {
+		assertEquals(0, NullpoMinoSDL.hatFromDpad(false, false, false, false));
+		assertEquals(GameKeySDL.SDL_HAT_UP, NullpoMinoSDL.hatFromDpad(true, false, false, false));
+		assertEquals(GameKeySDL.SDL_HAT_DOWN, NullpoMinoSDL.hatFromDpad(false, true, false, false));
+		assertEquals(GameKeySDL.SDL_HAT_LEFT, NullpoMinoSDL.hatFromDpad(false, false, true, false));
+		assertEquals(GameKeySDL.SDL_HAT_RIGHT, NullpoMinoSDL.hatFromDpad(false, false, false, true));
+		assertEquals(GameKeySDL.SDL_HAT_UP | GameKeySDL.SDL_HAT_RIGHT,
+				NullpoMinoSDL.hatFromDpad(true, false, false, true));
+	}
+
+	@Test
+	void deadzoneZeroesRestingStickAndPassesDeflections() {
+		assertEquals(0, NullpoMinoSDL.deadzone((short) 0));
+		assertEquals(0, NullpoMinoSDL.deadzone((short) 8191));
+		assertEquals(0, NullpoMinoSDL.deadzone((short) -8191));
+		assertEquals(8192, NullpoMinoSDL.deadzone((short) 8192));
+		assertEquals(-8192, NullpoMinoSDL.deadzone((short) -8192));
+		assertEquals(32767, NullpoMinoSDL.deadzone((short) 32767));
+		assertEquals(-32768, NullpoMinoSDL.deadzone((short) -32768));
+	}
+
 	/* ---------- Private helpers ---------- */
 
 	@SuppressWarnings("unchecked")
