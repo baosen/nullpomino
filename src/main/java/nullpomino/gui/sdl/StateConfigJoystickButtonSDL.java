@@ -111,10 +111,9 @@ public class StateConfigJoystickButtonSDL extends BaseStateSDL {
 
 		NormalFontSDL.printFontGrid(1, 5 + keynum - 4, "b", NormalFontSDL.COLOR_RED);
 
-		NormalFontSDL.printFontGrid(1, 20, "UP/DOWN:   MOVE CURSOR", NormalFontSDL.COLOR_GREEN);
-		NormalFontSDL.printFontGrid(1, 21, "ENTER:     OK",     NormalFontSDL.COLOR_GREEN);
-		NormalFontSDL.printFontGrid(1, 22, "DELETE:    NO SET", NormalFontSDL.COLOR_GREEN);
-		NormalFontSDL.printFontGrid(1, 23, "BACKSPACE: CANCEL", NormalFontSDL.COLOR_GREEN);
+		NormalFontSDL.printFontGrid(1, 20, "PRESS A PAD BUTTON TO BIND IT", NormalFontSDL.COLOR_GREEN);
+		NormalFontSDL.printFontGrid(1, 21, "UP/DOWN: MOVE CURSOR  DELETE: NO SET", NormalFontSDL.COLOR_GREEN);
+		NormalFontSDL.printFontGrid(1, 22, "ENTER/BACKSPACE: EXIT (SAVES)", NormalFontSDL.COLOR_GREEN);
 
 		closeBtn.render();
 	}
@@ -186,8 +185,12 @@ public class StateConfigJoystickButtonSDL extends BaseStateSDL {
 				buttonmap[keynum] = -1;
 				frame = 0;
 			}
-			// Backspace / Escape / mouse back / right-click
-			else if(NullpoMinoSDL.keyPressedState[SDLConstants.SDL_SCANCODE_BACKSPACE]
+			// Enter / Backspace / Escape / mouse back / right-click — all exits
+			// are equal: leave() applies and saves the draft. A gamepad-first
+			// user can't press a "confirm" key (every pad press is a binding),
+			// so an explicit save step would silently discard their work.
+			else if(NullpoMinoSDL.keyPressedState[SDLConstants.SDL_SCANCODE_RETURN]
+					|| NullpoMinoSDL.keyPressedState[SDLConstants.SDL_SCANCODE_BACKSPACE]
 					|| NullpoMinoSDL.keyPressedState[SDLConstants.SDL_SCANCODE_ESCAPE]
 					|| MouseInputSDL.mouseInput.isMouseBackClicked()
 					|| MouseInputSDL.mouseInput.isMouseRightClicked()) {
@@ -198,20 +201,7 @@ public class StateConfigJoystickButtonSDL extends BaseStateSDL {
 				NullpoMinoSDL.goForward();
 				return;
 			}
-			// Enter/Return
-			else if(NullpoMinoSDL.keyPressedState[SDLConstants.SDL_SCANCODE_RETURN]) {
-				ResourceHolderSDL.soundManager.play("decide");
-
-				for(int i = 0; i < GameKeySDL.MAX_BUTTON; i++) {
-					GameKeySDL.gamekey[player].buttonmap[i] = buttonmap[i];
-				}
-				GameKeySDL.gamekey[player].saveConfig(NullpoMinoSDL.propConfig);
-				NullpoMinoSDL.saveConfig();
-
-				NullpoMinoSDL.goBack();
-				return;
-			}
-			// Joystick input
+			// Gamepad input
 			else if(previousJoyPressedState != null) {
 				int key = getPressedKeyNumber(previousJoyPressedState, NullpoMinoSDL.joyPressedState[joyNumber]);
 
@@ -250,10 +240,18 @@ public class StateConfigJoystickButtonSDL extends BaseStateSDL {
 	}
 
 	/*
-	 * Called when leaving this state
+	 * Called when leaving this state. Applies and persists the draft bindings —
+	 * every exit path saves; there is no silent cancel.
 	 */
 	@Override
 	public void leave() {
+		if(buttonmap != null) {
+			for(int i = 0; i < GameKeySDL.MAX_BUTTON; i++) {
+				GameKeySDL.gamekey[player].buttonmap[i] = buttonmap[i];
+			}
+			GameKeySDL.gamekey[player].saveConfig(NullpoMinoSDL.propConfig);
+			NullpoMinoSDL.saveConfig();
+		}
 		reset();
 		NullpoMinoSDL.enableSpecialKeys = true;
 	}

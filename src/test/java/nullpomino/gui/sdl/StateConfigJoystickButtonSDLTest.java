@@ -12,6 +12,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import nullpomino.gui.sdl.binding.SDLConstants;
+import nullpomino.util.CustomProperties;
 
 /**
  * Pins the headless slice of {@link StateConfigJoystickButtonSDL}: the
@@ -134,6 +135,36 @@ class StateConfigJoystickButtonSDLTest {
 		now[5] = true;
 
 		assertEquals(2, invokeGetPressedKeyNumber(state, prev, now));
+	}
+
+	@Test
+	void leaveAppliesAndPersistsTheDraftBindings() throws Exception {
+		// Regression: every exit path must save — a gamepad-first user cannot
+		// press a keyboard "confirm" key, and the old silent-cancel semantics
+		// threw their bindings away.
+		CustomProperties originalProp = NullpoMinoSDL.propConfig;
+		CustomProperties originalGlobal = NullpoMinoSDL.propGlobal;
+		NullpoMinoSDL.propConfig = new CustomProperties();
+		NullpoMinoSDL.propGlobal = new CustomProperties();
+		try {
+			StateConfigJoystickButtonSDL state = new StateConfigJoystickButtonSDL();
+			state.player = 0;
+			invokeReset(state);
+			int[] draft = (int[]) readField(state, "buttonmap");
+			draft[GameKeySDL.BUTTON_A] = SDLConstants.SDL_GAMEPAD_BUTTON_NORTH;
+
+			state.leave();
+
+			assertEquals(SDLConstants.SDL_GAMEPAD_BUTTON_NORTH,
+					GameKeySDL.gamekey[0].buttonmap[GameKeySDL.BUTTON_A],
+					"leave() must copy the draft into the live gamekey");
+			assertEquals(SDLConstants.SDL_GAMEPAD_BUTTON_NORTH,
+					NullpoMinoSDL.propConfig.getProperty("button.p0.a", -999),
+					"leave() must persist the draft to the config properties");
+		} finally {
+			NullpoMinoSDL.propConfig = originalProp;
+			NullpoMinoSDL.propGlobal = originalGlobal;
+		}
 	}
 
 	@Test
