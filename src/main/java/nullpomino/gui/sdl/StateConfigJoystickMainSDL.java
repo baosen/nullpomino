@@ -30,6 +30,13 @@ public class StateConfigJoystickMainSDL extends BaseStateSDL {
 		cursor = 0;
 	}
 
+	/** Picker label: "NONE", "0 (XBOX 360 CONTROLLER)", or "0 (NOT CONNECTED)". */
+	static String gamepadLabel(int number) {
+		if(number == -1) return "NONE";
+		if(number >= NullpoMinoSDL.joystickMax) return number + " (NOT CONNECTED)";
+		return number + " (" + NullpoMinoSDL.joyName[number] + ")";
+	}
+
 	/**
 	 * Load settings
 	 * @param prop Property file to read from
@@ -70,7 +77,7 @@ public class StateConfigJoystickMainSDL extends BaseStateSDL {
 
 		NormalFontSDL.printFontGrid(2, 3, "[BUTTON SETTING]", (cursor == 0));
 		NormalFontSDL.printFontGrid(2, 4, "[INPUT TEST]", (cursor == 1));
-		NormalFontSDL.printFontGrid(2, 5, "GAMEPAD:" + ((joyUseNumber == -1) ? "NONE" : String.valueOf(joyUseNumber)), (cursor == 2));
+		NormalFontSDL.printFontGrid(2, 5, "GAMEPAD:" + gamepadLabel(joyUseNumber), (cursor == 2));
 
 		if(cursor == 0) NormalFontSDL.printTTFFont(16, 432, NullpoMinoSDL.getUIText("ConfigJoystickMain_ButtonSetting"));
 		if(cursor == 1) NormalFontSDL.printTTFFont(16, 432, NullpoMinoSDL.getUIText("ConfigJoystickMain_InputTest"));

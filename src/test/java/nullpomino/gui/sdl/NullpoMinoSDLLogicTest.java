@@ -399,6 +399,16 @@ class NullpoMinoSDLLogicTest {
 	}
 
 	@Test
+	void padDisplayNameNormalizesForTheBitmapFont() {
+		assertEquals("UNKNOWN", NullpoMinoSDL.padDisplayName(null));
+		assertEquals("UNKNOWN", NullpoMinoSDL.padDisplayName(""));
+		assertEquals("XBOX 360 PAD", NullpoMinoSDL.padDisplayName("Xbox 360 Pad"));
+		// Web Gamepad API ids are long — clamp to 24 chars for the 40-col grid.
+		assertEquals("XBOX 360 CONTROLLER (XIN",
+				NullpoMinoSDL.padDisplayName("Xbox 360 Controller (XInput STANDARD GAMEPAD Vendor: 045e Product: 028e)"));
+	}
+
+	@Test
 	void deadzoneZeroesRestingStickAndPassesDeflections() {
 		assertEquals(0, NullpoMinoSDL.deadzone((short) 0));
 		assertEquals(0, NullpoMinoSDL.deadzone((short) 8191));

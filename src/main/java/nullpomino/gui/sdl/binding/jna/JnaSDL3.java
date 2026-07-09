@@ -219,6 +219,9 @@ final class JnaSDL3 implements SDL3 {
 	@Override public short SDL_GetGamepadAxis(SdlGamepad gamepad, int axis) {
 		return raw.SDL_GetGamepadAxis(Ptr.p(gamepad), axis);
 	}
+	@Override public String SDL_GetGamepadNameForID(int instanceId) {
+		return raw.SDL_GetGamepadNameForID(instanceId);
+	}
 
 	@Override public byte SDL_ShowSimpleMessageBox(int flags, String title, String message, SdlWindow window) {
 		return raw.SDL_ShowSimpleMessageBox(flags, title, message, Ptr.p(window));

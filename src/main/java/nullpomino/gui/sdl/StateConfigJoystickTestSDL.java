@@ -77,9 +77,9 @@ public class StateConfigJoystickTestSDL extends BaseStateSDL {
 		NormalFontSDL.printFontGrid(1, 1, "JOYSTICK INPUT TEST (" + (player + 1) + "P)", NormalFontSDL.COLOR_ORANGE);
 
 		if(joyNumber < 0) {
-			NormalFontSDL.printFontGrid(1, 3, "NO JOYSTICK", NormalFontSDL.COLOR_RED);
+			NormalFontSDL.printFontGrid(1, 3, "NO GAMEPAD", NormalFontSDL.COLOR_RED);
 		} else if(frame >= KEYACCEPTFRAME) {
-			NormalFontSDL.printFontGrid(1, 3, "JOYSTICK NUMBER:" + joyNumber, NormalFontSDL.COLOR_RED);
+			NormalFontSDL.printFontGrid(1, 3, "GAMEPAD:" + joyNumber + " (" + NullpoMinoSDL.joyName[joyNumber] + ")", NormalFontSDL.COLOR_RED);
 
 			NormalFontSDL.printFontGrid(1, 5, "LAST PRESSED BUTTON:" + ((lastPressButton == -1) ? "NONE" : String.valueOf(lastPressButton)));
 

@@ -279,6 +279,10 @@ final class TeaVMSDL3 implements SDL3 {
 		double[] axes = p.getAxes();
 		return axis >= 0 && axis < axes.length ? (short) (axes[axis] * 32767) : 0;
 	}
+	@Override public String SDL_GetGamepadNameForID(int instanceId) {
+		Gamepad p = pad(instanceId);
+		return p == null ? null : p.getId();
+	}
 
 	@Override public byte SDL_ShowSimpleMessageBox(int flags, String title, String message, SdlWindow w) {
 		Window.alert(title + "\n\n" + message);

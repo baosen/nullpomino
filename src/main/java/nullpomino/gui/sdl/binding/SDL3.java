@@ -91,6 +91,8 @@ public interface SDL3 {
 	byte SDL_GetGamepadButton(SdlGamepad gamepad, int button);
 	/** @param axis SDL_GamepadAxis ordinal ({@code SDLConstants.SDL_GAMEPAD_AXIS_*}) */
 	short SDL_GetGamepadAxis(SdlGamepad gamepad, int axis);
+	/** @return device display name for a joystick instance id, or null if unknown */
+	String SDL_GetGamepadNameForID(int instance_id);
 
 	// --- Message Box ---
 	byte SDL_ShowSimpleMessageBox(int flags, String title, String message, SdlWindow window);

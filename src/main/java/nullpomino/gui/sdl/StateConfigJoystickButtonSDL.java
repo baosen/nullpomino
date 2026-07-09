@@ -91,9 +91,9 @@ public class StateConfigJoystickButtonSDL extends BaseStateSDL {
 		NormalFontSDL.printFontGrid(1, 1, "JOYSTICK BUTTON SETTING (" + (player + 1) + "P)", NormalFontSDL.COLOR_ORANGE);
 
 		if(previousJoyPressedState == null)
-			NormalFontSDL.printFontGrid(1, 3, "NO JOYSTICK", NormalFontSDL.COLOR_RED);
+			NormalFontSDL.printFontGrid(1, 3, "NO GAMEPAD", NormalFontSDL.COLOR_RED);
 		else
-			NormalFontSDL.printFontGrid(1, 3, "JOYSTICK NUMBER:" + joyNumber, NormalFontSDL.COLOR_RED);
+			NormalFontSDL.printFontGrid(1, 3, "GAMEPAD:" + joyNumber + " (" + NullpoMinoSDL.joyName[joyNumber] + ")", NormalFontSDL.COLOR_RED);
 
 		NormalFontSDL.printFontGrid(2, 5, "A (L/R-ROT)    : " + String.valueOf(buttonmap[GameKeySDL.BUTTON_A]), (keynum == 4));
 		NormalFontSDL.printFontGrid(2, 6, "B (R/L-ROT)    : " + String.valueOf(buttonmap[GameKeySDL.BUTTON_B]), (keynum == 5));

@@ -78,6 +78,8 @@ interface RawSDL3 extends Library {
 	void SDL_CloseGamepad(Pointer gamepad);
 	byte SDL_GetGamepadButton(Pointer gamepad, int button);
 	short SDL_GetGamepadAxis(Pointer gamepad, int axis);
+	// const char* owned by SDL — JNA String return copies, must not be freed
+	String SDL_GetGamepadNameForID(int instance_id);
 
 	// --- Message Box ---
 	byte SDL_ShowSimpleMessageBox(int flags, String title, String message, Pointer window);

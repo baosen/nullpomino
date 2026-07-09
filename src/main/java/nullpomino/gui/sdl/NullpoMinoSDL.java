@@ -182,6 +182,9 @@ public class NullpoMinoSDL {
 	/** Open gamepad handles (only devices with a standard SDL gamepad mapping) */
 	public static SdlGamepad[] gamepad;
 
+	/** Gamepad display names (normalized via {@link #padDisplayName}) */
+	public static String[] joyName;
+
 	/** Left stick state */
 	public static int[] joyAxisX, joyAxisY;
 
@@ -495,12 +498,16 @@ public class NullpoMinoSDL {
 
 		int[] joystickIds = SDL3.INSTANCE.SDL_GetJoysticks();
 		SdlGamepad[] opened = new SdlGamepad[joystickIds.length];
+		String[] names = new String[joystickIds.length];
 		int n = 0;
 		for(int id : joystickIds) {
 			try {
 				if(SDL3.INSTANCE.SDL_IsGamepad(id) != 0) {
 					SdlGamepad g = SDL3.INSTANCE.SDL_OpenGamepad(id);
-					if(g != null) opened[n++] = g; // compact: skip failed opens
+					if(g != null) {
+						names[n] = padDisplayName(SDL3.INSTANCE.SDL_GetGamepadNameForID(id));
+						opened[n++] = g; // compact: skip failed opens
+					}
 				}
 			} catch (Throwable e) {
 				log.warn("Failed to open gamepad id {}", id, e);
@@ -508,6 +515,7 @@ public class NullpoMinoSDL {
 		}
 		joystickMax = n;
 		gamepad = java.util.Arrays.copyOf(opened, n);
+		joyName = java.util.Arrays.copyOf(names, n);
 		joyAxisX = new int[n];
 		joyAxisY = new int[n];
 		joyHatState = new int[n];
@@ -1208,6 +1216,15 @@ public class NullpoMinoSDL {
 	// BORDER setting still applies on top in GameKeySDL.
 	static int deadzone(short v) {
 		return Math.abs(v) < 8192 ? 0 : v;
+	}
+
+	/** Normalize a device name for the 40-col bitmap font: uppercase, max 24
+	 *  chars (web Gamepad ids are long, e.g. "Xbox 360 Controller (XInput
+	 *  STANDARD GAMEPAD Vendor: 045e ...)"). */
+	static String padDisplayName(String raw) {
+		if(raw == null || raw.isEmpty()) return "UNKNOWN";
+		String s = raw.toUpperCase(Locale.ROOT);
+		return s.length() <= 24 ? s : s.substring(0, 24);
 	}
 
 	/**
