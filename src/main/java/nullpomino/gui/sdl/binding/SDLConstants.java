@@ -13,6 +13,8 @@ public final class SDLConstants {
 	public static final int SDL_INIT_AUDIO = 0x00000010;
 	public static final int SDL_INIT_VIDEO = 0x00000020;
 	public static final int SDL_INIT_JOYSTICK = 0x00000200;
+	/** Implies SDL_INIT_JOYSTICK */
+	public static final int SDL_INIT_GAMEPAD  = 0x00002000;
 
 	// SDL_WindowFlags
 	public static final long SDL_WINDOW_FULLSCREEN = 0x0000000000000001L;
@@ -45,6 +47,31 @@ public final class SDLConstants {
 	public static final int SDL_EVENT_MOUSE_BUTTON_DOWN     = 0x401;
 	public static final int SDL_EVENT_MOUSE_BUTTON_UP       = 0x402;
 	public static final int SDL_EVENT_MOUSE_WHEEL           = 0x403;
+	public static final int SDL_EVENT_JOYSTICK_ADDED        = 0x605;
+	public static final int SDL_EVENT_JOYSTICK_REMOVED      = 0x606;
+
+	// SDL_GamepadButton ordinals
+	public static final int SDL_GAMEPAD_BUTTON_SOUTH          = 0;
+	public static final int SDL_GAMEPAD_BUTTON_EAST           = 1;
+	public static final int SDL_GAMEPAD_BUTTON_WEST           = 2;
+	public static final int SDL_GAMEPAD_BUTTON_NORTH          = 3;
+	public static final int SDL_GAMEPAD_BUTTON_BACK           = 4;
+	public static final int SDL_GAMEPAD_BUTTON_GUIDE          = 5;
+	public static final int SDL_GAMEPAD_BUTTON_START          = 6;
+	public static final int SDL_GAMEPAD_BUTTON_LEFT_STICK     = 7;
+	public static final int SDL_GAMEPAD_BUTTON_RIGHT_STICK    = 8;
+	public static final int SDL_GAMEPAD_BUTTON_LEFT_SHOULDER  = 9;
+	public static final int SDL_GAMEPAD_BUTTON_RIGHT_SHOULDER = 10;
+	public static final int SDL_GAMEPAD_BUTTON_DPAD_UP        = 11;
+	public static final int SDL_GAMEPAD_BUTTON_DPAD_DOWN      = 12;
+	public static final int SDL_GAMEPAD_BUTTON_DPAD_LEFT      = 13;
+	public static final int SDL_GAMEPAD_BUTTON_DPAD_RIGHT     = 14;
+	/** Buttons we poll per gamepad (SOUTH..DPAD_RIGHT; paddles/misc excluded). */
+	public static final int SDL_GAMEPAD_NUM_BUTTONS = 15;
+
+	// SDL_GamepadAxis ordinals
+	public static final int SDL_GAMEPAD_AXIS_LEFTX = 0;
+	public static final int SDL_GAMEPAD_AXIS_LEFTY = 1;
 
 	// SDL_Keymod bitmask (Uint16 in SDL_KeyboardEvent.mod)
 	public static final int SDL_KMOD_NONE   = 0x0000;

@@ -8,6 +8,7 @@ import nullpomino.gui.sdl.binding.Ref.FloatRef;
 import nullpomino.gui.sdl.binding.SDL3;
 import nullpomino.gui.sdl.binding.SDLConstants;
 import nullpomino.gui.sdl.binding.SDLStructs;
+import nullpomino.gui.sdl.binding.SdlHandles.SdlGamepad;
 import nullpomino.gui.sdl.binding.SdlHandles.SdlJoystick;
 import nullpomino.gui.sdl.binding.SdlHandles.SdlRenderer;
 import nullpomino.gui.sdl.binding.SdlHandles.SdlSurface;
@@ -226,6 +227,18 @@ final class JnaSDL3 implements SDL3 {
 	}
 	@Override public int SDL_GetNumJoystickHats(SdlJoystick joystick) {
 		return raw.SDL_GetNumJoystickHats(Ptr.p(joystick));
+	}
+
+	@Override public byte SDL_IsGamepad(int instanceId) { return raw.SDL_IsGamepad(instanceId); }
+	@Override public SdlGamepad SDL_OpenGamepad(int instanceId) {
+		return Ptr.wrap(raw.SDL_OpenGamepad(instanceId));
+	}
+	@Override public void SDL_CloseGamepad(SdlGamepad gamepad) { raw.SDL_CloseGamepad(Ptr.p(gamepad)); }
+	@Override public byte SDL_GetGamepadButton(SdlGamepad gamepad, int button) {
+		return raw.SDL_GetGamepadButton(Ptr.p(gamepad), button);
+	}
+	@Override public short SDL_GetGamepadAxis(SdlGamepad gamepad, int axis) {
+		return raw.SDL_GetGamepadAxis(Ptr.p(gamepad), axis);
 	}
 
 	@Override public byte SDL_ShowSimpleMessageBox(int flags, String title, String message, SdlWindow window) {

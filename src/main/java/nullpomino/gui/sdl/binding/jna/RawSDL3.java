@@ -81,6 +81,13 @@ interface RawSDL3 extends Library {
 	int SDL_GetNumJoystickButtons(Pointer joystick);
 	int SDL_GetNumJoystickHats(Pointer joystick);
 
+	// --- Gamepad ---
+	byte SDL_IsGamepad(int instance_id);
+	Pointer SDL_OpenGamepad(int instance_id);
+	void SDL_CloseGamepad(Pointer gamepad);
+	byte SDL_GetGamepadButton(Pointer gamepad, int button);
+	short SDL_GetGamepadAxis(Pointer gamepad, int axis);
+
 	// --- Message Box ---
 	byte SDL_ShowSimpleMessageBox(int flags, String title, String message, Pointer window);
 

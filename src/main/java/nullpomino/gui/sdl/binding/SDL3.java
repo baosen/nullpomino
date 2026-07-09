@@ -1,6 +1,7 @@
 package nullpomino.gui.sdl.binding;
 
 import nullpomino.gui.sdl.binding.Ref.FloatRef;
+import nullpomino.gui.sdl.binding.SdlHandles.SdlGamepad;
 import nullpomino.gui.sdl.binding.SdlHandles.SdlJoystick;
 import nullpomino.gui.sdl.binding.SdlHandles.SdlRenderer;
 import nullpomino.gui.sdl.binding.SdlHandles.SdlSurface;
@@ -90,6 +91,16 @@ public interface SDL3 {
 	byte SDL_GetJoystickHat(SdlJoystick joystick, int hat);
 	int SDL_GetNumJoystickButtons(SdlJoystick joystick);
 	int SDL_GetNumJoystickHats(SdlJoystick joystick);
+
+	// --- Gamepad ---
+	/** @return nonzero if the joystick instance id has a standard gamepad mapping */
+	byte SDL_IsGamepad(int instance_id);
+	SdlGamepad SDL_OpenGamepad(int instance_id);
+	void SDL_CloseGamepad(SdlGamepad gamepad);
+	/** @param button SDL_GamepadButton ordinal ({@code SDLConstants.SDL_GAMEPAD_BUTTON_*}) */
+	byte SDL_GetGamepadButton(SdlGamepad gamepad, int button);
+	/** @param axis SDL_GamepadAxis ordinal ({@code SDLConstants.SDL_GAMEPAD_AXIS_*}) */
+	short SDL_GetGamepadAxis(SdlGamepad gamepad, int axis);
 
 	// --- Message Box ---
 	byte SDL_ShowSimpleMessageBox(int flags, String title, String message, SdlWindow window);

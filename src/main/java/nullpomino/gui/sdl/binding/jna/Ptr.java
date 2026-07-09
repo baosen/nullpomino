@@ -10,7 +10,7 @@ import nullpomino.gui.sdl.binding.SdlHandles;
  * safe here and keeps the marshalling trivial.
  */
 final class Ptr implements SdlHandles.SdlWindow, SdlHandles.SdlRenderer, SdlHandles.SdlTexture,
-		SdlHandles.SdlSurface, SdlHandles.SdlFont, SdlHandles.SdlJoystick,
+		SdlHandles.SdlSurface, SdlHandles.SdlFont, SdlHandles.SdlJoystick, SdlHandles.SdlGamepad,
 		SdlHandles.MixMixer, SdlHandles.MixAudio, SdlHandles.MixTrack {
 
 	final Pointer p;
