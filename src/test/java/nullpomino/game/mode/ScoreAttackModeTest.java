@@ -128,11 +128,11 @@ class ScoreAttackModeTest {
 		CustomProperties prop = new CustomProperties();
 		invokeSaveRanking(mode, prop, "Standard");
 
-		assertEquals(50000, prop.getProperty("scoreattack.ranking.Standard.score.0", -1));
-		assertEquals(99, prop.getProperty("scoreattack.ranking.Standard.level.0", -1));
-		assertEquals(50001, prop.getProperty("scoreattack.ranking.Standard.time.1", -1));
-		assertEquals(5000, prop.getProperty("scoreattack.bestSectionTime.Standard.0", -1));
-		assertEquals(5200, prop.getProperty("scoreattack.bestSectionTime.Standard.2", -1));
+		assertEquals(50000, prop.getProperty("scoreattack.ranking.item.Standard.score.0", -1));
+		assertEquals(99, prop.getProperty("scoreattack.ranking.item.Standard.level.0", -1));
+		assertEquals(50001, prop.getProperty("scoreattack.ranking.item.Standard.time.1", -1));
+		assertEquals(5000, prop.getProperty("scoreattack.bestSectionTime.item.Standard.0", -1));
+		assertEquals(5200, prop.getProperty("scoreattack.bestSectionTime.item.Standard.2", -1));
 
 		ScoreAttackMode dest = new ScoreAttackMode();
 		GameEngine destEngine = freshEngine(dest);
@@ -156,6 +156,7 @@ class ScoreAttackModeTest {
 		assertEquals(false, readBoolean(mode, "always20g"));
 		assertEquals(false, readBoolean(mode, "showsectiontime"));
 		assertEquals(false, readBoolean(mode, "big"));
+		assertEquals(true, readBoolean(mode, "enableitem"));
 		assertEquals(0, readInt(mode, "version"));
 	}
 
@@ -167,6 +168,7 @@ class ScoreAttackModeTest {
 		setBoolean(source, "always20g", true);
 		setBoolean(source, "showsectiontime", true);
 		setBoolean(source, "big", true);
+		setBoolean(source, "enableitem", false);
 		setInt(source, "version", 2);
 
 		CustomProperties prop = new CustomProperties();
@@ -177,6 +179,7 @@ class ScoreAttackModeTest {
 		assertEquals(true, prop.getProperty("scoreattack.always20g", false));
 		assertEquals(true, prop.getProperty("scoreattack.showsectiontime", false));
 		assertEquals(true, prop.getProperty("scoreattack.big", false));
+		assertEquals(false, prop.getProperty("scoreattack.enableitem", true));
 		assertEquals(2, prop.getProperty("scoreattack.version", -1));
 
 		ScoreAttackMode dest = new ScoreAttackMode();
@@ -186,6 +189,7 @@ class ScoreAttackModeTest {
 		assertEquals(true, readBoolean(dest, "always20g"));
 		assertEquals(true, readBoolean(dest, "showsectiontime"));
 		assertEquals(true, readBoolean(dest, "big"));
+		assertEquals(false, readBoolean(dest, "enableitem"));
 		assertEquals(2, readInt(dest, "version"));
 	}
 

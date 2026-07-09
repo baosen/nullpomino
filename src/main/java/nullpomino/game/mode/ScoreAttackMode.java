@@ -3,6 +3,8 @@
 package nullpomino.game.mode;
 
 import nullpomino.game.component.Controller;
+import nullpomino.game.component.Block;
+import nullpomino.game.component.Piece;
 import nullpomino.game.event.EventReceiver;
 import nullpomino.game.play.GameEngine;
 import nullpomino.util.CustomProperties;
@@ -13,7 +15,7 @@ import nullpomino.util.GeneralUtil;
  */
 public class ScoreAttackMode extends AbstractManiaMode {
 	/** Current version */
-	private static final int CURRENT_VERSION = 0;
+	private static final int CURRENT_VERSION = 1;
 
 	/** Gravity table (Gravity speed value) */
 	private static final int[] tableGravityValue =
@@ -43,6 +45,9 @@ public class ScoreAttackMode extends AbstractManiaMode {
 
 	/** Default section time */
 	private static final int DEFAULT_SECTION_TIME = 6000;
+
+	/** No scripted item remains to be awarded. */
+	private static final int ITEM_LEVEL_NONE = -1;
 
 	/** GameManager object (Manages entire game status) */
 
@@ -91,6 +96,15 @@ public class ScoreAttackMode extends AbstractManiaMode {
 	/** Show section time */
 	private boolean showsectiontime;
 
+	/** Enable scripted items */
+	private boolean enableitem;
+
+	/** Next level that awards a scripted item */
+	private int nextItemLevel;
+
+	/** Item effect to apply on the first post-clear ARE frame */
+	private int pendingItemEffect;
+
 	/** Version of this mode */
 	private int version;
 
@@ -134,6 +148,9 @@ public class ScoreAttackMode extends AbstractManiaMode {
 		always20g = false;
 		big = false;
 		showsectiontime = true;
+		enableitem = true;
+		nextItemLevel = ITEM_LEVEL_NONE;
+		pendingItemEffect = Block.BLOCK_ITEM_NONE;
 
 		rankingRank = -1;
 		rankingScore = new int[RANKING_MAX];
@@ -161,7 +178,9 @@ public class ScoreAttackMode extends AbstractManiaMode {
 		} else {
 			loadSetting(owner.replayProp);
 			version = owner.replayProp.getProperty("scoreattack.version", 0);
+			if(version < CURRENT_VERSION) enableitem = false;
 		}
+		engine.rainbowAnimate = isItemEnabled();
 
 		owner.backgroundStatus.bg = startlevel;
 	}
@@ -175,6 +194,7 @@ public class ScoreAttackMode extends AbstractManiaMode {
 		always20g = prop.getProperty("scoreattack.always20g", false);
 		showsectiontime = prop.getProperty("scoreattack.showsectiontime", false);
 		big = prop.getProperty("scoreattack.big", false);
+		enableitem = prop.getProperty("scoreattack.enableitem", true);
 		version = prop.getProperty("scoreattack.version", 0);
 	}
 
@@ -187,6 +207,7 @@ public class ScoreAttackMode extends AbstractManiaMode {
 		prop.setProperty("scoreattack.always20g", always20g);
 		prop.setProperty("scoreattack.showsectiontime", showsectiontime);
 		prop.setProperty("scoreattack.big", big);
+		prop.setProperty("scoreattack.enableitem", enableitem);
 		prop.setProperty("scoreattack.version", version);
 	}
 
@@ -223,7 +244,7 @@ public class ScoreAttackMode extends AbstractManiaMode {
 	public boolean onSetting(GameEngine engine, int playerID) {
 		if(engine.owner.replayMode == false) {
 			// Configuration changes
-			int change = updateCursor(engine, 4);
+			int change = updateCursor(engine, 5);
 			if(change != 0) {
 				receiver.playSE("change");
 
@@ -245,6 +266,12 @@ public class ScoreAttackMode extends AbstractManiaMode {
 					break;
 				case 4:
 					big = !big;
+					break;
+				case 5:
+					enableitem = !enableitem;
+					engine.rainbowAnimate = isItemEnabled();
+					loadRanking(owner.modeConfig, engine.ruleopt.strRuleName);
+					rankingRank = -1;
 					break;
 				}
 			}
@@ -293,7 +320,8 @@ public class ScoreAttackMode extends AbstractManiaMode {
 				"FULL GHOST", GeneralUtil.getONorOFF(alwaysghost),
 				"20G MODE", GeneralUtil.getONorOFF(always20g),
 				"SHOW STIME", GeneralUtil.getONorOFF(showsectiontime),
-				"BIG",  GeneralUtil.getONorOFF(big));
+				"BIG",  GeneralUtil.getONorOFF(big),
+				"ITEM", GeneralUtil.getONorOFF(enableitem));
 	}
 
 	/**
@@ -306,6 +334,8 @@ public class ScoreAttackMode extends AbstractManiaMode {
 		nextseclv = engine.statistics.level + 100;
 		if(engine.statistics.level < 0) nextseclv = 100;
 		if(engine.statistics.level >= 900) nextseclv = 999;
+		nextItemLevel = getNextItemLevel(engine.statistics.level);
+		pendingItemEffect = Block.BLOCK_ITEM_NONE;
 
 		owner.backgroundStatus.bg = engine.statistics.level / 100;
 
@@ -329,7 +359,8 @@ public class ScoreAttackMode extends AbstractManiaMode {
 			if((owner.replayMode == false) && (startlevel == 0) && (big == false) && (always20g == false) && (engine.ai == null)) {
 				if(!isShowBestSectionTime) {
 					// Score Leaderboard
-					receiver.drawScoreFont(engine, playerID, 3, 2, "SCORE  TIME", EventReceiver.COLOR_BLUE);
+					receiver.drawScoreFont(engine, playerID, 3, 2,
+						enableitem ? "SCORE+ITEM TIME" : "SCORE  TIME", EventReceiver.COLOR_BLUE);
 
 					for(int i = 0; i < RANKING_MAX; i++) {
 						receiver.drawScoreFont(engine, playerID, 0, 3 + i, String.format("%2d", i + 1), EventReceiver.COLOR_YELLOW);
@@ -449,6 +480,10 @@ public class ScoreAttackMode extends AbstractManiaMode {
 	 */
 	@Override
 	public boolean onARE(GameEngine engine, int playerID) {
+		if((engine.statc[0] == 0) && (pendingItemEffect != Block.BLOCK_ITEM_NONE)) {
+			applyPendingItemEffect(engine);
+		}
+
 		if((engine.ending == 0) && (engine.statc[0] >= engine.statc[1] - 1) && (!lvupflag)) {
 			if (engine.statistics.level < 299) engine.statistics.level++;
 			levelUp(engine);
@@ -477,12 +512,143 @@ public class ScoreAttackMode extends AbstractManiaMode {
 			stNewRecordCheck(sectionscomp - 1);
 		}
 
+		scheduleScriptedItem(engine);
+
 		setSpeed(engine);
 
 		if((engine.statistics.level >= 100) && (!alwaysghost)) engine.ghost = false;
 
 		if((bgmlv == 0) && (engine.statistics.level >= 290) && (engine.ending == 0))
 			owner.bgmStatus.fadesw = true;
+	}
+
+	/**
+	 * Detect an item in the lines about to clear. The engine has already
+	 * calculated {@link GameEngine#lineClearing}, but line flags are not set
+	 * until immediately after this callback, so inspect complete rows directly.
+	 */
+	@Override
+	public boolean onLineClear(GameEngine engine, int playerID) {
+		if(!isItemEnabled() || (engine.statc[0] != 0) || (engine.lineClearing <= 0)) return false;
+
+		int item = getClearedItem(engine);
+		if(item != Block.BLOCK_ITEM_NONE) {
+			clearItemTags(engine);
+			pendingItemEffect = item;
+		}
+		return false;
+	}
+
+	/**
+	 * When a rule has no line ARE, there is no post-clear ARE callback in
+	 * which to perform an item. Apply it at the equivalent transition point.
+	 */
+	@Override
+	public boolean lineClearEnd(GameEngine engine, int playerID) {
+		if((pendingItemEffect != Block.BLOCK_ITEM_NONE) && (engine.getARELine() <= 0) && (engine.ending == 0)) {
+			applyPendingItemEffect(engine);
+		}
+		return false;
+	}
+
+	private boolean isItemEnabled() {
+		return enableitem && (version >= CURRENT_VERSION);
+	}
+
+	private int getNextItemLevel(int level) {
+		if(level < 100) return 100;
+		if(level < 200) return 200;
+		return ITEM_LEVEL_NONE;
+	}
+
+	private void scheduleScriptedItem(GameEngine engine) {
+		if(!isItemEnabled() || (nextItemLevel == ITEM_LEVEL_NONE) || (engine.statistics.level < nextItemLevel)) return;
+
+		// The engine's current queue position is consumed as the next active
+		// piece when ARE ends. Tag the following slot so the item remains
+		// visible in the Next display while level 100 or 200 is active.
+		Piece nextPiece = engine.getNextObject(engine.nextPieceCount + 1);
+		if(nextPiece == null) return;
+
+		int item = (nextItemLevel == 100) ? Block.BLOCK_ITEM_FREE_FALL : Block.BLOCK_ITEM_DEL_EVEN;
+		setPieceItem(nextPiece, item);
+		nextItemLevel = (item == Block.BLOCK_ITEM_FREE_FALL) ? 200 : ITEM_LEVEL_NONE;
+	}
+
+	private void setPieceItem(Piece piece, int item) {
+		for(Block block : piece.block) block.item = item;
+	}
+
+	private int getClearedItem(GameEngine engine) {
+		int selectedItem = Block.BLOCK_ITEM_NONE;
+		int selectedY = Integer.MAX_VALUE;
+		int selectedX = -1;
+
+		for(int y = -engine.field.getHiddenHeight(); y < engine.field.getHeightWithoutHurryupFloor(); y++) {
+			if(!isCompleteLine(engine, y)) continue;
+
+			for(int x = 0; x < engine.field.getWidth(); x++) {
+				Block block = engine.field.getBlock(x, y);
+				if((block == null) || (block.item == Block.BLOCK_ITEM_NONE)) continue;
+
+				if((y < selectedY) || ((y == selectedY) && (x > selectedX))) {
+					selectedItem = block.item;
+					selectedY = y;
+					selectedX = x;
+				}
+			}
+		}
+
+		return selectedItem;
+	}
+
+	private boolean isCompleteLine(GameEngine engine, int y) {
+		for(int x = 0; x < engine.field.getWidth(); x++) {
+			Block block = engine.field.getBlock(x, y);
+			if((block == null) || block.isEmpty() || block.getAttribute(Block.BLOCK_ATTRIBUTE_WALL)) return false;
+		}
+		return true;
+	}
+
+	private void clearItemTags(GameEngine engine) {
+		for(int y = -engine.field.getHiddenHeight(); y < engine.field.getHeight(); y++) {
+			for(int x = 0; x < engine.field.getWidth(); x++) {
+				Block block = engine.field.getBlock(x, y);
+				if(block != null) block.item = Block.BLOCK_ITEM_NONE;
+			}
+		}
+
+		if(engine.nextPieceArrayObject != null) {
+			for(Piece piece : engine.nextPieceArrayObject) clearPieceItem(piece);
+		}
+		clearPieceItem(engine.nowPieceObject);
+		clearPieceItem(engine.holdPieceObject);
+	}
+
+	private void clearPieceItem(Piece piece) {
+		if(piece == null) return;
+		for(Block block : piece.block) block.item = Block.BLOCK_ITEM_NONE;
+	}
+
+	private void applyPendingItemEffect(GameEngine engine) {
+		int item = pendingItemEffect;
+		pendingItemEffect = Block.BLOCK_ITEM_NONE;
+
+		if(item == Block.BLOCK_ITEM_FREE_FALL) {
+			engine.field.freeFall();
+		} else if(item == Block.BLOCK_ITEM_DEL_EVEN) {
+			deleteEvenRows(engine);
+		}
+	}
+
+	private void deleteEvenRows(GameEngine engine) {
+		for(int y = 0; y < engine.field.getHeightWithoutHurryupFloor(); y += 2) {
+			for(int x = 0; x < engine.field.getWidth(); x++) {
+				engine.field.setBlock(x, y, new Block());
+			}
+			engine.field.setLineFlag(y, true);
+		}
+		engine.field.downFloatingBlocks();
 	}
 
 	/**
@@ -650,13 +816,14 @@ public class ScoreAttackMode extends AbstractManiaMode {
 	 * Load the ranking
 	 */
 	private void loadRanking(CustomProperties prop, String ruleName) {
+		String itemPrefix = enableitem ? "item." : "";
 		for(int i = 0; i < RANKING_MAX; i++) {
-			rankingScore[i] = prop.getProperty("scoreattack.ranking." + ruleName + ".score." + i, 0);
-			rankingLevel[i] = prop.getProperty("scoreattack.ranking." + ruleName + ".level." + i, 0);
-			rankingTime[i] = prop.getProperty("scoreattack.ranking." + ruleName + ".time." + i, 0);
+			rankingScore[i] = prop.getProperty("scoreattack.ranking." + itemPrefix + ruleName + ".score." + i, 0);
+			rankingLevel[i] = prop.getProperty("scoreattack.ranking." + itemPrefix + ruleName + ".level." + i, 0);
+			rankingTime[i] = prop.getProperty("scoreattack.ranking." + itemPrefix + ruleName + ".time." + i, 0);
 		}
 		for(int i = 0; i < SECTION_MAX; i++) {
-			bestSectionTime[i] = prop.getProperty("scoreattack.bestSectionTime." + ruleName + "." + i, DEFAULT_SECTION_TIME);
+			bestSectionTime[i] = prop.getProperty("scoreattack.bestSectionTime." + itemPrefix + ruleName + "." + i, DEFAULT_SECTION_TIME);
 		}
 	}
 
@@ -664,13 +831,14 @@ public class ScoreAttackMode extends AbstractManiaMode {
 	 * Save the ranking
 	 */
 	private void saveRanking(CustomProperties prop, String ruleName) {
+		String itemPrefix = enableitem ? "item." : "";
 		for(int i = 0; i < RANKING_MAX; i++) {
-			prop.setProperty("scoreattack.ranking." + ruleName + ".score." + i, rankingScore[i]);
-			prop.setProperty("scoreattack.ranking." + ruleName + ".level." + i, rankingLevel[i]);
-			prop.setProperty("scoreattack.ranking." + ruleName + ".time." + i, rankingTime[i]);
+			prop.setProperty("scoreattack.ranking." + itemPrefix + ruleName + ".score." + i, rankingScore[i]);
+			prop.setProperty("scoreattack.ranking." + itemPrefix + ruleName + ".level." + i, rankingLevel[i]);
+			prop.setProperty("scoreattack.ranking." + itemPrefix + ruleName + ".time." + i, rankingTime[i]);
 		}
 		for(int i = 0; i < SECTION_MAX; i++) {
-			prop.setProperty("scoreattack.bestSectionTime." + ruleName + "." + i, bestSectionTime[i]);
+			prop.setProperty("scoreattack.bestSectionTime." + itemPrefix + ruleName + "." + i, bestSectionTime[i]);
 		}
 	}
 

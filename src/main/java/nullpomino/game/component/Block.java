@@ -54,9 +54,11 @@ public class Block implements Serializable {
 
 	/** Constant-itemcount */
 	public static final int BLOCK_ITEM_NONE = 0,
-							BLOCK_ITEM_RANDOM = 1;
+							BLOCK_ITEM_RANDOM = 1,
+							BLOCK_ITEM_FREE_FALL = 2,
+							BLOCK_ITEM_DEL_EVEN = 3;
 
-	public static final int MAX_ITEM = 1;
+	public static final int MAX_ITEM = 3;
 
 	/** NormalBlock colorOfMaximumcount */
 	public static final int BLOCK_COLOR_COUNT = 9;
@@ -300,7 +302,11 @@ public class Block implements Serializable {
 	}
 
 	public int getDrawColor() {
-		if (color == BLOCK_COLOR_GEM_RAINBOW)
+		if (item == BLOCK_ITEM_FREE_FALL)
+			return BLOCK_COLOR_RED + (rainbowPhase / 3);
+		else if (item == BLOCK_ITEM_DEL_EVEN)
+			return BLOCK_COLOR_RED + ((rainbowPhase / 3 + 3) % 7);
+		else if (color == BLOCK_COLOR_GEM_RAINBOW)
 			return BLOCK_COLOR_GEM_RED + (rainbowPhase/3);
 		else if (color == BLOCK_COLOR_RAINBOW)
 			return BLOCK_COLOR_RED + (rainbowPhase/3);

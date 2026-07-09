@@ -2716,6 +2716,12 @@ TEST_DEPS = {
         "//src/main/java:core_engine",
         "//src/main/java:game_mode_impls",
     ],
+    "nullpomino/game/mode/ScoreAttackModeItemTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:game_component_data",
+        "//src/main/java:game_mode_impls",
+        "//src/main/java:util_base",
+    ],
     "nullpomino/game/mode/ScoreAttackModeRankingTest.java": [
         "//src/main/java:core_engine",
         "//src/main/java:game_mode_impls",

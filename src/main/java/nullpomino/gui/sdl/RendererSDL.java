@@ -501,6 +501,7 @@ public class RendererSDL extends EventReceiver {
 	 */
 	protected void drawBlock(int x, int y, Block blk) {
 		drawBlock(x, y, blk.getDrawColor(), blk.skin, blk.getAttribute(Block.BLOCK_ATTRIBUTE_BONE), blk.darkness, blk.alpha, 1.0f, blk.attribute);
+		drawItemGlyph(x, y, blk.item, 1.0f);
 	}
 
 	/**
@@ -512,6 +513,7 @@ public class RendererSDL extends EventReceiver {
 	 */
 	protected void drawBlock(int x, int y, Block blk, float scale) {
 		drawBlock(x, y, blk.getDrawColor(), blk.skin, blk.getAttribute(Block.BLOCK_ATTRIBUTE_BONE), blk.darkness, blk.alpha, scale, blk.attribute);
+		drawItemGlyph(x, y, blk.item, scale);
 	}
 
 	/**
@@ -524,11 +526,59 @@ public class RendererSDL extends EventReceiver {
 	 */
 	protected void drawBlock(int x, int y, Block blk, float scale, float darkness) {
 		drawBlock(x, y, blk.getDrawColor(), blk.skin, blk.getAttribute(Block.BLOCK_ATTRIBUTE_BONE), darkness, blk.alpha, scale, blk.attribute);
+		drawItemGlyph(x, y, blk.item, scale);
 	}
 
 	protected void drawBlockForceVisible(int x, int y, Block blk, float scale) {
 		drawBlock(x, y, blk.getDrawColor(), blk.skin, blk.getAttribute(Block.BLOCK_ATTRIBUTE_BONE), blk.darkness,
 				(0.5f*blk.alpha)+0.5f, scale, blk.attribute);
+		drawItemGlyph(x, y, blk.item, scale);
+	}
+
+	/**
+	 * Draws the compact identifying glyph used by scripted item blocks.
+	 */
+	private void drawItemGlyph(int x, int y, int item, float scale) {
+		if((item != Block.BLOCK_ITEM_FREE_FALL) && (item != Block.BLOCK_ITEM_DEL_EVEN)) return;
+
+		int pixel = Math.max(1, (int)(2 * scale));
+		int size = (int)(16 * scale);
+		int glyphSize = pixel * 8;
+		int glyphX = x + ((size - glyphSize) / 2);
+		int glyphY = y + ((size - glyphSize) / 2);
+		drawItemGlyphLayer(glyphX + pixel, glyphY + pixel, pixel, item, getColorValue(0, 0, 0));
+		drawItemGlyphLayer(glyphX, glyphY, pixel, item, getColorValue(255, 255, 255));
+	}
+
+	private void drawItemGlyphLayer(int x, int y, int pixel, int item, long color) {
+		if(item == Block.BLOCK_ITEM_FREE_FALL) {
+			// exclamation mark: stroke rows 0-4, gap row 5, dot row 6
+			for(int i = 0; i <= 4; i++) {
+				drawItemGlyphPixel(x, y, pixel, 3, i, color);
+				drawItemGlyphPixel(x, y, pixel, 4, i, color);
+			}
+			drawItemGlyphPixel(x, y, pixel, 3, 6, color);
+			drawItemGlyphPixel(x, y, pixel, 4, 6, color);
+		} else {
+			for(int i = 1; i <= 6; i++) {
+				drawItemGlyphPixel(x, y, pixel, i, 1, color);
+				drawItemGlyphPixel(x, y, pixel, i, 3, color);
+				drawItemGlyphPixel(x, y, pixel, i, 5, color);
+			}
+		}
+	}
+
+	private void drawItemGlyphPixel(int x, int y, int pixel, int pixelX, int pixelY, long color) {
+		fillColorRect(x + (pixelX * pixel), y + (pixelY * pixel), pixel, pixel, color);
+	}
+
+	static String getItemLabel(Piece piece) {
+		if((piece == null) || (piece.block == null)) return null;
+		for(Block block : piece.block) {
+			if(block.item == Block.BLOCK_ITEM_FREE_FALL) return "FREE\nFALL";
+			if(block.item == Block.BLOCK_ITEM_DEL_EVEN) return "DELETE\nEVEN";
+		}
+		return null;
 	}
 
 	/**
@@ -1198,6 +1248,8 @@ public class RendererSDL extends EventReceiver {
 				if(engine.ruleopt.nextDisplay >= 1) {
 					int x2 = x + 8 + (fldWidth * fldBlkSize) + meterWidth;
 					NormalFontSDL.printFont(x2 + 16, y + 40, NullpoMinoSDL.getUIText("InGame_Next"), COLOR_ORANGE, 0.5f);
+					String itemLabel = getItemLabel(engine.getNextObject(engine.nextPieceCount));
+					if(itemLabel != null) NormalFontSDL.printFont(x2 + 64, y + 72, itemLabel, COLOR_WHITE, 0.5f);
 
 					for(int i = 0; i < engine.ruleopt.nextDisplay; i++) {
 						Piece piece = engine.getNextObject(engine.nextPieceCount + i);
@@ -1213,6 +1265,8 @@ public class RendererSDL extends EventReceiver {
 				if(engine.ruleopt.nextDisplay >= 1) {
 					int x2 = x + 8 + (fldWidth * fldBlkSize) + meterWidth;
 					NormalFontSDL.printFont(x2, y + 40, NullpoMinoSDL.getUIText("InGame_Next"), COLOR_ORANGE, 0.5f);
+					String itemLabel = getItemLabel(engine.getNextObject(engine.nextPieceCount));
+					if(itemLabel != null) NormalFontSDL.printFont(x2 + 32, y + 56, itemLabel, COLOR_WHITE, 0.5f);
 
 					for(int i = 0; i < engine.ruleopt.nextDisplay; i++) {
 						Piece piece = engine.getNextObject(engine.nextPieceCount + i);
@@ -1227,13 +1281,19 @@ public class RendererSDL extends EventReceiver {
 			} else {
 				// NEXT1
 				if(engine.ruleopt.nextDisplay >= 1) {
-					NormalFontSDL.printFont(x + 60, y, NullpoMinoSDL.getUIText("InGame_Next"), COLOR_ORANGE, 0.5f);
-
 					Piece piece = engine.getNextObject(engine.nextPieceCount);
+					NormalFontSDL.printFont(x + 60, y, NullpoMinoSDL.getUIText("InGame_Next"), COLOR_ORANGE, 0.5f);
 					if(piece != null) {
 						int x2 = x + 4 + engine.getSpawnPosX(engine.field, piece) * fldBlkSize;
 						int y2 = y + 48 - ((piece.getMaximumBlockY() + 1) * 16);
 						drawPiece(x2, y2, piece);
+
+						String itemLabel = getItemLabel(piece);
+						if(itemLabel != null) {
+							int blockRight = x2 + (piece.getMaximumBlockX() + 1) * 16;
+							int blockCenterY = y2 + ((piece.getMinimumBlockY() + piece.getMaximumBlockY() + 1) * 16) / 2;
+							NormalFontSDL.printFont(blockRight + 4, blockCenterY - 8, itemLabel, COLOR_WHITE, 0.5f);
+						}
 					}
 				}
 

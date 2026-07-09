@@ -1,12 +1,15 @@
 package nullpomino.gui.sdl;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import nullpomino.util.CustomProperties;
+import nullpomino.game.component.Block;
+import nullpomino.game.component.Piece;
 
 /**
  * Pins the logic paths in {@link RendererSDL} that don't need an SDL
@@ -128,5 +131,17 @@ class RendererSDLLogicTest {
 		// Must not throw regardless of argument
 		renderer.setGraphics(null);
 		renderer.setGraphics(new Object());
+	}
+
+	@Test
+	void itemLabelsIdentifyTheQueuedItemType() {
+		Piece freeFall = new Piece(Piece.PIECE_T);
+		for(Block block : freeFall.block) block.item = Block.BLOCK_ITEM_FREE_FALL;
+		assertEquals("FREE\nFALL", RendererSDL.getItemLabel(freeFall));
+
+		Piece delEven = new Piece(Piece.PIECE_I);
+		for(Block block : delEven.block) block.item = Block.BLOCK_ITEM_DEL_EVEN;
+		assertEquals("DELETE\nEVEN", RendererSDL.getItemLabel(delEven));
+		assertNull(RendererSDL.getItemLabel(new Piece(Piece.PIECE_O)));
 	}
 }

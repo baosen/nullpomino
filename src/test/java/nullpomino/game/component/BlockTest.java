@@ -171,6 +171,21 @@ class BlockTest {
 	}
 
 	@Test
+	void scriptedItemsKeepTheirBlockColorAndUseDistinctAnimatedDrawColors() {
+		Block.rainbowPhase = 0;
+		Block freeFall = new Block(Block.BLOCK_COLOR_BLUE);
+		freeFall.item = Block.BLOCK_ITEM_FREE_FALL;
+		Block delEven = new Block(Block.BLOCK_COLOR_BLUE);
+		delEven.item = Block.BLOCK_ITEM_DEL_EVEN;
+
+		assertEquals(3, Block.MAX_ITEM);
+		assertEquals(Block.BLOCK_COLOR_BLUE, freeFall.color);
+		assertEquals(Block.BLOCK_COLOR_BLUE, delEven.color);
+		assertEquals(Block.BLOCK_COLOR_RED, freeFall.getDrawColor());
+		assertEquals(Block.BLOCK_COLOR_GREEN, delEven.getDrawColor());
+	}
+
+	@Test
 	void blockToCharEncodesColorsBelowAndAboveTen() {
 		assertEquals('0', new Block(Block.BLOCK_COLOR_NONE).blockToChar());
 		assertEquals('9', new Block(Block.BLOCK_COLOR_GEM_RED).blockToChar());
