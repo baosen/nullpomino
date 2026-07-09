@@ -108,6 +108,18 @@ final class DomEventBridge {
 		document.addEventListener("fullscreenchange", fsChange);
 		document.addEventListener("webkitfullscreenchange", fsChange);
 
+		// Browsers hide gamepads from navigator.getGamepads() until the user
+		// presses a controller button (gamepadconnected fires then). Feed both
+		// connect and disconnect through the SDL queue so the core's hotplug
+		// path re-enumerates at exactly the right moments.
+		EventListener<Event> padChange = e -> {
+			SDLStructs.SDL_Event ev = new SDLStructs.SDL_Event();
+			ev.type = SDLConstants.SDL_EVENT_JOYSTICK_ADDED;
+			queue.add(ev);
+		};
+		Window.current().addEventListener("gamepadconnected", padChange);
+		Window.current().addEventListener("gamepaddisconnected", padChange);
+
 		EventListener<MouseEvent> move = e -> {
 			mouseX = e.getOffsetX();
 			mouseY = e.getOffsetY();

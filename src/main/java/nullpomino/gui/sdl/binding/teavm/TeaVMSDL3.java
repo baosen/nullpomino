@@ -1,7 +1,10 @@
 package nullpomino.gui.sdl.binding.teavm;
 
 import org.teavm.jso.JSBody;
+import org.teavm.jso.browser.Navigator;
 import org.teavm.jso.browser.Window;
+import org.teavm.jso.gamepad.Gamepad;
+import org.teavm.jso.gamepad.GamepadButton;
 
 import nullpomino.gui.sdl.binding.Ref.FloatRef;
 import nullpomino.gui.sdl.binding.SDL3;
@@ -15,8 +18,9 @@ import nullpomino.gui.sdl.binding.SdlHandles.SdlWindow;
 
 /**
  * TeaVM/Canvas2D implementation of the neutral {@link SDL3} interface. Mirrors
- * the desktop web backend method-for-method; joystick and screenshot are no-ops
- * (all null-guarded in the frontend). Fullscreen drives the browser Fullscreen
+ * the desktop web backend method-for-method; screenshot is a no-op (null-guarded
+ * in the frontend). Joystick/gamepad read the browser Gamepad API — see
+ * {@code WebPad}. Fullscreen drives the browser Fullscreen
  * API via {@link CanvasWindow}. Clipboard uses an in-app fallback plus a
  * best-effort async write to the system clipboard.
  */
@@ -211,20 +215,94 @@ final class TeaVMSDL3 implements SDL3 {
 		return window.bridge.mouseButtonMask();
 	}
 
-	@Override public int[] SDL_GetJoysticks() { return new int[0]; }
-	@Override public SdlJoystick SDL_OpenJoystick(int instanceId) { return null; }
+	/**
+	 * Controller handle = pad slot in navigator.getGamepads(). The live Gamepad
+	 * object is re-fetched on every call because Chrome returns immutable
+	 * per-frame snapshots; a disconnected pad simply reads as all-zero until the
+	 * gamepaddisconnected event makes the core re-enumerate.
+	 */
+	private static final class WebPad implements SdlJoystick, SdlGamepad {
+		final int index;
+		WebPad(int index) { this.index = index; }
+	}
+
+	/** SDL_GamepadButton ordinal → W3C standard-mapping button index. They are
+	 *  not identical: SDL puts BACK/GUIDE/START at 4-6, W3C puts shoulders at 4-5. */
+	private static final int[] W3C_BUTTON = {0, 1, 2, 3, 8, 16, 9, 10, 11, 4, 5, 12, 13, 14, 15};
+	// ponytail: triggers unmapped on purpose — SDL exposes them only as axes,
+	// so there is no consistent button ordinal for them on either backend.
+
+	private static Gamepad pad(int index) {
+		Gamepad[] pads = Navigator.getGamepads();
+		if (pads == null || index < 0 || index >= pads.length) return null;
+		return pads[index];
+	}
+
+	private static Gamepad pad(Object handle) {
+		return handle instanceof WebPad ? pad(((WebPad) handle).index) : null;
+	}
+
+	@Override public int[] SDL_GetJoysticks() {
+		Gamepad[] pads = Navigator.getGamepads();
+		if (pads == null) return new int[0];
+		// Instance ids are the array slots; getGamepads() keeps null holes.
+		int count = 0;
+		for (Gamepad p : pads) if (p != null) count++;
+		int[] ids = new int[count];
+		int n = 0;
+		for (int i = 0; i < pads.length; i++) {
+			if (pads[i] != null) ids[n++] = i;
+		}
+		return ids;
+	}
+
+	@Override public SdlJoystick SDL_OpenJoystick(int instanceId) {
+		return pad(instanceId) != null ? new WebPad(instanceId) : null;
+	}
 	@Override public void SDL_CloseJoystick(SdlJoystick joystick) {}
-	@Override public short SDL_GetJoystickAxis(SdlJoystick joystick, int axis) { return 0; }
-	@Override public byte SDL_GetJoystickButton(SdlJoystick joystick, int button) { return 0; }
+	@Override public short SDL_GetJoystickAxis(SdlJoystick joystick, int axis) {
+		Gamepad p = pad(joystick);
+		if (p == null) return 0;
+		double[] axes = p.getAxes();
+		return axis >= 0 && axis < axes.length ? (short) (axes[axis] * 32767) : 0;
+	}
+	@Override public byte SDL_GetJoystickButton(SdlJoystick joystick, int button) {
+		Gamepad p = pad(joystick);
+		if (p == null) return 0;
+		GamepadButton[] buttons = p.getButtons();
+		return (byte) (button >= 0 && button < buttons.length && buttons[button].isPressed() ? 1 : 0);
+	}
+	// W3C gamepads have no hats outside the standard mapping (d-pads show up as
+	// extra buttons or axes on non-standard pads).
 	@Override public byte SDL_GetJoystickHat(SdlJoystick joystick, int hat) { return 0; }
-	@Override public int SDL_GetNumJoystickButtons(SdlJoystick joystick) { return 0; }
+	@Override public int SDL_GetNumJoystickButtons(SdlJoystick joystick) {
+		Gamepad p = pad(joystick);
+		return p == null ? 0 : p.getButtons().length;
+	}
 	@Override public int SDL_GetNumJoystickHats(SdlJoystick joystick) { return 0; }
 
-	@Override public byte SDL_IsGamepad(int instanceId) { return 0; }
-	@Override public SdlGamepad SDL_OpenGamepad(int instanceId) { return null; }
+	@Override public byte SDL_IsGamepad(int instanceId) {
+		Gamepad p = pad(instanceId);
+		return (byte) (p != null && "standard".equals(p.getMapping()) ? 1 : 0);
+	}
+	@Override public SdlGamepad SDL_OpenGamepad(int instanceId) {
+		return pad(instanceId) != null ? new WebPad(instanceId) : null;
+	}
 	@Override public void SDL_CloseGamepad(SdlGamepad gamepad) {}
-	@Override public byte SDL_GetGamepadButton(SdlGamepad gamepad, int button) { return 0; }
-	@Override public short SDL_GetGamepadAxis(SdlGamepad gamepad, int axis) { return 0; }
+	@Override public byte SDL_GetGamepadButton(SdlGamepad gamepad, int button) {
+		Gamepad p = pad(gamepad);
+		if (p == null || button < 0 || button >= W3C_BUTTON.length) return 0;
+		GamepadButton[] buttons = p.getButtons();
+		int w3c = W3C_BUTTON[button];
+		return (byte) (w3c < buttons.length && buttons[w3c].isPressed() ? 1 : 0);
+	}
+	@Override public short SDL_GetGamepadAxis(SdlGamepad gamepad, int axis) {
+		// W3C axes 0/1 are the left stick, same order and sign as SDL LEFTX/LEFTY.
+		Gamepad p = pad(gamepad);
+		if (p == null) return 0;
+		double[] axes = p.getAxes();
+		return axis >= 0 && axis < axes.length ? (short) (axes[axis] * 32767) : 0;
+	}
 
 	@Override public byte SDL_ShowSimpleMessageBox(int flags, String title, String message, SdlWindow w) {
 		Window.alert(title + "\n\n" + message);
