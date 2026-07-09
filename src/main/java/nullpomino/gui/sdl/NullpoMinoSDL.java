@@ -1085,6 +1085,7 @@ public class NullpoMinoSDL {
 		// Per-frame widget event buffers reset at the top of each poll.
 		frameKeyEvents.clear();
 		mouseWheelDelta = 0;
+		boolean joyChanged = false;
 
 		while(SDL3.INSTANCE.SDL_PollEvent(event) != 0) {
 			int type = event.getType();
@@ -1116,8 +1117,18 @@ public class NullpoMinoSDL {
 				if(syncFullscreenFlag(true)) saveConfig();
 			} else if(type == SDLConstants.SDL_EVENT_WINDOW_LEAVE_FULLSCREEN) {
 				if(syncFullscreenFlag(false)) saveConfig();
+			} else if(type == SDLConstants.SDL_EVENT_JOYSTICK_ADDED
+					|| type == SDLConstants.SDL_EVENT_JOYSTICK_REMOVED) {
+				joyChanged = true;
 			}
 			// Window resize events are handled automatically by SDL_SetRenderLogicalPresentation
+		}
+
+		if(joyChanged) {
+			// Hotplug: no per-device bookkeeping, just re-enumerate everything.
+			closeJoysticks();
+			initJoysticks();
+			log.info("Joystick change detected, re-enumerated: {}", joystickMax);
 		}
 	}
 

@@ -43,6 +43,8 @@ public class StateConfigJoystickTestSDL extends BaseStateSDL {
 	 */
 	protected void reset() {
 		joyNumber = NullpoMinoSDL.joyUseNumber[player];
+		// Configured device may not be connected (or gone after hotplug)
+		if(joyNumber >= NullpoMinoSDL.joyMaxButton.length) joyNumber = -1;
 		lastPressButton = -1;
 		frame = 0;
 		if(joyNumber >= 0) previousJoyPressedState = new boolean[NullpoMinoSDL.joyMaxButton[joyNumber]];
@@ -109,6 +111,13 @@ public class StateConfigJoystickTestSDL extends BaseStateSDL {
 	 */
 	@Override
 	public void update() {
+		// Hotplug may have re-enumerated devices since reset(); re-sync before
+		// indexing joyPressedState/joyMaxButton with stale sizes.
+		if(joyNumber >= 0 && (joyNumber >= NullpoMinoSDL.joyMaxButton.length
+				|| previousJoyPressedState.length != NullpoMinoSDL.joyMaxButton[joyNumber])) {
+			reset();
+		}
+
 		MouseInputSDL.mouseInput.update();
 
 		if(closeBtn.update(MouseInputSDL.mouseInput.getMouseX(), MouseInputSDL.mouseInput.getMouseY(), MouseInputSDL.mouseInput.isMouseClicked())) return;
