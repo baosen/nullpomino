@@ -40,6 +40,8 @@ class ScoreAttackModeGameLogicTest {
 
 		assertEquals(0, readInt(mode, "gravityindex"));
 		assertEquals(0, readInt(mode, "comboValue"));
+		assertEquals(0, readInt(mode, "harddropBonus"));
+		assertEquals(3, readInt(mode, "version"));
 		assertEquals(-1, readInt(mode, "rankingRank"));
 		assertEquals(25, engine.speed.are);
 		assertEquals(25, engine.speed.areLine);
@@ -63,6 +65,7 @@ class ScoreAttackModeGameLogicTest {
 
 		CustomProperties prop = new CustomProperties();
 		invokeSaveSetting(mode, prop);
+		assertEquals(3, prop.getProperty("scoreattack.version", -1));
 
 		ScoreAttackMode dest = new ScoreAttackMode();
 		GameEngine destEngine = freshEngine(dest);
@@ -74,6 +77,7 @@ class ScoreAttackModeGameLogicTest {
 		assertTrue(readBoolean(dest, "always20g"));
 		assertTrue(readBoolean(dest, "showsectiontime"));
 		assertTrue(readBoolean(dest, "big"));
+		assertEquals(3, readInt(dest, "version"));
 	}
 
 	@Test
@@ -138,10 +142,25 @@ class ScoreAttackModeGameLogicTest {
 		mode.playerInit(engine, 0);
 		engine.ending = 0;
 		engine.createFieldIfNeeded();
+		setInt(mode, "harddropBonus", 10);
 
 		mode.calcScore(engine, 0, 0);
 
 		assertEquals(1, readInt(mode, "comboValue"));
+		assertEquals(0, readInt(mode, "harddropBonus"));
+	}
+
+	@Test
+	void calcScoreLegacyReplayKeepsHarddropBonus() throws Exception {
+		ScoreAttackMode mode = new ScoreAttackMode();
+		GameEngine engine = freshEngine(mode);
+		mode.playerInit(engine, 0);
+		setInt(mode, "version", 2);
+		setInt(mode, "harddropBonus", 10);
+
+		mode.calcScore(engine, 0, 0);
+
+		assertEquals(10, readInt(mode, "harddropBonus"));
 	}
 
 	@Test
@@ -161,8 +180,26 @@ class ScoreAttackModeGameLogicTest {
 		// levelb = 0, level = 1
 		// bravo = 4 (field empty)
 		// speedBonus = getLockDelay(30) - statc[0](0) = 30
-		// lastscore = 6 * (((0+1)/4 + 0 + 0 + 0) * 1 * 1 * 4 + (1/2) + (30*7))
-		// = 6 * (0*4 + 0 + 210) = 6 * 210 = 1260
+		// The corrected formula uses ceiling division for both level terms:
+		// lastscore = 6 * (ceil((0+1)/4) * 1 * 1 * 4 + ceil(1/2) + 30*7)
+		// = 6 * (4 + 1 + 210) = 1290
+		assertEquals(1290, readInt(mode, "lastscore"));
+	}
+
+	@Test
+	void calcScoreLegacyReplayKeepsTruncatingDivision() throws Exception {
+		ScoreAttackMode mode = new ScoreAttackMode();
+		GameEngine engine = freshEngine(mode);
+		mode.playerInit(engine, 0);
+		setInt(mode, "version", 2);
+		engine.ending = 0;
+		engine.nowPieceObject = new Piece(Piece.PIECE_T);
+		engine.createFieldIfNeeded();
+		setInt(mode, "comboValue", 1);
+		engine.statistics.level = 0;
+
+		mode.calcScore(engine, 0, 1);
+
 		assertEquals(1260, readInt(mode, "lastscore"));
 	}
 

@@ -82,9 +82,8 @@ class ScoreAttackModeBranchCoverageTest {
 
 		// comboValue = 1 + 2*1 - 2 = 1; levelb=0, level=1; bravo=1 (not empty);
 		// manuallock=1; speedBonus = getLockDelay(30) - 0 = 30
-		// lastscore = 6 * (((0+1)/4 + 0 + 1 + 0) * 1 * 1 * 1 + (1/2) + 30*7)
-		//           = 6 * (1 + 0 + 210) = 6 * 211 = 1266
-		assertEquals(1266, readInt(mode, "lastscore"));
+		// Corrected ceiling terms make this 6 * (ceil(1/4) + 1 + ceil(1/2) + 30*7).
+		assertEquals(1278, readInt(mode, "lastscore"));
 	}
 
 	@Test
@@ -103,8 +102,8 @@ class ScoreAttackModeBranchCoverageTest {
 		mode.calcScore(engine, 0, 1);
 
 		// bravo=4 (empty field), speedBonus clamped to 0
-		// lastscore = 6 * (((0+1)/4 + 0 + 0 + 0) * 1 * 1 * 4 + (1/2) + 0) = 6 * 0 = 0
-		assertEquals(0, readInt(mode, "lastscore"));
+		// Corrected ceiling terms contribute ceil(1/4)*4 + ceil(1/2) = 5.
+		assertEquals(30, readInt(mode, "lastscore"));
 	}
 
 	// ────────────────────────────────────────────────────────────────

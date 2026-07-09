@@ -89,7 +89,7 @@ class ScoreAttackModeSetSpeedTest {
 
 	@Test
 	void currentVersionSlowsDownAtLevel101And201NotTheHundreds() throws Exception {
-		// As of the item version the section slow-down (gravity reset) is deferred
+		// As of version 2 the section slow-down (gravity reset) is deferred
 		// one level so it coincides with the scripted item entering the field.
 		// tableGravityValue: [9]=64, [10]=4 (section 1), [20]=144, [21]=16 (section 2).
 		// playerInit on a non-replay engine sets version = CURRENT_VERSION.
@@ -111,6 +111,31 @@ class ScoreAttackModeSetSpeedTest {
 		engine.statistics.level = 201;
 		invokeSetSpeed(mode, engine);
 		assertEquals(16, engine.speed.gravity, "slow-down at level 201");
+	}
+
+	@Test
+	void currentVersionUsesCorrectThresholdAtLevel156() throws Exception {
+		ScoreAttackMode mode = new ScoreAttackMode();
+		GameEngine engine = freshEngine(mode);
+		mode.playerInit(engine, 0);
+		setBoolean(mode, "always20g", false);
+
+		assertGravity(mode, engine, 148, 32);
+		assertGravity(mode, engine, 149, 48);
+		assertGravity(mode, engine, 155, 48);
+		assertGravity(mode, engine, 156, 80);
+	}
+
+	@Test
+	void versionTwoReplayKeepsLegacyLevel149GravityJump() throws Exception {
+		ScoreAttackMode mode = new ScoreAttackMode();
+		GameEngine engine = freshEngine(mode);
+		mode.playerInit(engine, 0);
+		setInt(mode, "version", 2);
+		setBoolean(mode, "always20g", false);
+
+		assertGravity(mode, engine, 148, 32);
+		assertGravity(mode, engine, 149, 80);
 	}
 
 	@Test
@@ -160,6 +185,14 @@ class ScoreAttackModeSetSpeedTest {
 				"setSpeed", GameEngine.class);
 		m.setAccessible(true);
 		m.invoke(mode, engine);
+	}
+
+	private static void assertGravity(ScoreAttackMode mode, GameEngine engine,
+			int level, int expected) throws Exception {
+		setInt(mode, "gravityindex", 0);
+		engine.statistics.level = level;
+		invokeSetSpeed(mode, engine);
+		assertEquals(expected, engine.speed.gravity, "gravity at level " + level);
 	}
 
 	private static void setInt(Object instance, String name, int value)

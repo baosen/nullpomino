@@ -15,13 +15,16 @@ import nullpomino.util.GeneralUtil;
  */
 public class ScoreAttackMode extends AbstractManiaMode {
 	/** Current version */
-	private static final int CURRENT_VERSION = 2;
+	private static final int CURRENT_VERSION = 3;
 
 	/** Scripted items are available from this replay version onward. */
 	private static final int ITEM_VERSION = 1;
 
 	/** The section slow-down moved from level 100/200 to 101/201 in this version. */
 	private static final int SLOWDOWN_SHIFT_VERSION = 2;
+
+	/** Corrected gravity, score rounding, and per-piece sonic-drop bonus. */
+	private static final int ACCURACY_FIX_VERSION = 3;
 
 	/** Gravity table (Gravity speed value) */
 	private static final int[] tableGravityValue =
@@ -32,7 +35,7 @@ public class ScoreAttackMode extends AbstractManiaMode {
 	/** Gravity table (Gravity change level) */
 	private static final int[] tableGravityChangeLevel =
 	{
-		8, 19, 35, 40, 50, 60, 70, 80, 90, 101, 108, 119, 125, 131, 139, 149, 146, 164, 174, 180, 201, 212, 221, 232, 244, 256, 267, 277, 287, 295, 300, 10000
+		8, 19, 35, 40, 50, 60, 70, 80, 90, 101, 108, 119, 125, 131, 139, 149, 156, 164, 174, 180, 201, 212, 221, 232, 244, 256, 267, 277, 287, 295, 300, 10000
 	};
 
 	/** Ending time limit */
@@ -139,6 +142,7 @@ public class ScoreAttackMode extends AbstractManiaMode {
 		nextseclv = 0;
 		lvupflag = true;
 		comboValue = 0;
+		harddropBonus = 0;
 		lastscore = 0;
 		scgettime = 0;
 		rolltime = 0;
@@ -238,6 +242,7 @@ public class ScoreAttackMode extends AbstractManiaMode {
 	private int gravityChangeLevel(int index) {
 		int level = tableGravityChangeLevel[index];
 		if(version < SLOWDOWN_SHIFT_VERSION && (level == 101 || level == 201)) return level - 1;
+		if(version < ACCURACY_FIX_VERSION && level == 156) return 146;
 		return level;
 	}
 
@@ -719,11 +724,20 @@ public class ScoreAttackMode extends AbstractManiaMode {
 			int speedBonus = engine.getLockDelay() - engine.statc[0];
 			if(speedBonus < 0) speedBonus = 0;
 
-			lastscore = 6*(((levelb + lines)/4 + engine.softdropFall + manuallock + harddropBonus) * lines * comboValue * bravo +
-						(engine.statistics.level / 2) + (speedBonus * 7));
+			int levelQuarter = (levelb + lines) / 4;
+			int levelHalf = engine.statistics.level / 2;
+			if(version >= ACCURACY_FIX_VERSION) {
+				levelQuarter = (levelb + lines + 3) / 4;
+				levelHalf = (engine.statistics.level + 1) / 2;
+			}
+
+			lastscore = 6*((levelQuarter + engine.softdropFall + manuallock + harddropBonus) * lines * comboValue * bravo +
+						levelHalf + (speedBonus * 7));
 			engine.statistics.score += lastscore;
 			scgettime = 120;
 		}
+
+		if(version >= ACCURACY_FIX_VERSION) harddropBonus = 0;
 	}
 
 
