@@ -74,17 +74,17 @@ public class StateConfigJoystickTestSDL extends BaseStateSDL {
 	public void render() {
 		SDL3.INSTANCE.SDL_RenderTexture(NullpoMinoSDL.renderer, ResourceHolderSDL.imgMenu, null, null);
 
-		NormalFontSDL.printFontGrid(1, 1, "JOYSTICK INPUT TEST (" + (player + 1) + "P)", NormalFontSDL.COLOR_ORANGE);
+		NormalFontSDL.printFontGrid(1, 1, "GAMEPAD INPUT TEST (" + (player + 1) + "P)", NormalFontSDL.COLOR_ORANGE);
 
 		if(joyNumber < 0) {
 			NormalFontSDL.printFontGrid(1, 3, "NO GAMEPAD", NormalFontSDL.COLOR_RED);
 		} else if(frame >= KEYACCEPTFRAME) {
 			NormalFontSDL.printFontGrid(1, 3, "GAMEPAD:" + joyNumber + " (" + NullpoMinoSDL.joyName[joyNumber] + ")", NormalFontSDL.COLOR_RED);
 
-			NormalFontSDL.printFontGrid(1, 5, "LAST PRESSED BUTTON:" + ((lastPressButton == -1) ? "NONE" : String.valueOf(lastPressButton)));
+			NormalFontSDL.printFontGrid(1, 5, "LAST PRESSED BUTTON:" + NullpoMinoSDL.gamepadButtonName(lastPressButton));
 
-			NormalFontSDL.printFontGrid(1, 7, "AXIS X:" + NullpoMinoSDL.joyAxisX[joyNumber]);
-			NormalFontSDL.printFontGrid(1, 8, "AXIS Y:" + NullpoMinoSDL.joyAxisY[joyNumber]);
+			NormalFontSDL.printFontGrid(1, 7, "STICK X:" + NullpoMinoSDL.joyAxisX[joyNumber]);
+			NormalFontSDL.printFontGrid(1, 8, "STICK Y:" + NullpoMinoSDL.joyAxisY[joyNumber]);
 
 			String strHat = "";
 			int hat = NullpoMinoSDL.joyHatState[joyNumber];
@@ -96,7 +96,7 @@ public class StateConfigJoystickTestSDL extends BaseStateSDL {
 				if((hat & GameKeySDL.SDL_HAT_LEFT) != 0) strHat += "LEFT ";
 				if((hat & GameKeySDL.SDL_HAT_RIGHT) != 0) strHat += "RIGHT ";
 			}
-			NormalFontSDL.printFontGrid(1, 10, "POV:" + strHat);
+			NormalFontSDL.printFontGrid(1, 10, "D-PAD:" + strHat);
 		}
 
 		if(frame >= KEYACCEPTFRAME) {

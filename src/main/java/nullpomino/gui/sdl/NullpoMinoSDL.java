@@ -1218,6 +1218,19 @@ public class NullpoMinoSDL {
 		return Math.abs(v) < 8192 ? 0 : v;
 	}
 
+	/** Display names for SDL_GamepadButton ordinals 0-14 (Xbox/PS combined). */
+	static final String[] GAMEPAD_BUTTON_NAMES = {
+		"A/CROSS", "B/CIRCLE", "X/SQUARE", "Y/TRIANGLE",
+		"BACK/SHARE", "GUIDE", "START/OPTIONS", "L3", "R3",
+		"LB/L1", "RB/R1",
+		"D-PAD UP", "D-PAD DOWN", "D-PAD LEFT", "D-PAD RIGHT",
+	};
+
+	/** @return display name for a gamepad button ordinal; -1/out-of-range → "NONE" */
+	static String gamepadButtonName(int button) {
+		return (button >= 0 && button < GAMEPAD_BUTTON_NAMES.length) ? GAMEPAD_BUTTON_NAMES[button] : "NONE";
+	}
+
 	/** Normalize a device name for the 40-col bitmap font: uppercase, max 24
 	 *  chars (web Gamepad ids are long, e.g. "Xbox 360 Controller (XInput
 	 *  STANDARD GAMEPAD Vendor: 045e ...)"). */

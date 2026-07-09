@@ -399,6 +399,16 @@ class NullpoMinoSDLLogicTest {
 	}
 
 	@Test
+	void gamepadButtonNameCoversAllOrdinalsAndFallsBackToNone() {
+		assertEquals(SDLConstants.SDL_GAMEPAD_NUM_BUTTONS, NullpoMinoSDL.GAMEPAD_BUTTON_NAMES.length);
+		assertEquals("A/CROSS", NullpoMinoSDL.gamepadButtonName(SDLConstants.SDL_GAMEPAD_BUTTON_SOUTH));
+		assertEquals("LB/L1", NullpoMinoSDL.gamepadButtonName(SDLConstants.SDL_GAMEPAD_BUTTON_LEFT_SHOULDER));
+		assertEquals("D-PAD RIGHT", NullpoMinoSDL.gamepadButtonName(SDLConstants.SDL_GAMEPAD_BUTTON_DPAD_RIGHT));
+		assertEquals("NONE", NullpoMinoSDL.gamepadButtonName(-1), "unbound renders NONE");
+		assertEquals("NONE", NullpoMinoSDL.gamepadButtonName(15), "stale out-of-range config renders NONE");
+	}
+
+	@Test
 	void padDisplayNameNormalizesForTheBitmapFont() {
 		assertEquals("UNKNOWN", NullpoMinoSDL.padDisplayName(null));
 		assertEquals("UNKNOWN", NullpoMinoSDL.padDisplayName(""));

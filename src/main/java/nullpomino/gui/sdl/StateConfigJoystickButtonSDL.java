@@ -66,13 +66,14 @@ public class StateConfigJoystickButtonSDL extends BaseStateSDL {
 	}
 
 	/**
-	 * Pressed buttonOf numberReturns
+	 * Pressed buttonOf numberReturns. D-pad ordinals (11-14) are excluded —
+	 * they drive the directions exclusively and can't be bound to actions.
 	 * @param prev Previous frame In input State
 	 * @param now This frame In input State
 	 * @return Pressed buttonOf number, If you do not-1
 	 */
 	protected int getPressedKeyNumber(boolean[] prev, boolean[] now) {
-		for(int i = 0; i < now.length; i++) {
+		for(int i = 0; i < now.length && i < SDLConstants.SDL_GAMEPAD_BUTTON_DPAD_UP; i++) {
 			if(prev[i] != now[i]) {
 				return i;
 			}
@@ -88,25 +89,25 @@ public class StateConfigJoystickButtonSDL extends BaseStateSDL {
 	public void render() {
 		SDL3.INSTANCE.SDL_RenderTexture(NullpoMinoSDL.renderer, ResourceHolderSDL.imgMenu, null, null);
 
-		NormalFontSDL.printFontGrid(1, 1, "JOYSTICK BUTTON SETTING (" + (player + 1) + "P)", NormalFontSDL.COLOR_ORANGE);
+		NormalFontSDL.printFontGrid(1, 1, "GAMEPAD BUTTON SETTING (" + (player + 1) + "P)", NormalFontSDL.COLOR_ORANGE);
 
 		if(previousJoyPressedState == null)
 			NormalFontSDL.printFontGrid(1, 3, "NO GAMEPAD", NormalFontSDL.COLOR_RED);
 		else
 			NormalFontSDL.printFontGrid(1, 3, "GAMEPAD:" + joyNumber + " (" + NullpoMinoSDL.joyName[joyNumber] + ")", NormalFontSDL.COLOR_RED);
 
-		NormalFontSDL.printFontGrid(2, 5, "A (L/R-ROT)    : " + String.valueOf(buttonmap[GameKeySDL.BUTTON_A]), (keynum == 4));
-		NormalFontSDL.printFontGrid(2, 6, "B (R/L-ROT)    : " + String.valueOf(buttonmap[GameKeySDL.BUTTON_B]), (keynum == 5));
-		NormalFontSDL.printFontGrid(2, 7, "C (L/R-ROT)    : " + String.valueOf(buttonmap[GameKeySDL.BUTTON_C]), (keynum == 6));
-		NormalFontSDL.printFontGrid(2, 8, "D (HOLD)       : " + String.valueOf(buttonmap[GameKeySDL.BUTTON_D]), (keynum == 7));
-		NormalFontSDL.printFontGrid(2, 9, "E (180-ROT)    : " + String.valueOf(buttonmap[GameKeySDL.BUTTON_E]), (keynum == 8));
-		NormalFontSDL.printFontGrid(2, 10, "F              : " + String.valueOf(buttonmap[GameKeySDL.BUTTON_F]), (keynum == 9));
-		NormalFontSDL.printFontGrid(2, 11, "QUIT           : " + String.valueOf(buttonmap[GameKeySDL.BUTTON_QUIT]), (keynum == 10));
-		NormalFontSDL.printFontGrid(2, 12, "PAUSE          : " + String.valueOf(buttonmap[GameKeySDL.BUTTON_PAUSE]), (keynum == 11));
-		NormalFontSDL.printFontGrid(2, 13, "GIVEUP         : " + String.valueOf(buttonmap[GameKeySDL.BUTTON_GIVEUP]), (keynum == 12));
-		NormalFontSDL.printFontGrid(2, 14, "RETRY          : " + String.valueOf(buttonmap[GameKeySDL.BUTTON_RETRY]), (keynum == 13));
-		NormalFontSDL.printFontGrid(2, 15, "FRAME STEP     : " + String.valueOf(buttonmap[GameKeySDL.BUTTON_FRAMESTEP]), (keynum == 14));
-		NormalFontSDL.printFontGrid(2, 16, "SCREEN SHOT    : " + String.valueOf(buttonmap[GameKeySDL.BUTTON_SCREENSHOT]), (keynum == 15));
+		NormalFontSDL.printFontGrid(2, 5, "A (L/R-ROT)    : " + NullpoMinoSDL.gamepadButtonName(buttonmap[GameKeySDL.BUTTON_A]), (keynum == 4));
+		NormalFontSDL.printFontGrid(2, 6, "B (R/L-ROT)    : " + NullpoMinoSDL.gamepadButtonName(buttonmap[GameKeySDL.BUTTON_B]), (keynum == 5));
+		NormalFontSDL.printFontGrid(2, 7, "C (L/R-ROT)    : " + NullpoMinoSDL.gamepadButtonName(buttonmap[GameKeySDL.BUTTON_C]), (keynum == 6));
+		NormalFontSDL.printFontGrid(2, 8, "D (HOLD)       : " + NullpoMinoSDL.gamepadButtonName(buttonmap[GameKeySDL.BUTTON_D]), (keynum == 7));
+		NormalFontSDL.printFontGrid(2, 9, "E (180-ROT)    : " + NullpoMinoSDL.gamepadButtonName(buttonmap[GameKeySDL.BUTTON_E]), (keynum == 8));
+		NormalFontSDL.printFontGrid(2, 10, "F              : " + NullpoMinoSDL.gamepadButtonName(buttonmap[GameKeySDL.BUTTON_F]), (keynum == 9));
+		NormalFontSDL.printFontGrid(2, 11, "QUIT           : " + NullpoMinoSDL.gamepadButtonName(buttonmap[GameKeySDL.BUTTON_QUIT]), (keynum == 10));
+		NormalFontSDL.printFontGrid(2, 12, "PAUSE          : " + NullpoMinoSDL.gamepadButtonName(buttonmap[GameKeySDL.BUTTON_PAUSE]), (keynum == 11));
+		NormalFontSDL.printFontGrid(2, 13, "GIVEUP         : " + NullpoMinoSDL.gamepadButtonName(buttonmap[GameKeySDL.BUTTON_GIVEUP]), (keynum == 12));
+		NormalFontSDL.printFontGrid(2, 14, "RETRY          : " + NullpoMinoSDL.gamepadButtonName(buttonmap[GameKeySDL.BUTTON_RETRY]), (keynum == 13));
+		NormalFontSDL.printFontGrid(2, 15, "FRAME STEP     : " + NullpoMinoSDL.gamepadButtonName(buttonmap[GameKeySDL.BUTTON_FRAMESTEP]), (keynum == 14));
+		NormalFontSDL.printFontGrid(2, 16, "SCREEN SHOT    : " + NullpoMinoSDL.gamepadButtonName(buttonmap[GameKeySDL.BUTTON_SCREENSHOT]), (keynum == 15));
 
 		NormalFontSDL.printFontGrid(1, 5 + keynum - 4, "b", NormalFontSDL.COLOR_RED);
 

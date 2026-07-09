@@ -137,6 +137,22 @@ class StateConfigJoystickButtonSDLTest {
 	}
 
 	@Test
+	void getPressedKeyNumberIgnoresDpadOrdinals() throws Exception {
+		// D-pad (ordinals 11-14) drives the directions exclusively and must not
+		// be bindable to actions; ordinals up to 10 (RB/R1) still register.
+		StateConfigJoystickButtonSDL state = new StateConfigJoystickButtonSDL();
+		boolean[] prev = new boolean[SDLConstants.SDL_GAMEPAD_NUM_BUTTONS];
+		boolean[] now = new boolean[SDLConstants.SDL_GAMEPAD_NUM_BUTTONS];
+
+		now[SDLConstants.SDL_GAMEPAD_BUTTON_DPAD_DOWN] = true;
+		assertEquals(-1, invokeGetPressedKeyNumber(state, prev, now));
+
+		now[SDLConstants.SDL_GAMEPAD_BUTTON_RIGHT_SHOULDER] = true;
+		assertEquals(SDLConstants.SDL_GAMEPAD_BUTTON_RIGHT_SHOULDER,
+				invokeGetPressedKeyNumber(state, prev, now));
+	}
+
+	@Test
 	void getPressedKeyNumberDetectsReleasesAsWell() throws Exception {
 		// Releases (now=false where prev=true) also count as "first difference"
 		// — the user un-pressing a button is still an event the loop wants to

@@ -58,7 +58,7 @@ public class StateConfigMainMenuSDL extends DummyMenuChooseStateSDL {
 					true,
 					(state, player) -> ((StateConfigKeyboardResetSDL)state).player = player),
 			new MenuEntry(
-					"[JOYSTICK SETTING]",
+					"[GAMEPAD SETTING]",
 					"ConfigMainMenu_Joystick",
 					NullpoMinoSDL.STATE_CONFIG_JOYSTICK_MAIN,
 					true,
