@@ -504,7 +504,9 @@ public class NullpoMinoSDL {
 	 */
 	protected static void initJoysticks() {
 		joyUseNumber = new int[2];
-		joyUseNumber[0] = propConfig.getProperty("joyUseNumber.p0", -1);
+		// Player 1 uses the first controller out of the box (everything is
+		// guarded by joystickMax, so keyboard-only setups are unaffected).
+		joyUseNumber[0] = propConfig.getProperty("joyUseNumber.p0", 0);
 		joyUseNumber[1] = propConfig.getProperty("joyUseNumber.p1", -1);
 		joyIgnoreAxis = new boolean[2];
 		joyIgnoreAxis[0] = propConfig.getProperty("joyIgnoreAxis.p0", false);

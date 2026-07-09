@@ -45,7 +45,9 @@ public class StateConfigJoystickMainSDL extends BaseStateSDL {
 	 * @param prop Property file to read from
 	 */
 	protected void loadConfig(CustomProperties prop) {
-		joyUseNumber = prop.getProperty("joyUseNumber.p" + player, -1);
+		// Same default as NullpoMinoSDL.initJoysticks() — this screen saves the
+		// value back on OK, so a mismatched -1 here would disable the pad.
+		joyUseNumber = prop.getProperty("joyUseNumber.p" + player, player == 0 ? 0 : -1);
 		joyBorder = prop.getProperty("joyBorder.p" + player, 0);
 		joyIgnoreAxis = prop.getProperty("joyIgnoreAxis.p" + player, false);
 		joyIgnorePOV = prop.getProperty("joyIgnorePOV.p" + player, false);

@@ -42,6 +42,30 @@ class GameKeyDummyTest {
 	}
 
 	@Test
+	void loadConfigDefaultsPlayerOneFaceButtonsToGamepadOrdinals() {
+		TestKey key = new TestKey(0);
+
+		key.loadConfig(new CustomProperties());
+
+		assertEquals(0, key.buttonmap[GameKeyDummy.BUTTON_A], "SOUTH");
+		assertEquals(1, key.buttonmap[GameKeyDummy.BUTTON_B], "EAST");
+		assertEquals(2, key.buttonmap[GameKeyDummy.BUTTON_C], "WEST");
+		assertEquals(9, key.buttonmap[GameKeyDummy.BUTTON_D], "LEFT_SHOULDER");
+		assertEquals(-1, key.buttonmap[GameKeyDummy.BUTTON_E]);
+	}
+
+	@Test
+	void loadConfigLeavesPlayerTwoButtonmapUnbound() {
+		TestKey key = new TestKey(1);
+
+		key.loadConfig(new CustomProperties());
+
+		for (int i = GameKeyDummy.BUTTON_A; i <= GameKeyDummy.BUTTON_D; i++) {
+			assertEquals(-1, key.buttonmap[i]);
+		}
+	}
+
+	@Test
 	void clearZeroesEveryInputState() {
 		TestKey key = new TestKey();
 		for (int i = 0; i < GameKeyDummy.MAX_BUTTON; i++) {

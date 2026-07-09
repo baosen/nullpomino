@@ -159,10 +159,14 @@ public class GameKeyDummy {
 		//buttonmap[BUTTON_DOWN] = prop.getProperty("button.p" + player + ".down", 0);
 		//buttonmap[BUTTON_LEFT] = prop.getProperty("button.p" + player + ".left", 0);
 		//buttonmap[BUTTON_RIGHT] = prop.getProperty("button.p" + player + ".right", 0);
-		buttonmap[BUTTON_A] = prop.getProperty("button.p" + player + ".a", -1);
-		buttonmap[BUTTON_B] = prop.getProperty("button.p" + player + ".b", -1);
-		buttonmap[BUTTON_C] = prop.getProperty("button.p" + player + ".c", -1);
-		buttonmap[BUTTON_D] = prop.getProperty("button.p" + player + ".d", -1);
+		// Out-of-the-box defaults for player 1: gamepad-mapped devices use
+		// standardized SDL ordinals (SOUTH=0, EAST=1, WEST=2, LEFT_SHOULDER=9),
+		// and on nearly all raw HID pads 0-2 are face buttons anyway. Saved
+		// explicit values always win.
+		buttonmap[BUTTON_A] = prop.getProperty("button.p" + player + ".a", player == 0 ? 0 : -1);
+		buttonmap[BUTTON_B] = prop.getProperty("button.p" + player + ".b", player == 0 ? 1 : -1);
+		buttonmap[BUTTON_C] = prop.getProperty("button.p" + player + ".c", player == 0 ? 2 : -1);
+		buttonmap[BUTTON_D] = prop.getProperty("button.p" + player + ".d", player == 0 ? 9 : -1);
 		buttonmap[BUTTON_E] = prop.getProperty("button.p" + player + ".e", -1);
 		buttonmap[BUTTON_F] = prop.getProperty("button.p" + player + ".f", -1);
 		buttonmap[BUTTON_QUIT] = prop.getProperty("button.p" + player + ".quit", -1);
