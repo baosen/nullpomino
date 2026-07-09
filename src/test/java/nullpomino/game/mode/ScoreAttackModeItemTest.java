@@ -168,7 +168,7 @@ class ScoreAttackModeItemTest {
 		GameEngine engine = freshEngine(mode);
 		mode.playerInit(engine, 0);
 		assertTrue(readBoolean(mode, "enableitem"));
-		assertEquals(1, readInt(mode, "version"));
+		assertEquals(2, readInt(mode, "version"));
 		assertTrue(engine.rainbowAnimate);
 
 		setBoolean(mode, "enableitem", false);

@@ -63,20 +63,54 @@ class ScoreAttackModeSetSpeedTest {
 	}
 
 	@Test
-	void levelOneHundredAdvancesPastTenThresholds() throws Exception {
-		// thresholds at 8, 19, 35, 40, 50, 60, 70, 80, 90, 100 ->
-		// 100 advances past 10 thresholds -> gravityindex 10 ->
-		// gravity = tableGravityValue[10] = 4.
+	void preShiftReplaysStillSlowDownAtLevel100And200() throws Exception {
+		// Replays recorded before SLOWDOWN_SHIFT_VERSION (version 0 = pre-item,
+		// version 1 = the released item build) keep the original 100/200 timing so
+		// their recorded inputs stay in sync. gravityChangeLevel maps the table's
+		// 101/201 entries back to 100/200 -> level 100 advances to gravityindex 10
+		// (tableGravityValue[10] = 4) and level 200 to gravityindex 21 (=16).
+		for(int version : new int[] {0, 1}) {
+			ScoreAttackMode mode = new ScoreAttackMode();
+			GameEngine engine = freshEngine(mode);
+			setBoolean(mode, "always20g", false);
+			setInt(mode, "version", version);
+			setInt(mode, "gravityindex", 0);
+
+			engine.statistics.level = 100;
+			invokeSetSpeed(mode, engine);
+			assertEquals(4, engine.speed.gravity,
+					"version " + version + " -> slow-down still at level 100");
+			engine.statistics.level = 200;
+			invokeSetSpeed(mode, engine);
+			assertEquals(16, engine.speed.gravity,
+					"version " + version + " -> slow-down still at level 200");
+		}
+	}
+
+	@Test
+	void currentVersionSlowsDownAtLevel101And201NotTheHundreds() throws Exception {
+		// As of the item version the section slow-down (gravity reset) is deferred
+		// one level so it coincides with the scripted item entering the field.
+		// tableGravityValue: [9]=64, [10]=4 (section 1), [20]=144, [21]=16 (section 2).
+		// playerInit on a non-replay engine sets version = CURRENT_VERSION.
 		ScoreAttackMode mode = new ScoreAttackMode();
 		GameEngine engine = freshEngine(mode);
+		mode.playerInit(engine, 0);
 		setBoolean(mode, "always20g", false);
 		setInt(mode, "gravityindex", 0);
+
 		engine.statistics.level = 100;
-
 		invokeSetSpeed(mode, engine);
-
-		assertEquals(4, engine.speed.gravity,
-				"level 100 -> gravityindex 10 -> tableGravityValue[10] = 4");
+		assertEquals(64, engine.speed.gravity, "no slow-down yet at level 100");
+		engine.statistics.level = 101;
+		invokeSetSpeed(mode, engine);
+		assertEquals(4, engine.speed.gravity, "slow-down at level 101");
+		engine.statistics.level = 200;
+		invokeSetSpeed(mode, engine);
+		assertEquals(144, engine.speed.gravity, "no slow-down yet at level 200");
+		engine.statistics.level = 201;
+		invokeSetSpeed(mode, engine);
+		assertEquals(16, engine.speed.gravity, "slow-down at level 201");
 	}
 
 	@Test
@@ -86,9 +120,9 @@ class ScoreAttackModeSetSpeedTest {
 		setBoolean(mode, "always20g", false);
 		setInt(mode, "gravityindex", 0);
 
-		engine.statistics.level = 100;
+		engine.statistics.level = 101;
 		invokeSetSpeed(mode, engine);
-		// gravityindex now 10.
+		// gravityindex now 10 (section-1 slow-down at level 101).
 
 		engine.statistics.level = 0;
 		invokeSetSpeed(mode, engine);

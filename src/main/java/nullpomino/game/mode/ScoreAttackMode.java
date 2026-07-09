@@ -15,7 +15,13 @@ import nullpomino.util.GeneralUtil;
  */
 public class ScoreAttackMode extends AbstractManiaMode {
 	/** Current version */
-	private static final int CURRENT_VERSION = 1;
+	private static final int CURRENT_VERSION = 2;
+
+	/** Scripted items are available from this replay version onward. */
+	private static final int ITEM_VERSION = 1;
+
+	/** The section slow-down moved from level 100/200 to 101/201 in this version. */
+	private static final int SLOWDOWN_SHIFT_VERSION = 2;
 
 	/** Gravity table (Gravity speed value) */
 	private static final int[] tableGravityValue =
@@ -26,7 +32,7 @@ public class ScoreAttackMode extends AbstractManiaMode {
 	/** Gravity table (Gravity change level) */
 	private static final int[] tableGravityChangeLevel =
 	{
-		8, 19, 35, 40, 50, 60, 70, 80, 90, 100, 108, 119, 125, 131, 139, 149, 146, 164, 174, 180, 200, 212, 221, 232, 244, 256, 267, 277, 287, 295, 300, 10000
+		8, 19, 35, 40, 50, 60, 70, 80, 90, 101, 108, 119, 125, 131, 139, 149, 146, 164, 174, 180, 201, 212, 221, 232, 244, 256, 267, 277, 287, 295, 300, 10000
 	};
 
 	/** Ending time limit */
@@ -178,7 +184,7 @@ public class ScoreAttackMode extends AbstractManiaMode {
 		} else {
 			loadSetting(owner.replayProp);
 			version = owner.replayProp.getProperty("scoreattack.version", 0);
-			if(version < CURRENT_VERSION) enableitem = false;
+			if(version < ITEM_VERSION) enableitem = false;
 		}
 		engine.rainbowAnimate = isItemEnabled();
 
@@ -219,9 +225,20 @@ public class ScoreAttackMode extends AbstractManiaMode {
 		if(always20g == true) {
 			engine.speed.gravity = -1;
 		} else {
-			while(engine.statistics.level >= tableGravityChangeLevel[gravityindex]) gravityindex++;
+			while(engine.statistics.level >= gravityChangeLevel(gravityindex)) gravityindex++;
 			engine.speed.gravity = tableGravityValue[gravityindex];
 		}
+	}
+
+	/**
+	 * Section slow-down (gravity reset) lands at level 101/201 as of
+	 * {@link #SLOWDOWN_SHIFT_VERSION}; replays recorded earlier keep the original
+	 * 100/200 timing so their recorded inputs stay in sync on playback.
+	 */
+	private int gravityChangeLevel(int index) {
+		int level = tableGravityChangeLevel[index];
+		if(version < SLOWDOWN_SHIFT_VERSION && (level == 101 || level == 201)) return level - 1;
+		return level;
 	}
 
 	/**
@@ -552,7 +569,7 @@ public class ScoreAttackMode extends AbstractManiaMode {
 	}
 
 	private boolean isItemEnabled() {
-		return enableitem && (version >= CURRENT_VERSION);
+		return enableitem && (version >= ITEM_VERSION);
 	}
 
 	private int getNextItemLevel(int level) {
