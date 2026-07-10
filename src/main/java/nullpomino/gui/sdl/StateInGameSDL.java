@@ -572,7 +572,11 @@ public class StateInGameSDL extends BaseStateSDL {
 				ResourceHolderSDL.soundManager.play("tspin1");
 				cursor = 0;
 			}
-		} else {
+		} else if(!gameManager.replayMode || gameManager.replayRerecord) {
+			// Reset the speed only outside replay playback. While watching a
+			// replay it must survive the phases where gameActive is false
+			// (SETTING/RESULT) — the timeline wheel can set it there, and a
+			// per-frame reset would clobber it one frame later.
 			fastforward = 0;
 		}
 
