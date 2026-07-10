@@ -45,7 +45,8 @@ class ScoreAttackModeItemTest {
 	}
 
 	@Test
-	void disabledItemsAndSkippedStartLevelsDoNotAwardPastThresholds() throws Exception {
+	void startLevelBoundariesAwardTheirSectionItem() throws Exception {
+		// Items disabled: nothing is awarded regardless of level.
 		ScoreAttackMode disabledMode = new ScoreAttackMode();
 		GameEngine disabledEngine = freshEngine(disabledMode);
 		disabledMode.playerInit(disabledEngine, 0);
@@ -56,28 +57,49 @@ class ScoreAttackModeItemTest {
 		invokeLevelUp(disabledMode, disabledEngine);
 		assertPieceItem(disabledEngine.nextPieceArrayObject[1], Block.BLOCK_ITEM_NONE);
 
+		// Start at level 100: startGame schedules the level-100 FREE_FALL immediately
+		// (the boundary levelUp that natural play relies on never fires), then DEL_EVEN at 200.
 		ScoreAttackMode startAtOneHundred = new ScoreAttackMode();
 		GameEngine startAtOneHundredEngine = freshEngine(startAtOneHundred);
 		startAtOneHundred.playerInit(startAtOneHundredEngine, 0);
 		setInt(startAtOneHundred, "startlevel", 1);
-		startAtOneHundredEngine.nextPieceArrayObject = new Piece[] {new Piece(Piece.PIECE_T), new Piece(Piece.PIECE_I)};
+		startAtOneHundredEngine.nextPieceArrayObject = new Piece[] {
+			new Piece(Piece.PIECE_T), new Piece(Piece.PIECE_I), new Piece(Piece.PIECE_O)
+		};
 		startAtOneHundred.startGame(startAtOneHundredEngine, 0);
+		assertPieceItem(startAtOneHundredEngine.nextPieceArrayObject[1], Block.BLOCK_ITEM_FREE_FALL);
 		assertEquals(200, readInt(startAtOneHundred, "nextItemLevel"));
-		invokeLevelUp(startAtOneHundred, startAtOneHundredEngine);
-		assertPieceItem(startAtOneHundredEngine.nextPieceArrayObject[1], Block.BLOCK_ITEM_NONE);
+		startAtOneHundredEngine.nextPieceCount = 1;
 		startAtOneHundredEngine.statistics.level = 200;
 		invokeLevelUp(startAtOneHundred, startAtOneHundredEngine);
-		assertPieceItem(startAtOneHundredEngine.nextPieceArrayObject[1], Block.BLOCK_ITEM_DEL_EVEN);
+		assertPieceItem(startAtOneHundredEngine.nextPieceArrayObject[2], Block.BLOCK_ITEM_DEL_EVEN);
+		assertEquals(-1, readInt(startAtOneHundred, "nextItemLevel"));
 
+		// Start at level 200: startGame schedules the level-200 DEL_EVEN immediately.
 		ScoreAttackMode startAtTwoHundred = new ScoreAttackMode();
 		GameEngine startAtTwoHundredEngine = freshEngine(startAtTwoHundred);
 		startAtTwoHundred.playerInit(startAtTwoHundredEngine, 0);
 		setInt(startAtTwoHundred, "startlevel", 2);
 		startAtTwoHundredEngine.nextPieceArrayObject = new Piece[] {new Piece(Piece.PIECE_T), new Piece(Piece.PIECE_I)};
 		startAtTwoHundred.startGame(startAtTwoHundredEngine, 0);
+		assertPieceItem(startAtTwoHundredEngine.nextPieceArrayObject[1], Block.BLOCK_ITEM_DEL_EVEN);
 		assertEquals(-1, readInt(startAtTwoHundred, "nextItemLevel"));
-		invokeLevelUp(startAtTwoHundred, startAtTwoHundredEngine);
-		assertPieceItem(startAtTwoHundredEngine.nextPieceArrayObject[1], Block.BLOCK_ITEM_NONE);
+	}
+
+	@Test
+	void legacyReplayVersionStillSkipsBoundaryItems() throws Exception {
+		// A pre-fix replay (version below ITEM_START_LEVEL_FIX_VERSION) with items
+		// enabled must reproduce the old behavior: starting on a boundary skips it.
+		ScoreAttackMode mode = new ScoreAttackMode();
+		GameEngine engine = freshEngine(mode);
+		mode.playerInit(engine, 0);
+		setInt(mode, "version", 1);
+		setInt(mode, "startlevel", 2);
+		engine.nextPieceArrayObject = new Piece[] {new Piece(Piece.PIECE_T), new Piece(Piece.PIECE_I)};
+		mode.startGame(engine, 0);
+		assertEquals(-1, readInt(mode, "nextItemLevel"));
+		invokeLevelUp(mode, engine);
+		assertPieceItem(engine.nextPieceArrayObject[1], Block.BLOCK_ITEM_NONE);
 	}
 
 	@Test
@@ -168,7 +190,7 @@ class ScoreAttackModeItemTest {
 		GameEngine engine = freshEngine(mode);
 		mode.playerInit(engine, 0);
 		assertTrue(readBoolean(mode, "enableitem"));
-		assertEquals(3, readInt(mode, "version"));
+		assertEquals(4, readInt(mode, "version"));
 		assertTrue(engine.rainbowAnimate);
 
 		setBoolean(mode, "enableitem", false);

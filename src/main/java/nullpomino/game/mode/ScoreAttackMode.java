@@ -15,7 +15,7 @@ import nullpomino.util.GeneralUtil;
  */
 public class ScoreAttackMode extends AbstractManiaMode {
 	/** Current version */
-	private static final int CURRENT_VERSION = 3;
+	private static final int CURRENT_VERSION = 4;
 
 	/** Scripted items are available from this replay version onward. */
 	private static final int ITEM_VERSION = 1;
@@ -25,6 +25,9 @@ public class ScoreAttackMode extends AbstractManiaMode {
 
 	/** Corrected gravity, score rounding, and per-piece sonic-drop bonus. */
 	private static final int ACCURACY_FIX_VERSION = 3;
+
+	/** Items at an exact starting section boundary (level 100/200) are awarded from this version. */
+	private static final int ITEM_START_LEVEL_FIX_VERSION = 4;
 
 	/** Gravity table (Gravity speed value) */
 	private static final int[] tableGravityValue =
@@ -358,6 +361,9 @@ public class ScoreAttackMode extends AbstractManiaMode {
 		if(engine.statistics.level >= 900) nextseclv = 999;
 		nextItemLevel = getNextItemLevel(engine.statistics.level);
 		pendingItemEffect = Block.BLOCK_ITEM_NONE;
+		// Starting exactly on a section boundary skips the levelUp that would fire
+		// at that level during normal play, so schedule its item here instead.
+		scheduleScriptedItem(engine);
 
 		owner.backgroundStatus.bg = engine.statistics.level / 100;
 
@@ -578,8 +584,11 @@ public class ScoreAttackMode extends AbstractManiaMode {
 	}
 
 	private int getNextItemLevel(int level) {
-		if(level < 100) return 100;
-		if(level < 200) return 200;
+		// Starting exactly on a section boundary should still award that section's
+		// item. Older replays used strict < and skipped it, so keep them in sync.
+		int slack = (version >= ITEM_START_LEVEL_FIX_VERSION) ? 1 : 0;
+		if(level < 100 + slack) return 100;
+		if(level < 200 + slack) return 200;
 		return ITEM_LEVEL_NONE;
 	}
 
