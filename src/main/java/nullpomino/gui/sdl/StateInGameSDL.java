@@ -829,9 +829,21 @@ public class StateInGameSDL extends BaseStateSDL {
 		else if(wheel < 0) ctrl.buttonPress[Controller.BUTTON_LEFT] = true;
 
 		boolean clicked = MouseInputSDL.mouseInput.isMouseClicked();
-		boolean closeClicked = closeBtn.update(MouseInputSDL.mouseInput.getMouseX(), MouseInputSDL.mouseInput.getMouseY(), clicked);
+		int mx = MouseInputSDL.mouseInput.getMouseX(), my = MouseInputSDL.mouseInput.getMouseY();
+		boolean closeClicked = closeBtn.update(mx, my, clicked);
 
-		if(clicked && !closeClicked) {
+		// The timeline is drawn on the settings screen but normally unpolled
+		// (this method owns the frame's single mouseInput.update()). Poll just
+		// its play/pause button here so a replay can be paused at the very
+		// beginning; a hit pauses instead of confirming the settings.
+		boolean pauseHit = false;
+		if(shouldRenderReplayTimeline(gameManager, pause) && replayTotalFrames() > 0) {
+			layoutReplayTimeline();
+			pauseHit = playPauseBtn.update(mx, my, clicked);
+			if(pauseHit) replayPaused = !replayPaused;
+		}
+
+		if(clicked && !closeClicked && !pauseHit) {
 			ctrl.buttonPress[Controller.BUTTON_A] = true;
 		}
 
