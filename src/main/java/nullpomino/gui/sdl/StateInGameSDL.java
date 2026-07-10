@@ -1101,8 +1101,17 @@ public class StateInGameSDL extends BaseStateSDL {
 		boolean overButtons = mx >= playPauseBtn.x && mx < playPauseBtn.x + BTN_W
 				&& my >= BAR_HIT_TOP && my < BAR_HIT_BOTTOM;
 		if(wheel != 0 && overBar) {
-			replayPaused = true;
-			seekDomain(currentDomainPos() + wheel);
+			// Steps are RECORDED frames (replayTimer), not the extended domain:
+			// a ±1 settings-frame step is sub-pixel with the counter pinned at
+			// 0, which reads as a dead wheel. From the settings band, wheel-up
+			// hops to recorded frame 1; wheel-down is a no-op (there is nothing
+			// before the recording to step to — dragging still reaches the
+			// violet band).
+			GameEngine eng = gameManager.engine[0];
+			if(eng.stat != GameEngine.Status.SETTING || wheel > 0) {
+				replayPaused = true;
+				seekReplay(Math.max(0, Math.min(eng.replayTimer + wheel, total - 1)));
+			}
 		} else if(wheel != 0 && overButtons) {
 			adjustFastforward(wheel);
 		}
