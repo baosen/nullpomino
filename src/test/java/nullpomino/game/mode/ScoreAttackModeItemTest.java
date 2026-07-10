@@ -103,6 +103,24 @@ class ScoreAttackModeItemTest {
 	}
 
 	@Test
+	void version3ReplaySkipsBoundaryItems() throws Exception {
+		// Version 3 is the last version before ITEM_START_LEVEL_FIX_VERSION (4):
+		// the accuracy fix is already in effect, but starting on a boundary must
+		// still skip that section's item. Guards the exact boundary threshold so
+		// dropping the constant to 3 would fail here (the v1 test wouldn't catch it).
+		ScoreAttackMode mode = new ScoreAttackMode();
+		GameEngine engine = freshEngine(mode);
+		mode.playerInit(engine, 0);
+		setInt(mode, "version", 3);
+		setInt(mode, "startlevel", 2);
+		engine.nextPieceArrayObject = new Piece[] {new Piece(Piece.PIECE_T), new Piece(Piece.PIECE_I)};
+		mode.startGame(engine, 0);
+		assertEquals(-1, readInt(mode, "nextItemLevel"));
+		invokeLevelUp(mode, engine);
+		assertPieceItem(engine.nextPieceArrayObject[1], Block.BLOCK_ITEM_NONE);
+	}
+
+	@Test
 	void clearedItemUsesHighestThenRightmostPriorityAndCancelsAllTags() throws Exception {
 		ScoreAttackMode mode = new ScoreAttackMode();
 		GameEngine engine = freshEngine(mode);
