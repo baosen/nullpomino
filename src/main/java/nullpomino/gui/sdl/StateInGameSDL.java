@@ -709,6 +709,17 @@ public class StateInGameSDL extends BaseStateSDL {
 			// menu's own mouse handler lives in that suspended tick block, so
 			// nothing else updated the mouse this frame — do it here.
 			MouseInputSDL.mouseInput.update();
+			// The BACK button is drawn on the paused SETTING screen, but its
+			// usual handler (injectSettingMouseInput) lives in the suspended
+			// tick block, so poll closeBtn here off the same mouse sample.
+			// Route straight to goBack() — folding into BUTTON_B is useless
+			// while paused since updateAll() is skipped and the mode never
+			// reads the synthetic press.
+			boolean closeClicked = closeBtn.update(
+					MouseInputSDL.mouseInput.getMouseX(),
+					MouseInputSDL.mouseInput.getMouseY(),
+					MouseInputSDL.mouseInput.isMouseClicked());
+			replayMouseBack = closeClicked || MouseInputSDL.mouseInput.isMouseBackClicked();
 			updateReplayTimeline();
 		}
 
