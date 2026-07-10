@@ -79,6 +79,18 @@ public class StateInGameSDL extends BaseStateSDL {
 	private int scrubTarget = 0;
 
 	/**
+	 * The pre-game settings screen isn't in the recorded frame count
+	 * (replayTimer stays 0 during SETTING), so its position is tracked live:
+	 * {@code settingElapsed} is the current frame within the settings screen and
+	 * {@code settingFrames} is its full length (the running max, used for the
+	 * SETTING band width and the extended timeline domain). prevTickSetting
+	 * tracks the SETTING edge so a fresh settings screen restarts the count.
+	 */
+	private int settingFrames = 0;
+	private int settingElapsed = 0;
+	private boolean prevTickSetting = false;
+
+	/**
 	 * Replay play/pause button. Label stays empty — the icon is drawn as an
 	 * overlay in render() because ButtonSDL's label path runs safeString, which
 	 * would mangle the atlas's arrow glyph 'b'.
@@ -116,6 +128,9 @@ public class StateInGameSDL extends BaseStateSDL {
 		closeBtn = ButtonSDL.newCloseButton(null);
 		replayPaused = false;
 		scrubbing = false;
+		settingFrames = 0;
+		settingElapsed = 0;
+		prevTickSetting = false;
 		playPauseBtn = new ButtonSDL(0, BTN_Y, BTN_W, BTN_H, "");
 	}
 
@@ -348,7 +363,7 @@ public class StateInGameSDL extends BaseStateSDL {
 					closeBtn.render();
 				}
 
-				if(shouldShowReplayTimeline(gameManager, pause) && replayTotalFrames() > 0) {
+				if(shouldRenderReplayTimeline(gameManager, pause) && replayTotalFrames() > 0) {
 					renderReplayTimeline();
 				}
 			}
@@ -612,6 +627,22 @@ public class StateInGameSDL extends BaseStateSDL {
 		// reset+re-simulate on each tick.
 		if((!pause && !replayPaused && !scrubbing) || (GameKeySDL.gamekey[0].isPushKey(GameKeySDL.BUTTON_FRAMESTEP) && enableframestep)) {
 			if(gameManager != null) {
+				// Track the settings-screen position for the timeline. Advances
+				// only on a live tick (never during pause; the seek re-sim loops
+				// call updateAll() directly and set these themselves). settingFrames
+				// is a running max so the domain doesn't shrink on re-entry.
+				// ponytail: the band grows from 0 during the very first settings
+				// screen (~2% domain wobble over ~1s), then locks in.
+				if(gameManager.replayMode) {
+					GameEngine e0 = gameManager.engine[0];
+					boolean setting = e0 != null && e0.stat == GameEngine.Status.SETTING;
+					if(setting) {
+						settingElapsed = prevTickSetting ? settingElapsed + 1 : 0;
+						if(settingElapsed > settingFrames) settingFrames = settingElapsed;
+					}
+					prevTickSetting = setting;
+				}
+
 				for(int i = 0; i < Math.min(gameManager.getPlayers(), 2); i++) {
 					if(!gameManager.replayMode || gameManager.replayRerecord || !gameManager.engine[i].gameActive) {
 						GameKeySDL.gamekey[i].inputStatusUpdate(gameManager.engine[i].ctrl);
@@ -668,6 +699,17 @@ public class StateInGameSDL extends BaseStateSDL {
 			// click edge), so only poll the timeline here. Scrubbing back
 			// from the result screen re-simulates into live playback.
 			updateReplayTimeline();
+		} else if((scrubbing || replayPaused) && shouldRenderReplayTimeline(gameManager, pause)) {
+			// The timeline sits on the SETTING screen, reached by dragging into
+			// the violet band. SETTING is normally unpolled, but poll it here
+			// while a drag is in progress OR playback is paused — otherwise a
+			// drag can't finish and a paused viewer is stranded on the settings
+			// screen with a dead bar (the tick, which auto-advances SETTING, is
+			// suspended in both cases). Safe precisely because the settings
+			// menu's own mouse handler lives in that suspended tick block, so
+			// nothing else updated the mouse this frame — do it here.
+			MouseInputSDL.mouseInput.update();
+			updateReplayTimeline();
 		}
 
 		if(gameManager != null) {
@@ -719,16 +761,29 @@ public class StateInGameSDL extends BaseStateSDL {
 	 * excluded; its click-to-confirm would fight the bar.
 	 */
 	static boolean shouldShowReplayTimeline(GameManager gameManager, boolean pause) {
-		if(gameManager == null) return false;
-		if(!gameManager.replayMode) return false;
-		if(gameManager.replayRerecord) return false;
-		if(pause) return false;
+		if(!shouldRenderReplayTimeline(gameManager, pause)) return false;
 		for(int i = 0; i < gameManager.getPlayers(); i++) {
 			GameEngine engine = gameManager.engine[i];
 			if(engine != null && engine.stat == GameEngine.Status.SETTING) {
 				return false;
 			}
 		}
+		return true;
+	}
+
+	/**
+	 * Whether to DRAW the replay timeline. Wider than
+	 * {@link #shouldShowReplayTimeline}: SETTING is allowed so the bar (with its
+	 * distinct SETTING band) is visible during the pre-game settings screen.
+	 * The poll paths still use {@link #shouldShowReplayTimeline}, so the bar
+	 * shows but isn't interactive during SETTING — clicks there belong to the
+	 * settings menu ({@link #injectSettingMouseInput}), not the scrubber.
+	 */
+	static boolean shouldRenderReplayTimeline(GameManager gameManager, boolean pause) {
+		if(gameManager == null) return false;
+		if(!gameManager.replayMode) return false;
+		if(gameManager.replayRerecord) return false;
+		if(pause) return false;
 		return true;
 	}
 
@@ -899,29 +954,60 @@ public class StateInGameSDL extends BaseStateSDL {
 		barW = NullpoMinoSDL.LOGICAL_WIDTH - BAR_MARGIN - barX;
 	}
 
+	/** Pixel width of {@code frames} within the current bar's extended domain. */
+	private int pxOf(int frames, int domain) {
+		return (barW > 0 && domain > 0) ? (int)((long)barW * frames / domain) : 0;
+	}
+
 	/** Applies one LEFT/RIGHT-key-equivalent step to the replay speed, clamped to [0, 98]. */
 	private void adjustFastforward(int delta) {
 		fastforward = Math.max(0, Math.min(98, fastforward + delta));
 	}
 
-	/** Draw the timeline track, progress fill, drag handle, and transport buttons. */
+	/**
+	 * Draw the timeline: track, the two pre-game phase bands (violet SETTING,
+	 * amber READY), the blue gameplay progress fill, the drag handle, the frame
+	 * count, and the transport button.
+	 *
+	 * <p>The bar spans an extended domain {@code settingFrames + total}: the
+	 * settings screen (violet) isn't in the recorded frame count (replayTimer
+	 * stays 0 there), READY (amber) is in-domain at replayTimer {@code [0,
+	 * goEnd)}, and gameplay (blue) fills the rest. Scrubbing maps pointer pixels
+	 * to this domain and {@link #seekDomain} routes the settings prefix back to
+	 * the settings screen, so dragging left re-displays it.
+	 */
 	private void renderReplayTimeline() {
 		layoutReplayTimeline();
-		int total = replayTotalFrames();
-		int cur = scrubbing ? scrubTarget : gameManager.engine[0].replayTimer;
-		if(cur > total) cur = total;
-		int fillW = (barW > 0) ? (int)((long)barW * cur / total) : 0;
+		GameEngine eng = gameManager.engine[0];
+		int total  = replayTotalFrames();
+		int setF   = settingFrames;
+		int goEnd  = eng.goEnd;                 // READY->MOVE boundary, in replayTimer frames
+		int domain = setF + total;
 
-		WidgetSDL.fillRect(barX, BAR_Y, barW, BAR_H, 0, 0, 0, 192);
-		WidgetSDL.fillRect(barX, BAR_Y, fillW, BAR_H, 0, 128, 255, 255);
-		WidgetSDL.drawRect(barX, BAR_Y, barW, BAR_H, 180, 180, 180, 255);
-		int handleX = barX + Math.max(0, Math.min(fillW - 2, barW - 4));
-		WidgetSDL.fillRect(handleX, BAR_Y - 2, 4, BAR_H + 4, 255, 255, 255, 255);
+		// Handle/fill position in the extended domain.
+		int cur = scrubbing ? scrubTarget : currentDomainPos();
+		if(cur > domain) cur = domain;
 
-		// Playback position as a raw frame count just above the bar's right
-		// end. Right-aligned: new digits grow leftward, staying on screen.
-		// Follows the drag position while scrubbing, like the fill does.
-		String frames = String.valueOf(cur);
+		int setW    = pxOf(setF, domain);
+		int readyW  = pxOf(setF + goEnd, domain) - setW;
+		int gpStart = setF + goEnd;
+
+		WidgetSDL.fillRect(barX, BAR_Y, barW, BAR_H, 0, 0, 0, 192);               // track
+		WidgetSDL.fillRect(barX,        BAR_Y, setW,   BAR_H, 150, 100, 200, 255);// SETTING = violet
+		WidgetSDL.fillRect(barX + setW, BAR_Y, readyW, BAR_H, 230, 180,  40, 255);// READY   = amber
+		if(cur > gpStart) {                                                       // gameplay progress = blue
+			int x0 = barX + pxOf(gpStart, domain), x1 = barX + pxOf(cur, domain);
+			WidgetSDL.fillRect(x0, BAR_Y, x1 - x0, BAR_H, 0, 128, 255, 255);
+		}
+		WidgetSDL.drawRect(barX, BAR_Y, barW, BAR_H, 180, 180, 180, 255);         // border
+		int handleX = barX + Math.max(0, Math.min(pxOf(cur, domain) - 2, barW - 4));
+		WidgetSDL.fillRect(handleX, BAR_Y - 2, 4, BAR_H + 4, 255, 255, 255, 255); // handle
+
+		// Playback position as a raw recorded frame count just above the bar's
+		// right end. Right-aligned: new digits grow leftward, staying on screen.
+		// Follows the drag position while scrubbing; reads 0 in the settings band.
+		int textFrame = scrubbing ? Math.max(0, scrubTarget - setF) : eng.replayTimer;
+		String frames = String.valueOf(textFrame);
 		NormalFontSDL.printFont(barX + barW - frames.length() * 16, BAR_Y - 18, frames, NormalFontSDL.COLOR_WHITE);
 
 		playPauseBtn.render();
@@ -967,7 +1053,7 @@ public class StateInGameSDL extends BaseStateSDL {
 				&& my >= BAR_HIT_TOP && my < BAR_HIT_BOTTOM;
 		if(wheel != 0 && overBar) {
 			replayPaused = true;
-			seekReplay(gameManager.engine[0].replayTimer + wheel);
+			seekDomain(currentDomainPos() + wheel);
 		} else if(wheel != 0 && overButtons) {
 			adjustFastforward(wheel);
 		}
@@ -980,13 +1066,17 @@ public class StateInGameSDL extends BaseStateSDL {
 			scrubbing = true;
 		}
 		if(scrubbing) {
-			// getMouseX() reports -1 outside the logical viewport; keep the
-			// last in-window position instead of snapping to frame 0.
-			if(mx >= 0) scrubTarget = scrubFrameForX(mx, barX, barW, total);
+			// getMouseX() reports -1 outside the logical viewport; keep the last
+			// in-window position instead of snapping to frame 0. scrubTarget is a
+			// position in the extended domain [0, settingFrames+total); seekDomain
+			// routes the SETTING prefix to the settings screen and the rest to
+			// replayTimer, so dragging left into the violet band re-displays the
+			// pre-game settings.
+			if(mx >= 0) scrubTarget = scrubFrameForX(mx, barX, barW, settingFrames + total);
 			// ponytail: backward drags reset+re-simulate per changed target;
 			// fine at ~40k-frame replays, add engine snapshots if it ever lags.
-			if(scrubTarget != gameManager.engine[0].replayTimer) {
-				seekReplay(scrubTarget);
+			if(scrubTarget != currentDomainPos()) {
+				seekDomain(scrubTarget);
 			}
 			if(!MouseInputSDL.mouseInput.isMousePressed()) {
 				scrubbing = false;
@@ -1004,6 +1094,30 @@ public class StateInGameSDL extends BaseStateSDL {
 		if(frame < 0) return 0;
 		if(frame > total - 1) return total - 1;
 		return (int)frame;
+	}
+
+	/**
+	 * Current playback position in the extended timeline domain
+	 * ({@code settingFrames + total}): the settings-screen elapsed frame while
+	 * the engine sits in SETTING, otherwise {@code settingFrames + replayTimer}.
+	 */
+	private int currentDomainPos() {
+		GameEngine eng = gameManager.engine[0];
+		if(eng.stat == GameEngine.Status.SETTING) return settingElapsed;
+		return settingFrames + eng.replayTimer;
+	}
+
+	/**
+	 * Seek to a position in the extended domain. The leading {@code settingFrames}
+	 * map to the pre-game settings screen (re-displayed via {@link #seekSetting});
+	 * everything past it is a replayTimer frame handled by {@link #seekReplay}.
+	 */
+	private void seekDomain(int pos) {
+		int domain = settingFrames + replayTotalFrames();
+		if(pos < 0) pos = 0;
+		if(pos > domain - 1) pos = domain - 1;
+		if(pos < settingFrames) seekSetting(pos);
+		else seekReplay(pos - settingFrames);
 	}
 
 	/**
@@ -1034,5 +1148,34 @@ public class StateInGameSDL extends BaseStateSDL {
 		} finally {
 			ResourceHolderSDL.soundManager.mute = false;
 		}
+	}
+
+	/**
+	 * Re-display the pre-game settings screen at the given elapsed frame. Unlike
+	 * {@link #seekReplay} this deliberately leaves the engine in SETTING
+	 * (gameActive false), so a leftward drag into the violet band shows the
+	 * settings again. Resets and re-simulates the short, fixed settings screen;
+	 * prevTickSetting is set so resumed playback continues the count from here
+	 * instead of snapping back to 0.
+	 */
+	private void seekSetting(int elapsed) {
+		GameEngine eng = gameManager.engine[0];
+		if(elapsed < 0) elapsed = 0;
+		gameManager.reset();                       // re-init -> SETTING, replayTimer 0, menuTime 0
+		ResourceHolderSDL.soundManager.mute = true;
+		int count = 0;
+		try {
+			for(int guard = elapsed + 8;
+				guard > 0 && count < elapsed
+					&& eng.stat == GameEngine.Status.SETTING && !gameManager.getQuitFlag();
+				guard--) {
+				gameManager.updateAll();
+				count++;
+			}
+		} finally {
+			ResourceHolderSDL.soundManager.mute = false;
+		}
+		settingElapsed = count;
+		prevTickSetting = (eng.stat == GameEngine.Status.SETTING);
 	}
 }

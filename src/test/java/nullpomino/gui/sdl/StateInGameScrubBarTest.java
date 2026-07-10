@@ -1,6 +1,7 @@
 package nullpomino.gui.sdl;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import org.junit.jupiter.api.Test;
 
@@ -52,5 +53,31 @@ class StateInGameScrubBarTest {
 		// lands on the last frame, not one past it.
 		assertEquals(9, StateInGameSDL.scrubFrameForX(BAR_X + BAR_W - 1, BAR_X, BAR_W, 10));
 		assertEquals(0, StateInGameSDL.scrubFrameForX(BAR_X, BAR_X, BAR_W, 10));
+	}
+
+	// Dragging maps pointer pixels over the EXTENDED domain (settingFrames +
+	// total); seekDomain then routes positions < settingFrames to the settings
+	// screen and the rest to replayTimer. These pin the boundary the routing
+	// depends on: the leading settingFrames pixels stay in the settings prefix.
+	private static final int SETTING_FRAMES = 60, DOMAIN = SETTING_FRAMES + TOTAL;
+
+	@Test
+	void settingBandMapsIntoSettingPrefix() {
+		// Left edge is domain position 0 — inside the settings prefix.
+		assertEquals(0, StateInGameSDL.scrubFrameForX(BAR_X, BAR_X, BAR_W, DOMAIN));
+		// A pixel a third of the way through the settings prefix stays < settingFrames.
+		int px = BAR_X + (int)((long)BAR_W * (SETTING_FRAMES / 3) / DOMAIN);
+		assertTrue(StateInGameSDL.scrubFrameForX(px, BAR_X, BAR_W, DOMAIN) < SETTING_FRAMES);
+	}
+
+	@Test
+	void gameplayPixelMapsPastSettingPrefix() {
+		int mx = BAR_X + BAR_W / 2;
+		assertTrue(StateInGameSDL.scrubFrameForX(mx, BAR_X, BAR_W, DOMAIN) >= SETTING_FRAMES);
+	}
+
+	@Test
+	void rightEdgeIsLastDomainPosition() {
+		assertEquals(DOMAIN - 1, StateInGameSDL.scrubFrameForX(BAR_X + BAR_W, BAR_X, BAR_W, DOMAIN));
 	}
 }
