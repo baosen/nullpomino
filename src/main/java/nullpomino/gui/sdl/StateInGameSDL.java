@@ -58,10 +58,11 @@ public class StateInGameSDL extends BaseStateSDL {
 	 * Top-right "back" close button, shown on the pre-game SETTING screen
 	 * (mode.onSetting()/renderSetting() - e.g. PRACTICE MODE SETTINGS) and
 	 * while watching a replay (shouldPollReplayBack), but hidden during
-	 * normal gameplay. No inline action: on SETTING it folds into the
-	 * synthetic BUTTON_B press in injectSettingMouseInput() so it goes
-	 * through the same per-mode cancel/quitflag logic as Escape; during
-	 * replay playback its click feeds replayMouseBack -> goBack().
+	 * normal gameplay. No inline action: on a normal game's SETTING it folds
+	 * into the synthetic BUTTON_B press in injectSettingMouseInput() so it
+	 * goes through the same per-mode cancel/quitflag logic as Escape; during
+	 * replay playback (any phase, including the auto-advancing SETTING
+	 * screen) its click feeds replayMouseBack -> goBack().
 	 */
 	private ButtonSDL closeBtn;
 
@@ -625,6 +626,7 @@ public class StateInGameSDL extends BaseStateSDL {
 		// is the only thing moving the engine, otherwise playback would
 		// advance past the handle every frame and force a fresh
 		// reset+re-simulate on each tick.
+		boolean settingMouseBack = false;
 		if((!pause && !replayPaused && !scrubbing) || (GameKeySDL.gamekey[0].isPushKey(GameKeySDL.BUTTON_FRAMESTEP) && enableframestep)) {
 			if(gameManager != null) {
 				// Track the settings-screen position for the timeline. Advances
@@ -656,12 +658,14 @@ public class StateInGameSDL extends BaseStateSDL {
 				// cancels (BUTTON_B). Synthetic button presses are OR'd
 				// into ctrl.buttonPress[] before updateAll() so the mode's
 				// onSetting reads them via the standard isPush /
-				// isMenuRepeatKey path.
+				// isMenuRepeatKey path. While watching a replay the cancel
+				// comes back as an exit request instead (the auto-advancing
+				// replay settings screen ignores BUTTON_B).
 				if(gameManager.engine.length > 0
 						&& gameManager.engine[0] != null
 						&& gameManager.engine[0].stat == GameEngine.Status.SETTING
 						&& gameManager.mode != null) {
-					injectSettingMouseInput(gameManager.engine[0]);
+					settingMouseBack = injectSettingMouseInput(gameManager.engine[0]);
 				}
 
 				// Post-game RESULT screen: wheel and PageUp/PageDown drive
@@ -684,7 +688,7 @@ public class StateInGameSDL extends BaseStateSDL {
 		// return to the previous screen. Skipped when an engine is in SETTING
 		// or RESULT or the game is paused, since those branches above already
 		// consume the click for their own cancel handling.
-		boolean replayMouseBack = false;
+		boolean replayMouseBack = settingMouseBack;
 		if(shouldPollReplayBack(gameManager, pause)) {
 			MouseInputSDL.mouseInput.update();
 			boolean closeClicked = closeBtn.update(
@@ -806,8 +810,14 @@ public class StateInGameSDL extends BaseStateSDL {
 	 * wheel / click / cancel are OR'd into ctrl.buttonPress[] (which
 	 * inputStatusUpdate just populated from the keyboard) so keyboard and
 	 * mouse can drive the same menu without one clobbering the other.
+	 *
+	 * @return true when the viewer cancelled out of replay playback (BACK
+	 *         button / mouse back / right-click / Escape while watching a
+	 *         replay's auto-advancing settings screen, which ignores the
+	 *         BUTTON_B a normal game's menu would get) — the caller exits
+	 *         via goBack()
 	 */
-	private void injectSettingMouseInput(GameEngine engine) {
+	private boolean injectSettingMouseInput(GameEngine engine) {
 		MouseInputSDL.mouseInput.update();
 		Controller ctrl = engine.ctrl;
 
@@ -867,8 +877,10 @@ public class StateInGameSDL extends BaseStateSDL {
 				|| MouseInputSDL.mouseInput.isMouseBackClicked()
 				|| MouseInputSDL.mouseInput.isMouseRightClicked()
 				|| NullpoMinoSDL.isEscapePushedThisFrame()) {
+			if(gameManager.replayMode && !gameManager.replayRerecord) return true;
 			ctrl.buttonPress[Controller.BUTTON_B] = true;
 		}
+		return false;
 	}
 
 	/**
