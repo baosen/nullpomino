@@ -786,9 +786,10 @@ public class StateInGameSDL extends BaseStateSDL {
 	 * Whether to DRAW the replay timeline. Wider than
 	 * {@link #shouldShowReplayTimeline}: SETTING is allowed so the bar (with its
 	 * distinct SETTING band) is visible during the pre-game settings screen.
-	 * The poll paths still use {@link #shouldShowReplayTimeline}, so the bar
-	 * shows but isn't interactive during SETTING — clicks there belong to the
-	 * settings menu ({@link #injectSettingMouseInput}), not the scrubber.
+	 * During SETTING the bar is polled by whichever path owns that frame's
+	 * mouse update: {@link #injectSettingMouseInput} while playback runs, or
+	 * the scrubbing/replayPaused branch in {@code update()} while the tick is
+	 * suspended.
 	 */
 	static boolean shouldRenderReplayTimeline(GameManager gameManager, boolean pause) {
 		if(gameManager == null) return false;
@@ -831,30 +832,34 @@ public class StateInGameSDL extends BaseStateSDL {
 			}
 		}
 
-		// Wheel cycles the value of the highlighted item. Up = forward
-		// (BUTTON_RIGHT, "next / increase"); down = backward (BUTTON_LEFT,
-		// "prev / decrease"). The mode's onSetting plays its own "change"
-		// SE in response.
-		int wheel = (int) NullpoMinoSDL.mouseWheelDelta;
-		if(wheel > 0) ctrl.buttonPress[Controller.BUTTON_RIGHT] = true;
-		else if(wheel < 0) ctrl.buttonPress[Controller.BUTTON_LEFT] = true;
-
 		boolean clicked = MouseInputSDL.mouseInput.isMouseClicked();
 		int mx = MouseInputSDL.mouseInput.getMouseX(), my = MouseInputSDL.mouseInput.getMouseY();
 		boolean closeClicked = closeBtn.update(mx, my, clicked);
 
-		// The timeline is drawn on the settings screen but normally unpolled
-		// (this method owns the frame's single mouseInput.update()). Poll just
-		// its play/pause button here so a replay can be paused at the very
-		// beginning; a hit pauses instead of confirming the settings.
-		boolean pauseHit = false;
+		// The timeline is drawn on the settings screen and this method owns
+		// the frame's single mouseInput.update(), so poll it in full here —
+		// bar drag/click, wheel and play/pause — otherwise the bar is dead
+		// while the settings screen plays (the state a replay opens in). A
+		// hit acts on the timeline instead of the settings menu.
+		boolean timelineHit = false;
+		boolean overTimelineRow = false;
 		if(shouldRenderReplayTimeline(gameManager, pause) && replayTotalFrames() > 0) {
-			layoutReplayTimeline();
-			pauseHit = playPauseBtn.update(mx, my, clicked);
-			if(pauseHit) replayPaused = !replayPaused;
+			timelineHit = updateReplayTimeline();
+			overTimelineRow = my >= BAR_HIT_TOP && my < BAR_HIT_BOTTOM;
 		}
 
-		if(clicked && !closeClicked && !pauseHit) {
+		// Wheel cycles the value of the highlighted item. Up = forward
+		// (BUTTON_RIGHT, "next / increase"); down = backward (BUTTON_LEFT,
+		// "prev / decrease"). The mode's onSetting plays its own "change"
+		// SE in response. Over the timeline row the wheel belongs to the
+		// scrubber (frame step / replay speed), not the menu.
+		int wheel = (int) NullpoMinoSDL.mouseWheelDelta;
+		if(!overTimelineRow) {
+			if(wheel > 0) ctrl.buttonPress[Controller.BUTTON_RIGHT] = true;
+			else if(wheel < 0) ctrl.buttonPress[Controller.BUTTON_LEFT] = true;
+		}
+
+		if(clicked && !closeClicked && !timelineHit) {
 			ctrl.buttonPress[Controller.BUTTON_A] = true;
 		}
 
@@ -1050,18 +1055,23 @@ public class StateInGameSDL extends BaseStateSDL {
 	/**
 	 * Poll the timeline bar and transport buttons. Assumes
 	 * {@code MouseInputSDL.mouseInput.update()} was already called this frame
-	 * (the surrounding shouldPollReplayBack block does it).
+	 * (each calling branch owns that frame's single update()).
+	 *
+	 * @return true when a timeline element consumed the pointer event — click
+	 *         on the play/pause button or the bar, or wheel over either — so
+	 *         the SETTING-screen caller doesn't also route it to the menu
 	 */
-	private void updateReplayTimeline() {
+	private boolean updateReplayTimeline() {
 		int total = replayTotalFrames();
-		if(total <= 0) return;
+		if(total <= 0) return false;
 		layoutReplayTimeline();
 
 		int mx = MouseInputSDL.mouseInput.getMouseX();
 		int my = MouseInputSDL.mouseInput.getMouseY();
 		boolean clicked = MouseInputSDL.mouseInput.isMouseClicked();
 
-		if(playPauseBtn.update(mx, my, clicked)) {
+		boolean pauseHit = playPauseBtn.update(mx, my, clicked);
+		if(pauseHit) {
 			replayPaused = !replayPaused;
 		}
 
@@ -1105,6 +1115,8 @@ public class StateInGameSDL extends BaseStateSDL {
 				scrubbing = false;
 			}
 		}
+
+		return pauseHit || (clicked && overBar) || (wheel != 0 && (overBar || overButtons));
 	}
 
 	/**
