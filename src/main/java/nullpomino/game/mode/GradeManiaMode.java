@@ -17,7 +17,10 @@ import nullpomino.util.GeneralUtil;
  */
 public class GradeManiaMode extends AbstractManiaMode {
 	/** Current version */
-	private static final int CURRENT_VERSION = 1;
+	private static final int CURRENT_VERSION = 2;
+
+	/** Version that introduced corrected score and ending timing */
+	private static final int CORRECTED_RULES_VERSION = 2;
 
 	/** Fall velocity table */
 	private static final int[] tableGravityValue =
@@ -57,7 +60,10 @@ public class GradeManiaMode extends AbstractManiaMode {
 	};
 
 	/** LV999 roll time */
-	private static final int ROLLTIMELIMIT = 2968;
+	private static final int ROLLTIMELIMIT = 2033;
+
+	/** LV999 roll time used by older replays */
+	private static final int ROLLTIMELIMIT_LEGACY = 2968;
 
 	/** GMI need to takeLV300Dan when reaching the minimum */
 	private static final int GM_300_GRADE_REQUIRE = 8;
@@ -75,7 +81,10 @@ public class GradeManiaMode extends AbstractManiaMode {
 	private static final int GM_500_TIME_REQUIRE_V0 = 25200;
 
 	/** GMI need to takeLV999When reaching theTime */
-	private static final int GM_999_TIME_REQUIRE = 48600;
+	private static final int GM_999_TIME_REQUIRE = 48599;
+
+	/** LV999 time requirement used by older replays */
+	private static final int GM_999_TIME_REQUIRE_LEGACY = 48600;
 
 	/** Number of sections */
 	private static final int SECTION_MAX = 10;
@@ -238,6 +247,16 @@ public class GradeManiaMode extends AbstractManiaMode {
 			while(engine.statistics.level >= tableGravityChangeLevel[gravityindex]) gravityindex++;
 			engine.speed.gravity = tableGravityValue[gravityindex];
 		}
+	}
+
+	/** Returns the roll duration for the active replay version. */
+	private int getRollTimeLimit() {
+		return (version >= CORRECTED_RULES_VERSION) ? ROLLTIMELIMIT : ROLLTIMELIMIT_LEGACY;
+	}
+
+	/** Returns the final time requirement for the active replay version. */
+	private int getFinalTimeRequirement() {
+		return (version >= CORRECTED_RULES_VERSION) ? GM_999_TIME_REQUIRE : GM_999_TIME_REQUIRE_LEGACY;
 	}
 
 	/**
@@ -405,7 +424,7 @@ public class GradeManiaMode extends AbstractManiaMode {
 			drawControlsHelp(engine, playerID, 19);
 
 			if((engine.gameActive) && (engine.ending == 2)) {
-				int time = ROLLTIMELIMIT - rolltime;
+				int time = getRollTimeLimit() - rolltime;
 				if(time < 0) time = 0;
 				receiver.drawScoreFont(engine, playerID, 0, 17, "ROLL TIME", EventReceiver.COLOR_BLUE);
 				receiver.drawScoreFont(engine, playerID, 0, 18, GeneralUtil.getTime(time), ((time > 0) && (time < 10 * 60)));
@@ -527,7 +546,11 @@ public class GradeManiaMode extends AbstractManiaMode {
 				engine.playSE("bravo");
 			}
 
-			lastscore = ( ((engine.statistics.level + lines) / 4) + engine.softdropFall + engine.harddropFall + manuallock ) * lines * comboValue * bravo;
+			int levelScore = engine.statistics.level + lines;
+			if(version >= CORRECTED_RULES_VERSION) levelScore = (levelScore + 3) / 4;
+			else levelScore /= 4;
+
+			lastscore = (levelScore + engine.softdropFall + engine.harddropFall + manuallock) * lines * comboValue * bravo;
 			engine.statistics.score += lastscore;
 			scgettime = 120;
 
@@ -553,7 +576,7 @@ public class GradeManiaMode extends AbstractManiaMode {
 				setAverageSectionTime();
 				stNewRecordCheck(sectionscomp - 1);
 
-				if((engine.statistics.time <= GM_999_TIME_REQUIRE) && (engine.statistics.score >= tableGradeScore[17]) && (gm300) && (gm500)) {
+				if((engine.statistics.time <= getFinalTimeRequirement()) && (engine.statistics.score >= tableGradeScore[17]) && (gm300) && (gm500)) {
 					engine.playSE("endingstart");
 					engine.playSE("gradeup");
 
@@ -564,6 +587,7 @@ public class GradeManiaMode extends AbstractManiaMode {
 					owner.bgmStatus.bgm = BGMStatus.BGM_ENDING2;
 
 					engine.ending = 2;
+					if(version >= CORRECTED_RULES_VERSION) rolltime = -1;
 				} else {
 					engine.gameEnded();
 					engine.ending = 1;
@@ -629,17 +653,18 @@ public class GradeManiaMode extends AbstractManiaMode {
 		// Ending
 		if((engine.gameActive) && (engine.ending == 2)) {
 			rolltime++;
+			int rollTimeLimit = getRollTimeLimit();
 
 			// Time meter
-			int remainRollTime = ROLLTIMELIMIT - rolltime;
-			engine.meterValue = (remainRollTime * receiver.getMeterMax(engine)) / ROLLTIMELIMIT;
+			int remainRollTime = rollTimeLimit - rolltime;
+			engine.meterValue = (remainRollTime * receiver.getMeterMax(engine)) / rollTimeLimit;
 			engine.meterColor = GameEngine.METER_COLOR_GREEN;
 			if(remainRollTime <= 30*60) engine.meterColor = GameEngine.METER_COLOR_YELLOW;
 			if(remainRollTime <= 20*60) engine.meterColor = GameEngine.METER_COLOR_ORANGE;
 			if(remainRollTime <= 10*60) engine.meterColor = GameEngine.METER_COLOR_RED;
 
 			// Roll End
-			if(rolltime >= ROLLTIMELIMIT) {
+			if(rolltime >= rollTimeLimit) {
 				engine.gameEnded();
 				engine.resetStatc();
 				engine.stat = GameEngine.Status.EXCELLENT;

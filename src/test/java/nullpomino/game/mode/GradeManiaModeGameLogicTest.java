@@ -66,6 +66,7 @@ class GradeManiaModeGameLogicTest {
 		assertEquals(false, readBoolean(mode, "gm500"));
 		assertEquals(0, readInt(mode, "secretGrade"));
 		assertEquals(-1, readInt(mode, "rankingRank"));
+		assertEquals(2, readInt(mode, "version"));
 
 		assertFalse(engine.tspinEnable);
 		assertFalse(engine.b2bEnable);
@@ -81,6 +82,22 @@ class GradeManiaModeGameLogicTest {
 		assertNotNull(readField(mode, "rankingTime"));
 		assertNotNull(readField(mode, "bestSectionTime"));
 		assertEquals(10, ((int[]) readField(mode, "rankingGrade")).length);
+	}
+
+	@Test
+	void playerInitLoadsLegacyReplayVersion() throws Exception {
+		GradeManiaMode mode = new GradeManiaMode();
+		GameManager manager = new GameManager(new EventReceiver());
+		manager.mode = mode;
+		manager.replayMode = true;
+		manager.replayProp = new CustomProperties();
+		manager.replayProp.setProperty("grademania.version", 1);
+		manager.init();
+		manager.engine[0].init();
+
+		mode.playerInit(manager.engine[0], 0);
+
+		assertEquals(1, readInt(mode, "version"));
 	}
 
 	// -----------------------------------------------------------------------
@@ -238,7 +255,7 @@ class GradeManiaModeGameLogicTest {
 	}
 
 	@Test
-	void calcScoreWithSingleLineComputesCorrectScore() throws Exception {
+	void calcScoreWithSingleLineRoundsLevelContributionUp() throws Exception {
 		GradeManiaMode mode = new GradeManiaMode();
 		GameEngine engine = freshEngine(mode);
 		mode.playerInit(engine, 0);
@@ -256,11 +273,30 @@ class GradeManiaModeGameLogicTest {
 
 		// comboValue is auto-updated: 1 + (2*1) - 2 = 1
 		// bravo = 4 because field is empty at start
-		// Formula: lastscore = (((level + lines) / 4) + softdrop + harddrop + manuallock) * lines * comboValue * bravo
-		// = ((100+1)/4 + 0 + 0 + 0) * 1 * 1 * 4 = 25 * 4 = 100
+		// Formula: lastscore = (ceil((level + lines) / 4) + softdrop + harddrop + manuallock) * lines * comboValue * bravo
+		// = ceil((100+1)/4) * 1 * 1 * 4 = 26 * 4 = 104
+		assertEquals(104, engine.statistics.score);
+		assertEquals(104, readInt(mode, "lastscore"));
+		assertEquals(101, engine.statistics.level);
+	}
+
+	@Test
+	void calcScoreLegacyReplayKeepsPriorRounding() throws Exception {
+		GradeManiaMode mode = new GradeManiaMode();
+		GameEngine engine = freshEngine(mode);
+		mode.playerInit(engine, 0);
+		engine.createFieldIfNeeded();
+		engine.nowPieceObject = new Piece(Piece.PIECE_T);
+
+		setInt(mode, "version", 1);
+		engine.statistics.level = 100;
+		engine.statistics.score = 0;
+		setInt(mode, "comboValue", 1);
+
+		mode.calcScore(engine, 0, 1);
+
 		assertEquals(100, engine.statistics.score);
 		assertEquals(100, readInt(mode, "lastscore"));
-		assertEquals(101, engine.statistics.level);
 	}
 
 	@Test
@@ -356,6 +392,49 @@ class GradeManiaModeGameLogicTest {
 
 		assertEquals(999, engine.statistics.level);
 		assertEquals(2, engine.ending); // Roll ending
+	}
+
+	@Test
+	void calcScoreAcceptsCurrentFinalTimeBoundary() throws Exception {
+		GradeManiaMode mode = new GradeManiaMode();
+		GameEngine engine = freshEngine(mode);
+		mode.playerInit(engine, 0);
+		prepareFinalClear(mode, engine, 48599);
+
+		mode.calcScore(engine, 0, 1);
+
+		assertEquals(2, engine.ending);
+		assertEquals(-1, readInt(mode, "rolltime"));
+
+		mode.onLast(engine, 0);
+		assertEquals(0, readInt(mode, "rolltime"));
+		assertTrue(engine.gameActive);
+	}
+
+	@Test
+	void calcScoreRejectsFrameAfterCurrentFinalTimeBoundary() throws Exception {
+		GradeManiaMode mode = new GradeManiaMode();
+		GameEngine engine = freshEngine(mode);
+		mode.playerInit(engine, 0);
+		prepareFinalClear(mode, engine, 48600);
+
+		mode.calcScore(engine, 0, 1);
+
+		assertEquals(1, engine.ending);
+	}
+
+	@Test
+	void calcScoreLegacyReplayKeepsPriorFinalTimeBoundary() throws Exception {
+		GradeManiaMode mode = new GradeManiaMode();
+		GameEngine engine = freshEngine(mode);
+		mode.playerInit(engine, 0);
+		setInt(mode, "version", 1);
+		prepareFinalClear(mode, engine, 48600);
+
+		mode.calcScore(engine, 0, 1);
+
+		assertEquals(2, engine.ending);
+		assertEquals(0, readInt(mode, "rolltime"));
 	}
 
 	// -----------------------------------------------------------------------
@@ -474,6 +553,44 @@ class GradeManiaModeGameLogicTest {
 
 		mode.onLast(engine, 0);
 		assertEquals(1, readInt(mode, "rolltime"));
+	}
+
+	@Test
+	void onLastEndsAtCurrentRollTimeLimit() throws Exception {
+		GradeManiaMode mode = new GradeManiaMode();
+		GameEngine engine = freshEngine(mode);
+		mode.playerInit(engine, 0);
+
+		engine.gameActive = true;
+		engine.ending = 2;
+		setInt(mode, "rolltime", 2031);
+
+		mode.onLast(engine, 0);
+		assertTrue(engine.gameActive);
+		assertEquals(2032, readInt(mode, "rolltime"));
+
+		mode.onLast(engine, 0);
+		assertFalse(engine.gameActive);
+		assertEquals(GameEngine.Status.EXCELLENT, engine.stat);
+	}
+
+	@Test
+	void onLastLegacyReplayKeepsPriorRollTimeLimit() throws Exception {
+		GradeManiaMode mode = new GradeManiaMode();
+		GameEngine engine = freshEngine(mode);
+		mode.playerInit(engine, 0);
+		setInt(mode, "version", 1);
+
+		engine.gameActive = true;
+		engine.ending = 2;
+		setInt(mode, "rolltime", 2032);
+		mode.onLast(engine, 0);
+		assertTrue(engine.gameActive);
+
+		setInt(mode, "rolltime", 2967);
+		mode.onLast(engine, 0);
+		assertFalse(engine.gameActive);
+		assertEquals(GameEngine.Status.EXCELLENT, engine.stat);
 	}
 
 	// -----------------------------------------------------------------------
@@ -602,6 +719,22 @@ class GradeManiaModeGameLogicTest {
 		manager.init();
 		manager.engine[0].init();
 		return manager.engine[0];
+	}
+
+	private static void prepareFinalClear(GradeManiaMode mode, GameEngine engine, int time) throws Exception {
+		engine.gameActive = true;
+		engine.createFieldIfNeeded();
+		engine.nowPieceObject = new Piece(Piece.PIECE_T);
+		engine.statistics.level = 998;
+		engine.statistics.score = 126000;
+		engine.statistics.time = time;
+		engine.softdropFall = 0;
+		engine.harddropFall = 0;
+		engine.manualLock = false;
+		setInt(mode, "comboValue", 1);
+		setInt(mode, "grade", 17);
+		setBoolean(mode, "gm300", true);
+		setBoolean(mode, "gm500", true);
 	}
 
 	private static int readInt(Object obj, String name) throws Exception {
