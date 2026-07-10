@@ -41,7 +41,7 @@ class ScoreAttackModeGameLogicTest {
 		assertEquals(0, readInt(mode, "gravityindex"));
 		assertEquals(0, readInt(mode, "comboValue"));
 		assertEquals(0, readInt(mode, "harddropBonus"));
-		assertEquals(4, readInt(mode, "version"));
+		assertEquals(5, readInt(mode, "version"));
 		assertEquals(-1, readInt(mode, "rankingRank"));
 		assertEquals(25, engine.speed.are);
 		assertEquals(25, engine.speed.areLine);
@@ -65,7 +65,7 @@ class ScoreAttackModeGameLogicTest {
 
 		CustomProperties prop = new CustomProperties();
 		invokeSaveSetting(mode, prop);
-		assertEquals(4, prop.getProperty("scoreattack.version", -1));
+		assertEquals(5, prop.getProperty("scoreattack.version", -1));
 
 		ScoreAttackMode dest = new ScoreAttackMode();
 		GameEngine destEngine = freshEngine(dest);
@@ -77,7 +77,7 @@ class ScoreAttackModeGameLogicTest {
 		assertTrue(readBoolean(dest, "always20g"));
 		assertTrue(readBoolean(dest, "showsectiontime"));
 		assertTrue(readBoolean(dest, "big"));
-		assertEquals(4, readInt(dest, "version"));
+		assertEquals(5, readInt(dest, "version"));
 	}
 
 	@Test

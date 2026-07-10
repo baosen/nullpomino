@@ -15,7 +15,7 @@ import nullpomino.util.GeneralUtil;
  */
 public class ScoreAttackMode extends AbstractManiaMode {
 	/** Current version */
-	private static final int CURRENT_VERSION = 4;
+	private static final int CURRENT_VERSION = 5;
 
 	/** Scripted items are available from this replay version onward. */
 	private static final int ITEM_VERSION = 1;
@@ -28,6 +28,9 @@ public class ScoreAttackMode extends AbstractManiaMode {
 
 	/** Items at an exact starting section boundary (level 100/200) are awarded from this version. */
 	private static final int ITEM_START_LEVEL_FIX_VERSION = 4;
+
+	/** Free Fall immediately removes lines completed by its collapse. */
+	private static final int FREE_FALL_LINE_CLEAR_VERSION = 5;
 
 	/** Gravity table (Gravity speed value) */
 	private static final int[] tableGravityValue =
@@ -667,9 +670,20 @@ public class ScoreAttackMode extends AbstractManiaMode {
 
 		if(item == Block.BLOCK_ITEM_FREE_FALL) {
 			engine.field.freeFall();
+			if(version >= FREE_FALL_LINE_CLEAR_VERSION) clearFreeFallLines(engine);
 		} else if(item == Block.BLOCK_ITEM_DEL_EVEN) {
 			deleteEvenRows(engine);
 		}
+	}
+
+	/**
+	 * Remove rows completed by Free Fall without treating them as a placement,
+	 * so they do not enter the normal score/level/statistics pipeline.
+	 */
+	private void clearFreeFallLines(GameEngine engine) {
+		if(engine.field.checkLine() <= 0) return;
+		engine.field.clearLine();
+		engine.field.downFloatingBlocks();
 	}
 
 	private void deleteEvenRows(GameEngine engine) {

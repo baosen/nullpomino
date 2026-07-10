@@ -175,6 +175,43 @@ class ScoreAttackModeItemTest {
 	}
 
 	@Test
+	void freeFallImmediatelyRemovesCompletedRowsWithoutScoring() throws Exception {
+		ScoreAttackMode mode = new ScoreAttackMode();
+		GameEngine engine = freshEngine(mode);
+		mode.playerInit(engine, 0);
+		engine.createFieldIfNeeded();
+		prepareFreeFallCompletedLine(engine);
+		setInt(mode, "pendingItemEffect", Block.BLOCK_ITEM_FREE_FALL);
+		engine.statistics.score = 12345;
+		engine.statistics.lines = 67;
+		engine.statistics.level = 42;
+
+		mode.onARE(engine, 0);
+
+		assertEquals(0, engine.field.checkLineNoFlag());
+		assertTrue(engine.field.isEmpty());
+		assertEquals(12345, engine.statistics.score);
+		assertEquals(67, engine.statistics.lines);
+		assertEquals(42, engine.statistics.level);
+	}
+
+	@Test
+	void version4ReplayKeepsFreeFallCompletedRowsUntilNextLock() throws Exception {
+		ScoreAttackMode mode = new ScoreAttackMode();
+		GameEngine engine = freshEngine(mode);
+		mode.playerInit(engine, 0);
+		setInt(mode, "version", 4);
+		engine.createFieldIfNeeded();
+		prepareFreeFallCompletedLine(engine);
+		setInt(mode, "pendingItemEffect", Block.BLOCK_ITEM_FREE_FALL);
+
+		mode.onARE(engine, 0);
+
+		assertEquals(1, engine.field.checkLineNoFlag());
+		assertFalse(engine.field.getLineFlag(engine.field.getHeightWithoutHurryupFloor() - 1));
+	}
+
+	@Test
 	void delEvenRemovesVisibleEvenRowsAndLeavesStatisticsUntouched() throws Exception {
 		ScoreAttackMode mode = new ScoreAttackMode();
 		GameEngine engine = freshEngine(mode);
@@ -208,7 +245,7 @@ class ScoreAttackModeItemTest {
 		GameEngine engine = freshEngine(mode);
 		mode.playerInit(engine, 0);
 		assertTrue(readBoolean(mode, "enableitem"));
-		assertEquals(4, readInt(mode, "version"));
+		assertEquals(5, readInt(mode, "version"));
 		assertTrue(engine.rainbowAnimate);
 
 		setBoolean(mode, "enableitem", false);
@@ -280,6 +317,14 @@ class ScoreAttackModeItemTest {
 		assertEquals(1, engine.field.checkLine());
 		engine.field.clearLine();
 		engine.field.downFloatingBlocks();
+	}
+
+	private static void prepareFreeFallCompletedLine(GameEngine engine) {
+		int bottom = engine.field.getHeightWithoutHurryupFloor() - 1;
+		for(int x = 1; x < engine.field.getWidth(); x++) {
+			engine.field.setBlockColor(x, bottom, Block.BLOCK_COLOR_RED);
+		}
+		engine.field.setBlockColor(0, bottom - 1, Block.BLOCK_COLOR_BLUE);
 	}
 
 	private static boolean fieldContainsColor(GameEngine engine, int color) {
