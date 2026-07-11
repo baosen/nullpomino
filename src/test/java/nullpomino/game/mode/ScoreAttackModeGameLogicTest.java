@@ -347,6 +347,7 @@ class ScoreAttackModeGameLogicTest {
 		ScoreAttackMode mode = new ScoreAttackMode();
 		GameEngine engine = freshEngine(mode);
 		mode.playerInit(engine, 0);
+		engine.createFieldIfNeeded();
 		engine.gameActive = true;
 		engine.ending = 2;
 		setInt(mode, "rolltime", 0);
@@ -361,6 +362,7 @@ class ScoreAttackModeGameLogicTest {
 		ScoreAttackMode mode = new ScoreAttackMode();
 		GameEngine engine = freshEngine(mode);
 		mode.playerInit(engine, 0);
+		engine.createFieldIfNeeded();
 		engine.gameActive = true;
 		engine.ending = 2;
 		setInt(mode, "rolltime", 1955); // ROLLTIMELIMIT - 1
@@ -368,6 +370,11 @@ class ScoreAttackModeGameLogicTest {
 		mode.onLast(engine, 0);
 
 		assertEquals(GameEngine.Status.EXCELLENT, engine.stat);
+		engine.statc[0] = 600;
+		engine.statExcellent();
+		assertEquals(GameEngine.Status.GAMEOVER, engine.stat);
+		engine.statGameOver();
+		assertEquals(GameEngine.Status.GAMEOVER, engine.stat);
 	}
 
 	@Test

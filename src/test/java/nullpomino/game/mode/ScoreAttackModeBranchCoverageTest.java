@@ -324,6 +324,15 @@ class ScoreAttackModeBranchCoverageTest {
 		assertEquals(GameEngine.Status.EXCELLENT, engine.stat);
 		assertFalse(engine.gameActive);
 		assertFalse(engine.timerActive);
+
+		engine.statc[0] = 600;
+		engine.statExcellent();
+		assertEquals(GameEngine.Status.GAMEOVER, engine.stat);
+
+		for(int i = 0; (i < 300) && (engine.stat != GameEngine.Status.RESULT); i++) {
+			engine.statGameOver();
+		}
+		assertEquals(GameEngine.Status.RESULT, engine.stat);
 	}
 
 	@Test

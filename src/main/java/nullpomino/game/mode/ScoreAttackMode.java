@@ -96,6 +96,9 @@ public class ScoreAttackMode extends AbstractManiaMode {
 	/** Remaining ending time limit */
 	private int rolltime;
 
+	/** Whether the roll completion screen has already been entered. */
+	private boolean rollCompletionAcknowledged;
+
 	/** Secret Grade */
 	private int secretGrade;
 
@@ -159,6 +162,7 @@ public class ScoreAttackMode extends AbstractManiaMode {
 		activePieceFrames = 0;
 		scgettime = 0;
 		rolltime = 0;
+		rollCompletionAcknowledged = false;
 		bgmlv = 0;
 		sectiontime = new int[SECTION_MAX];
 		sectionIsNewRecord = new boolean[SECTION_MAX];
@@ -814,11 +818,16 @@ public class ScoreAttackMode extends AbstractManiaMode {
 			if(remainRollTime <= 10*60) engine.meterColor = GameEngine.METER_COLOR_RED;
 
 			if(rolltime >= ROLLTIMELIMIT) {
-				engine.gameEnded();
-				engine.resetStatc();
-				engine.stat = GameEngine.Status.EXCELLENT;
+				showRollCompletion(engine);
 			}
 		}
+	}
+
+	private void showRollCompletion(GameEngine engine) {
+		rollCompletionAcknowledged = true;
+		engine.gameEnded();
+		engine.resetStatc();
+		engine.stat = GameEngine.Status.EXCELLENT;
 	}
 
 	/**
@@ -829,10 +838,8 @@ public class ScoreAttackMode extends AbstractManiaMode {
 		if(engine.statc[0] == 0) {
 			secretGrade = engine.field.getSecretGrade();
 		}
-		if((version >= SCORE_AND_ROLL_FIX_VERSION) && (engine.ending == 2)) {
-			engine.gameEnded();
-			engine.resetStatc();
-			engine.stat = GameEngine.Status.EXCELLENT;
+		if((version >= SCORE_AND_ROLL_FIX_VERSION) && (engine.ending == 2) && !rollCompletionAcknowledged) {
+			showRollCompletion(engine);
 			return true;
 		}
 		return false;
