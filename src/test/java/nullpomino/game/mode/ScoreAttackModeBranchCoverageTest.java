@@ -96,8 +96,10 @@ class ScoreAttackModeBranchCoverageTest {
 		engine.createFieldIfNeeded();
 		setInt(mode, "comboValue", 1);
 		engine.statistics.level = 0;
-		// statc[0] far beyond lock delay -> getLockDelay - statc[0] < 0 -> clamps to 0.
+		// Capture a duration far beyond lock delay, then model the engine reset before scoring.
 		engine.statc[0] = 100000;
+		mode.pieceLocked(engine, 0, 1);
+		engine.statc[0] = 0;
 
 		mode.calcScore(engine, 0, 1);
 

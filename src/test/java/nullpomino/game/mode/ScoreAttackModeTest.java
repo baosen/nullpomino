@@ -17,8 +17,8 @@ import org.junit.jupiter.api.Test;
 /**
  * Pins the headless slice of {@link ScoreAttackMode}: the registry
  * surface, the playerInit defaults including the engine wiring (no
- * T-spin / B2B / Combo, no big-half / big-move, staffroll-no-death
- * on, COMBO_TYPE_DOUBLE), the per-rule ranking + best-section-time
+ * T-spin / B2B / Combo, no big-half / big-move, roll top-outs
+ * enabled, COMBO_TYPE_DOUBLE), the per-rule ranking + best-section-time
  * I/O at SECTION_MAX=3, and the loadSetting / saveSetting round-trip
  * under the 'scoreattack.*' prefix.
  */
@@ -74,13 +74,29 @@ class ScoreAttackModeTest {
 		assertEquals(3, sectionIsNewRecord.length);
 
 		// ScoreAttack engine wiring: no T-spin / B2B, comboType=DOUBLE,
-		// no big-half / big-move (regular block size), staffrollNoDeath ON.
+		// no big-half / big-move (regular block size), roll top-outs enabled.
 		assertEquals(false, engine.tspinEnable);
 		assertEquals(false, engine.b2bEnable);
 		assertEquals(GameEngine.COMBO_TYPE_DOUBLE, engine.comboType);
 		assertEquals(false, engine.bighalf);
 		assertEquals(false, engine.bigmove);
-		assertEquals(true, engine.staffrollNoDeath);
+		assertEquals(false, engine.staffrollNoDeath);
+	}
+
+	@Test
+	void versionFiveReplayKeepsRollTopOutImmunity() {
+		ScoreAttackMode mode = new ScoreAttackMode();
+		GameManager manager = new GameManager(new EventReceiver());
+		manager.replayMode = true;
+		manager.replayProp = new CustomProperties();
+		manager.replayProp.setProperty("scoreattack.version", 5);
+		manager.mode = mode;
+		manager.init();
+		manager.engine[0].init();
+
+		mode.playerInit(manager.engine[0], 0);
+
+		assertEquals(true, manager.engine[0].staffrollNoDeath);
 	}
 
 	@Test

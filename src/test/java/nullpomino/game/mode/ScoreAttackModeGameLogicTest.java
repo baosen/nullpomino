@@ -41,12 +41,13 @@ class ScoreAttackModeGameLogicTest {
 		assertEquals(0, readInt(mode, "gravityindex"));
 		assertEquals(0, readInt(mode, "comboValue"));
 		assertEquals(0, readInt(mode, "harddropBonus"));
-		assertEquals(5, readInt(mode, "version"));
+		assertEquals(6, readInt(mode, "version"));
 		assertEquals(-1, readInt(mode, "rankingRank"));
 		assertEquals(25, engine.speed.are);
 		assertEquals(25, engine.speed.areLine);
 		assertEquals(30, engine.speed.lockDelay);
 		assertEquals(15, engine.speed.das);
+		assertFalse(engine.staffrollNoDeath);
 		// playerInit calls loadSetting(owner.modeConfig) which defaults showsectiontime to false
 		assertFalse(readBoolean(mode, "showsectiontime"));
 	}
@@ -65,7 +66,7 @@ class ScoreAttackModeGameLogicTest {
 
 		CustomProperties prop = new CustomProperties();
 		invokeSaveSetting(mode, prop);
-		assertEquals(5, prop.getProperty("scoreattack.version", -1));
+		assertEquals(6, prop.getProperty("scoreattack.version", -1));
 
 		ScoreAttackMode dest = new ScoreAttackMode();
 		GameEngine destEngine = freshEngine(dest);
@@ -77,7 +78,7 @@ class ScoreAttackModeGameLogicTest {
 		assertTrue(readBoolean(dest, "always20g"));
 		assertTrue(readBoolean(dest, "showsectiontime"));
 		assertTrue(readBoolean(dest, "big"));
-		assertEquals(5, readInt(dest, "version"));
+		assertEquals(6, readInt(dest, "version"));
 	}
 
 	@Test
@@ -184,6 +185,43 @@ class ScoreAttackModeGameLogicTest {
 		// lastscore = 6 * (ceil((0+1)/4) * 1 * 1 * 4 + ceil(1/2) + 30*7)
 		// = 6 * (4 + 1 + 210) = 1290
 		assertEquals(1290, readInt(mode, "lastscore"));
+	}
+
+	@Test
+	void calcScoreUsesCapturedActivePieceTime() throws Exception {
+		ScoreAttackMode mode = new ScoreAttackMode();
+		GameEngine engine = freshEngine(mode);
+		mode.playerInit(engine, 0);
+		engine.ending = 0;
+		engine.createFieldIfNeeded();
+		engine.field.setBlockColor(0, 0, Block.BLOCK_COLOR_RED);
+		engine.statc[0] = 12;
+		mode.pieceLocked(engine, 0, 1);
+		engine.statc[0] = 0;
+
+		mode.calcScore(engine, 0, 1);
+
+		assertEquals(768, readInt(mode, "lastscore"));
+		assertEquals(768, engine.statistics.score);
+	}
+
+	@Test
+	void versionFiveReplayKeepsResetCounterSpeedBonus() throws Exception {
+		ScoreAttackMode mode = new ScoreAttackMode();
+		GameEngine engine = freshEngine(mode);
+		mode.playerInit(engine, 0);
+		setInt(mode, "version", 5);
+		engine.ending = 0;
+		engine.createFieldIfNeeded();
+		engine.field.setBlockColor(0, 0, Block.BLOCK_COLOR_RED);
+		engine.statc[0] = 12;
+		mode.pieceLocked(engine, 0, 1);
+		engine.statc[0] = 0;
+
+		mode.calcScore(engine, 0, 1);
+
+		assertEquals(1272, readInt(mode, "lastscore"));
+		assertEquals(1272, engine.statistics.score);
 	}
 
 	@Test

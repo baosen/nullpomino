@@ -151,6 +151,42 @@ class ScoreAttackModeItemTest {
 	}
 
 	@Test
+	void itemBearingClearSuppressesOrdinaryScore() throws Exception {
+		ScoreAttackMode mode = new ScoreAttackMode();
+		GameEngine engine = freshEngine(mode);
+		mode.playerInit(engine, 0);
+		engine.createFieldIfNeeded();
+		fillLine(engine, 0, Block.BLOCK_COLOR_RED);
+		engine.field.getBlock(5, 0).item = Block.BLOCK_ITEM_FREE_FALL;
+		engine.lineClearing = 1;
+
+		mode.onLineClear(engine, 0);
+		mode.calcScore(engine, 0, 1);
+
+		assertEquals(0, readInt(mode, "lastscore"));
+		assertEquals(0, engine.statistics.score);
+		assertEquals(1, engine.statistics.level);
+	}
+
+	@Test
+	void versionFiveReplayStillScoresItemBearingClear() throws Exception {
+		ScoreAttackMode mode = new ScoreAttackMode();
+		GameEngine engine = freshEngine(mode);
+		mode.playerInit(engine, 0);
+		setInt(mode, "version", 5);
+		engine.createFieldIfNeeded();
+		fillLine(engine, 0, Block.BLOCK_COLOR_RED);
+		engine.field.getBlock(5, 0).item = Block.BLOCK_ITEM_FREE_FALL;
+		engine.lineClearing = 1;
+
+		mode.onLineClear(engine, 0);
+		mode.calcScore(engine, 0, 1);
+
+		assertEquals(1272, readInt(mode, "lastscore"));
+		assertEquals(1272, engine.statistics.score);
+	}
+
+	@Test
 	void freeFallActivatesOnAreWithoutChangingScoringStatistics() throws Exception {
 		ScoreAttackMode mode = new ScoreAttackMode();
 		GameEngine engine = freshEngine(mode);
@@ -245,7 +281,7 @@ class ScoreAttackModeItemTest {
 		GameEngine engine = freshEngine(mode);
 		mode.playerInit(engine, 0);
 		assertTrue(readBoolean(mode, "enableitem"));
-		assertEquals(5, readInt(mode, "version"));
+		assertEquals(6, readInt(mode, "version"));
 		assertTrue(engine.rainbowAnimate);
 
 		setBoolean(mode, "enableitem", false);

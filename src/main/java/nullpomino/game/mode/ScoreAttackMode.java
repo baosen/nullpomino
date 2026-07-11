@@ -15,7 +15,7 @@ import nullpomino.util.GeneralUtil;
  */
 public class ScoreAttackMode extends AbstractManiaMode {
 	/** Current version */
-	private static final int CURRENT_VERSION = 5;
+	private static final int CURRENT_VERSION = 6;
 
 	/** Scripted items are available from this replay version onward. */
 	private static final int ITEM_VERSION = 1;
@@ -31,6 +31,9 @@ public class ScoreAttackMode extends AbstractManiaMode {
 
 	/** Free Fall immediately removes lines completed by its collapse. */
 	private static final int FREE_FALL_LINE_CLEAR_VERSION = 5;
+
+	/** Corrected lock-speed scoring, item-clear scoring, and roll top-out handling. */
+	private static final int SCORE_AND_ROLL_FIX_VERSION = 6;
 
 	/** Gravity table (Gravity speed value) */
 	private static final int[] tableGravityValue =
@@ -83,6 +86,9 @@ public class ScoreAttackMode extends AbstractManiaMode {
 
 	/** Amount of points you just get from line clears */
 	private int lastscore;
+
+	/** Frames spent controlling the piece that produced the pending clear. */
+	private int activePieceFrames;
 
 	/** Elapsed time from last line clear (lastscore is displayed to screen until this reaches to 120) */
 	private int scgettime;
@@ -150,6 +156,7 @@ public class ScoreAttackMode extends AbstractManiaMode {
 		comboValue = 0;
 		harddropBonus = 0;
 		lastscore = 0;
+		activePieceFrames = 0;
 		scgettime = 0;
 		rolltime = 0;
 		bgmlv = 0;
@@ -179,8 +186,6 @@ public class ScoreAttackMode extends AbstractManiaMode {
 		engine.comboType = GameEngine.COMBO_TYPE_DOUBLE;
 		engine.bighalf = false;
 		engine.bigmove = false;
-		engine.staffrollNoDeath = true;
-
 		engine.speed.are = 25;
 		engine.speed.areLine = 25;
 		engine.speed.lineDelay = 41;
@@ -196,6 +201,7 @@ public class ScoreAttackMode extends AbstractManiaMode {
 			version = owner.replayProp.getProperty("scoreattack.version", 0);
 			if(version < ITEM_VERSION) enableitem = false;
 		}
+		engine.staffrollNoDeath = version < SCORE_AND_ROLL_FIX_VERSION;
 		engine.rainbowAnimate = isItemEnabled();
 
 		owner.backgroundStatus.bg = startlevel;
@@ -570,6 +576,12 @@ public class ScoreAttackMode extends AbstractManiaMode {
 		return false;
 	}
 
+	/** Preserve the active-state timer before the engine resets its status counters. */
+	@Override
+	public void pieceLocked(GameEngine engine, int playerID, int lines) {
+		activePieceFrames = engine.statc[0];
+	}
+
 	/**
 	 * When a rule has no line ARE, there is no post-clear ARE callback in
 	 * which to perform an item. Apply it at the equivalent transition point.
@@ -744,7 +756,8 @@ public class ScoreAttackMode extends AbstractManiaMode {
 			int bravo = 1;
 			if(engine.field.isEmpty()) bravo = 4;
 
-			int speedBonus = engine.getLockDelay() - engine.statc[0];
+			int lockTime = version >= SCORE_AND_ROLL_FIX_VERSION ? activePieceFrames : engine.statc[0];
+			int speedBonus = engine.getLockDelay() - lockTime;
 			if(speedBonus < 0) speedBonus = 0;
 
 			int levelQuarter = (levelb + lines) / 4;
@@ -754,9 +767,14 @@ public class ScoreAttackMode extends AbstractManiaMode {
 				levelHalf = (engine.statistics.level + 1) / 2;
 			}
 
-			lastscore = 6*((levelQuarter + engine.softdropFall + manuallock + harddropBonus) * lines * comboValue * bravo +
-						levelHalf + (speedBonus * 7));
-			engine.statistics.score += lastscore;
+			boolean itemClear = isItemEnabled() && (pendingItemEffect != Block.BLOCK_ITEM_NONE);
+			if(version >= SCORE_AND_ROLL_FIX_VERSION && itemClear) {
+				lastscore = 0;
+			} else {
+				lastscore = 6*((levelQuarter + engine.softdropFall + manuallock + harddropBonus) * lines * comboValue * bravo +
+							levelHalf + (speedBonus * 7));
+				engine.statistics.score += lastscore;
+			}
 			scgettime = 120;
 		}
 
