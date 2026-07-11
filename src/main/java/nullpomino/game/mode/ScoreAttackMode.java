@@ -829,6 +829,12 @@ public class ScoreAttackMode extends AbstractManiaMode {
 		if(engine.statc[0] == 0) {
 			secretGrade = engine.field.getSecretGrade();
 		}
+		if((version >= SCORE_AND_ROLL_FIX_VERSION) && (engine.ending == 2)) {
+			engine.gameEnded();
+			engine.resetStatc();
+			engine.stat = GameEngine.Status.EXCELLENT;
+			return true;
+		}
 		return false;
 	}
 

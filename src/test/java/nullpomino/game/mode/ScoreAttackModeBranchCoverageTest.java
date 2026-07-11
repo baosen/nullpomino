@@ -307,6 +307,45 @@ class ScoreAttackModeBranchCoverageTest {
 		assertEquals(7, readInt(mode, "secretGrade"));
 	}
 
+	@Test
+	void currentRollTopOutTransitionsToWinScreen() throws Exception {
+		ScoreAttackMode mode = new ScoreAttackMode();
+		GameEngine engine = freshEngine(mode);
+		mode.playerInit(engine, 0);
+		engine.createFieldIfNeeded();
+		engine.ending = 2;
+		engine.gameActive = true;
+		engine.timerActive = true;
+		engine.stat = GameEngine.Status.GAMEOVER;
+
+		boolean handled = mode.onGameOver(engine, 0);
+
+		assertTrue(handled);
+		assertEquals(GameEngine.Status.EXCELLENT, engine.stat);
+		assertFalse(engine.gameActive);
+		assertFalse(engine.timerActive);
+	}
+
+	@Test
+	void versionFiveReplayKeepsLegacyGameOverCallback() throws Exception {
+		ScoreAttackMode mode = new ScoreAttackMode();
+		GameEngine engine = freshEngine(mode);
+		mode.playerInit(engine, 0);
+		setInt(mode, "version", 5);
+		engine.createFieldIfNeeded();
+		engine.ending = 2;
+		engine.gameActive = true;
+		engine.timerActive = true;
+		engine.stat = GameEngine.Status.GAMEOVER;
+
+		boolean handled = mode.onGameOver(engine, 0);
+
+		assertFalse(handled);
+		assertEquals(GameEngine.Status.GAMEOVER, engine.stat);
+		assertTrue(engine.gameActive);
+		assertTrue(engine.timerActive);
+	}
+
 	// ────────────────────────────────────────────────────────────────
 	// onResult: page step without wrap; F flips view back to false
 	// ────────────────────────────────────────────────────────────────
