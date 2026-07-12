@@ -92,8 +92,8 @@
         document.body.appendChild(s);
       }
 
-      // Preferred path: stream classes.js so the ~7 MB download shows real
-      // progress in the 0–30% band, then inject it as a classic script.
+      // Preferred path: stream classes.js so the download shows real progress
+      // in the 0–30% band, then inject it as a classic script.
       function loadViaFetch() {
         label.textContent = "Downloading…";
         fetch("classes.js").then(function (resp) {

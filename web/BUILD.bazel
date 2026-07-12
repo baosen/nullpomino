@@ -24,7 +24,10 @@ java_binary(
     ],
 )
 
-# TeaVM ahead-of-time compile: the Java 17 app jar -> web/classes.js.
+# Production TeaVM ahead-of-time compile: the Java 17 app jar ->
+# web/classes.js. ADVANCED optimization and obfuscation substantially reduce
+# download and JavaScript parse costs while strict mode preserves the Java
+# exception semantics the game relies on.
 #
 # TeaVM 0.15 requires Java 17 or newer to run. The default build config uses
 # remotejdk_17 and emits Java 17 bytecode. Tagged "manual" to keep this
@@ -40,6 +43,20 @@ java_binary(
 teavm_js(
     name = "classes_js",
     out = "classes.js",
+    classpath = ["//:NullpoMinoTeaVM_deploy.jar"],
+    main_class = "nullpomino.gui.teavm.NullpoMinoTeaVM",
+    obfuscated = True,
+    optimization = "ADVANCED",
+    strict = True,
+    tags = ["manual"],
+    visibility = ["//visibility:public"],
+)
+
+# Readable local-development build. web/build-site.sh --dev packages this as
+# classes.js so the HTML shell stays identical between production and debug.
+teavm_js(
+    name = "classes_js_dev",
+    out = "classes-dev.js",
     classpath = ["//:NullpoMinoTeaVM_deploy.jar"],
     main_class = "nullpomino.gui.teavm.NullpoMinoTeaVM",
     optimization = "SIMPLE",

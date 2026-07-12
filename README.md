@@ -14,7 +14,8 @@
 #### Web
 
 ```bash
-web/build-site.sh
+web/build-site.sh          # optimized production bundle
+web/build-site.sh --dev    # readable JavaScript for local debugging
 python3 -m http.server -d web/dist 8000 # other static file servers works too!
 ```
 
@@ -34,4 +35,3 @@ Netplay is peer-to-peer — see [NETPLAY.md](NETPLAY.md) for more info.
 - `./sequencer` — inspect replay piece sequences (by Zircean)
 - `./musiclisteditor` — configure BGM files
 - `./airankstool` — generate a Ranks AI data file
-

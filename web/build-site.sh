@@ -8,11 +8,26 @@ cd "$(dirname "$0")/.."
 
 # TeaVM 0.15 requires Java 17 or newer to run. The default .bazelrc config
 # already builds and runs Java tools with Java 17, so no special flag is needed.
-bazel build //web:classes_js //:config_manifest //:res_manifest
+case "${1:-}" in
+  "")
+    classes_target=classes_js
+    classes_file=classes.js
+    ;;
+  --dev)
+    classes_target=classes_js_dev
+    classes_file=classes-dev.js
+    ;;
+  *)
+    echo "Usage: $0 [--dev]" >&2
+    exit 2
+    ;;
+esac
+
+bazel build "//web:$classes_target" //:config_manifest //:res_manifest
 
 rm -rf web/dist
 mkdir -p web/dist
-cp bazel-bin/web/classes.js web/dist/classes.js
+cp "bazel-bin/web/$classes_file" web/dist/classes.js
 cp web/index.html web/dist/index.html
 cp bazel-bin/config-manifest.txt web/dist/config-manifest.txt
 cp bazel-bin/res-manifest.txt web/dist/res-manifest.txt
