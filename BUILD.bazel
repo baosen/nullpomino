@@ -47,8 +47,8 @@ genrule(
 
 java_binary(
     name = "NullpoMinoSDL",
-    main_class = "nullpomino.gui.sdl.NullpoMinoSDL",
     jvm_flags = ["--enable-native-access=ALL-UNNAMED"],
+    main_class = "nullpomino.gui.sdl.NullpoMinoSDL",
     runtime_deps = [
         "//src/main/java:core",
         # The JNA desktop backend is resolved by reflection (SdlBackend),
@@ -74,13 +74,13 @@ java_binary(
 
 # Browser build (TeaVM): this jar is never executed on a JVM; it is the input
 # app jar fed to the TeaVM ahead-of-time compiler (//web:classes_js). TeaVM
-# 0.14's ASM front end rejects bytecode newer than 17, which the default
-# build config already satisfies.
+# 0.15 requires Java 17 or newer to run, which the default build config
+# already satisfies.
 java_binary(
     name = "NullpoMinoTeaVM",
+    deploy_env = [":web_deploy_env"],
     main_class = "nullpomino.gui.teavm.NullpoMinoTeaVM",
     visibility = ["//web:__pkg__"],
-    deploy_env = [":web_deploy_env"],
     runtime_deps = ["//src/main/java:teavm_main"],
 )
 
