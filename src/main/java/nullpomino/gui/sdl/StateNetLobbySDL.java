@@ -531,7 +531,7 @@ public class StateNetLobbySDL extends BaseStateSDL {
 		nl.chatLogLobby.appendSystem("JOINING " + pendingHostPort + " ...", NormalFontSDL.COLOR_BLUE);
 	}
 
-	/** CREATE: spin up a new room session, then open the create-room form over it */
+	/** CREATE: open the create-room form; the form owns session creation on OK. */
 	private void createRoom() {
 		if(pendingAction != PENDING_NONE) return;
 		NetLobbyFrame nl = NullpoMinoSDL.netLobby;
@@ -542,21 +542,9 @@ public class StateNetLobbySDL extends BaseStateSDL {
 			return;
 		}
 
-		RoomSession session;
-		try {
-			session = RoomSession.create(name, RoomConfig.load(), null, NetPlatform.roomNet());
-		} catch(IOException e) {
-			nl.chatLogLobby.appendSystem("CREATE FAILED: " + e.getMessage(), NormalFontSDL.COLOR_RED);
-			return;
-		}
-		NullpoMinoSDL.roomSession = session;
-		nl.connectToRoom(name, teamInput.getText(), session);   // login completes synchronously
-		pendingAction = PENDING_CREATE;
-		pendingSince = System.currentTimeMillis();
-
-		// The form's OK sends the standard roomcreate and goBack()s here; the
-		// INROOM handoff in update() then enters the game. CANCEL tears the
-		// session down and enter() resets to the lounge.
+		// The form's OK creates the room session, sends roomcreate, waits for the
+		// INROOM handoff and enters the game itself — so the create-room screen
+		// stays on the back stack and in-game BACK returns here (not to the lounge).
 		nl.currentViewDetailRoomID = -1;
 		nl.createRoomStyle = 0;
 		NullpoMinoSDL.enterState(NullpoMinoSDL.STATE_NET_CREATEROOM);

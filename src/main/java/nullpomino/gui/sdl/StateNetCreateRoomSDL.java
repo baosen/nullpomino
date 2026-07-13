@@ -5,6 +5,7 @@
 */
 package nullpomino.gui.sdl;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Supplier;
@@ -13,10 +14,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import nullpomino.game.net.NetMPModeRegistry;
-import nullpomino.game.net.NetPlayerInfo;
+import nullpomino.game.net.NetPlatform;
 import nullpomino.game.net.NetRoomInfo;
 import nullpomino.game.net.NetSPModeRegistry;
 import nullpomino.game.net.NetUtil;
+import nullpomino.game.net.room.RoomConfig;
+import nullpomino.game.net.room.RoomSession;
 import nullpomino.game.play.GameEngine;
 import nullpomino.gui.net.NetLobbyFrame;
 import nullpomino.gui.net.NetLobbyFrame.RoomCreateMode;
@@ -150,10 +153,25 @@ public class StateNetCreateRoomSDL extends BaseStateSDL {
 	/** MAX PLAYERS value before SINGLE_PLAYER coerced it to 1; restored when leaving 1P. */
 	private int preOnePlayerMaxPlayers = 6;
 
+	/** After OK: creating the session + waiting for the roomcreate/INROOM handoff before entering the game. */
+	private boolean waitingForRoom;
+	/** True once the roomcreate message has been sent (gated on LOBBYMODE_LOBBY). */
+	private boolean createSent;
+	/** Wall-clock start of the create wait, for the failsafe timeout. */
+	private long pendingSince;
+	/** The roomcreate/singleroomcreate message to send once login completes. */
+	private String pendingCreateMsg;
+	/** Give up on a stuck create after this long, matching the lounge's failsafe. */
+	private static final long CREATE_FAILSAFE_MS = 20000;
+
 	@Override
 	public void enter() {
 		NetLobbyFrame nl = NullpoMinoSDL.netLobby;
 		if(nl == null) { NullpoMinoSDL.enterStateClear(NullpoMinoSDL.STATE_TITLE); return; }
+		// Always land on a clean form — including on game -> BACK -> here (the
+		// session was torn down) and after an aborted create.
+		waitingForRoom = false;
+		createSent = false;
 
 		detailMode = nl.currentViewDetailRoomID != -1;
 		NetRoomInfo source = resolveSource(nl);
@@ -363,7 +381,7 @@ public class StateNetCreateRoomSDL extends BaseStateSDL {
 		joinBtn.primary = true;
 		watchBtn  = new ButtonSDL(272, btnY, 124, 32, "WATCH",  new Runnable() { public void run() { submit(true,  true); } });
 		cancelBtn = new ButtonSDL(508, btnY, 124, 32, "CANCEL", new Runnable() { public void run() { cancel(); } });
-		closeBtn = ButtonSDL.newCloseButton(new Runnable() { public void run() { NullpoMinoSDL.goBack(); } });
+		closeBtn = ButtonSDL.newCloseButton(new Runnable() { public void run() { cancel(); } });
 
 		// Build the per-tab widget arrays in the order they appear on screen.
 		tabFields = new Field[][] {
@@ -528,6 +546,14 @@ public class StateNetCreateRoomSDL extends BaseStateSDL {
 		NetLobbyFrame nl = NullpoMinoSDL.netLobby;
 		if(nl == null) { NullpoMinoSDL.enterStateClear(NullpoMinoSDL.STATE_TITLE); return; }
 		nl.pump();
+
+		// After OK: drive the create handshake instead of the form until we either
+		// enter the game or bail back to the lounge.
+		if(waitingForRoom) {
+			updateWaitForRoom(nl);
+			return;
+		}
+
 		MouseInputSDL.mouseInput.update();
 
 		int mx = MouseInputSDL.mouseInput.getMouseX();
@@ -667,9 +693,10 @@ public class StateNetCreateRoomSDL extends BaseStateSDL {
 
 	private void submit(boolean join, boolean watch) {
 		NetLobbyFrame nl = NullpoMinoSDL.netLobby;
-		if(nl == null || nl.netPlayerClient == null) return;
+		if(nl == null) return;
 
 		if(join) {
+			if(nl.netPlayerClient == null) return;
 			if(nl.currentViewDetailRoomID != -1) {
 				nl.joinRoom(nl.currentViewDetailRoomID, watch);
 			}
@@ -677,12 +704,13 @@ public class StateNetCreateRoomSDL extends BaseStateSDL {
 			return;
 		}
 
-		// Create path: snapshot current values into backupRoomInfo, then send.
+		// Create path: snapshot the form into backupRoomInfo and build+validate the
+		// create message. The message is NOT sent here — update()'s wait block sends
+		// it once login reaches the lobby, then enters the game (so this screen stays
+		// on the back stack and in-game BACK returns here).
 		NetRoomInfo r = (nl.backupRoomInfo != null) ? nl.backupRoomInfo : new NetRoomInfo();
 		collectFormInto(r);
-
-		NetPlayerInfo me = nl.netPlayerClient.getYourPlayerInfo();
-		if(me != null) r.style = 0;  // NullpoMino's default style for multiplayer
+		r.style = 0;  // NullpoMino's default style for multiplayer
 
 		String msg;
 		RoomCreateMode mode = currentMode();
@@ -690,9 +718,9 @@ public class StateNetCreateRoomSDL extends BaseStateSDL {
 			case SINGLE_PLAYER: {
 				// singleroomcreate\t<name>\t<mode> — server fills the rest from the player's rule.
 				if(r.strName == null || r.strName.trim().length() == 0) { statusLine = "ROOM NAME REQUIRED"; return; }
-				String name = NetUtil.urlEncode(r.strName);
+				String roomNameEnc = NetUtil.urlEncode(r.strName);
 				String modeName = NetUtil.urlEncode(r.strMode == null ? "" : r.strMode);
-				msg = "singleroomcreate\t" + name + "\t" + modeName + "\n";
+				msg = "singleroomcreate\t" + roomNameEnc + "\t" + modeName + "\n";
 				break;
 			}
 			default: {
@@ -714,9 +742,28 @@ public class StateNetCreateRoomSDL extends BaseStateSDL {
 		savePreviousMode(nl);
 		nl.propConfig.setProperty("createroom.lastMode", mode.name());
 		nl.saveConfig();
-		nl.netPlayerClient.send(msg);
 		nl.createRoomMode = RoomCreateMode.MULTIPLAYER;
-		NullpoMinoSDL.goBack();
+
+		// Create the room session if we don't have a live one. The lounge no longer
+		// creates it, and a game we backed out of tore it down, so "create again"
+		// off a pre-filled form must spin up a fresh session here.
+		if(nl.netPlayerClient == null || !nl.netPlayerClient.isConnected()) {
+			String pname = nl.propConfig.getProperty("serverselect.txtfldPlayerName.text", "").trim();
+			String team = nl.propConfig.getProperty("serverselect.txtfldPlayerTeam.text", "");
+			try {
+				RoomSession session = RoomSession.create(pname, RoomConfig.load(), null, NetPlatform.roomNet());
+				NullpoMinoSDL.roomSession = session;
+				nl.connectToRoom(pname, team, session);
+			} catch(IOException e) {
+				statusLine = "CREATE FAILED: " + e.getMessage();
+				return;
+			}
+		}
+
+		pendingCreateMsg = msg;
+		createSent = false;
+		waitingForRoom = true;
+		pendingSince = System.currentTimeMillis();
 	}
 
 	private void collectFormInto(NetRoomInfo r) {
@@ -862,6 +909,54 @@ public class StateNetCreateRoomSDL extends BaseStateSDL {
 		String key = (currentMode() == RoomCreateMode.SINGLE_PLAYER)
 				? "createroom1p.strMode" : "createroom.strMode";
 		nl.propConfig.setProperty(key, mode);
+	}
+
+	/**
+	 * Drive the create handshake after OK: abort on ESC / mouse back, fail on a
+	 * lost connection, send the create message once login reaches the lobby, enter
+	 * the game on the INROOM handoff, and time out to the lounge as a failsafe.
+	 * All exits go through cancel() (reaps the session + goBack).
+	 */
+	private void updateWaitForRoom(NetLobbyFrame nl) {
+		MouseInputSDL.mouseInput.update();
+
+		boolean abort = MouseInputSDL.mouseInput.isMouseBackClicked();
+		for(NullpoMinoSDL.KeyEvent ev : NullpoMinoSDL.frameKeyEvents) {
+			if(ev.scancode == SDLConstants.SDL_SCANCODE_ESCAPE && !ev.repeat) { abort = true; break; }
+		}
+		if(abort) { waitingForRoom = false; cancel(); return; }
+
+		// Session died mid-handshake.
+		if(nl.netPlayerClient != null && !nl.netPlayerClient.isConnected()) {
+			nl.chatLogLobby.appendSystem("ROOM CREATE FAILED - CONNECTION LOST", NormalFontSDL.COLOR_RED);
+			waitingForRoom = false;
+			cancel();
+			return;
+		}
+
+		// Send the create message once, after login reaches the lobby. The session
+		// dispatcher is a strict FIFO: sending before the login events drain would
+		// make roomcreatesuccess arrive before our player info and skip the INROOM
+		// branch, hanging until the failsafe.
+		if(!createSent && nl.netPlayerClient != null && nl.lobbyMode == NetLobbyFrame.LOBBYMODE_LOBBY) {
+			nl.netPlayerClient.send(pendingCreateMsg);
+			createSent = true;
+		}
+
+		// Room joined: hand off to the game, keeping this screen on the back stack.
+		if(nl.netPlayerClient != null && nl.lobbyMode == NetLobbyFrame.LOBBYMODE_INROOM) {
+			waitingForRoom = false;
+			NullpoMinoSDL.enterState(NullpoMinoSDL.STATE_NETGAME);
+			return;
+		}
+
+		// Failsafe against a stuck handshake.
+		if(System.currentTimeMillis() - pendingSince > CREATE_FAILSAFE_MS) {
+			nl.chatLogLobby.appendSystem("ROOM CREATE TIMED OUT", NormalFontSDL.COLOR_RED);
+			waitingForRoom = false;
+			cancel();
+			return;
+		}
 	}
 
 	private void cancel() {
