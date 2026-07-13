@@ -352,6 +352,7 @@ public class StateInGameSDL extends BaseStateSDL {
 					NormalFontSDL.printFont(offsetX + 28, offsetY + 220, "END", (cursor == 2));
 					if(gameManager.replayMode && !gameManager.replayRerecord)
 						NormalFontSDL.printFont(offsetX + 28, offsetY + 236, "RERECORD", (cursor == 3));
+					closeBtn.render();
 				}
 				// Fast forward
 				if(fastforward != 0)
@@ -360,6 +361,7 @@ public class StateInGameSDL extends BaseStateSDL {
 					NormalFontSDL.printFont(offsetX, offsetY + 392, "SHOW INVIS", NormalFontSDL.COLOR_ORANGE);
 
 				if(gameManager.engine[0].stat == GameEngine.Status.SETTING
+						|| gameManager.engine[0].stat == GameEngine.Status.RESULT
 						|| shouldPollReplayBack(gameManager, pause)) {
 					closeBtn.render();
 				}
@@ -434,6 +436,16 @@ public class StateInGameSDL extends BaseStateSDL {
 			// Polling every pause frame keeps MouseInputSDL's hold counters
 			// fresh so a click registers on the 0→1 transition.
 			MouseInputSDL.mouseInput.update();
+			// BACK button: return to the previous screen.
+			if(closeBtn.update(
+					MouseInputSDL.mouseInput.getMouseX(),
+					MouseInputSDL.mouseInput.getMouseY(),
+					MouseInputSDL.mouseInput.isMouseClicked())) {
+				ResourceHolderSDL.soundManager.play("decide");
+				ResourceHolderSDL.bgmStop();
+				NullpoMinoSDL.goBack();
+				return;
+			}
 			boolean mouseConfirm = false;
 			boolean mouseCancel = MouseInputSDL.mouseInput.isMouseBackClicked()
 					|| MouseInputSDL.mouseInput.isMouseRightClicked();
@@ -522,11 +534,9 @@ public class StateInGameSDL extends BaseStateSDL {
 					replayPaused = false;
 					gameManager.reset();
 				} else if(cursor == 2) {
-					// End — walk back through the menus that launched the
-					// game (rule select, mode select, title) via the shared
-					// back stack instead of jumping straight to title.
+					// End — return to the title menu (PLAY / REPLAY / NETPLAY).
 					ResourceHolderSDL.bgmStop();
-					NullpoMinoSDL.goBack();
+					NullpoMinoSDL.enterStateClear(NullpoMinoSDL.STATE_TITLE);
 					return;
 				} else if(cursor == 3) {
 					// Replay re-record
@@ -598,11 +608,13 @@ public class StateInGameSDL extends BaseStateSDL {
 		}
 
 		// Result screen mouse + Escape input. Slides statc[0] (the
-		// RETRY/END selector) on hover, confirms on click, and treats
-		// Escape / mouse back / right-click as "pick END". Done before
+		// RETRY/END selector) on hover, confirms RETRY/END on click, and
+		// treats the BACK button / Escape / mouse back / right-click as
+		// "return to the previous screen" (resultBack). Done before
 		// updateAll() so the engine sees the new statc[0] in the same
-		// frame; quitflag is honoured by the "Return to title" check
+		// frame; the END choice sets quitflag, honoured by the exit check
 		// further down.
+		boolean resultBack = false;
 		if(gameManager != null && !pause) {
 			boolean anyResult = false;
 			for(int i = 0; i < gameManager.getPlayers(); i++) {
@@ -611,17 +623,19 @@ public class StateInGameSDL extends BaseStateSDL {
 			}
 			if(anyResult) {
 				MouseInputSDL.mouseInput.update();
-				boolean cancelEnd = NullpoMinoSDL.isEscapePushedThisFrame()
+				boolean closeClicked = closeBtn.update(
+						MouseInputSDL.mouseInput.getMouseX(),
+						MouseInputSDL.mouseInput.getMouseY(),
+						MouseInputSDL.mouseInput.isMouseClicked());
+				boolean cancelKey = NullpoMinoSDL.isEscapePushedThisFrame()
 						|| MouseInputSDL.mouseInput.isMouseBackClicked()
 						|| MouseInputSDL.mouseInput.isMouseRightClicked();
+				if(cancelKey) ResourceHolderSDL.soundManager.play("decide");
+				if(cancelKey || closeClicked) resultBack = true;
 				for(int i = 0; i < gameManager.getPlayers(); i++) {
 					GameEngine engine = gameManager.engine[i];
 					if(engine == null || engine.stat != GameEngine.Status.RESULT) continue;
 					handleResultMouse(engine, i);
-					if(cancelEnd) {
-						ResourceHolderSDL.soundManager.play("decide");
-						engine.quitflag = true;
-					}
 				}
 			}
 		}
@@ -740,17 +754,40 @@ public class StateInGameSDL extends BaseStateSDL {
 				gameManager.reset();
 			}
 
-			// Return to title
-			if(gameManager.getQuitFlag() ||
-			   GameKeySDL.gamekey[0].isPushKey(GameKeySDL.BUTTON_GIVEUP) ||
+			// END on the game-over screen jumps to the title menu (PLAY /
+			// REPLAY / NETPLAY). Cancelling the pre-game settings screen also
+			// sets quitflag but leaves the engine on SETTING, not RESULT — that
+			// one steps back a screen like every other exit below.
+			if(gameManager.getQuitFlag()) {
+				ResourceHolderSDL.bgmStop();
+				if(hasEngineOnResult(gameManager))
+					NullpoMinoSDL.enterStateClear(NullpoMinoSDL.STATE_TITLE);
+				else
+					NullpoMinoSDL.goBack();
+				return;
+			}
+
+			// BACK button / GIVEUP / replay back / Escape / right-click —
+			// return to the previous screen.
+			if(GameKeySDL.gamekey[0].isPushKey(GameKeySDL.BUTTON_GIVEUP) ||
 			   GameKeySDL.gamekey[1].isPushKey(GameKeySDL.BUTTON_GIVEUP) ||
-			   replayMouseBack)
+			   replayMouseBack || resultBack)
 			{
 				ResourceHolderSDL.bgmStop();
 				NullpoMinoSDL.goBack();
 				return;
 			}
 		}
+	}
+
+	/** True when any engine is on the game-over RESULT screen. */
+	static boolean hasEngineOnResult(GameManager gameManager) {
+		if(gameManager == null) return false;
+		for(int i = 0; i < gameManager.getPlayers(); i++) {
+			GameEngine engine = gameManager.engine[i];
+			if(engine != null && engine.stat == GameEngine.Status.RESULT) return true;
+		}
+		return false;
 	}
 
 	/**

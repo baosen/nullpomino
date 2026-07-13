@@ -137,6 +137,38 @@ class StateInGameReplayBackTest {
 		assertFalse(StateInGameSDL.shouldShowReplayTimeline(null, false));
 	}
 
+	// ---- hasEngineOnResult: END-on-game-over routes to title vs back ----
+
+	@Test
+	void hasEngineOnResultNullOrOffResult() {
+		// Null manager and a non-RESULT engine (e.g. SETTING-cancel, which
+		// also sets quitflag) must NOT be treated as the game-over screen —
+		// those exit paths step back a screen instead of jumping to title.
+		assertFalse(StateInGameSDL.hasEngineOnResult(null));
+		FakeGameManager gm = new FakeGameManager();
+		gm.engine = engines(gm, GameEngine.Status.SETTING);
+		assertFalse(StateInGameSDL.hasEngineOnResult(gm));
+	}
+
+	@Test
+	void hasEngineOnResultTrueOnResult() {
+		FakeGameManager gm = new FakeGameManager();
+		gm.engine = engines(gm, GameEngine.Status.RESULT);
+		assertTrue(StateInGameSDL.hasEngineOnResult(gm));
+	}
+
+	@Test
+	void hasEngineOnResultScansAllPlayers() {
+		// Only the second player is on RESULT — the scan must find it.
+		FakeGameManager gm = new FakeGameManager();
+		GameEngine p0 = new GameEngine(gm, 0);
+		p0.stat = GameEngine.Status.MOVE;
+		GameEngine p1 = new GameEngine(gm, 1);
+		p1.stat = GameEngine.Status.RESULT;
+		gm.engine = new GameEngine[] {p0, p1};
+		assertTrue(StateInGameSDL.hasEngineOnResult(gm));
+	}
+
 	private static GameEngine[] engines(GameManager owner, GameEngine.Status stat) {
 		// engine[0] gets the requested status; helper keeps each test focused
 		// on the predicate rather than the engine init dance.
