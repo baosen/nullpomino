@@ -7,7 +7,7 @@
 - Java 17 (JDK 17)
 - [Bazel](https://bazel.build/) (see `.bazelversion`)
 
-## Run
+## Running
 
 ### Web
 
