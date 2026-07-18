@@ -1096,7 +1096,7 @@ public class GameEngine {
 				for(int y = 0; y < field.getHeight(); y++) {
 					Block blk = field.getBlock(x, y);
 
-					if((blk != null) && (blk.color > Block.BLOCK_COLOR_NONE)) {
+					if(blk != null) {
 						blk.alpha = 1f;
 						blk.darkness = 0f;
 						blk.setAttribute(Block.BLOCK_ATTRIBUTE_VISIBLE, true);
@@ -1475,7 +1475,7 @@ public class GameEngine {
 				for(int j = (field.getHiddenHeight() * -1); j < field.getHeight(); j++) {
 					Block blk = field.getBlock(i, j);
 
-					if((blk != null) && (blk.color >= Block.BLOCK_COLOR_GRAY)) {
+					if(blk != null) {
 						if(blk.elapsedFrames < 0) {
 							if(!blk.getAttribute(Block.BLOCK_ATTRIBUTE_GARBAGE))
 								blk.darkness = 0f;
@@ -1520,7 +1520,7 @@ public class GameEngine {
 				for(int j = (field.getHiddenHeight() * -1); j < field.getHeight(); j++) {
 					Block blk = field.getBlock(i, j);
 
-					if((blk != null) && (blk.color >= Block.BLOCK_COLOR_GRAY)) {
+					if(blk != null) {
 						blk.setAttribute(Block.BLOCK_ATTRIBUTE_VISIBLE, (itemXRayCount % 36 == i));
 						blk.setAttribute(Block.BLOCK_ATTRIBUTE_OUTLINE, (itemXRayCount % 36 == i));
 					}
@@ -1538,7 +1538,7 @@ public class GameEngine {
 					int bright = j;
 					if(bright >= 5) bright = 9 - bright;
 					bright = 40 - ( (((20 - i) + bright) * 4 + itemColorCount) % 40 );
-					if((bright >= 0) && (bright < ITEM_COLOR_BRIGHT_TABLE.length)) {
+					if(bright < ITEM_COLOR_BRIGHT_TABLE.length) {
 						bright = 10 - ITEM_COLOR_BRIGHT_TABLE[bright];
 					}
 					if(bright > 10) bright = 10;
@@ -1707,52 +1707,39 @@ public class GameEngine {
 
 		// Processing status of each
 		if(!lagStop) {
-			switch(stat) {
-			case NOTHING:
-				break;
-			case SETTING:
+			if(stat == Status.NOTHING) {
+				// No state-specific work.
+			} else if(stat == Status.SETTING) {
 				statSetting();
-				break;
-			case READY:
+			} else if(stat == Status.READY) {
 				statReady();
-				break;
-			case MOVE:
+			} else if(stat == Status.MOVE) {
 				dasRepeat = true;
 				dasInstant = false;
 				while(dasRepeat){
 					statMove();
 				}
-				break;
-			case LOCKFLASH:
+			} else if(stat == Status.LOCKFLASH) {
 				statLockFlash();
-				break;
-			case LINECLEAR:
+			} else if(stat == Status.LINECLEAR) {
 				statLineClear();
-				break;
-			case ARE:
+			} else if(stat == Status.ARE) {
 				statARE();
-				break;
-			case ENDINGSTART:
+			} else if(stat == Status.ENDINGSTART) {
 				statEndingStart();
-				break;
-			case CUSTOM:
+			} else if(stat == Status.CUSTOM) {
 				statCustom();
-				break;
-			case EXCELLENT:
+			} else if(stat == Status.EXCELLENT) {
 				statExcellent();
-				break;
-			case GAMEOVER:
+			} else if(stat == Status.GAMEOVER) {
 				statGameOver();
-				break;
-			case RESULT:
+			} else if(stat == Status.RESULT) {
 				statResult();
-				break;
-			case FIELDEDIT:
+			} else if(stat == Status.FIELDEDIT) {
 				statFieldEdit();
-				break;
-			case INTERRUPTITEM:
+			} else {
+				// INTERRUPTITEM is the only remaining Status value.
 				statInterruptItem();
-				break;
 			}
 		}
 
@@ -2075,7 +2062,7 @@ public class GameEngine {
 								dasInstant = true;
 							}
 
-							if((ruleopt.lockresetMove == true) && (isMoveCountExceed() == false)) {
+					if((ruleopt.lockresetMove == true) & (isMoveCountExceed() == false)) {
 								lockDelayNow = 0;
 								nowPieceObject.setDarkness(0f);
 							}
@@ -2114,10 +2101,8 @@ public class GameEngine {
 				{
 					harddropFall += nowPieceBottomY - nowPieceY;
 	
-					if(nowPieceY != nowPieceBottomY) {
-						nowPieceY = nowPieceBottomY;
-						playSE("harddrop");
-					}
+					nowPieceY = nowPieceBottomY;
+					playSE("harddrop");
 	
 					if(owner.mode != null) owner.mode.afterHardDropFall(this, playerID, harddropFall);
 					owner.receiver.afterHardDropFall(this, playerID, harddropFall);
@@ -2213,7 +2198,7 @@ public class GameEngine {
 
 		// Horizontal reservoir
 		if((statc[0] > 0) || (ruleopt.dasInMoveFirstFrame)) {
-			if( (moveDirection != 0) && (moveDirection == dasDirection) && ((dasCount < getDAS()) || (getDAS() <= 0)) ) {
+			if( (moveDirection != 0) && ((dasCount < getDAS()) || (getDAS() <= 0)) ) {
 				dasCount++;
 			}
 		}
@@ -2418,7 +2403,7 @@ public class GameEngine {
 					nowPieceX += kick.offsetX;
 					nowPieceY += kick.offsetY;
 
-					if(ruleopt.lockresetWallkick && !isRotateCountExceed()) {
+					if(ruleopt.lockresetWallkick & !isRotateCountExceed()) {
 						lockDelayNow = 0;
 						nowPieceObject.setDarkness(0f);
 					}
@@ -2658,7 +2643,7 @@ public class GameEngine {
 					{
 						// AREあり (光あり）
 						stat = Status.LOCKFLASH;
-					} else if((getARE() > 0) || (lagARE)) {
+			} else if((getARE() > 0) | (lagARE)) {
 						// ARESome (No light)
 						statc[1] = getARE();
 						stat = Status.ARE;
