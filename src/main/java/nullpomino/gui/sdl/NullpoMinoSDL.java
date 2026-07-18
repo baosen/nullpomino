@@ -11,6 +11,7 @@ import java.util.ArrayDeque;
 import java.util.Calendar;
 import java.util.Deque;
 import java.util.Locale;
+import java.util.function.LongSupplier;
 
 import nullpomino.game.net.LanLoungeService;
 import nullpomino.game.net.NetPlatform;
@@ -124,6 +125,12 @@ public class NullpoMinoSDL {
 
 	/** FPS display decimal format */
 	public static DecimalFormat df = new DecimalFormat("0.0");
+
+	/** Replaceable package-private seams keep the frame loop deterministic in tests. */
+	static Runnable resourceLoader = ResourceHolderSDL::load;
+	static Runnable fpsRenderer = () -> NormalFontSDL.printFont(0, 480 - 16,
+		df.format(actualFPS), NormalFontSDL.COLOR_BLUE, 1.0f);
+	static LongSupplier nanoTime = System::nanoTime;
 
 	/** Used by perfect fps mode */
 	public static long perfectFPSDelay = 0;
@@ -611,7 +618,7 @@ public class NullpoMinoSDL {
 		perfectFPSMode = propConfig.getProperty("option.perfectFPSMode", false);
 		perfectYield = propConfig.getProperty("option.perfectYield", false);
 
-		beforeTime = System.nanoTime();
+		beforeTime = nanoTime.getAsLong();
 		prevCalcTime = beforeTime;
 
 		quit = false;
@@ -619,7 +626,7 @@ public class NullpoMinoSDL {
 		allowQuit = true;
 
 		// Loading resources
-		ResourceHolderSDL.load();
+		resourceLoader.run();
 
 		// First run
 		if(propConfig.getProperty("option.firstSetupMode", true) == true) {
@@ -642,7 +649,7 @@ public class NullpoMinoSDL {
 			enterState(STATE_TITLE);
 		}
 
-		perfectFPSDelay = System.nanoTime();
+		perfectFPSDelay = nanoTime.getAsLong();
 
 		// Main loop
 		while(quit == false) {
@@ -686,7 +693,7 @@ public class NullpoMinoSDL {
 			gameStates[currentState].render();
 
 			// FPS drawing
-			if(showfps) NormalFontSDL.printFont(0, 480 - 16, df.format(actualFPS), NormalFontSDL.COLOR_BLUE, 1.0f);
+			if(showfps) fpsRenderer.run();
 
 			// Special keys
 			if(enableSpecialKeys) {
@@ -705,7 +712,7 @@ public class NullpoMinoSDL {
 			// FPS cap
 			sleepFlag = false;
 
-			afterTime = System.nanoTime();
+			afterTime = nanoTime.getAsLong();
 			timeDiff = afterTime - beforeTime;
 
 			period = (long) (1.0 / maxFPS * 1000000000);
@@ -718,8 +725,8 @@ public class NullpoMinoSDL {
 						Thread.sleep(sleepTimeInMillis);
 					} catch(InterruptedException e) {}
 				}
-				overSleepTime = (System.nanoTime() - afterTime) - sleepTime;
-				perfectFPSDelay = System.nanoTime();
+				overSleepTime = (nanoTime.getAsLong() - afterTime) - sleepTime;
+				perfectFPSDelay = nanoTime.getAsLong();
 				sleepFlag = true;
 			} else if(webMode) {
 				// Never spin-wait in a browser tab; a plain sleep is the only
@@ -730,19 +737,19 @@ public class NullpoMinoSDL {
 					} catch(InterruptedException e) {}
 				}
 				overSleepTime = 0L;
-				perfectFPSDelay = System.nanoTime();
+				perfectFPSDelay = nanoTime.getAsLong();
 				sleepFlag = true;
 			} else if((perfectFPSMode && isInGame) || (sleepTime > 0)) {
 				overSleepTime = 0L;
 				if(perfectYield) {
-					while(System.nanoTime() < perfectFPSDelay + 1000000000 / maxFPS) {Thread.yield();}
+					while(nanoTime.getAsLong() < perfectFPSDelay + 1000000000 / maxFPS) {Thread.yield();}
 				} else {
-					while(System.nanoTime() < perfectFPSDelay + 1000000000 / maxFPS) {}
+					while(nanoTime.getAsLong() < perfectFPSDelay + 1000000000 / maxFPS) {}
 				}
 				perfectFPSDelay += 1000000000 / maxFPS;
 
-				if(System.nanoTime() > perfectFPSDelay + 2000000000 / maxFPS) {
-					perfectFPSDelay = System.nanoTime();
+				if(nanoTime.getAsLong() > perfectFPSDelay + 2000000000 / maxFPS) {
+					perfectFPSDelay = nanoTime.getAsLong();
 				}
 
 				sleepFlag = true;
@@ -754,10 +761,10 @@ public class NullpoMinoSDL {
 					Thread.yield();
 					noDelays = 0;
 				}
-				perfectFPSDelay = System.nanoTime();
+				perfectFPSDelay = nanoTime.getAsLong();
 			}
 
-			beforeTime = System.nanoTime();
+			beforeTime = nanoTime.getAsLong();
 			calcFPS(period);
 		}
 	}
@@ -1249,7 +1256,7 @@ public class NullpoMinoSDL {
 		calcInterval += period;
 
 		if(calcInterval >= 1000000000L) {
-			long timeNow = System.nanoTime();
+			long timeNow = nanoTime.getAsLong();
 			long realElapsedTime = timeNow - prevCalcTime;
 			actualFPS = ((double) frameCount / realElapsedTime) * 1000000000L;
 			frameCount = 0L;
