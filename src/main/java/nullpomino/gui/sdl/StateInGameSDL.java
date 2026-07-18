@@ -185,7 +185,7 @@ public class StateInGameSDL extends BaseStateSDL {
 					rulename = NullpoMinoSDL.propGlobal.getProperty(i + ".rule." + gameManager.mode.getGameStyle(), "");
 				}
 			}
-			if((rulename != null) && (rulename.length() > 0)) {
+			if(!rulename.isEmpty()) {
 				log.debug("Load rule options from {}", rulename);
 				ruleopt = GeneralUtil.loadRule(rulename);
 			} else {
@@ -196,20 +196,20 @@ public class StateInGameSDL extends BaseStateSDL {
 			gameManager.engine[i].ruleopt = ruleopt;
 
 			// NEXTOrder generation algorithm
-			if((ruleopt.strRandomizer != null) && (ruleopt.strRandomizer.length() > 0)) {
+			if(!ruleopt.strRandomizer.isEmpty()) {
 				Randomizer randomizerObject = GeneralUtil.loadRandomizer(ruleopt.strRandomizer);
 				gameManager.engine[i].randomizer = randomizerObject;
 			}
 
 			// Wallkick
-			if((ruleopt.strWallkick != null) && (ruleopt.strWallkick.length() > 0)) {
+			if(!ruleopt.strWallkick.isEmpty()) {
 				Wallkick wallkickObject = GeneralUtil.loadWallkick(ruleopt.strWallkick);
 				gameManager.engine[i].wallkick = wallkickObject;
 			}
 
 			// AI
 			String aiName = NullpoMinoSDL.propGlobal.getProperty(i + ".ai", "");
-			if(aiName.length() > 0) {
+			if(!aiName.isEmpty()) {
 				DummyAI aiObj = GeneralUtil.loadAIPlayer(aiName);
 				gameManager.engine[i].ai = aiObj;
 				gameManager.engine[i].aiMoveDelay = NullpoMinoSDL.propGlobal.getProperty(i + ".aiMoveDelay", 0);
@@ -262,20 +262,20 @@ public class StateInGameSDL extends BaseStateSDL {
 			gameManager.engine[i].ruleopt = ruleopt;
 
 			// NEXTOrder generation algorithm
-			if((ruleopt.strRandomizer != null) && (ruleopt.strRandomizer.length() > 0)) {
+			if(!ruleopt.strRandomizer.isEmpty()) {
 				Randomizer randomizerObject = GeneralUtil.loadRandomizer(ruleopt.strRandomizer);
 				gameManager.engine[i].randomizer = randomizerObject;
 			}
 
 			// Wallkick
-			if((ruleopt.strWallkick != null) && (ruleopt.strWallkick.length() > 0)) {
+			if(!ruleopt.strWallkick.isEmpty()) {
 				Wallkick wallkickObject = GeneralUtil.loadWallkick(ruleopt.strWallkick);
 				gameManager.engine[i].wallkick = wallkickObject;
 			}
 
 			// AI (For added replay)
 			String aiName = NullpoMinoSDL.propGlobal.getProperty(i + ".ai", "");
-			if(aiName.length() > 0) {
+			if(!aiName.isEmpty()) {
 				DummyAI aiObj = GeneralUtil.loadAIPlayer(aiName);
 				gameManager.engine[i].ai = aiObj;
 				gameManager.engine[i].aiMoveDelay = NullpoMinoSDL.propGlobal.getProperty(i + ".aiMoveDelay", 0);
@@ -307,10 +307,8 @@ public class StateInGameSDL extends BaseStateSDL {
 				strTitle = "[PAUSE] " + modeTitle;
 			else if(gameManager.engine[0].isInGame && !gameManager.replayMode && !gameManager.replayRerecord)
 				strTitle = "[PLAY] " + modeTitle;
-			else if(gameManager.replayMode && gameManager.replayRerecord)
-				strTitle = "[RERECORD] " + modeTitle;
-			else if(gameManager.replayMode && !gameManager.replayRerecord)
-				strTitle = "[REPLAY] " + modeTitle;
+			else if(gameManager.replayMode)
+				strTitle = (gameManager.replayRerecord ? "[RERECORD] " : "[REPLAY] ") + modeTitle;
 			else
 				strTitle = "[MENU] " + modeTitle;
 		}
@@ -360,9 +358,10 @@ public class StateInGameSDL extends BaseStateSDL {
 				if(gameManager.replayShowInvisible)
 					NormalFontSDL.printFont(offsetX, offsetY + 392, "SHOW INVIS", NormalFontSDL.COLOR_ORANGE);
 
-				if(gameManager.engine[0].stat == GameEngine.Status.SETTING
-						|| gameManager.engine[0].stat == GameEngine.Status.RESULT
-						|| shouldPollReplayBack(gameManager, pause)) {
+				boolean showBack = gameManager.engine[0].stat == GameEngine.Status.SETTING
+						| gameManager.engine[0].stat == GameEngine.Status.RESULT
+						| shouldPollReplayBack(gameManager, pause);
+				if(showBack) {
 					closeBtn.render();
 				}
 
@@ -378,12 +377,14 @@ public class StateInGameSDL extends BaseStateSDL {
 	 */
 	@Override
 	public void update() {
+		if(gameManager == null || gameManager.engine == null || gameManager.engine.length == 0
+				|| gameManager.engine[0] == null) return;
+
 		// Update key input states
 		for(int i = 0; i < 2; i++) {
 			int joynum = NullpoMinoSDL.joyUseNumber[i];
 
-			boolean ingame = (gameManager != null) && (gameManager.engine.length > i) &&
-							 (gameManager.engine[i] != null) && (gameManager.engine[i].isInGame) &&
+			boolean ingame = (gameManager.engine.length > i) && (gameManager.engine[i].isInGame) &&
 							 (!pause || enableframestep);
 
 			if((NullpoMinoSDL.joystickMax > 0) && (joynum >= 0) && (joynum < NullpoMinoSDL.joystickMax)) {
@@ -400,18 +401,16 @@ public class StateInGameSDL extends BaseStateSDL {
 		}
 
 		// Title bar update
-		if((gameManager != null) && (gameManager.engine != null) && (gameManager.engine.length > 0) && (gameManager.engine[0] != null)) {
-			boolean nowInGame = gameManager.engine[0].isInGame;
-			if(prevInGameFlag != nowInGame) {
-				prevInGameFlag = nowInGame;
-				updateTitleBarCaption();
-			}
+		boolean nowInGame = gameManager.engine[0].isInGame;
+		if(prevInGameFlag != nowInGame) {
+			prevInGameFlag = nowInGame;
+			updateTitleBarCaption();
 		}
 
 		// Pause
 		if(GameKeySDL.gamekey[0].isPushKey(GameKeySDL.BUTTON_PAUSE) || GameKeySDL.gamekey[1].isPushKey(GameKeySDL.BUTTON_PAUSE)) {
 			if(!pause) {
-				if((gameManager != null) && (gameManager.isGameActive()) && (pauseFrame <= 0)) {
+				if((gameManager.isGameActive()) && (pauseFrame <= 0)) {
 					ResourceHolderSDL.soundManager.play("pause");
 					pause = true;
 					cursor = 0;
@@ -461,10 +460,8 @@ public class StateInGameSDL extends BaseStateSDL {
 			// 8 chars wide → 144 px covers everything. Rows are 16 px tall
 			// starting at offsetY+188.
 			int pauseOffsetX = 0, pauseOffsetY = 0;
-			if(gameManager != null && gameManager.engine.length > 0 && gameManager.engine[0] != null) {
-				pauseOffsetX = gameManager.receiver.getFieldDisplayPositionX(gameManager.engine[0], 0);
-				pauseOffsetY = gameManager.receiver.getFieldDisplayPositionY(gameManager.engine[0], 0);
-			}
+			pauseOffsetX = gameManager.receiver.getFieldDisplayPositionX(gameManager.engine[0], 0);
+			pauseOffsetY = gameManager.receiver.getFieldDisplayPositionY(gameManager.engine[0], 0);
 			int menuLeft = pauseOffsetX + 12;
 			int menuTop = pauseOffsetY + 188;
 			int menuRight = menuLeft + 144;
@@ -477,7 +474,7 @@ public class StateInGameSDL extends BaseStateSDL {
 					&& mx >= menuLeft && mx < menuRight
 					&& my >= menuTop && my < menuBottom) {
 				int row = (my - menuTop) / 16;
-				if(row >= 0 && row <= maxPauseCursor && row != cursor) {
+				if(row != cursor) {
 					cursor = row;
 					ResourceHolderSDL.soundManager.play("cursor");
 				}
@@ -488,32 +485,21 @@ public class StateInGameSDL extends BaseStateSDL {
 					&& mx >= menuLeft && mx < menuRight
 					&& my >= menuTop && my < menuBottom) {
 				int row = (my - menuTop) / 16;
-				if(row >= 0 && row <= maxPauseCursor) {
-					if(row != cursor) ResourceHolderSDL.soundManager.play("cursor");
-					cursor = row;
-					mouseConfirm = true;
-				}
+				if(row != cursor) ResourceHolderSDL.soundManager.play("cursor");
+				cursor = row;
+				mouseConfirm = true;
 			}
 
 			// Cursor movement
 			if(GameKeySDL.gamekey[0].isMenuRepeatKey(GameKeySDL.BUTTON_UP)) {
 				cursor--;
-
-				if(cursor < 0) {
-					if(gameManager.replayMode && !gameManager.replayRerecord)
-						cursor = 3;
-					else
-						cursor = 2;
-				}
+				if(cursor < 0) cursor = maxPauseCursor;
 
 				ResourceHolderSDL.soundManager.play("cursor");
 			}
 			if(GameKeySDL.gamekey[0].isMenuRepeatKey(GameKeySDL.BUTTON_DOWN)) {
 				cursor++;
-				if(cursor > 3) cursor = 0;
-
-				if((!gameManager.replayMode || gameManager.replayRerecord) && (cursor > 2))
-					cursor = 0;
+				if(cursor > maxPauseCursor) cursor = 0;
 
 				ResourceHolderSDL.soundManager.play("cursor");
 			}
@@ -538,7 +524,7 @@ public class StateInGameSDL extends BaseStateSDL {
 					ResourceHolderSDL.bgmStop();
 					NullpoMinoSDL.enterStateClear(NullpoMinoSDL.STATE_TITLE);
 					return;
-				} else if(cursor == 3) {
+				} else {
 					// Replay re-record
 					gameManager.replayRerecord = true;
 					ResourceHolderSDL.soundManager.play("tspin1");
@@ -590,21 +576,18 @@ public class StateInGameSDL extends BaseStateSDL {
 			fastforward = 0;
 		}
 
-		if(gameManager != null) {
-			// BGM
-			if(ResourceHolderSDL.bgmPlaying != gameManager.bgmStatus.bgm) {
-				ResourceHolderSDL.bgmStart(gameManager.bgmStatus.bgm);
-			}
-			if(ResourceHolderSDL.bgmIsPlaying()) {
-				int basevolume = NullpoMinoSDL.propConfig.getProperty("option.bgmvolume", 128);
-				float basevolume2 = (float)basevolume / 128;
-				int newvolume = (int)(128 * (gameManager.bgmStatus.volume * basevolume2));
-				if(newvolume < 0) newvolume = 0;
-				if(newvolume > 128) newvolume = 128;
-				if(NullpoMinoSDL.mixerLib != null && ResourceHolderSDL.bgmTrack != null)
-					NullpoMinoSDL.mixerLib.MIX_SetTrackGain(ResourceHolderSDL.bgmTrack, newvolume / 128.0f);
-				if(newvolume <= 0) ResourceHolderSDL.bgmStop();
-			}
+		// BGM
+		if(ResourceHolderSDL.bgmPlaying != gameManager.bgmStatus.bgm) {
+			ResourceHolderSDL.bgmStart(gameManager.bgmStatus.bgm);
+		}
+		if(ResourceHolderSDL.bgmIsPlaying()) {
+			int basevolume = NullpoMinoSDL.propConfig.getProperty("option.bgmvolume", 128);
+			float basevolume2 = (float)basevolume / 128;
+			int newvolume = (int)(128 * (gameManager.bgmStatus.volume * basevolume2));
+			if(newvolume < 0) newvolume = 0;
+			if(newvolume > 128) newvolume = 128;
+			NullpoMinoSDL.mixerLib.MIX_SetTrackGain(ResourceHolderSDL.bgmTrack, newvolume / 128.0f);
+			if(newvolume <= 0) ResourceHolderSDL.bgmStop();
 		}
 
 		// Result screen mouse + Escape input. Slides statc[0] (the
@@ -615,11 +598,11 @@ public class StateInGameSDL extends BaseStateSDL {
 		// frame; the END choice sets quitflag, honoured by the exit check
 		// further down.
 		boolean resultBack = false;
-		if(gameManager != null && !pause) {
+		if(!pause) {
 			boolean anyResult = false;
 			for(int i = 0; i < gameManager.getPlayers(); i++) {
 				GameEngine engine = gameManager.engine[i];
-				if(engine != null && engine.stat == GameEngine.Status.RESULT) { anyResult = true; break; }
+				if(engine.stat == GameEngine.Status.RESULT) { anyResult = true; break; }
 			}
 			if(anyResult) {
 				MouseInputSDL.mouseInput.update();
@@ -628,13 +611,13 @@ public class StateInGameSDL extends BaseStateSDL {
 						MouseInputSDL.mouseInput.getMouseY(),
 						MouseInputSDL.mouseInput.isMouseClicked());
 				boolean cancelKey = NullpoMinoSDL.isEscapePushedThisFrame()
-						|| MouseInputSDL.mouseInput.isMouseBackClicked()
-						|| MouseInputSDL.mouseInput.isMouseRightClicked();
+						| MouseInputSDL.mouseInput.isMouseBackClicked()
+						| MouseInputSDL.mouseInput.isMouseRightClicked();
 				if(cancelKey) ResourceHolderSDL.soundManager.play("decide");
 				if(cancelKey || closeClicked) resultBack = true;
 				for(int i = 0; i < gameManager.getPlayers(); i++) {
 					GameEngine engine = gameManager.engine[i];
-					if(engine == null || engine.stat != GameEngine.Status.RESULT) continue;
+					if(engine.stat != GameEngine.Status.RESULT) continue;
 					handleResultMouse(engine, i);
 				}
 			}
@@ -645,8 +628,9 @@ public class StateInGameSDL extends BaseStateSDL {
 		// advance past the handle every frame and force a fresh
 		// reset+re-simulate on each tick.
 		boolean settingMouseBack = false;
-		if((!pause && !replayPaused && !scrubbing) || (GameKeySDL.gamekey[0].isPushKey(GameKeySDL.BUTTON_FRAMESTEP) && enableframestep)) {
-			if(gameManager != null) {
+		boolean normalTick = !pause & !replayPaused & !scrubbing;
+		boolean frameStep = GameKeySDL.gamekey[0].isPushKey(GameKeySDL.BUTTON_FRAMESTEP) & enableframestep;
+		if(normalTick | frameStep) {
 				// Track the settings-screen position for the timeline. Advances
 				// only on a live tick (never during pause; the seek re-sim loops
 				// call updateAll() directly and set these themselves). settingFrames
@@ -655,7 +639,7 @@ public class StateInGameSDL extends BaseStateSDL {
 				// screen (~2% domain wobble over ~1s), then locks in.
 				if(gameManager.replayMode) {
 					GameEngine e0 = gameManager.engine[0];
-					boolean setting = e0 != null && e0.stat == GameEngine.Status.SETTING;
+					boolean setting = e0.stat == GameEngine.Status.SETTING;
 					if(setting) {
 						settingElapsed = prevTickSetting ? settingElapsed + 1 : 0;
 						if(settingElapsed > settingFrames) settingFrames = settingElapsed;
@@ -679,9 +663,7 @@ public class StateInGameSDL extends BaseStateSDL {
 				// isMenuRepeatKey path. While watching a replay the cancel
 				// comes back as an exit request instead (the auto-advancing
 				// replay settings screen ignores BUTTON_B).
-				if(gameManager.engine.length > 0
-						&& gameManager.engine[0] != null
-						&& gameManager.engine[0].stat == GameEngine.Status.SETTING
+				if(gameManager.engine[0].stat == GameEngine.Status.SETTING
 						&& gameManager.mode != null) {
 					settingMouseBack = injectSettingMouseInput(gameManager.engine[0]);
 				}
@@ -692,13 +674,12 @@ public class StateInGameSDL extends BaseStateSDL {
 				// engine sees the synthetic press in the same frame.
 				for(int i = 0; i < Math.min(gameManager.getPlayers(), 2); i++) {
 					GameEngine engine = gameManager.engine[i];
-					if(engine != null && engine.stat == GameEngine.Status.RESULT) {
+					if(engine.stat == GameEngine.Status.RESULT) {
 						injectResultMouseInput(engine);
 					}
 				}
 
 				for(int i = 0; i <= fastforward; i++) gameManager.updateAll();
-			}
 		}
 
 		// Clicking the top-right BACK button (closeBtn) or the mouse back
@@ -745,38 +726,35 @@ public class StateInGameSDL extends BaseStateSDL {
 			updateReplayTimeline();
 		}
 
-		if(gameManager != null) {
-			// Retry button
-			if(GameKeySDL.gamekey[0].isPushKey(GameKeySDL.BUTTON_RETRY) || GameKeySDL.gamekey[1].isPushKey(GameKeySDL.BUTTON_RETRY)) {
-				ResourceHolderSDL.bgmStop();
-				pause = false;
-				replayPaused = false;
-				gameManager.reset();
-			}
+		// Retry button
+		if(GameKeySDL.gamekey[0].isPushKey(GameKeySDL.BUTTON_RETRY) || GameKeySDL.gamekey[1].isPushKey(GameKeySDL.BUTTON_RETRY)) {
+			ResourceHolderSDL.bgmStop();
+			pause = false;
+			replayPaused = false;
+			gameManager.reset();
+		}
 
 			// END on the game-over screen jumps to the title menu (PLAY /
 			// REPLAY / NETPLAY). Cancelling the pre-game settings screen also
 			// sets quitflag but leaves the engine on SETTING, not RESULT — that
 			// one steps back a screen like every other exit below.
-			if(gameManager.getQuitFlag()) {
-				ResourceHolderSDL.bgmStop();
-				if(hasEngineOnResult(gameManager))
-					NullpoMinoSDL.enterStateClear(NullpoMinoSDL.STATE_TITLE);
-				else
-					NullpoMinoSDL.goBack();
-				return;
-			}
+		if(gameManager.getQuitFlag()) {
+			ResourceHolderSDL.bgmStop();
+			if(hasEngineOnResult(gameManager))
+				NullpoMinoSDL.enterStateClear(NullpoMinoSDL.STATE_TITLE);
+			else
+				NullpoMinoSDL.goBack();
+			return;
+		}
 
 			// BACK button / GIVEUP / replay back / Escape / right-click —
 			// return to the previous screen.
-			if(GameKeySDL.gamekey[0].isPushKey(GameKeySDL.BUTTON_GIVEUP) ||
-			   GameKeySDL.gamekey[1].isPushKey(GameKeySDL.BUTTON_GIVEUP) ||
-			   replayMouseBack || resultBack)
-			{
-				ResourceHolderSDL.bgmStop();
-				NullpoMinoSDL.goBack();
-				return;
-			}
+		if(GameKeySDL.gamekey[0].isPushKey(GameKeySDL.BUTTON_GIVEUP) ||
+		   GameKeySDL.gamekey[1].isPushKey(GameKeySDL.BUTTON_GIVEUP) ||
+		   replayMouseBack || resultBack) {
+			ResourceHolderSDL.bgmStop();
+			NullpoMinoSDL.goBack();
+			return;
 		}
 	}
 
@@ -785,7 +763,7 @@ public class StateInGameSDL extends BaseStateSDL {
 		if(gameManager == null) return false;
 		for(int i = 0; i < gameManager.getPlayers(); i++) {
 			GameEngine engine = gameManager.engine[i];
-			if(engine != null && engine.stat == GameEngine.Status.RESULT) return true;
+			if(engine.stat == GameEngine.Status.RESULT) return true;
 		}
 		return false;
 	}
@@ -801,7 +779,7 @@ public class StateInGameSDL extends BaseStateSDL {
 		if(!shouldShowReplayTimeline(gameManager, pause)) return false;
 		for(int i = 0; i < gameManager.getPlayers(); i++) {
 			GameEngine engine = gameManager.engine[i];
-			if(engine != null && engine.stat == GameEngine.Status.RESULT) {
+			if(engine.stat == GameEngine.Status.RESULT) {
 				return false;
 			}
 		}
@@ -820,7 +798,7 @@ public class StateInGameSDL extends BaseStateSDL {
 		if(!shouldRenderReplayTimeline(gameManager, pause)) return false;
 		for(int i = 0; i < gameManager.getPlayers(); i++) {
 			GameEngine engine = gameManager.engine[i];
-			if(engine != null && engine.stat == GameEngine.Status.SETTING) {
+			if(engine.stat == GameEngine.Status.SETTING) {
 				return false;
 			}
 		}
@@ -896,7 +874,7 @@ public class StateInGameSDL extends BaseStateSDL {
 		boolean overTimelineRow = false;
 		if(shouldRenderReplayTimeline(gameManager, pause) && replayTotalFrames() > 0) {
 			timelineHit = updateReplayTimeline();
-			overTimelineRow = my >= BAR_HIT_TOP && my < BAR_HIT_BOTTOM;
+			overTimelineRow = my >= BAR_HIT_TOP;
 		}
 
 		// Wheel cycles the value of the highlighted item. Up = forward
@@ -1134,9 +1112,9 @@ public class StateInGameSDL extends BaseStateSDL {
 		// control. Wheel over the buttons instead adjusts the replay speed,
 		// mirroring the LEFT/RIGHT arrow keys' fastforward control (0..98).
 		int wheel = (int) NullpoMinoSDL.mouseWheelDelta;
-		boolean overBar = mx >= barX && mx < barX + barW && my >= BAR_HIT_TOP && my < BAR_HIT_BOTTOM;
+		boolean overBar = mx >= barX && mx < barX + barW && my >= BAR_HIT_TOP;
 		boolean overButtons = mx >= playPauseBtn.x && mx < playPauseBtn.x + BTN_W
-				&& my >= BAR_HIT_TOP && my < BAR_HIT_BOTTOM;
+				&& my >= BAR_HIT_TOP;
 		if(wheel != 0 && overBar) {
 			// Steps are RECORDED frames (replayTimer), not the extended domain:
 			// a ±1 settings-frame step is sub-pixel with the counter pinned at
@@ -1262,10 +1240,7 @@ public class StateInGameSDL extends BaseStateSDL {
 		ResourceHolderSDL.soundManager.mute = true;
 		int count = 0;
 		try {
-			for(int guard = elapsed + 8;
-				guard > 0 && count < elapsed
-					&& eng.stat == GameEngine.Status.SETTING && !gameManager.getQuitFlag();
-				guard--) {
+			while(count < elapsed && eng.stat == GameEngine.Status.SETTING && !gameManager.getQuitFlag()) {
 				gameManager.updateAll();
 				count++;
 			}
