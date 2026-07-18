@@ -511,8 +511,13 @@ public class StateNetCreateRoomSDL extends BaseStateSDL {
 				}
 			}
 		}
-		if(list.isEmpty()) list.add("NET-VS-BATTLE");
+		ensureModeListFallback(list);
 		return list.toArray(new String[list.size()]);
+	}
+
+	/** Keep the form usable if a custom build supplies no registered net modes. */
+	private static void ensureModeListFallback(List<String> list) {
+		if(list.isEmpty()) list.add("NET-VS-BATTLE");
 	}
 
 	/**
@@ -584,8 +589,8 @@ public class StateNetCreateRoomSDL extends BaseStateSDL {
 		}
 		// Mode-selector edge detector: when BASIC tab's first dropdown flips,
 		// rewire the form for the new mode (list source, MAX PLAYERS lock).
-		if(!detailMode && modeSelector.getSelectedIndex() != lastModeIndex) {
-			onModeChanged();
+		if(!detailMode) {
+			if(modeSelector.getSelectedIndex() != lastModeIndex) onModeChanged();
 		}
 
 		// Button row always visible.
@@ -614,7 +619,10 @@ public class StateNetCreateRoomSDL extends BaseStateSDL {
 			// LEFT/RIGHT on the button row cycle between buttons.
 			if((left || right) && !ev.repeat && tryButtonRowNav(left)) continue;
 
-			if((up || down) && !ev.repeat && tryTabFormNav(up)) continue;
+			if((up || down) && !ev.repeat) {
+				tryTabFormNav(up);
+				continue;
+			}
 
 			if(focused != null) focused.handleKey(ev);
 		}
@@ -717,9 +725,9 @@ public class StateNetCreateRoomSDL extends BaseStateSDL {
 		switch(mode) {
 			case SINGLE_PLAYER: {
 				// singleroomcreate\t<name>\t<mode> — server fills the rest from the player's rule.
-				if(r.strName == null || r.strName.trim().length() == 0) { statusLine = "ROOM NAME REQUIRED"; return; }
+				if(r.strName.trim().length() == 0) { statusLine = "ROOM NAME REQUIRED"; return; }
 				String roomNameEnc = NetUtil.urlEncode(r.strName);
-				String modeName = NetUtil.urlEncode(r.strMode == null ? "" : r.strMode);
+				String modeName = NetUtil.urlEncode(r.strMode);
 				msg = "singleroomcreate\t" + roomNameEnc + "\t" + modeName + "\n";
 				break;
 			}
@@ -751,9 +759,7 @@ public class StateNetCreateRoomSDL extends BaseStateSDL {
 			String pname = nl.propConfig.getProperty("serverselect.txtfldPlayerName.text", "").trim();
 			String team = nl.propConfig.getProperty("serverselect.txtfldPlayerTeam.text", "");
 			try {
-				RoomSession session = RoomSession.create(pname, RoomConfig.load(), null, NetPlatform.roomNet());
-				NullpoMinoSDL.roomSession = session;
-				nl.connectToRoom(pname, team, session);
+				connectNewRoomSession(nl, pname, team);
 			} catch(IOException e) {
 				statusLine = "CREATE FAILED: " + e.getMessage();
 				return;
@@ -764,6 +770,13 @@ public class StateNetCreateRoomSDL extends BaseStateSDL {
 		createSent = false;
 		waitingForRoom = true;
 		pendingSince = System.currentTimeMillis();
+	}
+
+	/** Create and attach a fresh P2P room transport when no live client exists. */
+	protected void connectNewRoomSession(NetLobbyFrame nl, String playerName, String team) throws IOException {
+		RoomSession session = RoomSession.create(playerName, RoomConfig.load(), null, NetPlatform.roomNet());
+		NullpoMinoSDL.roomSession = session;
+		nl.connectToRoom(playerName, team, session);
 	}
 
 	private void collectFormInto(NetRoomInfo r) {
@@ -812,9 +825,12 @@ public class StateNetCreateRoomSDL extends BaseStateSDL {
 	 */
 	private String buildRoomCreateMessage(NetRoomInfo r, int mapSetID) {
 		if(r.strName == null || r.strName.trim().length() == 0) return null;
+		// exportString() also serializes strMode, so normalize it before both
+		// protocol fields are built. A freshly supplied NetRoomInfo may leave it null.
+		if(r.strMode == null) r.strMode = "";
 		String name = NetUtil.urlEncode(r.strName);
 		String export = NetUtil.urlEncode(r.exportString());
-		String mode = NetUtil.urlEncode(r.strMode == null ? "" : r.strMode);
+		String mode = NetUtil.urlEncode(r.strMode);
 		StringBuilder sb = new StringBuilder("roomcreate\t");
 		sb.append(name).append('\t').append(export).append('\t').append(mode);
 
@@ -842,6 +858,11 @@ public class StateNetCreateRoomSDL extends BaseStateSDL {
 			return null;
 		}
 
+		return compressMapSet(propMap);
+	}
+
+	/** Compress an already-loaded map set; split out so malformed empty sets are testable. */
+	private static String compressMapSet(nullpomino.util.CustomProperties propMap) {
 		int maxMap = propMap.getProperty("map.maxMapNumber", 0);
 		if(maxMap <= 0) return null;
 
@@ -905,7 +926,6 @@ public class StateNetCreateRoomSDL extends BaseStateSDL {
 	 */
 	private void savePreviousMode(NetLobbyFrame nl) {
 		String mode = modeDropdown.getSelectedItem();
-		if(mode == null) mode = "";
 		String key = (currentMode() == RoomCreateMode.SINGLE_PLAYER)
 				? "createroom1p.strMode" : "createroom.strMode";
 		nl.propConfig.setProperty(key, mode);
@@ -1124,7 +1144,7 @@ public class StateNetCreateRoomSDL extends BaseStateSDL {
 			}
 			f.widget.render();
 			String unit = (f.unit != null) ? f.unit.get() : null;
-			if(unit != null && unit.length() > 0) {
+			if(unit != null) {
 				// Same color as the label text to its left.
 				NormalFontSDL.printFont(f.widget.x + f.widget.w + 8, f.widget.y + 3,
 						NormalFontSDL.safeString(unit), NormalFontSDL.COLOR_WHITE);
