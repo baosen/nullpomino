@@ -3,6 +3,7 @@
 package nullpomino.game.component;
 
 import java.io.Serializable;
+import java.util.Objects;
 
 import nullpomino.util.CustomProperties;
 
@@ -681,9 +682,9 @@ public class RuleOptions implements Serializable {
 	 * @param id Player IDOrPresetID
 	 */
 	public void writeProperty(CustomProperties p, int id) {
-		p.setProperty(id + ".ruleopt.strRuleName", strRuleName);
-		p.setProperty(id + ".ruleopt.strWallkick", strWallkick);
-		p.setProperty(id + ".ruleopt.strRandomizer", strRandomizer);
+		p.setProperty(id + ".ruleopt.strRuleName", Objects.toString(strRuleName, ""));
+		p.setProperty(id + ".ruleopt.strWallkick", Objects.toString(strWallkick, ""));
+		p.setProperty(id + ".ruleopt.strRandomizer", Objects.toString(strRandomizer, ""));
 
 		p.setProperty(id + ".ruleopt.style", style);
 

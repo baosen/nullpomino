@@ -103,7 +103,7 @@ public class StateNetRuleChangeSDL extends BaseStateSDL {
 		String current = nl.propGlobal.getProperty(key, "");
 		LinkedList<RuleEntry> sub = nl.getSubsetEntries(style);
 		for(int i = 0; i < sub.size(); i++) {
-			if(sub.get(i).filename.equals(current)) return i;
+			if(current.equals(sub.get(i).filename)) return i;
 		}
 		return 0;
 	}
@@ -143,8 +143,8 @@ public class StateNetRuleChangeSDL extends BaseStateSDL {
 			String prefixFile = (style == 0) ? "0.rulefile" : "0.rulefile." + style;
 			String prefixPath = (style == 0) ? "0.rule"     : "0.rule."     + style;
 			nl.propGlobal.setProperty(prefixName, chosen.rulename == null ? "" : chosen.rulename);
-			nl.propGlobal.setProperty(prefixFile, chosen.filename);
-			nl.propGlobal.setProperty(prefixPath, chosen.filepath);
+			nl.propGlobal.setProperty(prefixFile, chosen.filename == null ? "" : chosen.filename);
+			nl.propGlobal.setProperty(prefixPath, chosen.filepath == null ? "" : chosen.filepath);
 		}
 
 		// Load the current-style rule into ruleOptPlayer and re-send to the server.

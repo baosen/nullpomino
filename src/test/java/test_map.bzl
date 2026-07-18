@@ -1303,6 +1303,7 @@ TEST_DEPS = {
         "//src/main/java:game_component_data",
         "//src/main/java:game_net_client",
         "//src/main/java:game_net_misc",
+        "//src/main/java:game_net_room_misc",
         "//src/main/java:util_base",
     ],
     "nullpomino/game/mode/ComboRaceModeBranchCoverageTest3.java": [
@@ -3531,6 +3532,10 @@ TEST_DEPS = {
         "//src/main/java:game_component_data",
         "//src/main/java:game_wallkick_impls",
     ],
+    "nullpomino/game/play/GameEngineResidualBranchMatrixTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:game_component_data",
+    ],
     "nullpomino/game/play/GameEngineRenderDispatchTest.java": [
         "//src/main/java:core_engine",
     ],
@@ -3726,6 +3731,14 @@ TEST_DEPS = {
         "//src/main/java:game_net_misc",
         "//src/main/java:game_net_room_misc",
     ],
+    "nullpomino/gui/net/NetLobbyFrameBranchMatrixTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:core_ui_modes",
+        "//src/main/java:game_net_client",
+        "//src/main/java:game_net_misc",
+        "//src/main/java:game_net_room_misc",
+        "//src/main/java:util_base",
+    ],
     "nullpomino/gui/net/NetLobbyFrameTest.java": [
         "//src/main/java:core_ui_modes",
         "//src/main/java:game_net_misc",
@@ -3756,6 +3769,7 @@ TEST_DEPS = {
         "//src/main/java:gui_base",
         "//src/main/java:sdl_binding",
         "//src/main/java:util_base",
+        "//src/main/java:util_mode_manager",
     ],
     "nullpomino/gui/sdl/MissingDirNullGuardTest.java": [
         "//src/main/java:core_ui_modes",
@@ -3789,6 +3803,13 @@ TEST_DEPS = {
     "nullpomino/gui/sdl/NullpoMinoSDLNavigationGuardsTest.java": [
         "//src/main/java:core_ui_modes",
     ],
+    "nullpomino/gui/sdl/NullpoMinoSDLResidualBranchMatrixTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:core_ui_modes",
+        "//src/main/java:gui_base",
+        "//src/main/java:sdl_binding",
+        "//src/main/java:util_base",
+    ],
     "nullpomino/gui/sdl/PageNavigationSDLTest.java": [
         "//src/main/java:core_ui_modes",
         "//src/main/java:sdl_binding",
@@ -3809,6 +3830,11 @@ TEST_DEPS = {
     ],
     "nullpomino/gui/sdl/SoundManagerSDLLogicTest.java": [
         "//src/main/java:core_ui_modes",
+    ],
+    "nullpomino/gui/sdl/SoundManagerSDLResidualBranchMatrixTest.java": [
+        "//src/main/java:core_ui_modes",
+        "//src/main/java:sdl_binding",
+        "//src/main/java:util_base",
     ],
     "nullpomino/gui/sdl/SoundManagerSDLTest.java": [
         "//src/main/java:core_ui_modes",
@@ -3909,9 +3935,45 @@ TEST_DEPS = {
     "nullpomino/gui/sdl/StateNetCreateRoomSDLDropdownSelectionTest.java": [
         "//src/main/java:core_ui_modes",
     ],
+    "nullpomino/gui/sdl/StateNetCreateRoomSDLBranchMatrixTest.java": [
+        "//src/main/java:core_ui_modes",
+        "//src/main/java:game_net_client",
+        "//src/main/java:game_net_misc",
+        "//src/main/java:gui_base",
+        "//src/main/java:sdl_binding",
+        "//src/main/java:util_base",
+    ],
     "nullpomino/gui/sdl/StateNetCreateRoomSDLTest.java": [
         "//src/main/java:core_ui_modes",
         "//src/main/java:game_net_misc",
+        "//src/main/java:util_base",
+    ],
+    "nullpomino/gui/sdl/StateNetLobbySDLBranchMatrixTest.java": [
+        "//src/main/java:core_ui_modes",
+        "//src/main/java:game_net_client",
+        "//src/main/java:game_net_misc",
+        "//src/main/java:game_net_platform",
+        "//src/main/java:gui_base",
+        "//src/main/java:sdl_binding",
+        "//src/main/java:util_base",
+    ],
+    "nullpomino/gui/sdl/StateNetGameSDLBranchMatrixTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:core_ui_modes",
+        "//src/main/java:game_net_client",
+        "//src/main/java:game_net_misc",
+        "//src/main/java:gui_base",
+        "//src/main/java:sdl_binding",
+        "//src/main/java:util_base",
+        "//src/main/java:util_mode_manager",
+    ],
+    "nullpomino/gui/sdl/StateNetRuleChangeSDLBranchMatrixTest.java": [
+        "//src/main/java:core_engine",
+        "//src/main/java:core_ui_modes",
+        "//src/main/java:game_net_client",
+        "//src/main/java:game_net_misc",
+        "//src/main/java:gui_base",
+        "//src/main/java:sdl_binding",
         "//src/main/java:util_base",
     ],
     "nullpomino/gui/sdl/StateReplaySelectSDLLogicTest.java": [
@@ -4139,4 +4201,3 @@ TEST_DEPS = {
         "//src/main/java:util_wallkick_registry",
     ],
 }
-
