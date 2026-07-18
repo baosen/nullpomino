@@ -192,8 +192,7 @@ public class NetLobbyFrame implements NetMessageListener {
 
 		// Rule file catalog
 		String[] ruleFiles = getRuleFileList();
-		if(ruleFiles != null) createRuleEntries(ruleFiles);
-		else log.error("Rule file directory (config/rule) not found");
+		createRuleEntries(ruleFiles);
 
 		// Fire init callbacks
 		for(NetLobbyListener l : listeners) if(l != null) l.netlobbyOnInit(this);
@@ -642,10 +641,11 @@ public class NetLobbyFrame implements NetMessageListener {
 	 * endpoint, and resets the room state for the new session.
 	 */
 	public void connectToRoom(String playerName, String playerTeam, RoomEndpoint room) {
+		String team = playerTeam == null ? "" : playerTeam;
 		propConfig.setProperty("serverselect.txtfldPlayerName.text", playerName);
-		propConfig.setProperty("serverselect.txtfldPlayerTeam.text", playerTeam);
+		propConfig.setProperty("serverselect.txtfldPlayerTeam.text", team);
 		NetRoomPlayerClient roomClient = new NetRoomPlayerClient(room, playerName,
-			playerTeam == null ? "" : playerTeam.trim());
+			team.trim());
 		netPlayerClient = roomClient;
 		roomClient.addListener(this);
 		roomClient.connect();
@@ -712,12 +712,12 @@ public class NetLobbyFrame implements NetMessageListener {
 	 * on success; failures come back as {@code changenamefail}.
 	 */
 	private void sendChangeName(String newName, boolean roomchat) {
-		if(newName == null || newName.trim().length() == 0) {
+		if(newName.trim().length() == 0) {
 			ChatLogSDL log = roomchat ? chatLogRoom : chatLogLobby;
 			log.appendSystem("USAGE: /NAME <NICKNAME>", NormalFontSDL.COLOR_YELLOW);
 			return;
 		}
-		if(netPlayerClient == null || !netPlayerClient.isConnected()) return;
+		if(!netPlayerClient.isConnected()) return;
 		netPlayerClient.send("changename\t" + NetUtil.urlEncode(newName.trim()) + "\n");
 	}
 
@@ -784,7 +784,6 @@ public class NetLobbyFrame implements NetMessageListener {
 		if(result == null) {
 			// Fall back to the main SDL UI dictionary (many labels are shared).
 			result = nullpomino.gui.sdl.NullpoMinoSDL.getUIText(key);
-			if(result == null || result.equals(key)) result = key;
 		}
 		return result;
 	}
@@ -803,8 +802,13 @@ public class NetLobbyFrame implements NetMessageListener {
 		FilenameFilter filter = new FilenameFilter() {
 			public boolean accept(File d, String name) { return name.endsWith(".rul"); }
 		};
-		String[] list = dir.list(filter);
-		if(list != null && !System.getProperty("os.name", "").startsWith("Windows")) Arrays.sort(list);
+		String[] list = sortRuleFiles(dir.list(filter), System.getProperty("os.name", ""));
+		return list;
+	}
+
+	/** Apply the platform-specific catalog order to an already-read directory list. */
+	private static String[] sortRuleFiles(String[] list, String osName) {
+		if(list != null && !osName.startsWith("Windows")) Arrays.sort(list);
 		return list;
 	}
 
