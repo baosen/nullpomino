@@ -48,6 +48,7 @@ log/
 .claude
 .codex
 .serena
+.codegraph
 
 # Coverage reports (bazel coverage --combined_report=lcov + genhtml)
 /coverage/
