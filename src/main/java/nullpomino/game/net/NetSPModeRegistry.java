@@ -2,8 +2,6 @@ package nullpomino.game.net;
 
 import java.util.List;
 
-import nullpomino.game.play.GameEngine;
-
 /**
  * The single-player netplay mode list, indexed by game style. Replaces the
  * pre-existing {@code config/list/netlobby_singlemode.lst} text file: a colon
@@ -39,11 +37,6 @@ public final class NetSPModeRegistry {
 			List.of(),
 			// SPF
 			List.of());
-
-	static {
-		assert BY_STYLE.size() == GameEngine.MAX_GAMESTYLE
-				: "BY_STYLE must have one bucket per gamestyle";
-	}
 
 	private NetSPModeRegistry() {}
 

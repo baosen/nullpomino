@@ -2,6 +2,7 @@ package nullpomino.game.net;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.HashSet;
@@ -46,6 +47,13 @@ class NetSPModeRegistryTest {
 		assertTrue(NetSPModeRegistry.forStyle(GameEngine.GAMESTYLE_AVALANCHE).isEmpty());
 		assertTrue(NetSPModeRegistry.forStyle(GameEngine.GAMESTYLE_PHYSICIAN).isEmpty());
 		assertTrue(NetSPModeRegistry.forStyle(GameEngine.GAMESTYLE_SPF).isEmpty());
+	}
+
+	@Test
+	void oneBucketPerGamestyleExactly() {
+		assertThrows(IndexOutOfBoundsException.class,
+				() -> NetSPModeRegistry.forStyle(GameEngine.MAX_GAMESTYLE),
+				"BY_STYLE must have exactly one bucket per gamestyle");
 	}
 
 	@Test
