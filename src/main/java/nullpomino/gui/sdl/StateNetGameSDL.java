@@ -121,9 +121,9 @@ public class StateNetGameSDL extends BaseStateSDL implements NetLobbyListener {
 		try {
 			if(gameManager != null) gameManager.renderAll();
 		} catch(NullPointerException e) {
-			if(gameManager == null || !gameManager.getQuitFlag()) log.error("render NPE", e);
+			if(!gameManager.getQuitFlag()) log.error("render NPE", e);
 		} catch(Exception e) {
-			if(gameManager == null || !gameManager.getQuitFlag()) log.error("render fail", e);
+			if(!gameManager.getQuitFlag()) log.error("render fail", e);
 		}
 		closeBtn.render();
 	}
@@ -161,7 +161,7 @@ public class StateNetGameSDL extends BaseStateSDL implements NetLobbyListener {
 
 		try {
 			int joynum = NullpoMinoSDL.joyUseNumber[0];
-			boolean ingame = gameManager != null && gameManager.engine.length > 0
+			boolean ingame = gameManager != null && gameManager.engine != null && gameManager.engine.length > 0
 					&& gameManager.engine[0] != null && gameManager.engine[0].isInGame;
 
 			if(NullpoMinoSDL.joystickMax > 0 && joynum >= 0 && joynum < NullpoMinoSDL.joystickMax) {
@@ -194,8 +194,7 @@ public class StateNetGameSDL extends BaseStateSDL implements NetLobbyListener {
 					int newvolume = (int)(128 * (gameManager.bgmStatus.volume * basevolume2));
 					if(newvolume < 0) newvolume = 0;
 					if(newvolume > 128) newvolume = 128;
-					if(NullpoMinoSDL.mixerLib != null && ResourceHolderSDL.bgmTrack != null)
-						NullpoMinoSDL.mixerLib.MIX_SetTrackGain(ResourceHolderSDL.bgmTrack, newvolume / 128.0f);
+					NullpoMinoSDL.mixerLib.MIX_SetTrackGain(ResourceHolderSDL.bgmTrack, newvolume / 128.0f);
 					if(newvolume <= 0) ResourceHolderSDL.bgmStop();
 				}
 			}
@@ -281,7 +280,7 @@ public class StateNetGameSDL extends BaseStateSDL implements NetLobbyListener {
 		if(gameManager.mode.getGameStyle() > 0) {
 			rulename = NullpoMinoSDL.propGlobal.getProperty("0.rule." + gameManager.mode.getGameStyle(), "");
 		}
-		if(rulename != null && rulename.length() > 0) {
+		if(rulename.length() > 0) {
 			log.info("Load rule options from {}", rulename);
 			ruleopt = GeneralUtil.loadRule(rulename);
 		} else {
@@ -290,11 +289,11 @@ public class StateNetGameSDL extends BaseStateSDL implements NetLobbyListener {
 		}
 		gameManager.engine[0].ruleopt = ruleopt;
 
-		if(ruleopt.strRandomizer != null && ruleopt.strRandomizer.length() > 0) {
+		if(hasConfiguredClass(ruleopt.strRandomizer)) {
 			Randomizer randomizerObject = GeneralUtil.loadRandomizer(ruleopt.strRandomizer);
 			gameManager.engine[0].randomizer = randomizerObject;
 		}
-		if(ruleopt.strWallkick != null && ruleopt.strWallkick.length() > 0) {
+		if(hasConfiguredClass(ruleopt.strWallkick)) {
 			Wallkick wallkickObject = GeneralUtil.loadWallkick(ruleopt.strWallkick);
 			gameManager.engine[0].wallkick = wallkickObject;
 		}
@@ -316,6 +315,10 @@ public class StateNetGameSDL extends BaseStateSDL implements NetLobbyListener {
 
 		newMode.netplayInit(netLobby);
 		updateTitleBarCaption();
+	}
+
+	private static boolean hasConfiguredClass(String className) {
+		return className != null && className.length() > 0;
 	}
 
 	public void updateTitleBarCaption() {
