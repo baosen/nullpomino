@@ -377,7 +377,10 @@ public class StateNetLobbySDL extends BaseStateSDL {
 			int sel = roomTable.getSelectedIndex();
 			int rows = roomTable.getRowCount();
 			if(up && sel <= 0) { setFocus(teamInput); return true; }
-			if(!up && (rows == 0 || sel >= rows - 1)) { setFocus(row[0]); return true; }
+			if(!up) {
+				if(rows == 0) { setFocus(row[0]); return true; }
+				if(sel >= rows - 1) { setFocus(row[0]); return true; }
+			}
 			return false;
 		}
 		for(ButtonSDL b : row) {
@@ -514,21 +517,26 @@ public class StateNetLobbySDL extends BaseStateSDL {
 			return;
 		}
 
-		RoomSession session;
 		try {
-			session = RoomSession.join(host, port, name, RoomConfig.load(), null, NetPlatform.roomNet());
+			connectJoinedRoom(nl, host, port, name, teamInput.getText());
 		} catch(IOException e) {
 			nl.chatLogLobby.appendSystem("JOIN FAILED: " + e.getMessage(), NormalFontSDL.COLOR_RED);
 			return;
 		}
-		NullpoMinoSDL.roomSession = session;
-		nl.connectToRoom(name, teamInput.getText(), session);
 		pendingAction = PENDING_JOIN;
 		pendingWatch = watch;
 		autoRoomJoinSent = false;
 		pendingSince = System.currentTimeMillis();
 		pendingHostPort = host + ":" + port;
 		nl.chatLogLobby.appendSystem("JOINING " + pendingHostPort + " ...", NormalFontSDL.COLOR_BLUE);
+	}
+
+	/** Join and attach a room transport; overridden by the headless state test seam. */
+	protected void connectJoinedRoom(NetLobbyFrame nl, String host, int port, String playerName, String team)
+			throws IOException {
+		RoomSession session = RoomSession.join(host, port, playerName, RoomConfig.load(), null, NetPlatform.roomNet());
+		NullpoMinoSDL.roomSession = session;
+		nl.connectToRoom(playerName, team, session);
 	}
 
 	/** CREATE: open the create-room form; the form owns session creation on OK. */
