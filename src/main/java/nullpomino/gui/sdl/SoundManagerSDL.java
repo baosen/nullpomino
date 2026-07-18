@@ -4,6 +4,7 @@ package nullpomino.gui.sdl;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.function.LongSupplier;
 
 import nullpomino.gui.sdl.binding.SDL3Mixer;
 import nullpomino.gui.sdl.binding.SDL3;
@@ -37,6 +38,8 @@ public class SoundManagerSDL {
 	private static final long WARMUP_POLL_INTERVAL_MS = 10L;
 	/** Upper bound so startup never stalls too long if metadata is wrong. */
 	private static final long WARMUP_MAX_WAIT_MS = 2000L;
+	/** Replaceable package-private clock keeps warm-up deadline tests deterministic. */
+	static LongSupplier currentTimeMillis = System::currentTimeMillis;
 
 	/** Drop all SE while true. Used to silence the replay-seek re-simulation. */
 	public boolean mute = false;
@@ -149,8 +152,8 @@ public class SoundManagerSDL {
 		// Wait for every muted warm-up track to finish instead of assuming the
 		// clip duration is enough. Some backends keep extra converted audio queued
 		// after the decoded clip is exhausted.
-		long deadline = System.currentTimeMillis() + WARMUP_MAX_WAIT_MS;
-		while(!areAllTracksStopped(lib) && System.currentTimeMillis() < deadline) {
+		long deadline = currentTimeMillis.getAsLong() + WARMUP_MAX_WAIT_MS;
+		while(!areAllTracksStopped(lib) && currentTimeMillis.getAsLong() < deadline) {
 			try {
 				Thread.sleep(WARMUP_POLL_INTERVAL_MS);
 			} catch(InterruptedException e) {
