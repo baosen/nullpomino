@@ -312,13 +312,6 @@ public class RendererSDL extends EventReceiver {
 	}
 
 	/**
-	 * Helper to render a full texture (no source rect) to the global renderer.
-	 */
-	private void renderTextureFull(SdlTexture texture, SDLStructs.SDL_FRect dst) {
-		SDL3.INSTANCE.SDL_RenderTexture(renderer(), texture, null, dst);
-	}
-
-	/**
 	 * Helper to render a full texture to fill the entire renderer output.
 	 */
 	private void renderTextureFullscreen(SdlTexture texture) {
@@ -793,8 +786,7 @@ public class RendererSDL extends EventReceiver {
 			piece.updateConnectData();
 			int blksize = (int)(16 * scale);
 
-			if(piece != null) {
-				for(int i = 0; i < piece.getMaxBlock(); i++) {
+			for(int i = 0; i < piece.getMaxBlock(); i++) {
 					if(!piece.big) {
 						int x2 = engine.ai.bestX + piece.dataX[piece.direction][i];
 						int y2 = engine.ai.bestY + piece.dataY[piece.direction][i];
@@ -871,7 +863,6 @@ public class RendererSDL extends EventReceiver {
 						}
 
 					}
-				}
 			}
 		}
 	}
@@ -924,7 +915,7 @@ public class RendererSDL extends EventReceiver {
 				Block blk = null;
 				if(field != null) blk = field.getBlock(j, i);
 
-				if((field != null) && (blk != null) && (blk.color > Block.BLOCK_COLOR_NONE)) {
+				if((field != null) && (blk.color > Block.BLOCK_COLOR_NONE)) {
 					if(blk.getAttribute(Block.BLOCK_ATTRIBUTE_WALL)) {
 						drawBlock(x2, y2, Block.BLOCK_COLOR_NONE, blk.skin, blk.getAttribute(Block.BLOCK_ATTRIBUTE_BONE),
 								  blk.darkness, blk.alpha, scale, blk.attribute);
@@ -1017,9 +1008,7 @@ public class RendererSDL extends EventReceiver {
 			width = engine.field.getWidth();
 			height = engine.field.getHeight();
 		}
-		if(engine != null) {
-			offsetX = engine.framecolor * 16;
-		}
+		offsetX = engine.framecolor * 16;
 
 		// Field Background
 		if(fieldbgbright > 0) {
@@ -1104,7 +1093,7 @@ public class RendererSDL extends EventReceiver {
 
 			// RightMeter
 			int maxHeight = height * size * 4;
-			if((engine != null) && (engine.meterValueSub > 0 || engine.meterValue > 0))
+			if(engine.meterValueSub > 0 || engine.meterValue > 0)
 				maxHeight -= Math.max(engine.meterValue, engine.meterValueSub);
 
 			for(int i = 0; i < maxHeight; i++) {
@@ -1113,26 +1102,24 @@ public class RendererSDL extends EventReceiver {
 				renderTexture(ResourceHolderSDL.imgSprite, rectSrc, rectDst);
 			}
 
-			if(engine != null) {
-				if (engine.meterValueSub > Math.max(engine.meterValue, 0)) {
-					int value = engine.meterValueSub;
-					if(value > height * size * 4) value = height * size * 4;
+			if (engine.meterValueSub > Math.max(engine.meterValue, 0)) {
+				int value = engine.meterValueSub;
+				if(value > height * size * 4) value = height * size * 4;
 
-					for(int i = 0; i < value; i++) {
-						rectSrc = new SDLStructs.SDL_FRect(63 + (engine.meterColorSub * 4), 0, 4, 1);
-						rectDst = new SDLStructs.SDL_FRect(x + (width * size * 4) + 8, y + (height * size * 4) + 3 - i, 4, 1);
-						renderTexture(ResourceHolderSDL.imgSprite, rectSrc, rectDst);
-					}
+				for(int i = 0; i < value; i++) {
+					rectSrc = new SDLStructs.SDL_FRect(63 + (engine.meterColorSub * 4), 0, 4, 1);
+					rectDst = new SDLStructs.SDL_FRect(x + (width * size * 4) + 8, y + (height * size * 4) + 3 - i, 4, 1);
+					renderTexture(ResourceHolderSDL.imgSprite, rectSrc, rectDst);
 				}
-				if (engine.meterValue > 0) {
-					int value = engine.meterValue;
-					if(value > height * size * 4) value = height * size * 4;
+			}
+			if (engine.meterValue > 0) {
+				int value = engine.meterValue;
+				if(value > height * size * 4) value = height * size * 4;
 
-					for(int i = 0; i < value; i++) {
-						rectSrc = new SDLStructs.SDL_FRect(63 + (engine.meterColor * 4), 0, 4, 1);
-						rectDst = new SDLStructs.SDL_FRect(x + (width * size * 4) + 8, y + (height * size * 4) + 3 - i, 4, 1);
-						renderTexture(ResourceHolderSDL.imgSprite, rectSrc, rectDst);
-					}
+				for(int i = 0; i < value; i++) {
+					rectSrc = new SDLStructs.SDL_FRect(63 + (engine.meterColor * 4), 0, 4, 1);
+					rectDst = new SDLStructs.SDL_FRect(x + (width * size * 4) + 8, y + (height * size * 4) + 3 - i, 4, 1);
+					renderTexture(ResourceHolderSDL.imgSprite, rectSrc, rectDst);
 				}
 			}
 		} else {
@@ -1158,7 +1145,7 @@ public class RendererSDL extends EventReceiver {
 		int fldWidth = 10;
 		int fldBlkSize = 16;
 		int meterWidth = showmeter ? 8 : 0;
-		if((engine != null) && (engine.field != null)) {
+		if(engine.field != null) {
 			fldWidth = engine.field.getWidth();
 			if(engine.displaysize == 1) fldBlkSize = 32;
 		}
@@ -1337,8 +1324,8 @@ public class RendererSDL extends EventReceiver {
 					NormalFontSDL.printFont(x2, y2, NullpoMinoSDL.getUIText("InGame_Hold"), tempColor, 0.5f);
 				} else {
 					if(!engine.holdDisable) {
-						if((holdRemain > 0) && (holdRemain <= 10)) tempColor = COLOR_YELLOW;
-						if((holdRemain > 0) && (holdRemain <= 5)) tempColor = COLOR_RED;
+						if(holdRemain <= 10) tempColor = COLOR_YELLOW;
+						if(holdRemain <= 5) tempColor = COLOR_RED;
 					}
 
 					NormalFontSDL.printFont(x2, y2, NullpoMinoSDL.getUIText("InGame_Hold") + "\ne " + holdRemain, tempColor, 0.5f);
