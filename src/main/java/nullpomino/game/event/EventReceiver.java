@@ -765,8 +765,7 @@ public class EventReceiver {
 	 * @return 0=Above 1=Side Small 2=Side Big
 	 */
 	public int getNextDisplayType() {
-		if(sidenext && bigsidenext) return 2;
-		if(sidenext && !bigsidenext) return 1;
+		if(sidenext) return bigsidenext ? 2 : 1;
 		return 0;
 	}
 

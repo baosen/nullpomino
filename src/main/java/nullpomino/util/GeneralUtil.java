@@ -253,9 +253,6 @@ public class GeneralUtil {
 
 	private static int pieceIdFromDigit(char value) {
 		if((value < '0') || (value > '9')) return Piece.PIECE_I;
-
-		int pieceID = value - '0';
-		if(pieceID >= Piece.PIECE_COUNT) return Piece.PIECE_I;
-		return pieceID;
+		return value - '0';
 	}
 }

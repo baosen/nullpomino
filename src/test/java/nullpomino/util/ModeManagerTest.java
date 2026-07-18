@@ -26,6 +26,7 @@ class ModeManagerTest {
 
 		assertNull(manager.getMode(-1));
 		assertNull(manager.getMode(1));
+		assertNull(manager.getMode(3));
 		assertNull(manager.getMode("missing"));
 		assertEquals(-1, manager.getIDbyName(null));
 		assertSame(normal, manager.getMode("normal"));

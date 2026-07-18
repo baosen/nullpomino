@@ -1,8 +1,10 @@
 package nullpomino.game.net;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import org.junit.jupiter.api.Test;
 
@@ -46,6 +48,36 @@ class NetPlayerClientBranchGapTest {
 
 		assertEquals(2, info.seatID);
 		assertEquals(-1, info.queueID);
+	}
+
+	@Test
+	void changeStatusWithUnknownStatusLeavesSeatAndQueueAlone() throws Exception {
+		NetPlayerClient client = freshClient();
+		NetPlayerInfo info = new NetPlayerInfo();
+		info.uid = 7;
+		info.seatID = 5;
+		info.queueID = 6;
+		client.playerInfoList.add(info);
+
+		client.processPacket("changestatus\tspectate\t7\tGapTester\t2");
+
+		assertEquals(5, info.seatID);
+		assertEquals(6, info.queueID);
+	}
+
+	@Test
+	void addListenerIgnoresDuplicates() {
+		NetPlayerClient client = freshClient();
+		NetMessageListener listener = new NetMessageListener() {
+			@Override public void netOnMessage(NetBaseClient c, String[] m) {}
+			@Override public void netOnDisconnect(NetBaseClient c, Throwable ex) {}
+		};
+
+		client.addListener(listener);
+		client.addListener(listener);
+
+		assertTrue(client.removeListener(listener), "first remove drops the single registration");
+		assertFalse(client.removeListener(listener), "second remove finds nothing - duplicate was never added");
 	}
 
 	@Test
